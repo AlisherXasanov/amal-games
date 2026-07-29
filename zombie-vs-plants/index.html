@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Зомби против растений</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .portal-back {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 9999;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, .65);
+      color: #fff;
+      font: 600 13px/1 'Nunito', system-ui, sans-serif;
+      text-decoration: none;
+      backdrop-filter: blur(4px);
+    }
+    .portal-back:hover { background: rgba(0, 0, 0, .85); }
+  </style>
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+  <canvas id="bg-zombies" aria-hidden="true"></canvas>
+  <button id="btn-voice-help" class="voice-help" title="Прослушать инструкцию">
+    🔊 Что делать?
+  </button>
+  <div id="app">
+    <!-- Главное меню -->
+    <section id="screen-menu" class="screen active">
+      <div class="menu-bg"></div>
+      <div class="menu-panel">
+        <p class="brand">Зомби против растений</p>
+        <h1 class="tagline">Простая игра мышкой</h1>
+        <ol class="steps">
+          <li>Нажми зелёную кнопку <b>Играть</b></li>
+          <li>Выбери: растения или зомби</li>
+          <li>Выбери <b>Уровень 1</b></li>
+        </ol>
+        <button class="btn btn-primary btn-big" data-go="side">▶ Играть</button>
+        <div class="menu-row">
+          <button class="btn btn-ghost" data-go="howto">Как играть?</button>
+          <button class="btn btn-ghost" id="btn-mute-menu">🔊 Звук</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Как играть -->
+    <section id="screen-howto" class="screen">
+      <div class="panel">
+        <h2>Что делать в игре</h2>
+        <div class="howto-grid">
+          <div class="howto-card">
+            <h3>1. Если выбрал РАСТЕНИЯ 🌻</h3>
+            <ol>
+              <li>Сверху нажми на растение (например Горохострел)</li>
+              <li>Потом кликни по зелёной клетке на поле — растение посадится</li>
+              <li>Жёлтые круги солнца — кликай по ним, чтобы получать ☀️</li>
+              <li>У дома слева стоят газонокосилки — один раз спасают ряд</li>
+              <li>Если косилки нет и зомби дошёл до дома — поражение</li>
+              <li>Новые растения: 🌵 кактус и 🍄 быстрый гриб</li>
+              <li>На уровне 19 откроется 🐱🐭 кот-мышь-косилка за 400 солнц — она атакует любую линию и работает 20 секунд</li>
+              <li>🧤 переносит растение, 🪏 удаляет его</li>
+            </ol>
+          </div>
+          <div class="howto-card">
+            <h3>2. Если выбрал ЗОМБИ 🧟</h3>
+            <ol>
+              <li>Сверху нажми на тип зомби</li>
+              <li>Потом кликни по ряду справа — зомби появится</li>
+              <li>Мозги 🧠 появляются сами со временем</li>
+              <li>Первый зомби в ряду включает косилку и погибает</li>
+              <li>Второй зомби в том же ряду может пройти к дому</li>
+              <li>Новые зомби: 🔶 с конусом и 🪣 с крепким ведром</li>
+            </ol>
+          </div>
+        </div>
+        <p class="hint">Начни с Уровня 1 — так проще.</p>
+        <button class="btn btn-primary" data-go="side">Понятно, играть!</button>
+        <button class="btn btn-ghost" data-go="menu">Назад</button>
+      </div>
+    </section>
+
+    <!-- Выбор стороны -->
+    <section id="screen-side" class="screen">
+      <div class="panel">
+        <p class="step-badge">Шаг 1 из 2</p>
+        <h2>Кем будешь играть?</h2>
+        <p class="hint">Нажми на одну большую кнопку</p>
+        <div class="side-cards">
+          <button class="side-card plants" data-side="plants">
+            <span class="side-emoji">🌻</span>
+            <span class="side-title">Растения</span>
+            <span class="side-desc">Защищай дом от зомби</span>
+            <span class="side-action">Нажми сюда</span>
+          </button>
+          <button class="side-card zombies" data-side="zombies">
+            <span class="side-emoji">🧟</span>
+            <span class="side-title">Зомби</span>
+            <span class="side-desc">Атакуй сад и иди к дому</span>
+            <span class="side-action">Нажми сюда</span>
+          </button>
+        </div>
+        <button class="btn btn-ghost" data-go="menu">Назад</button>
+      </div>
+    </section>
+
+    <!-- Выбор уровня -->
+    <section id="screen-levels" class="screen">
+      <div class="panel">
+        <p class="step-badge">Шаг 2 из 2</p>
+        <h2>Выбери уровень</h2>
+        <p id="side-label" class="side-label"></p>
+        <p class="hint">Если не знаешь — нажми <b>Уровень 1</b></p>
+        <div id="level-list" class="level-list"></div>
+        <button class="btn btn-ghost" data-go="side">Назад</button>
+      </div>
+    </section>
+
+    <!-- Игра -->
+    <section id="screen-game" class="screen">
+      <div class="hud">
+        <button class="btn btn-tiny" id="btn-pause">⏸ Стоп</button>
+        <button class="btn btn-tiny" id="btn-mute" title="Звук">🔊</button>
+        <div class="hud-info">
+          <span id="hud-level">Уровень 1</span>
+          <span id="hud-side">Растения</span>
+        </div>
+        <div class="hud-resource">
+          <span id="resource-icon">☀️</span>
+          <span id="resource-value">50</span>
+        </div>
+        <div class="hud-wave">Волна: <span id="wave-value">1</span>/<span id="wave-max">3</span></div>
+      </div>
+
+      <div class="unit-bar" id="unit-bar"></div>
+      <p class="guide-bar" id="guide-bar">① Выбери растение сверху → ② Кликни по клетке на поле</p>
+
+      <div class="canvas-wrap">
+        <canvas id="game" width="900" height="500"></canvas>
+        <div id="toast" class="toast hidden"></div>
+        <div id="help-overlay" class="help-overlay hidden">
+          <div class="help-box">
+            <h3 id="help-title">Как начать</h3>
+            <button class="btn btn-primary" id="btn-help-ok">Я понял, начать!</button>
+            <button class="btn btn-secondary" id="btn-speak-help">🔊 Прослушать</button>
+            <ol id="help-list"></ol>
+          </div>
+        </div>
+        <div id="pause-overlay" class="help-overlay hidden">
+          <div class="help-box pause-box">
+            <h3>⏸ Игра остановлена</h3>
+            <p>Зомби и растения не двигаются, пока игра на паузе.</p>
+            <button class="btn btn-primary" id="btn-resume">▶ Продолжить</button>
+            <button class="btn btn-secondary" id="btn-pause-sound">🔊 Звук вкл</button>
+            <button class="btn btn-ghost" id="btn-pause-menu">☰ В главное меню</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="game-tip" id="game-tip"></p>
+    </section>
+
+    <!-- Победа / поражение -->
+    <section id="screen-result" class="screen">
+      <div class="panel result-panel">
+        <h2 id="result-title">Победа!</h2>
+        <p id="result-text"></p>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="btn-next">Следующий уровень</button>
+          <button class="btn btn-secondary" id="btn-retry">Ещё раз</button>
+          <button class="btn btn-ghost" data-go="levels">К уровням</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

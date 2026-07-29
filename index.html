@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amal's Games</title>
+  <meta name="description" content="Коллекция игр от Amal — Zombie vs Plants, Snake и Пиксель-Террариум" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #e4e4e7;
+      min-height: 100dvh;
+    }
+    header {
+      text-align: center;
+      padding: 3rem 1rem 1rem;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #6ee7b7, #3b82f6, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      margin-top: .5rem;
+      color: #71717a;
+      font-size: .95rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+    }
+    .card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(99,102,241,.25);
+    }
+    .card-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+    }
+    .card-img.zombie { background: linear-gradient(135deg, #166534, #14532d); }
+    .card-img.snake  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
+    .card-img.terra   { background: linear-gradient(135deg, #78350f, #451a03); }
+    .card-body {
+      padding: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-body h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .card-body p {
+      margin-top: .4rem;
+      font-size: .85rem;
+      color: #a1a1aa;
+      flex: 1;
+    }
+    .play-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: .55rem 1.2rem;
+      border-radius: .5rem;
+      font-weight: 600;
+      font-size: .9rem;
+      text-align: center;
+      color: #fff;
+      transition: opacity .15s;
+    }
+    .play-btn:hover { opacity: .85; }
+    .play-btn.zombie { background: #16a34a; }
+    .play-btn.snake  { background: #6366f1; }
+    .play-btn.terra   { background: #d97706; }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: #52525b;
+      font-size: .8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Amal's Games</h1>
+    <p>Выбери игру и начни играть прямо в браузере</p>
+  </header>
+
+  <div class="grid">
+    <a class="card" href="zombie-vs-plants/">
+      <div class="card-img zombie">&#127793;&#129503;</div>
+      <div class="card-body">
+        <h2>Zombie vs Plants</h2>
+        <p>Защити свой сад от зомби! Расставляй растения и отражай волны атак.</p>
+        <span class="play-btn zombie">Играть</span>
+      </div>
+    </a>
+
+    <a class="card" href="snake-game/">
+      <div class="card-img snake">&#128013;</div>
+      <div class="card-body">
+        <h2>Snake — Arcade Edition</h2>
+        <p>Классическая змейка с 20 уровнями, скинами и щитами. Собирай очки!</p>
+        <span class="play-btn snake">Играть</span>
+      </div>
+    </a>
+
+    <a class="card" href="terraverse/">
+      <div class="card-img terra">&#9935;&#65039;</div>
+      <div class="card-body">
+        <h2>Пиксель-Террариум</h2>
+        <p>2D песочница в стиле Terraria — копай, строй и исследуй пещеры.</p>
+        <span class="play-btn terra">Играть</span>
+      </div>
+    </a>
+  </div>
+
+  <footer>&copy; 2026 Amal's Games</footer>
+</body>
+</html>
