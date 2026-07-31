@@ -810,13 +810,13 @@
     {
       id: "amal",
       name: "Amalmanarx",
-      emoji: "🌈",
+      emoji: "👑",
       role: "Суперсекрет",
-      desc: "Amalmanarx Game — радуга, паутина к стенам и снос карты",
-      ability: "Паутина (E) + уничтожение карты",
+      desc: "Сюрприз суверена — радуга, корона и тайное желание",
+      ability: "Сюрприз Amalmanarx",
       color: "#ff6ad5",
-      hp: 30000,
-      speed: 350,
+      hp: 32000,
+      speed: 360,
       range: 1000,
       reload: 1.2,
       bullets: 1,
@@ -824,7 +824,7 @@
       damage: 99999,
       bulletSpeed: 1,
       bulletLife: 0.1,
-      radius: 32,
+      radius: 34,
       mapNuke: true,
       cloak: true,
       lifesteal: 0.6,
@@ -832,6 +832,8 @@
       rainbow: true,
       webSwing: true,
       wallStick: true,
+      sovereignAura: true,
+      phoenixWish: true,
       unlock: 3,
     },
     {
@@ -1248,6 +1250,8 @@
       web: null,
       wallCling: 0,
       webCd: 0,
+      phoenixUsed: false,
+      auraZap: 0.4,
       invuln: 2.2,
       ai: {
         roamAngle: rand(0, Math.PI * 2),
@@ -1788,6 +1792,78 @@
     }
   }
 
+  function tryPhoenixWish(g, f) {
+    if (!f || !f.def.phoenixWish || f.phoenixUsed) return false;
+    f.phoenixUsed = true;
+    f.hp = f.maxHp;
+    f.alive = true;
+    f.invuln = 2.8;
+    f.poisonT = 0;
+    f.flash = 0.35;
+    g.shake = Math.max(g.shake, 20);
+    for (let i = 0; i < 40; i++) {
+      const a = (i / 40) * Math.PI * 2;
+      const hue = (i / 40) * 360;
+      g.particles.push({
+        x: f.x,
+        y: f.y,
+        vx: Math.cos(a) * rand(120, 320),
+        vy: Math.sin(a) * rand(120, 320),
+        life: rand(0.5, 1.1),
+        color: `hsl(${hue}, 95%, 60%)`,
+        size: rand(4, 10),
+      });
+    }
+    spawnBurst(g, f.x, f.y, "#ffd23f", 32);
+    return true;
+  }
+
+  function updateSovereignAura(g, f, dt) {
+    if (!f.def.sovereignAura || !f.alive) return;
+    f.auraT = (f.auraT || 0) + dt;
+    if (Math.random() < 0.65) {
+      const hue = (f.auraT * 200) % 360;
+      g.particles.push({
+        x: f.x + rand(-f.r * 0.8, f.r * 0.8),
+        y: f.y + rand(-f.r * 0.8, f.r * 0.8),
+        vx: rand(-30, 30),
+        vy: rand(-70, -15),
+        life: rand(0.2, 0.55),
+        color: `hsl(${hue}, 95%, 62%)`,
+        size: rand(2, 6),
+      });
+    }
+    f.auraZap = (f.auraZap || 0) - dt;
+    if (f.auraZap > 0) return;
+    f.auraZap = 0.8;
+    let best = null;
+    let bestD = 340;
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (isFighterInvisible(other)) continue;
+      const d = dist(f, other);
+      if (d < bestD) {
+        bestD = d;
+        best = other;
+      }
+    }
+    if (!best) return;
+    g.particles.push({
+      x: f.x,
+      y: f.y,
+      vx: 0,
+      vy: 0,
+      life: 0.16,
+      color: "#ffd23f",
+      size: 2,
+      laser: { x2: best.x, y2: best.y },
+    });
+    const dmg =
+      480 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    hurt(g, best, dmg, f);
+    spawnBurst(g, best.x, best.y, "#ff6ad5", 10);
+  }
+
   function hurt(g, target, amount, attacker, meta = {}) {
     if (!target.alive || target.invuln > 0) return;
     if (attacker && sameTeam(g, attacker, target)) return;
@@ -1805,6 +1881,7 @@
     if (attacker && attacker.isLocal) g.shake = Math.max(g.shake, 5);
     spawnBurst(g, target.x, target.y, "#ff6b6b", 6);
     if (target.hp <= 0) {
+      if (tryPhoenixWish(g, target)) return;
       target.hp = 0;
       target.alive = false;
       spawnBurst(g, target.x, target.y, target.def.color, 24);
@@ -1812,6 +1889,20 @@
         attacker.kills += 1;
         dropCube(g, target.x, target.y, 1);
         if (attacker.isLocal) addCoins(20);
+        if (attacker.def.sovereignAura) {
+          for (let i = 0; i < 24; i++) {
+            const hue = (i / 24) * 360;
+            g.particles.push({
+              x: target.x,
+              y: target.y,
+              vx: rand(-220, 220),
+              vy: rand(-220, 220),
+              life: rand(0.35, 0.8),
+              color: `hsl(${hue}, 95%, 60%)`,
+              size: rand(3, 8),
+            });
+          }
+        }
       }
       checkEnd(g);
     }
@@ -2062,6 +2153,7 @@
         } else {
           f.hp -= 35 * dt;
           if (f.hp <= 0) {
+            if (tryPhoenixWish(g, f)) continue;
             f.hp = 0;
             f.alive = false;
             spawnBurst(g, f.x, f.y, f.def.color, 24);
@@ -2073,6 +2165,7 @@
       if (f.isBot) updateAI(g, f, dt);
       else applyInputToFighter(g, f, dt);
       resolveWalls(f, g.arena.walls);
+      updateSovereignAura(g, f, dt);
 
       for (const other of g.fighters) {
         if (!other.alive || other === f) continue;
@@ -2464,9 +2557,36 @@
       ctx.fillStyle = f.flash > 0 ? "#fff" : f.def.color;
       ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
       ctx.fill();
+      if (f.def.sovereignAura) {
+        ctx.beginPath();
+        ctx.strokeStyle = `hsla(${(g.time * 110) % 360}, 95%, 65%, 0.7)`;
+        ctx.lineWidth = 4;
+        ctx.arc(f.x, f.y, f.r + 8 + Math.sin(g.time * 4) * 3, 0, Math.PI * 2);
+        ctx.stroke();
+        for (let i = 0; i < 3; i++) {
+          const a = g.time * 2.4 + (i * Math.PI * 2) / 3;
+          const ox = f.x + Math.cos(a) * (f.r + 20);
+          const oy = f.y + Math.sin(a) * (f.r + 20);
+          const hue = (g.time * 140 + i * 120) % 360;
+          ctx.beginPath();
+          ctx.fillStyle = `hsl(${hue}, 95%, 60%)`;
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.shadowBlur = 14;
+          ctx.arc(ox, oy, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        if (!f.phoenixUsed && f.def.phoenixWish) {
+          ctx.font = "900 11px Nunito";
+          ctx.fillStyle = "#ffe082";
+          ctx.fillText("✦", f.x + f.r * 0.75, f.y - f.r * 0.75);
+        }
+      }
       const ring = f.isLocal ? "#ffd23f" : g.teamMode ? (f.team === 0 ? "#ffd23f" : "#1ec8b0") : "rgba(0,0,0,0.35)";
       ctx.strokeStyle = ring;
       ctx.lineWidth = f.isLocal ? 4 : 3;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
       ctx.stroke();
 
       ctx.beginPath();
