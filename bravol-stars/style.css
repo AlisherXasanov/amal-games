@@ -887,6 +887,34 @@ body {
   min-height: 120px;
 }
 
+.team-col.red {
+  border-color: rgba(255, 77, 77, 0.55);
+}
+.team-col.blue {
+  border-color: rgba(76, 201, 240, 0.55);
+}
+.team-col.red h3 {
+  color: #ff6b6b;
+}
+.team-col.blue h3 {
+  color: #4cc9f0;
+}
+.alive-chip.team-red {
+  border-color: rgba(255, 77, 77, 0.7);
+}
+.alive-chip.team-blue {
+  border-color: rgba(76, 201, 240, 0.7);
+}
+.hud-pill.score-pill {
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.55);
+}
+.hud-pill.score-pill strong {
+  font-size: 1.15rem;
+  min-width: 3.2rem;
+  text-align: center;
+}
+
 .team-col.alpha {
   border-color: rgba(255, 210, 63, 0.45);
 }

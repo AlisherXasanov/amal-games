@@ -1,12 +1,25 @@
 (() => {
   const ARENA = 1200;
   const ROOM_PREFIX = "bravol";
-  const BUILD = "v22-fixed";
+  const BUILD = "v23-ball";
 
   const MODES = {
     duel: { id: "duel", label: "1 на 1", max: 2, teamSize: 1 },
     twovtwo: { id: "twovtwo", label: "2 на 2", max: 4, teamSize: 2 },
     threevthree: { id: "threevthree", label: "3 на 3", max: 6, teamSize: 3 },
+    brawlball: {
+      id: "brawlball",
+      label: "Brawl Ball",
+      max: 6,
+      teamSize: 3,
+      ballMode: true,
+      scoreLimit: 2,
+    },
+  };
+
+  const TEAM_NAMES = {
+    default: ["Альфа", "Браво"],
+    ball: ["Красные", "Синие"],
   };
 
   const STARTER_IDS = ["blaze", "nox", "tanko", "bolt", "hexa", "spike"];
@@ -1412,7 +1425,65 @@
         open: false,
       });
     }
-    return { walls, bushes, boxes };
+    return { walls, bushes, boxes, goals: null };
+  }
+
+  function makeBallArena(rng = Math.random) {
+    const mid = ARENA / 2;
+    const gh = 150;
+    const walls = [
+      { x: 0, y: 0, w: 48, h: mid - gh },
+      { x: 0, y: mid + gh, w: 48, h: ARENA - (mid + gh) },
+      { x: ARENA - 48, y: 0, w: 48, h: mid - gh },
+      { x: ARENA - 48, y: mid + gh, w: 48, h: ARENA - (mid + gh) },
+      { x: 280, y: 200, w: 100, h: 36 },
+      { x: 820, y: 200, w: 100, h: 36 },
+      { x: 280, y: 960, w: 100, h: 36 },
+      { x: 820, y: 960, w: 100, h: 36 },
+      { x: 520, y: 420, w: 160, h: 36 },
+      { x: 520, y: 744, w: 160, h: 36 },
+      { x: 360, y: 560, w: 36, h: 100 },
+      { x: 804, y: 560, w: 36, h: 100 },
+    ];
+    const bushes = [];
+    for (let i = 0; i < 8; i++) {
+      bushes.push({
+        x: 160 + rng() * (ARENA - 320),
+        y: 160 + rng() * (ARENA - 320),
+        r: 34 + rng() * 14,
+      });
+    }
+    return {
+      walls,
+      bushes,
+      boxes: [],
+      goals: {
+        half: gh,
+        left: { x: 0, y: mid - gh, w: 56, h: gh * 2, scoresFor: 1 },
+        right: { x: ARENA - 56, y: mid - gh, w: 56, h: gh * 2, scoresFor: 0 },
+      },
+    };
+  }
+
+  function makeBallEntity() {
+    return {
+      x: ARENA / 2,
+      y: ARENA / 2,
+      vx: 0,
+      vy: 0,
+      r: 18,
+      carrierId: null,
+      cooldown: 0,
+    };
+  }
+
+  function isBallMode(g) {
+    return !!(g && g.ballMode);
+  }
+
+  function teamLabel(g, team) {
+    const names = isBallMode(g) ? TEAM_NAMES.ball : TEAM_NAMES.default;
+    return names[team] || names[0];
   }
 
   function spawnPoints() {
@@ -1467,6 +1538,7 @@
       relayT: 0,
       relay: null,
       rewriteT: 0,
+      respawnT: 0,
       auraZap: 0.4,
       invuln: 2.2,
       ai: {
@@ -1511,9 +1583,54 @@
     return baseGame(arena, fighters, { mode: "solo", teamMode: false });
   }
 
+  function createSoloBallGame(brawlerId) {
+    const mode = MODES.brawlball;
+    const arena = makeBallArena();
+    const byTeam = {
+      0: spawnPoints().filter((p) => p.team === 0),
+      1: spawnPoints().filter((p) => p.team === 1),
+    };
+    const fighters = [];
+    const used = new Set();
+    const botPool = BRAWLERS.filter((b) => b.unlock < 2);
+
+    const def = brawlerById(brawlerId);
+    used.add(def.id);
+    fighters.push(
+      createFighter(def, localDisplayName(), byTeam[0][0].x, byTeam[0][0].y, {
+        isLocal: true,
+        team: 0,
+        netId: "local",
+      })
+    );
+
+    for (let team = 0; team <= 1; team++) {
+      while (fighters.filter((f) => f.team === team).length < mode.teamSize) {
+        const idx = fighters.filter((f) => f.team === team).length;
+        const sp = byTeam[team][idx] || { x: 200 + team * 800, y: ARENA / 2 };
+        let botDef = pick(botPool);
+        let tries = 0;
+        while (used.has(botDef.id) && tries++ < 12) botDef = pick(botPool);
+        used.add(botDef.id);
+        fighters.push(
+          createFighter(botDef, pick(NAMES), sp.x, sp.y, {
+            isBot: true,
+            team,
+            netId: `bot-${team}-${idx}`,
+          })
+        );
+      }
+    }
+    return baseGame(arena, fighters, {
+      mode: "brawlball",
+      teamMode: true,
+      ballMode: true,
+    });
+  }
+
   function createOnlineGame(players, modeId, fillBots) {
     const mode = MODES[modeId] || MODES.duel;
-    const arena = makeArena();
+    const arena = mode.ballMode ? makeBallArena() : makeArena();
     const byTeam = { 0: spawnPoints().filter((p) => p.team === 0), 1: spawnPoints().filter((p) => p.team === 1) };
     const ti = { 0: 0, 1: 0 };
     const fighters = [];
@@ -1537,7 +1654,7 @@
       for (let team = 0; team <= 1; team++) {
         while (fighters.filter((f) => f.team === team).length < mode.teamSize) {
           const sp = byTeam[team][ti[team]++] || { x: 200 + team * 800, y: ARENA / 2 };
-          const def = pick(BRAWLERS);
+          const def = pick(BRAWLERS.filter((b) => b.unlock < 2));
           fighters.push(
             createFighter(def, `Бот ${pick(NAMES)}`, sp.x, sp.y, {
               isBot: true,
@@ -1549,7 +1666,6 @@
       }
     }
 
-    // Fix local flag: host's own player slot
     if (net) {
       const selfId = net.localPlayerId;
       for (const f of fighters) {
@@ -1557,11 +1673,16 @@
       }
     }
 
-    return baseGame(arena, fighters, { mode: modeId, teamMode: true });
+    return baseGame(arena, fighters, {
+      mode: modeId,
+      teamMode: true,
+      ballMode: !!mode.ballMode,
+    });
   }
 
   function baseGame(arena, fighters, meta) {
     const local = fighters.find((f) => f.isLocal) || fighters[0];
+    const ballMode = !!meta.ballMode;
     return {
       arena,
       fighters,
@@ -1575,6 +1696,11 @@
       winTeam: null,
       mode: meta.mode,
       teamMode: meta.teamMode,
+      ballMode,
+      ball: ballMode ? makeBallEntity() : null,
+      score: [0, 0],
+      scoreLimit: (MODES[meta.mode] && MODES[meta.mode].scoreLimit) || 2,
+      roundFreeze: 0,
       keys: Object.create(null),
       mouse: { down: false, worldX: local.x, worldY: local.y },
       touchMove: { active: false, dx: 0, dy: 0 },
@@ -1594,6 +1720,235 @@
 
   function sameTeam(g, a, b) {
     return !!(g && g.teamMode && a && b && a.team === b.team);
+  }
+
+  function dropBall(g, carrier) {
+    if (!g.ball) return;
+    if (carrier && g.ball.carrierId === carrier.id) {
+      g.ball.carrierId = null;
+      g.ball.x = carrier.x + Math.cos(carrier.angle) * (carrier.r + 14);
+      g.ball.y = carrier.y + Math.sin(carrier.angle) * (carrier.r + 14);
+      g.ball.vx = Math.cos(carrier.angle) * 120;
+      g.ball.vy = Math.sin(carrier.angle) * 120;
+      g.ball.cooldown = 0.35;
+    }
+  }
+
+  function kickBall(g, f) {
+    if (!g.ball || g.ball.carrierId !== f.id) return;
+    const power = 920;
+    g.ball.carrierId = null;
+    g.ball.x = f.x + Math.cos(f.angle) * (f.r + 20);
+    g.ball.y = f.y + Math.sin(f.angle) * (f.r + 20);
+    g.ball.vx = Math.cos(f.angle) * power;
+    g.ball.vy = Math.sin(f.angle) * power;
+    g.ball.cooldown = 0.25;
+    spawnBurst(g, g.ball.x, g.ball.y, "#fff8e7", 10);
+    if (f.isLocal) g.shake = Math.max(g.shake, 6);
+  }
+
+  function ballCarrier(g) {
+    if (!g.ball || !g.ball.carrierId) return null;
+    return g.fighters.find((f) => f.id === g.ball.carrierId) || null;
+  }
+
+  function resolveBallWalls(g, ball) {
+    for (const w of g.arena.walls) {
+      const nearestX = clamp(ball.x, w.x, w.x + w.w);
+      const nearestY = clamp(ball.y, w.y, w.y + w.h);
+      const dx = ball.x - nearestX;
+      const dy = ball.y - nearestY;
+      const d = Math.hypot(dx, dy);
+      if (d < ball.r && d > 0.001) {
+        const nx = dx / d;
+        const ny = dy / d;
+        const push = ball.r - d;
+        ball.x += nx * push;
+        ball.y += ny * push;
+        const dot = ball.vx * nx + ball.vy * ny;
+        if (dot < 0) {
+          ball.vx -= 2 * dot * nx;
+          ball.vy -= 2 * dot * ny;
+          ball.vx *= 0.85;
+          ball.vy *= 0.85;
+        }
+      } else if (d === 0) {
+        ball.x = w.x - ball.r - 1;
+        ball.vx = -Math.abs(ball.vx) * 0.85;
+      }
+    }
+    if (ball.x < ball.r) {
+      ball.x = ball.r;
+      ball.vx = Math.abs(ball.vx) * 0.85;
+    }
+    if (ball.x > ARENA - ball.r) {
+      ball.x = ARENA - ball.r;
+      ball.vx = -Math.abs(ball.vx) * 0.85;
+    }
+    if (ball.y < ball.r) {
+      ball.y = ball.r;
+      ball.vy = Math.abs(ball.vy) * 0.85;
+    }
+    if (ball.y > ARENA - ball.r) {
+      ball.y = ARENA - ball.r;
+      ball.vy = -Math.abs(ball.vy) * 0.85;
+    }
+  }
+
+  function ballInGoal(g, ball) {
+    const goals = g.arena.goals;
+    if (!goals) return null;
+    for (const side of ["left", "right"]) {
+      const goal = goals[side];
+      if (
+        ball.x > goal.x &&
+        ball.x < goal.x + goal.w &&
+        ball.y > goal.y &&
+        ball.y < goal.y + goal.h
+      ) {
+        return goal.scoresFor;
+      }
+    }
+    return null;
+  }
+
+  function resetBallRound(g) {
+    const byTeam = {
+      0: spawnPoints().filter((p) => p.team === 0),
+      1: spawnPoints().filter((p) => p.team === 1),
+    };
+    const ti = { 0: 0, 1: 0 };
+    for (const f of g.fighters) {
+      const sp = byTeam[f.team][ti[f.team]++] || { x: ARENA / 2, y: ARENA / 2 };
+      f.x = sp.x;
+      f.y = sp.y;
+      f.hp = f.maxHp;
+      f.alive = true;
+      f.respawnT = 0;
+      f.invuln = 1.2;
+      f.poisonT = 0;
+      f.slowT = 0;
+      f.web = null;
+      f.reload = 0.4;
+      f.flash = 0.15;
+    }
+    g.bullets = [];
+    g.mines = [];
+    g.ball = makeBallEntity();
+    g.roundFreeze = 1.6;
+    g.shake = Math.max(g.shake, 14);
+  }
+
+  function scoreGoal(g, team) {
+    if (g.ended || (g.roundFreeze || 0) > 0) return;
+    g.score[team] = (g.score[team] || 0) + 1;
+    g.shake = Math.max(g.shake, 28);
+    for (let i = 0; i < 36; i++) {
+      const a = (i / 36) * Math.PI * 2;
+      g.particles.push({
+        x: g.ball.x,
+        y: g.ball.y,
+        vx: Math.cos(a) * rand(120, 360),
+        vy: Math.sin(a) * rand(120, 360),
+        life: rand(0.4, 0.9),
+        color: team === 0 ? "#ff4d4d" : "#4cc9f0",
+        size: rand(4, 10),
+      });
+    }
+    if (g.score[team] >= (g.scoreLimit || 2)) {
+      g.ended = true;
+      g.winTeam = team;
+      const local = g.fighters.find((f) => f.isLocal);
+      if (local && local.team === g.winTeam) {
+        wins += 1;
+        store.set("bravol-wins", wins);
+        addCoins(100 + (local.kills || 0) * 12);
+      } else if (local) {
+        addCoins(25 + (local.kills || 0) * 8);
+      }
+      return;
+    }
+    resetBallRound(g);
+  }
+
+  function respawnBallFighter(g, f) {
+    const spots = spawnPoints().filter((p) => p.team === f.team);
+    const sp = pick(spots) || { x: 200 + f.team * 800, y: ARENA / 2 };
+    f.x = sp.x;
+    f.y = sp.y;
+    f.hp = f.maxHp;
+    f.alive = true;
+    f.respawnT = 0;
+    f.invuln = 1.5;
+    f.poisonT = 0;
+    f.slowT = 0;
+    f.web = null;
+    f.reload = 0.3;
+    spawnBurst(g, f.x, f.y, f.def.color, 12);
+  }
+
+  function updateBall(g, dt) {
+    if (!isBallMode(g) || !g.ball) return;
+    if ((g.roundFreeze || 0) > 0) {
+      g.roundFreeze -= dt;
+      return;
+    }
+    const ball = g.ball;
+    ball.cooldown = Math.max(0, (ball.cooldown || 0) - dt);
+
+    const carrier = ballCarrier(g);
+    if (carrier) {
+      if (!carrier.alive) {
+        dropBall(g, carrier);
+      } else {
+        ball.x = carrier.x + Math.cos(carrier.angle) * (carrier.r + 16);
+        ball.y = carrier.y + Math.sin(carrier.angle) * (carrier.r + 16);
+        ball.vx = 0;
+        ball.vy = 0;
+        const scoredHold = ballInGoal(g, ball);
+        if (scoredHold != null) scoreGoal(g, scoredHold);
+        return;
+      }
+    }
+
+    ball.x += ball.vx * dt;
+    ball.y += ball.vy * dt;
+    ball.vx *= Math.pow(0.985, dt * 60);
+    ball.vy *= Math.pow(0.985, dt * 60);
+    if (Math.hypot(ball.vx, ball.vy) < 18) {
+      ball.vx = 0;
+      ball.vy = 0;
+    }
+    resolveBallWalls(g, ball);
+
+    const scored = ballInGoal(g, ball);
+    if (scored != null && Math.hypot(ball.vx, ball.vy) < 700) {
+      // allow fast shots into goal
+    }
+    if (scored != null) {
+      scoreGoal(g, scored);
+      return;
+    }
+
+    if (ball.cooldown > 0) return;
+    const speed = Math.hypot(ball.vx, ball.vy);
+    if (speed > 420) return;
+    let best = null;
+    let bestD = 34;
+    for (const f of g.fighters) {
+      if (!f.alive) continue;
+      const d = dist(f, ball);
+      if (d < f.r + ball.r + 6 && d < bestD) {
+        bestD = d;
+        best = f;
+      }
+    }
+    if (best) {
+      ball.carrierId = best.id;
+      ball.vx = 0;
+      ball.vy = 0;
+      spawnBurst(g, ball.x, ball.y, "#ffe082", 8);
+    }
   }
 
   function rayHitWalls(g, x0, y0, dx, dy, maxDist) {
@@ -1709,6 +2064,11 @@
 
   function shoot(g, f) {
     if (!f.alive || f.reload > 0) return;
+    if (isBallMode(g) && g.ball && g.ball.carrierId === f.id) {
+      kickBall(g, f);
+      f.reload = 0.4;
+      return;
+    }
     const d = effectiveDef(f);
     const mix = useAbilityMix(f);
     if (f.isLocal && CHEATS.infiniteAmmo) f.reload = 0.02;
@@ -2679,10 +3039,14 @@
       target.hp = 0;
       target.alive = false;
       spawnBurst(g, target.x, target.y, target.def.color, 24);
+      if (isBallMode(g)) {
+        dropBall(g, target);
+        target.respawnT = 3.2;
+      }
       if (attacker && attacker.alive) {
         attacker.kills += 1;
-        dropCube(g, target.x, target.y, 1);
-        if (attacker.isLocal) addCoins(20);
+        if (!isBallMode(g)) dropCube(g, target.x, target.y, 1);
+        if (attacker.isLocal) addCoins(isBallMode(g) ? 8 : 20);
         if (attacker.def.sovereignAura) {
           for (let i = 0; i < 24; i++) {
             const hue = (i / 24) * 360;
@@ -2698,7 +3062,7 @@
           }
         }
       }
-      checkEnd(g);
+      if (!isBallMode(g)) checkEnd(g);
     }
   }
 
@@ -2715,6 +3079,7 @@
 
   function checkEnd(g) {
     if (g.ended) return;
+    if (isBallMode(g)) return;
     if (g.teamMode) {
       const aliveTeams = new Set(g.fighters.filter((f) => f.alive).map((f) => f.team));
       if (aliveTeams.size <= 1) {
@@ -2778,6 +3143,7 @@
   function updateAI(g, f, dt) {
     updateWebMovement(g, f, dt);
     if (f.web && f.web.pulling) return;
+    if ((g.roundFreeze || 0) > 0) return;
 
     const ai = f.ai;
     ai.changeT -= dt;
@@ -2785,6 +3151,47 @@
     let ty = f.y + Math.sin(ai.roamAngle) * 100;
     let target = null;
     let bestD = Infinity;
+
+    if (isBallMode(g) && g.ball) {
+      const ball = g.ball;
+      const carrier = ballCarrier(g);
+      const enemyGoalX = f.team === 0 ? ARENA - 80 : 80;
+      const enemyGoalY = ARENA / 2;
+      if (carrier && carrier.id === f.id) {
+        tx = enemyGoalX;
+        ty = enemyGoalY;
+        f.angle = Math.atan2(ty - f.y, tx - f.x);
+        f.input.aimX = enemyGoalX;
+        f.input.aimY = enemyGoalY;
+        if (Math.abs(f.x - enemyGoalX) < 280 && Math.random() < 0.04) shoot(g, f);
+      } else if (!carrier) {
+        tx = ball.x;
+        ty = ball.y;
+        f.angle = Math.atan2(ty - f.y, tx - f.x);
+      } else if (carrier.team === f.team) {
+        tx = enemyGoalX * 0.55 + carrier.x * 0.45;
+        ty = enemyGoalY * 0.35 + carrier.y * 0.65;
+      } else {
+        tx = carrier.x;
+        ty = carrier.y;
+        f.angle = Math.atan2(ty - f.y, tx - f.x);
+        f.input.aimX = carrier.x;
+        f.input.aimY = carrier.y;
+        if (dist(f, carrier) < f.def.range * 0.9 && Math.random() < 0.03 * ai.aggression) {
+          shoot(g, f);
+        }
+      }
+      const dx = tx - f.x;
+      const dy = ty - f.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const slow = f.slowT > 0 ? 0.45 : 1;
+      const ballMul = g.ball.carrierId === f.id ? 0.82 : 1;
+      const spd = f.def.speed * (0.85 + f.power * 0.04) * slow * ballMul;
+      f.x += (dx / len) * spd * dt;
+      f.y += (dy / len) * spd * dt;
+      if (!carrier || carrier.id !== f.id) f.angle = Math.atan2(dy, dx);
+      return;
+    }
 
     for (const other of g.fighters) {
       if (!other.alive || other === f || sameTeam(g, f, other)) continue;
@@ -2870,7 +3277,9 @@
       const flyMul = f.isLocal && CHEATS.fly ? 3.2 : 1;
       const speedMul = f.isLocal && CHEATS.superSpeed ? 2.4 : 1;
       const clingMul = f.wallCling > 0 && effectiveDef(f).wallStick ? 1.45 : 1;
-      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul * clingMul;
+      const ballMul = isBallMode(g) && g.ball && g.ball.carrierId === f.id ? 0.82 : 1;
+      const freezeMul = (g.roundFreeze || 0) > 0 ? 0 : 1;
+      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul * clingMul * ballMul * freezeMul;
       f.x += (mx / len) * spd * dt;
       f.y += (my / len) * spd * dt;
     }
@@ -2960,7 +3369,13 @@
     }
 
     for (const f of g.fighters) {
-      if (!f.alive) continue;
+      if (!f.alive) {
+        if (isBallMode(g) && (f.respawnT || 0) > 0) {
+          f.respawnT -= dt;
+          if (f.respawnT <= 0) respawnBallFighter(g, f);
+        }
+        continue;
+      }
       f.reload = Math.max(0, f.reload - dt);
       f.flash = Math.max(0, f.flash - dt);
       f.invuln = Math.max(0, f.invuln - dt);
@@ -2993,7 +3408,12 @@
             f.hp = 0;
             f.alive = false;
             spawnBurst(g, f.x, f.y, f.def.color, 24);
-            checkEnd(g);
+            if (isBallMode(g)) {
+              dropBall(g, f);
+              f.respawnT = 3.2;
+            } else {
+              checkEnd(g);
+            }
             continue;
           }
         }
@@ -3144,6 +3564,8 @@
     }
     g.particles = g.particles.filter((p) => p.life > 0);
 
+    updateBall(g, dt);
+
     const local = g.fighters.find((f) => f.isLocal);
     const camTarget = local && local.alive ? local : g.fighters.find((f) => f.alive);
     if (camTarget) {
@@ -3172,6 +3594,17 @@
       ended: g.ended,
       place: g.place,
       winTeam: g.winTeam,
+      score: g.score ? [...g.score] : [0, 0],
+      roundFreeze: g.roundFreeze || 0,
+      ball: g.ball
+        ? [
+            Math.round(g.ball.x),
+            Math.round(g.ball.y),
+            Math.round(g.ball.vx),
+            Math.round(g.ball.vy),
+            g.ball.carrierId || "",
+          ]
+        : null,
       F: g.fighters.map((f) => [
         f.id,
         Math.round(f.x),
@@ -3204,6 +3637,15 @@
     g.ended = s.ended;
     g.place = s.place;
     g.winTeam = s.winTeam;
+    if (s.score) g.score = s.score;
+    if (typeof s.roundFreeze === "number") g.roundFreeze = s.roundFreeze;
+    if (s.ball && g.ball) {
+      g.ball.x = s.ball[0];
+      g.ball.y = s.ball[1];
+      g.ball.vx = s.ball[2];
+      g.ball.vy = s.ball[3];
+      g.ball.carrierId = s.ball[4] || null;
+    }
     const byId = new Map(g.fighters.map((f) => [f.id, f]));
     for (const row of s.F) {
       let f = byId.get(row[0]);
@@ -3264,6 +3706,73 @@
     ctx.closePath();
   }
 
+  function drawGuideArrow(ctx, fromX, fromY, toX, toY, color, label) {
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    const distLen = Math.hypot(dx, dy) || 1;
+    if (distLen < 70) return;
+    const ang = Math.atan2(dy, dx);
+    const reach = clamp(48 + distLen * 0.04, 48, 90);
+    const ax = fromX + Math.cos(ang) * reach;
+    const ay = fromY + Math.sin(ang) * reach;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.35;
+    ctx.setLineDash([8, 8]);
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(fromX + Math.cos(ang) * 28, fromY + Math.sin(ang) * 28);
+    ctx.lineTo(toX, toY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 0.95;
+    ctx.translate(ax, ay);
+    ctx.rotate(ang);
+    ctx.beginPath();
+    ctx.moveTo(22, 0);
+    ctx.lineTo(-12, 14);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(-12, -14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.35)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    if (label) {
+      ctx.rotate(-ang);
+      ctx.font = "900 12px Nunito";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = "rgba(0,0,0,0.55)";
+      ctx.strokeText(label, 0, -18);
+      ctx.fillStyle = color;
+      ctx.fillText(label, 0, -18);
+    }
+    ctx.restore();
+  }
+
+  function drawBallGuides(ctx, g, local) {
+    if (!isBallMode(g) || !g.ball || !local || !local.alive || !local.isLocal) return;
+    const ball = g.ball;
+    const carrier = ballCarrier(g);
+    const enemyGoal = {
+      x: local.team === 0 ? ARENA - 40 : 40,
+      y: ARENA / 2,
+    };
+    if (carrier && carrier.id === local.id) {
+      drawGuideArrow(ctx, local.x, local.y, enemyGoal.x, enemyGoal.y, "#ffe082", "ВОРОТА");
+    } else if (carrier) {
+      const col = carrier.team === local.team ? "#7dffb0" : "#ff6b6b";
+      const label = carrier.team === local.team ? "МЯЧ (свой)" : "МЯЧ (враг)";
+      drawGuideArrow(ctx, local.x, local.y, carrier.x, carrier.y, col, label);
+    } else {
+      drawGuideArrow(ctx, local.x, local.y, ball.x, ball.y, "#ffd23f", "МЯЧ");
+    }
+  }
+
   function draw(g, canvas, ctx) {
     const w = canvas.width;
     const h = canvas.height;
@@ -3304,6 +3813,27 @@
     ctx.strokeStyle = "#ffd23f";
     ctx.lineWidth = 8;
     ctx.strokeRect(4, 4, ARENA - 8, ARENA - 8);
+
+    if (g.arena.goals) {
+      const gl = g.arena.goals.left;
+      const gr = g.arena.goals.right;
+      ctx.fillStyle = "rgba(76, 201, 240, 0.28)";
+      ctx.fillRect(gl.x, gl.y, gl.w, gl.h);
+      ctx.strokeStyle = "#4cc9f0";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(gl.x + 2, gl.y + 2, gl.w - 4, gl.h - 4);
+      ctx.fillStyle = "rgba(255, 77, 77, 0.28)";
+      ctx.fillRect(gr.x, gr.y, gr.w, gr.h);
+      ctx.strokeStyle = "#ff4d4d";
+      ctx.strokeRect(gr.x + 2, gr.y + 2, gr.w - 4, gr.h - 4);
+      ctx.font = "900 22px Nunito";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#4cc9f0";
+      ctx.fillText("СИНИЕ", 28, ARENA / 2);
+      ctx.fillStyle = "#ff4d4d";
+      ctx.fillText("КРАСНЫЕ", ARENA - 28, ARENA / 2);
+    }
 
     for (const wll of g.arena.walls) {
       ctx.fillStyle = "#3d2c1e";
@@ -3357,6 +3887,24 @@
       ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
+    }
+
+    if (g.ball) {
+      const ball = g.ball;
+      ctx.beginPath();
+      ctx.fillStyle = "#fff8e7";
+      ctx.shadowColor = "#ffd23f";
+      ctx.shadowBlur = 18;
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "#c47a00";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(196,122,0,0.55)";
+      ctx.arc(ball.x, ball.y, ball.r * 0.55, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
     for (const f of g.fighters) {
@@ -3579,6 +4127,8 @@
       }
       ctx.globalAlpha = 1;
     }
+
+    drawBallGuides(ctx, g, local);
 
     for (const bush of g.arena.bushes) {
       ctx.beginPath();
@@ -3926,6 +4476,7 @@
           </div>
           <div class="menu-actions">
             <button class="btn" id="btn-solo" type="button">▶ Соло vs боты</button>
+            <button class="btn secondary" id="btn-ball" type="button">⚽ Brawl Ball</button>
             <button class="btn secondary" id="btn-online" type="button">Онлайн-комната</button>
             <button class="btn ghost" id="btn-chest" type="button">🎁 Сундук (${CHEST_COST}✦)</button>
             <button class="btn ghost" id="btn-howto" type="button">Как играть</button>
@@ -3970,6 +4521,11 @@
       nickname = sanitizeName(nick.value);
       store.set("bravol-nick", nickname);
       startSoloMatch();
+    });
+    app.querySelector("#btn-ball").addEventListener("click", () => {
+      nickname = sanitizeName(nick.value);
+      store.set("bravol-nick", nickname);
+      startSoloBallMatch();
     });
     app.querySelector("#btn-online").addEventListener("click", () => {
       nickname = sanitizeName(nick.value);
@@ -4097,6 +4653,8 @@
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>
             <li><b>Онлайн</b>: создай комнату, скинь код друзьям (1v1 / 2v2 / 3v3)</li>
+            <li><b>Brawl Ball</b> — 3 на 3, Красные vs синие, забей <b>2 гола</b>. Стрелки показывают мяч и ворота</li>
+            <li><b>Мяч</b>: подойди чтобы взять, <b>ЛКМ</b> — удар/пас. После гола раунд сбрасывается</li>
             <li>В лобби выбери сторону и открытого бойца, нажми «Готов»</li>
             <li>Своих не атакуешь — побеждает команда, которая осталась</li>
           </ol>
@@ -4210,6 +4768,9 @@
     const mode = MODES[lobby.mode] || MODES.duel;
     const isHost = net && net.isHost;
     const me = lobby.players.find((p) => net && p.id === net.localPlayerId);
+    const ball = !!mode.ballMode;
+    const t0 = ball ? "Красные" : "Альфа (жёлтые)";
+    const t1 = ball ? "Синие" : "Браво (бирюза)";
 
     app.innerHTML = `
       <section class="screen active">
@@ -4217,17 +4778,17 @@
         <div class="online-panel">
           <h2>Комната</h2>
           <div class="room-code" id="room-code">${lobby.code}</div>
-          <p class="room-hint">${mode.label} · скинь код друзьям
+          <p class="room-hint">${mode.label}${ball ? " · до 2 голов · 3 на 3" : ""} · скинь код друзьям
             <button type="button" class="btn ghost" id="btn-copy" style="padding:6px 10px;font-size:.75rem;margin-left:8px">Копировать</button>
             <span class="copy-ok" id="copy-ok"></span>
           </p>
           <div class="teams">
-            <div class="team-col alpha">
-              <h3>Альфа (жёлтые)</h3>
+            <div class="team-col ${ball ? "red" : "alpha"}">
+              <h3>${t0}</h3>
               ${teamSlots(0, mode.teamSize)}
             </div>
-            <div class="team-col bravo">
-              <h3>Браво (бирюза)</h3>
+            <div class="team-col ${ball ? "blue" : "bravo"}">
+              <h3>${t1}</h3>
               ${teamSlots(1, mode.teamSize)}
             </div>
           </div>
@@ -4245,8 +4806,8 @@
           </div>
           <p class="status-line" id="lobby-status"></p>
           <div class="menu-actions">
-            <button class="btn ghost" id="btn-team0" type="button">В Альфу</button>
-            <button class="btn ghost" id="btn-team1" type="button">В Браво</button>
+            <button class="btn ghost" id="btn-team0" type="button">${ball ? "В Красные" : "В Альфу"}</button>
+            <button class="btn ghost" id="btn-team1" type="button">${ball ? "В Синие" : "В Браво"}</button>
             <button class="btn secondary" id="btn-ready" type="button">${me && me.ready ? "Не готов" : "Готов"}</button>
             ${
               isHost
@@ -4386,6 +4947,17 @@
     mountMatch(game, false);
   }
 
+  function startSoloBallMatch() {
+    destroyNet();
+    cancelAnimationFrame(raf);
+    if (inputCleanup) {
+      inputCleanup();
+      inputCleanup = null;
+    }
+    game = createSoloBallGame(selectedId);
+    mountMatch(game, false);
+  }
+
   function updateHud(g) {
     const player = g.fighters.find((f) => f.isLocal);
     const alive = g.fighters.filter((f) => f.alive).length;
@@ -4395,6 +4967,7 @@
     const killsEl = document.getElementById("stat-kills");
     const timeEl = document.getElementById("stat-time");
     const list = document.getElementById("alive-list");
+    const scoreEl = document.getElementById("stat-score");
     if (!player || !hpEl) return;
 
     const ratio = player.alive ? player.hp / player.maxHp : 0;
@@ -4409,18 +4982,30 @@
       const icons = abilitiesForDef(effectiveDef(player) || player.def);
       hudAbilities.innerHTML = icons.map((a) => `<span class="ability-icon" title="${a.label}">${a.icon}</span>`).join("");
     }
-    aliveEl.textContent = String(alive);
-    killsEl.textContent = String(player.kills);
+    if (aliveEl) aliveEl.textContent = String(alive);
+    if (killsEl) killsEl.textContent = String(player.kills);
     const t = Math.floor(g.time);
-    timeEl.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+    if (timeEl) timeEl.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+    if (scoreEl && isBallMode(g)) {
+      scoreEl.textContent = `${g.score[0] || 0} : ${g.score[1] || 0}`;
+    }
 
     list.innerHTML = g.fighters
       .slice()
       .sort((a, b) => Number(b.alive) - Number(a.alive) || b.kills - a.kills)
       .map((f) => {
-        const teamCls = g.teamMode ? (f.team === 0 ? "team-a" : "team-b") : "";
+        const teamCls = g.teamMode
+          ? isBallMode(g)
+            ? f.team === 0
+              ? "team-red"
+              : "team-blue"
+            : f.team === 0
+              ? "team-a"
+              : "team-b"
+          : "";
         const rainbow = (f.isLocal && isOwnerNow()) || f.def.rainbow ? "rainbow-text" : "";
-        return `<div class="alive-chip ${f.isLocal ? "you" : ""} ${teamCls} ${f.alive ? "" : "dead"} ${rainbow}">${f.def.emoji} ${f.name}${f.kills ? ` · ${f.kills}` : ""}</div>`;
+        const ballMark = isBallMode(g) && g.ball && g.ball.carrierId === f.id ? " ⚽" : "";
+        return `<div class="alive-chip ${f.isLocal ? "you" : ""} ${teamCls} ${f.alive ? "" : "dead"} ${rainbow}">${f.def.emoji} ${f.name}${ballMark}${f.kills ? ` · ${f.kills}` : ""}</div>`;
       })
       .join("");
   }
@@ -4432,12 +5017,20 @@
     if (!overlay) return;
     const player = g.fighters.find((f) => f.isLocal);
     let win = false;
-    if (g.teamMode) {
+    if (isBallMode(g)) {
+      win = player && player.team === g.winTeam;
+      title.textContent = win ? "ГОЛ! ПОБЕДА!" : "ПОРАЖЕНИЕ";
+      const s0 = g.score[0] || 0;
+      const s1 = g.score[1] || 0;
+      desc.textContent = win
+        ? `${teamLabel(g, g.winTeam)} победили ${s0}:${s1}! Убийства: ${player ? player.kills : 0} · ✦ ${coins}`
+        : `${teamLabel(g, g.winTeam)} выиграли ${s0}:${s1}. Убийства: ${player ? player.kills : 0} · ✦ ${coins}`;
+    } else if (g.teamMode) {
       win = player && player.team === g.winTeam;
       title.textContent = win ? "ПОБЕДА КОМАНДЫ!" : "ПОРАЖЕНИЕ";
       desc.textContent = win
-        ? `Команда ${g.winTeam === 0 ? "Альфа" : "Браво"} победила! Убийства: ${player ? player.kills : 0} · ✦ ${coins}`
-        : `Победили ${g.winTeam === 0 ? "Альфа" : "Браво"}. Убийства: ${player ? player.kills : 0} · ✦ ${coins}`;
+        ? `Команда ${teamLabel(g, g.winTeam)} победила! Убийства: ${player ? player.kills : 0} · ✦ ${coins}`
+        : `Победили ${teamLabel(g, g.winTeam)}. Убийства: ${player ? player.kills : 0} · ✦ ${coins}`;
     } else {
       win = g.place === 1;
       title.textContent = win ? "ПОБЕДА!" : "ПОРАЖЕНИЕ";
@@ -4450,15 +5043,23 @@
   }
 
   function mountMatch(g, online) {
+    const ballHud = isBallMode(g)
+      ? `<div class="hud-pill score-pill"><span>Красные</span><strong id="stat-score">0 : 0</strong><span>Синие</span></div>`
+      : `<div class="hud-pill"><span>Живы</span><strong id="stat-alive">0</strong></div>
+              <div class="hud-pill"><span>Убийства</span><strong id="stat-kills">0</strong></div>`;
     app.innerHTML = `
       <div id="game-wrap">
         <canvas id="game-canvas"></canvas>
         <div class="hud">
           <div class="hud-top">
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <div class="hud-pill"><span>Живы</span><strong id="stat-alive">0</strong></div>
-              <div class="hud-pill"><span>Убийства</span><strong id="stat-kills">0</strong></div>
+              ${ballHud}
               <div class="hud-pill"><span>Время</span><strong id="stat-time">0:00</strong></div>
+              ${
+                !isBallMode(g)
+                  ? ""
+                  : `<div class="hud-pill"><span>Убийства</span><strong id="stat-kills">0</strong></div>`
+              }
               ${
                 isOwnerNow()
                   ? `<button class="hud-pill cheat-toggle" id="btn-cheats" type="button" title="Читы (~\`)">Читы</button>`
