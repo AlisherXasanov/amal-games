@@ -1,7 +1,7 @@
 (() => {
   const ARENA = 1200;
   const ROOM_PREFIX = "bravol";
-  const BUILD = "v21-link6";
+  const BUILD = "v22-fixed";
 
   const MODES = {
     duel: { id: "duel", label: "1 на 1", max: 2, teamSize: 1 },
@@ -3931,7 +3931,6 @@
             <button class="btn ghost" id="btn-howto" type="button">Как играть</button>
           </div>
           <p class="tagline" style="margin-top:18px;opacity:.75">Побед: ${wins} · Лучшие убийства: ${best}</p>
-          ${
           ${
             isOwnerNow()
               ? `<p class="tagline" style="margin-top:8px;color:#7dffb0">Твой режим: все бойцы · ✦999999 · читы в бою</p>
