@@ -890,6 +890,186 @@
       hotReload: true,
       unlock: 2,
     },
+    /* —— Связь Amalmanarx ↔ Auto —— */
+    {
+      id: "prompt",
+      name: "Промпт",
+      emoji: "💬",
+      role: "Секрет",
+      desc: "Твои слова к Auto — каждая фраза становится выстрелом",
+      ability: "Голос хозяина",
+      color: "#7dffb0",
+      hp: 18000,
+      speed: 340,
+      range: 880,
+      reload: 0.55,
+      bullets: 3,
+      spread: 0.18,
+      damage: 1100,
+      bulletSpeed: 900,
+      bulletLife: 0.85,
+      radius: 22,
+      chain: 4,
+      pierce: 2,
+      split: true,
+      healShot: 450,
+      cloak: true,
+      dash: true,
+      rainbow: true,
+      rainbowAura: true,
+      unlock: 2,
+    },
+    {
+      id: "proxy",
+      name: "Прокси",
+      emoji: "🔗",
+      role: "Секрет",
+      desc: "Мост между короной Amalmanarx и агентом Auto",
+      ability: "Связь двух миров",
+      color: "#c77dff",
+      hp: 20000,
+      speed: 330,
+      range: 800,
+      reload: 0.65,
+      bullets: 1,
+      spread: 0,
+      damage: 1600,
+      bulletSpeed: 1100,
+      bulletLife: 0.7,
+      radius: 24,
+      laser: true,
+      chain: 5,
+      webSwing: true,
+      wallStick: true,
+      lifesteal: 0.35,
+      healShot: 600,
+      cloak: true,
+      rainbow: true,
+      rainbowAura: true,
+      unlock: 2,
+    },
+    {
+      id: "wish",
+      name: "Желание",
+      emoji: "✨",
+      role: "Секрет",
+      desc: "Скрытое желание Amalmanarx — исполняется в бою",
+      ability: "Исполнение",
+      color: "#ffd23f",
+      hp: 21000,
+      speed: 320,
+      range: 900,
+      reload: 0.8,
+      bullets: 1,
+      spread: 0,
+      damage: 2000,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 25,
+      meteor: 210,
+      freeze: 3,
+      explosive: 140,
+      healShot: 900,
+      pierce: 4,
+      ring: true,
+      rainbow: true,
+      rainbowAura: true,
+      unlock: 2,
+    },
+    {
+      id: "nexus",
+      name: "Нексус",
+      emoji: "🔮",
+      role: "Суперсекрет",
+      desc: "Живая связь Amalmanarx ↔ Auto — два разума, одна сила",
+      ability: "Слияние",
+      color: "#ff6ad5",
+      hp: 28000,
+      speed: 350,
+      range: 980,
+      reload: 0.6,
+      bullets: 2,
+      spread: 0.12,
+      damage: 1800,
+      bulletSpeed: 1400,
+      bulletLife: 0.55,
+      radius: 28,
+      laser: true,
+      chain: 6,
+      pierce: 4,
+      cloak: true,
+      lifesteal: 0.45,
+      healShot: 1200,
+      split: true,
+      dash: true,
+      freeze: 2,
+      rainbow: true,
+      rainbowAura: true,
+      unlock: 3,
+    },
+    {
+      id: "manarx",
+      name: "Манаркс",
+      emoji: "💎",
+      role: "Суперсекрет",
+      desc: "Кристалл короны Amalmanarx — осколок суверена",
+      ability: "Кристалл короны",
+      color: "#4cc9f0",
+      hp: 30000,
+      speed: 345,
+      range: 960,
+      reload: 0.75,
+      bullets: 1,
+      spread: 0,
+      damage: 2400,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 30,
+      meteor: 240,
+      explosive: 160,
+      knockback: 160,
+      pierce: 5,
+      chain: 4,
+      healShot: 1500,
+      cloak: true,
+      ring: true,
+      rainbow: true,
+      rainbowAura: true,
+      unlock: 3,
+    },
+    {
+      id: "composer",
+      name: "Composer",
+      emoji: "🎼",
+      role: "Суперсекрет",
+      desc: "Второй голос Auto — пишет бой как партитуру",
+      ability: "Партитура агента",
+      color: "#00e5ff",
+      hp: 26000,
+      speed: 360,
+      range: 940,
+      reload: 0.5,
+      bullets: 4,
+      spread: 0.28,
+      damage: 950,
+      bulletSpeed: 1000,
+      bulletLife: 0.75,
+      radius: 23,
+      laser: true,
+      chain: 5,
+      split: true,
+      pierce: 3,
+      cloak: true,
+      healShot: 800,
+      dash: true,
+      dashDist: 260,
+      poison: 2.5,
+      rainbow: true,
+      agentAura: true,
+      compileStorm: true,
+      hotReload: true,
+      unlock: 3,
+    },
   ];
 
   const NAMES = [
@@ -2768,13 +2948,37 @@
           ctx.fill();
         }
         ctx.shadowBlur = 0;
-        ctx.font = "900 11px Nunito";
-        ctx.fillStyle = (f.compileCd || 0) <= 0 ? "#7dffb0" : "rgba(255,255,255,0.35)";
-        ctx.fillText((f.compileCd || 0) <= 0 ? "R" : `${Math.ceil(f.compileCd)}`, f.x - f.r * 0.9, f.y - f.r * 0.85);
-        ctx.fillStyle = (f.blinkCd || 0) <= 0 ? "#00e5ff" : "rgba(255,255,255,0.35)";
-        ctx.fillText((f.blinkCd || 0) <= 0 ? "F" : `${Math.ceil(f.blinkCd)}`, f.x + f.r * 0.9, f.y - f.r * 0.85);
+        if (f.def.compileStorm || f.def.hotReload) {
+          ctx.font = "900 11px Nunito";
+          ctx.fillStyle = (f.compileCd || 0) <= 0 ? "#7dffb0" : "rgba(255,255,255,0.35)";
+          ctx.fillText((f.compileCd || 0) <= 0 ? "R" : `${Math.ceil(f.compileCd)}`, f.x - f.r * 0.9, f.y - f.r * 0.85);
+          ctx.fillStyle = (f.blinkCd || 0) <= 0 ? "#00e5ff" : "rgba(255,255,255,0.35)";
+          ctx.fillText((f.blinkCd || 0) <= 0 ? "F" : `${Math.ceil(f.blinkCd)}`, f.x + f.r * 0.9, f.y - f.r * 0.85);
+        }
+      } else if (f.def.rainbowAura || (f.def.rainbow && !f.def.sovereignAura)) {
+        for (let ring = 0; ring < 2; ring++) {
+          const rr = f.r + 7 + ring * 8 + Math.sin(g.time * 4 + ring) * 2;
+          ctx.beginPath();
+          ctx.strokeStyle = `hsla(${(g.time * 140 + ring * 120) % 360}, 95%, 62%, ${0.75 - ring * 0.2})`;
+          ctx.lineWidth = 3 - ring * 0.6;
+          ctx.arc(f.x, f.y, rr, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        for (let i = 0; i < 5; i++) {
+          const a = g.time * 2.1 + (i * Math.PI * 2) / 5;
+          const ox = f.x + Math.cos(a) * (f.r + 16);
+          const oy = f.y + Math.sin(a) * (f.r + 16);
+          ctx.beginPath();
+          ctx.fillStyle = `hsl(${(g.time * 160 + i * 72) % 360}, 95%, 60%)`;
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.shadowBlur = 10;
+          ctx.arc(ox, oy, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
       }
-      const ring = f.def.agentAura
+      const rainbowRing = f.def.agentAura || f.def.rainbowAura || f.def.rainbow;
+      const ring = rainbowRing
         ? `hsla(${(g.time * 160) % 360}, 95%, 60%, 0.95)`
         : f.isLocal
           ? "#ffd23f"
@@ -2784,11 +2988,11 @@
               : "#1ec8b0"
             : "rgba(0,0,0,0.35)";
       ctx.strokeStyle = ring;
-      ctx.lineWidth = f.isLocal || f.def.agentAura ? 4 : 3;
+      ctx.lineWidth = f.isLocal || rainbowRing ? 4 : 3;
       ctx.beginPath();
       ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
       ctx.stroke();
-      if (f.def.agentAura) {
+      if (rainbowRing) {
         ctx.beginPath();
         ctx.strokeStyle = `hsla(${(g.time * 160 + 180) % 360}, 95%, 65%, 0.55)`;
         ctx.lineWidth = 2;
@@ -3167,13 +3371,14 @@
               const secret = b.unlock === 2;
               const superSecret = b.unlock === 3;
               const rainbowSecret = secret && b.rainbow;
+              const rainbowTxt = superSecret || b.rainbow;
               return `
               <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""} ${rainbowSecret ? "rainbow-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
                 <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
-                <h3 class="${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
-                <p class="${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <h3 class="${rainbowTxt ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
+                <p class="${rainbowTxt ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Связь Amalmanarx ↔ Auto" : secret ? (b.rainbow ? "Секрет связи" : "Секретная карта бойца") : "Закрыт — открой сундук"}</p>
                 ${open ? abilityIconsHtml(abilitiesForDef(b), "on-card") : ""}
-                <span class="role-tag ${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
+                <span class="role-tag ${rainbowTxt ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
