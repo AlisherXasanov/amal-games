@@ -510,6 +510,48 @@
   let coins = store.get("bravol-coins", 200);
   let unlocked = new Set(store.get("bravol-unlocked", STARTER_IDS));
 
+  /** Owner-only godmode (off for normal visitors). */
+  const CHEATS = {
+    invincible: false,
+    infiniteDamage: false,
+    infiniteAmmo: false,
+    noclip: false,
+    fly: false,
+    panelOpen: false,
+  };
+
+  function refreshOwnerCheats() {
+    const on = typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
+    CHEATS.invincible = on;
+    CHEATS.infiniteDamage = on;
+    CHEATS.infiniteAmmo = on;
+    CHEATS.noclip = on;
+    CHEATS.fly = on;
+    if (on) {
+      BRAWLERS.forEach((b) => unlocked.add(b.id));
+      if (coins < 999999) {
+        coins = 999999;
+        store.set("bravol-coins", coins);
+      }
+      saveUnlocksSafe();
+    }
+  }
+
+  refreshOwnerCheats();
+  window.addEventListener("amal-owner-changed", () => {
+    refreshOwnerCheats();
+    // Обновить меню, чтобы сразу показать всех бойцов и монеты
+    if (document.getElementById("screen-menu")) renderMenu();
+  });
+
+  function saveUnlocksSafe() {
+    try {
+      store.set("bravol-unlocked", [...unlocked]);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   function saveUnlocks() {
     store.set("bravol-unlocked", [...unlocked]);
   }
@@ -522,6 +564,15 @@
   function addCoins(n) {
     coins = Math.max(0, coins + (n | 0));
     saveCoins();
+  }
+  function killEveryone(g) {
+    const local = g.fighters.find((f) => f.isLocal);
+    if (!local || !local.alive) return;
+    for (const f of g.fighters) {
+      if (!f.alive || f === local || sameTeam(g, local, f)) continue;
+      f.invuln = 0;
+      hurt(g, f, 1e12, local);
+    }
   }
   function lockedPool() {
     return BRAWLERS.filter((b) => b.unlock && !unlocked.has(b.id));
@@ -575,20 +626,25 @@
   }
 
   function resolveWalls(ent, walls) {
-    for (const w of walls) {
-      if (!circleRectHit(ent.x, ent.y, ent.r, w.x, w.y, w.w, w.h)) continue;
-      const left = Math.abs(ent.x - w.x);
-      const right = Math.abs(ent.x - (w.x + w.w));
-      const top = Math.abs(ent.y - w.y);
-      const bottom = Math.abs(ent.y - (w.y + w.h));
-      const m = Math.min(left, right, top, bottom);
-      if (m === left) ent.x = w.x - ent.r;
-      else if (m === right) ent.x = w.x + w.w + ent.r;
-      else if (m === top) ent.y = w.y - ent.r;
-      else ent.y = w.y + w.h + ent.r;
+    const localGod = !!(ent.isLocal && CHEATS.noclip);
+    if (!localGod) {
+      for (const w of walls) {
+        if (!circleRectHit(ent.x, ent.y, ent.r, w.x, w.y, w.w, w.h)) continue;
+        const left = Math.abs(ent.x - w.x);
+        const right = Math.abs(ent.x - (w.x + w.w));
+        const top = Math.abs(ent.y - w.y);
+        const bottom = Math.abs(ent.y - (w.y + w.h));
+        const m = Math.min(left, right, top, bottom);
+        if (m === left) ent.x = w.x - ent.r;
+        else if (m === right) ent.x = w.x + w.w + ent.r;
+        else if (m === top) ent.y = w.y - ent.r;
+        else ent.y = w.y + w.h + ent.r;
+      }
     }
-    ent.x = clamp(ent.x, ent.r, ARENA - ent.r);
-    ent.y = clamp(ent.y, ent.r, ARENA - ent.r);
+    if (!(ent.isLocal && CHEATS.fly)) {
+      ent.x = clamp(ent.x, ent.r, ARENA - ent.r);
+      ent.y = clamp(ent.y, ent.r, ARENA - ent.r);
+    }
   }
 
   function makeArena(rng = Math.random) {
@@ -788,9 +844,11 @@
   function shoot(g, f) {
     if (!f.alive || f.reload > 0) return;
     const d = f.def;
-    f.reload = f.isLocal ? 0.06 : d.reload;
+    if (f.isLocal && CHEATS.infiniteAmmo) f.reload = 0.02;
+    else f.reload = d.reload;
     const base = f.angle;
-    const dmg = d.damage * powerMul(f) * (f.isLocal ? 1e9 : 1);
+    const dmg =
+      d.damage * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
 
     if (d.healShot) {
       f.hp = Math.min(f.maxHp, f.hp + d.healShot * powerMul(f));
@@ -1047,7 +1105,7 @@
   function hurt(g, target, amount, attacker, meta = {}) {
     if (!target.alive || target.invuln > 0) return;
     if (attacker && sameTeam(g, attacker, target)) return;
-    if (target.isLocal) {
+    if (target.isLocal && CHEATS.invincible) {
       target.hp = target.maxHp;
       return;
     }
@@ -1206,7 +1264,8 @@
     const len = Math.hypot(mx, my);
     if (len > 0) {
       const slow = f.slowT > 0 ? 0.45 : 1;
-      const spd = f.def.speed * (1 + f.power * 0.05) * slow;
+      const flyMul = f.isLocal && CHEATS.fly ? 3.2 : 1;
+      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul;
       f.x += (mx / len) * spd * dt;
       f.y += (my / len) * spd * dt;
     }
@@ -1284,7 +1343,7 @@
       f.slowT = Math.max(0, f.slowT - dt);
       if (f.poisonT > 0) {
         f.poisonT -= dt;
-        if (f.isLocal) {
+        if (f.isLocal && CHEATS.invincible) {
           f.hp = f.maxHp;
         } else {
           f.hp -= 35 * dt;
@@ -2010,6 +2069,11 @@
             <button class="btn ghost" id="btn-howto" type="button">Как играть</button>
           </div>
           <p class="tagline" style="margin-top:18px;opacity:.75">Побед: ${wins} · Лучшие убийства: ${best}</p>
+          ${
+            typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
+              ? `<p class="tagline" style="margin-top:8px;color:#7dffb0">Режим владельца: все бойцы, читы и ✦999999</p>`
+              : ""
+          }
         </div>
       </section>
     `;
@@ -2469,9 +2533,27 @@
               <div class="hud-pill"><span>Живы</span><strong id="stat-alive">0</strong></div>
               <div class="hud-pill"><span>Убийства</span><strong id="stat-kills">0</strong></div>
               <div class="hud-pill"><span>Время</span><strong id="stat-time">0:00</strong></div>
+              ${
+                typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
+                  ? `<button class="hud-pill cheat-toggle" id="btn-cheats" type="button" title="Читы (~\`)">Читы</button>`
+                  : ""
+              }
             </div>
             <div class="alive-list" id="alive-list"></div>
           </div>
+          ${
+            typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
+              ? `<div class="cheat-panel ${CHEATS.panelOpen ? "open" : ""}" id="cheat-panel">
+            <div class="cheat-title">Читы <span>~</span></div>
+            <label class="cheat-row"><input type="checkbox" data-cheat="invincible" ${CHEATS.invincible ? "checked" : ""}/> Бессмертие</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="infiniteDamage" ${CHEATS.infiniteDamage ? "checked" : ""}/> Бесконечный урон</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="infiniteAmmo" ${CHEATS.infiniteAmmo ? "checked" : ""}/> Бесконечные патроны</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="noclip" ${CHEATS.noclip ? "checked" : ""}/> Сквозь стены</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="fly" ${CHEATS.fly ? "checked" : ""}/> Улететь с карты</label>
+            <button class="btn cheat-kill" id="btn-kill-all" type="button">Убить всех</button>
+          </div>`
+              : ""
+          }
           <div class="hud-bottom">
             <div class="player-card">
               <div>
@@ -2502,6 +2584,30 @@
 
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
+    const cheatPanel = document.getElementById("cheat-panel");
+    const ownerMode = typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
+
+    function syncCheatPanel() {
+      if (cheatPanel) cheatPanel.classList.toggle("open", CHEATS.panelOpen);
+    }
+
+    if (ownerMode && cheatPanel) {
+      const cheatBtn = document.getElementById("btn-cheats");
+      if (cheatBtn) {
+        cheatBtn.addEventListener("click", () => {
+          CHEATS.panelOpen = !CHEATS.panelOpen;
+          syncCheatPanel();
+        });
+      }
+      cheatPanel.querySelectorAll("input[data-cheat]").forEach((el) => {
+        el.addEventListener("change", () => {
+          const key = el.dataset.cheat;
+          if (key in CHEATS) CHEATS[key] = !!el.checked;
+        });
+      });
+      const killBtn = document.getElementById("btn-kill-all");
+      if (killBtn) killBtn.addEventListener("click", () => killEveryone(g));
+    }
 
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2511,6 +2617,17 @@
     resize();
 
     const onKeyDown = (e) => {
+      if (ownerMode && e.code === "Backquote") {
+        CHEATS.panelOpen = !CHEATS.panelOpen;
+        syncCheatPanel();
+        e.preventDefault();
+        return;
+      }
+      if (ownerMode && e.code === "KeyK" && (e.ctrlKey || e.altKey)) {
+        killEveryone(g);
+        e.preventDefault();
+        return;
+      }
       g.keys[e.code] = true;
       if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
     };

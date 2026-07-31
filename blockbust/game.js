@@ -143,8 +143,11 @@
   }
 
   function canPlace(board, cells, row, col) {
+    const owner =
+      typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
     const { h, w } = pieceSize(cells);
     if (row < 0 || col < 0 || row + h > SIZE || col + w > SIZE) return false;
+    if (owner) return true;
     for (let r = 0; r < cells.length; r++) {
       for (let c = 0; c < cells[r].length; c++) {
         if (cells[r][c] && board[row + r][col + c]) return false;
@@ -343,7 +346,12 @@
     }
 
     const remaining = hand.filter(Boolean);
-    if (!state.levelWon && remaining.length && remaining.every((p) => !hasAny(nextBoard, p.cells))) {
+    if (
+      !(typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) &&
+      !state.levelWon &&
+      remaining.length &&
+      remaining.every((p) => !hasAny(nextBoard, p.cells))
+    ) {
       state.gameOver = true;
     }
 
