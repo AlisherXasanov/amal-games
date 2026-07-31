@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amal's Games</title>
-  <meta name="description" content="Коллекция игр от Amal — Zombie vs Plants, Snake и Пиксель-Террариум" />
+  <meta name="description" content="Браузерные игры Amal: Brawl Stars и Blockbust — играй бесплатно онлайн." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
@@ -33,13 +33,26 @@
       color: #71717a;
       font-size: .95rem;
     }
+    .section-title {
+      max-width: 960px;
+      margin: 0.5rem auto 0;
+      padding: 0 1rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #a1a1aa;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
       max-width: 960px;
-      margin: 2rem auto;
-      padding: 0 1rem 3rem;
+      margin: 1rem auto 2rem;
+      padding: 0 1rem;
+    }
+    .grid.more {
+      margin-bottom: 3rem;
     }
     .card {
       background: #18181b;
@@ -56,6 +69,10 @@
       transform: translateY(-4px);
       box-shadow: 0 8px 30px rgba(99,102,241,.25);
     }
+    .card.featured {
+      border-color: #52525b;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+    }
     .card-img {
       width: 100%;
       aspect-ratio: 16/9;
@@ -67,6 +84,8 @@
     .card-img.zombie { background: linear-gradient(135deg, #166534, #14532d); }
     .card-img.snake  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
     .card-img.terra   { background: linear-gradient(135deg, #78350f, #451a03); }
+    .card-img.blockbust { background: linear-gradient(135deg, #5b4305, #4c1d95); }
+    .card-img.brawl { background: linear-gradient(135deg, #0b1c28, #c47a00); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -83,6 +102,17 @@
       color: #a1a1aa;
       flex: 1;
     }
+    .badge {
+      display: inline-block;
+      margin-bottom: 0.45rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      background: #27272a;
+      color: #fafafa;
+    }
+    .badge.new { background: #eab308; color: #111; }
     .play-btn {
       display: inline-block;
       margin-top: 1rem;
@@ -98,6 +128,8 @@
     .play-btn.zombie { background: #16a34a; }
     .play-btn.snake  { background: #6366f1; }
     .play-btn.terra   { background: #d97706; }
+    .play-btn.blockbust { background: #eab308; color: #111; }
+    .play-btn.brawl { background: #ffd23f; color: #102018; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -112,9 +144,33 @@
     <p>Выбери игру и начни играть прямо в браузере</p>
   </header>
 
+  <p class="section-title">Главные игры</p>
   <div class="grid">
+    <a class="card featured" href="bravol-stars/">
+      <div class="card-img brawl">⭐</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>Brawl Stars</h2>
+        <p>Арена в браузере: бойцы, комнаты по коду, режимы 1v1 / 2v2 / 3v3.</p>
+        <span class="play-btn brawl">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="blockbust/">
+      <div class="card-img blockbust">🧩</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>Blockbust</h2>
+        <p>Головоломка с блоками: ставь фигуры, очищай линии, открывай скины и приключения.</p>
+        <span class="play-btn blockbust">Играть</span>
+      </div>
+    </a>
+  </div>
+
+  <p class="section-title">Ещё игры</p>
+  <div class="grid more">
     <a class="card" href="zombie-vs-plants/">
-      <div class="card-img zombie">&#127793;&#129503;</div>
+      <div class="card-img zombie">🌱🧟</div>
       <div class="card-body">
         <h2>Zombie vs Plants</h2>
         <p>Защити свой сад от зомби! Расставляй растения и отражай волны атак.</p>
@@ -123,7 +179,7 @@
     </a>
 
     <a class="card" href="snake-game/">
-      <div class="card-img snake">&#128013;</div>
+      <div class="card-img snake">🐍</div>
       <div class="card-body">
         <h2>Snake — Arcade Edition</h2>
         <p>Классическая змейка с 20 уровнями, скинами и щитами. Собирай очки!</p>
@@ -132,7 +188,7 @@
     </a>
 
     <a class="card" href="terraverse/">
-      <div class="card-img terra">&#9935;&#65039;</div>
+      <div class="card-img terra">⛏️</div>
       <div class="card-body">
         <h2>Пиксель-Террариум</h2>
         <p>2D песочница в стиле Terraria — копай, строй и исследуй пещеры.</p>
