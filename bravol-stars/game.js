@@ -900,8 +900,106 @@
     fly: false,
     invisible: false,
     superSpeed: false,
+    abilityMix: false,
     panelOpen: false,
   };
+
+  const ABILITY_CATALOG = [
+    { key: "mapNuke", label: "Снос карты" },
+    { key: "meteor", label: "Метеор" },
+    { key: "laser", label: "Лазер" },
+    { key: "mine", label: "Мины" },
+    { key: "dash", label: "Рывок" },
+    { key: "ring", label: "Кольцо пуль" },
+    { key: "split", label: "Эхо-рикошет" },
+    { key: "homing", label: "Наведение" },
+    { key: "pierce", label: "Пробитие" },
+    { key: "poison", label: "Яд" },
+    { key: "freeze", label: "Лёд" },
+    { key: "chain", label: "Молнии" },
+    { key: "explosive", label: "Взрыв" },
+    { key: "knockback", label: "Отброс" },
+    { key: "lifesteal", label: "Вампиризм" },
+    { key: "healShot", label: "Лечение" },
+    { key: "cloak", label: "Невидимость-плащ" },
+    { key: "webSwing", label: "Паутина" },
+    { key: "wallStick", label: "Липкость к стенам" },
+  ];
+
+  const ABILITY_VALUES = {
+    meteor: 200,
+    pierce: 4,
+    poison: 120,
+    freeze: 3,
+    chain: 4,
+    explosive: 140,
+    knockback: 160,
+    lifesteal: 0.5,
+    healShot: 800,
+    dashDist: 260,
+  };
+
+  function defaultAbilityMix() {
+    const o = {};
+    ABILITY_CATALOG.forEach((a) => {
+      o[a.key] = true;
+    });
+    return o;
+  }
+
+  let ABILITY_MIX = {
+    ...defaultAbilityMix(),
+    ...(store.get("bravol-ability-mix", {}) || {}),
+  };
+
+  function saveAbilityMix() {
+    store.set("bravol-ability-mix", ABILITY_MIX);
+  }
+
+  function setAllAbilityMix(on) {
+    ABILITY_CATALOG.forEach((a) => {
+      ABILITY_MIX[a.key] = !!on;
+    });
+    saveAbilityMix();
+  }
+
+  function useAbilityMix(f) {
+    return !!(f && f.isLocal && isOwnerNow() && CHEATS.abilityMix);
+  }
+
+  function effectiveDef(f) {
+    if (!f) return null;
+    if (!useAbilityMix(f)) return f.def;
+    const d = { ...f.def };
+    const on = (k) => !!ABILITY_MIX[k];
+
+    d.mapNuke = on("mapNuke");
+    d.meteor = on("meteor") ? Math.max(d.meteor || 0, ABILITY_VALUES.meteor) : 0;
+    d.laser = on("laser");
+    d.mine = on("mine");
+    d.dash = on("dash");
+    d.dashDist = on("dash") ? Math.max(d.dashDist || 0, ABILITY_VALUES.dashDist) : d.dashDist;
+    d.ring = on("ring");
+    if (on("ring")) {
+      d.bullets = Math.max(d.bullets || 1, 8);
+      d.spread = 6.28;
+    }
+    d.split = on("split");
+    d.homing = on("homing");
+    d.pierce = on("pierce") ? Math.max(d.pierce || 0, ABILITY_VALUES.pierce) : 0;
+    d.poison = on("poison") ? Math.max(d.poison || 0, ABILITY_VALUES.poison) : 0;
+    d.freeze = on("freeze") ? Math.max(d.freeze || 0, ABILITY_VALUES.freeze) : 0;
+    d.chain = on("chain") ? Math.max(d.chain || 0, ABILITY_VALUES.chain) : 0;
+    d.explosive = on("explosive") ? Math.max(d.explosive || 0, ABILITY_VALUES.explosive) : 0;
+    d.knockback = on("knockback") ? Math.max(d.knockback || 0, ABILITY_VALUES.knockback) : 0;
+    d.lifesteal = on("lifesteal") ? Math.max(d.lifesteal || 0, ABILITY_VALUES.lifesteal) : 0;
+    d.healShot = on("healShot") ? Math.max(d.healShot || 0, ABILITY_VALUES.healShot) : 0;
+    d.cloak = on("cloak");
+    d.webSwing = on("webSwing");
+    d.wallStick = on("wallStick");
+    d.webPrimary = false;
+    return d;
+  }
 
   function isOwnerNow() {
     return typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
@@ -916,6 +1014,7 @@
     CHEATS.fly = on;
     CHEATS.invisible = on;
     CHEATS.superSpeed = on;
+    CHEATS.abilityMix = on;
     if (on) {
       BRAWLERS.forEach((b) => unlocked.add(b.id));
       if (coins < 999999) {
@@ -1025,7 +1124,7 @@
 
   function resolveWalls(ent, walls) {
     const localGod = !!(ent.isLocal && CHEATS.noclip);
-    const clinging = !!(ent.wallCling > 0 && ent.def && ent.def.wallStick);
+    const clinging = !!(ent.wallCling > 0 && ent.def && effectiveDef(ent).wallStick);
     if (!localGod && !clinging) {
       for (const w of walls) {
         if (!circleRectHit(ent.x, ent.y, ent.r, w.x, w.y, w.w, w.h)) continue;
@@ -1306,12 +1405,13 @@
   }
 
   function fireWeb(g, f) {
-    if (!f.alive || !f.def.webSwing) return;
+    const d = effectiveDef(f);
+    if (!f.alive || !d.webSwing) return;
     if (f.web && f.web.pulling) return;
     if ((f.webCd || 0) > 0) return;
     const ax = f.isLocal ? g.mouse.worldX : f.input.aimX;
     const ay = f.isLocal ? g.mouse.worldY : f.input.aimY;
-    const hit = rayHitWalls(g, f.x, f.y, ax - f.x, ay - f.y, f.def.range || 700);
+    const hit = rayHitWalls(g, f.x, f.y, ax - f.x, ay - f.y, d.range || 700);
     if (!hit) {
       spawnBurst(g, f.x, f.y, "#cccccc", 4);
       return;
@@ -1338,17 +1438,18 @@
       return;
     }
     if (!f.web.pulling) return;
+    const def = effectiveDef(f);
     const dx = f.web.x - f.x;
     const dy = f.web.y - f.y;
-    const d = Math.hypot(dx, dy) || 1;
-    const pull = (f.def.webSpeed || 980) * dt;
-    f.x += (dx / d) * Math.min(pull, d);
-    f.y += (dy / d) * Math.min(pull, d);
+    const distLen = Math.hypot(dx, dy) || 1;
+    const pull = (def.webSpeed || 980) * dt;
+    f.x += (dx / distLen) * Math.min(pull, distLen);
+    f.y += (dy / distLen) * Math.min(pull, distLen);
     f.angle = Math.atan2(dy, dx);
-    if (d < f.r + 18) {
+    if (distLen < f.r + 18) {
       f.web.pulling = false;
       f.web.life = Math.max(f.web.life, 1.4);
-      if (f.def.wallStick) {
+      if (def.wallStick) {
         f.wallCling = 2.8;
         f.x = f.web.x + (f.web.nx || 0) * (f.r + 2);
         f.y = f.web.y + (f.web.ny || 0) * (f.r + 2);
@@ -1359,14 +1460,15 @@
 
   function shoot(g, f) {
     if (!f.alive || f.reload > 0) return;
-    const d = f.def;
+    const d = effectiveDef(f);
+    const mix = useAbilityMix(f);
     if (f.isLocal && CHEATS.infiniteAmmo) f.reload = 0.02;
-    else f.reload = d.reload;
+    else f.reload = mix ? Math.min(d.reload || 0.7, 0.45) : d.reload;
     const base = f.angle;
     const dmg =
       d.damage * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
 
-    if (d.webPrimary) {
+    if (d.webPrimary && !mix) {
       fireWeb(g, f);
       // Light web damage along the line
       if (f.web) {
@@ -1409,7 +1511,7 @@
         other.invuln = 0;
         hurt(g, other, dmg, f);
       }
-      return;
+      if (!mix) return;
     }
 
     if (d.meteor) {
@@ -1426,7 +1528,7 @@
           if (d.freeze) other.slowT = Math.max(other.slowT, d.freeze);
         }
       }
-      return;
+      if (!mix) return;
     }
 
     if (d.laser) {
@@ -1450,7 +1552,7 @@
           if (d.chain) chainLightning(g, f, other, dmg * 0.7, d.chain);
         }
       }
-      return;
+      if (!mix) return;
     }
 
     if (d.mine) {
@@ -1483,7 +1585,7 @@
           applyKnock(g, other, f, d.knockback);
         }
       }
-      if (!d.mine && d.bullets <= 1 && !d.ring) return;
+      if (!d.mine && d.bullets <= 1 && !d.ring && !mix) return;
     }
 
     const count = d.bullets;
@@ -1805,7 +1907,7 @@
       if (bestD < f.def.range * 1.05 && g.time > 1.5 && Math.random() < 0.035 * ai.aggression) {
         shoot(g, f);
       }
-      if (f.def.webSwing && Math.random() < 0.012 * ai.aggression) {
+      if (effectiveDef(f).webSwing && Math.random() < 0.012 * ai.aggression) {
         fireWeb(g, f);
       }
     } else if (ai.changeT <= 0) {
@@ -1817,7 +1919,7 @@
     const dy = ty - f.y;
     const len = Math.hypot(dx, dy) || 1;
     const slow = f.slowT > 0 ? 0.45 : 1;
-    const clingMul = f.wallCling > 0 && f.def.wallStick ? 1.35 : 1;
+    const clingMul = f.wallCling > 0 && effectiveDef(f).wallStick ? 1.35 : 1;
     const spd = f.def.speed * (0.85 + f.power * 0.04) * slow * clingMul;
     f.x += (dx / len) * spd * dt;
     f.y += (dy / len) * spd * dt;
@@ -1829,7 +1931,7 @@
     const inp = f.input;
     if (f.web && f.web.pulling) {
       f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
-      if (inp.web && f.def.webSwing && !f.def.webPrimary) fireWeb(g, f);
+      if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
       return;
     }
     let mx = inp.mx;
@@ -1839,13 +1941,13 @@
       const slow = f.slowT > 0 ? 0.45 : 1;
       const flyMul = f.isLocal && CHEATS.fly ? 3.2 : 1;
       const speedMul = f.isLocal && CHEATS.superSpeed ? 2.4 : 1;
-      const clingMul = f.wallCling > 0 && f.def.wallStick ? 1.45 : 1;
+      const clingMul = f.wallCling > 0 && effectiveDef(f).wallStick ? 1.45 : 1;
       const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul * clingMul;
       f.x += (mx / len) * spd * dt;
       f.y += (my / len) * spd * dt;
     }
     f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
-    if (inp.web && f.def.webSwing && !f.def.webPrimary) fireWeb(g, f);
+    if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -1922,7 +2024,7 @@
       f.wallCling = Math.max(0, (f.wallCling || 0) - dt);
       f.webCd = Math.max(0, (f.webCd || 0) - dt);
       if (f.web && f.web.life <= 0) f.web = null;
-      if (f.def.cloak) {
+      if (effectiveDef(f).cloak) {
         // Невидимость, пока не стрелял недавно
         if (f.reload < 0.18) f.cloakT = Math.max(f.cloakT, 0.35);
       }
@@ -3251,6 +3353,18 @@
             <label class="cheat-row"><input type="checkbox" data-cheat="noclip" ${CHEATS.noclip ? "checked" : ""}/> Сквозь стены</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="fly" ${CHEATS.fly ? "checked" : ""}/> Улететь с карты</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="superSpeed" ${CHEATS.superSpeed ? "checked" : ""}/> Суперскорость</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="abilityMix" ${CHEATS.abilityMix ? "checked" : ""}/> Микс всех умений</label>
+            <div class="cheat-subtitle">Библиотека умений</div>
+            <div class="ability-mix-actions">
+              <button class="btn ghost cheat-mini" id="btn-mix-all" type="button">Все вкл</button>
+              <button class="btn ghost cheat-mini" id="btn-mix-none" type="button">Все выкл</button>
+            </div>
+            <div class="ability-mix-list">
+              ${ABILITY_CATALOG.map(
+                (a) =>
+                  `<label class="cheat-row"><input type="checkbox" data-ability="${a.key}" ${ABILITY_MIX[a.key] ? "checked" : ""}/> ${a.label}</label>`
+              ).join("")}
+            </div>
             <button class="btn cheat-kill" id="btn-kill-all" type="button">Убить всех</button>
           </div>`
               : ""
@@ -3306,6 +3420,30 @@
           if (key in CHEATS) CHEATS[key] = !!el.checked;
         });
       });
+      cheatPanel.querySelectorAll("input[data-ability]").forEach((el) => {
+        el.addEventListener("change", () => {
+          ABILITY_MIX[el.dataset.ability] = !!el.checked;
+          saveAbilityMix();
+        });
+      });
+      const mixAll = document.getElementById("btn-mix-all");
+      const mixNone = document.getElementById("btn-mix-none");
+      if (mixAll) {
+        mixAll.addEventListener("click", () => {
+          setAllAbilityMix(true);
+          cheatPanel.querySelectorAll("input[data-ability]").forEach((el) => {
+            el.checked = true;
+          });
+        });
+      }
+      if (mixNone) {
+        mixNone.addEventListener("click", () => {
+          setAllAbilityMix(false);
+          cheatPanel.querySelectorAll("input[data-ability]").forEach((el) => {
+            el.checked = false;
+          });
+        });
+      }
       const killBtn = document.getElementById("btn-kill-all");
       if (killBtn) killBtn.addEventListener("click", () => killEveryone(g));
     }
