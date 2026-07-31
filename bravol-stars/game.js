@@ -832,6 +832,132 @@
       rainbow: true,
       unlock: 3,
     },
+    {
+      id: "amal-blacknose",
+      name: "Amal Blacknose",
+      emoji: "🖤",
+      role: "Суперсекрет",
+      desc: "Тот же Amal, но с чёрным носом — сносит карту одним кликом",
+      ability: "Чёрный нос: уничтожение карты",
+      color: "#1a1a1a",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 1.2,
+      bullets: 1,
+      spread: 0,
+      damage: 99999,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      mapNuke: true,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 2000,
+      rainbow: true,
+      blackNose: true,
+      unlock: 3,
+    },
+    {
+      id: "america",
+      name: "America",
+      emoji: "🇺🇸",
+      role: "Суперсекрет",
+      desc: "Сила Америки — одним кликом очищает всю арену",
+      ability: "America: уничтожение карты",
+      color: "#3c3b6e",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 1.2,
+      bullets: 1,
+      spread: 0,
+      damage: 99999,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      mapNuke: true,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 2000,
+      rainbow: true,
+      unlock: 3,
+    },
+    {
+      id: "osaka",
+      name: "Osaka",
+      emoji: "🏯",
+      role: "Суперсекрет",
+      desc: "Osaka — легенда Востока, сносит карту одним ударом",
+      ability: "Osaka: уничтожение карты",
+      color: "#e63946",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 1.2,
+      bullets: 1,
+      spread: 0,
+      damage: 99999,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      mapNuke: true,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 2000,
+      rainbow: true,
+      unlock: 3,
+    },
+    {
+      id: "richard",
+      name: "Richard",
+      emoji: "👨",
+      role: "Суперсекрет",
+      desc: "Папа Richard — семейная мощь Amalmanarx Game",
+      ability: "Richard: уничтожение карты",
+      color: "#4a6fa5",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 1.2,
+      bullets: 1,
+      spread: 0,
+      damage: 99999,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      mapNuke: true,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 2000,
+      rainbow: true,
+      unlock: 3,
+    },
+    {
+      id: "camilla",
+      name: "Camilla",
+      emoji: "👩",
+      role: "Суперсекрет",
+      desc: "Мама Camilla — семейная мощь Amalmanarx Game",
+      ability: "Camilla: уничтожение карты",
+      color: "#c77dff",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 1.2,
+      bullets: 1,
+      spread: 0,
+      damage: 99999,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      mapNuke: true,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 2000,
+      rainbow: true,
+      unlock: 3,
+    },
   ];
 
   const NAMES = [
@@ -2159,6 +2285,16 @@
       ctx.textBaseline = "middle";
       ctx.fillText(f.def.emoji, f.x, f.y + 1);
 
+      if (f.def.blackNose) {
+        ctx.beginPath();
+        ctx.fillStyle = "#050505";
+        ctx.ellipse(f.x, f.y + f.r * 0.12, f.r * 0.22, f.r * 0.16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.25)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
       const bw = 48;
       const ratio = f.hp / f.maxHp;
       ctx.fillStyle = "rgba(0,0,0,0.55)";
@@ -2511,7 +2647,7 @@
               <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
                 <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
                 <h3 class="${superSecret ? "rainbow-text" : open && b.rainbow ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
-                <p class="${superSecret ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <p class="${superSecret ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекретная семья Amalmanarx" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
                 <span class="role-tag ${superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
