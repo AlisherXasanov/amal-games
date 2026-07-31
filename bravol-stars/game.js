@@ -812,8 +812,8 @@
       name: "Amalmanarx",
       emoji: "👑",
       role: "Суперсекрет",
-      desc: "Сюрприз суверена — радуга, корона и тайное желание",
-      ability: "Сюрприз Amalmanarx",
+      desc: "Сюрприз суверена — корона, аура и королевская вспышка (R)",
+      ability: "Корона + вспышка R",
       color: "#ff6ad5",
       hp: 32000,
       speed: 360,
@@ -833,7 +833,7 @@
       webSwing: true,
       wallStick: true,
       sovereignAura: true,
-      phoenixWish: true,
+      royalNova: true,
       unlock: 3,
     },
     {
@@ -1250,7 +1250,7 @@
       web: null,
       wallCling: 0,
       webCd: 0,
-      phoenixUsed: false,
+      novaCd: 0,
       auraZap: 0.4,
       invuln: 2.2,
       ai: {
@@ -1792,30 +1792,38 @@
     }
   }
 
-  function tryPhoenixWish(g, f) {
-    if (!f || !f.def.phoenixWish || f.phoenixUsed) return false;
-    f.phoenixUsed = true;
-    f.hp = f.maxHp;
-    f.alive = true;
-    f.invuln = 2.8;
-    f.poisonT = 0;
-    f.flash = 0.35;
-    g.shake = Math.max(g.shake, 20);
-    for (let i = 0; i < 40; i++) {
-      const a = (i / 40) * Math.PI * 2;
-      const hue = (i / 40) * 360;
+  function fireRoyalNova(g, f) {
+    if (!f.alive || !f.def.royalNova) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 4.5;
+    const radius = 280;
+    const dmg =
+      2200 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 22);
+    f.hp = Math.min(f.maxHp, f.hp + f.maxHp * 0.2);
+    f.invuln = Math.max(f.invuln, 0.45);
+    for (let i = 0; i < 48; i++) {
+      const a = (i / 48) * Math.PI * 2;
+      const hue = (i / 48) * 360;
       g.particles.push({
         x: f.x,
         y: f.y,
-        vx: Math.cos(a) * rand(120, 320),
-        vy: Math.sin(a) * rand(120, 320),
-        life: rand(0.5, 1.1),
+        vx: Math.cos(a) * rand(180, 420),
+        vy: Math.sin(a) * rand(180, 420),
+        life: rand(0.4, 0.9),
         color: `hsl(${hue}, 95%, 60%)`,
-        size: rand(4, 10),
+        size: rand(4, 11),
       });
     }
-    spawnBurst(g, f.x, f.y, "#ffd23f", 32);
-    return true;
+    spawnBurst(g, f.x, f.y, "#ffd23f", 36);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(f, other) <= radius + other.r) {
+        other.slowT = Math.max(other.slowT || 0, 2.4);
+        other.invuln = 0;
+        hurt(g, other, dmg, f, { knockback: 180 });
+      }
+    }
   }
 
   function updateSovereignAura(g, f, dt) {
@@ -1881,7 +1889,6 @@
     if (attacker && attacker.isLocal) g.shake = Math.max(g.shake, 5);
     spawnBurst(g, target.x, target.y, "#ff6b6b", 6);
     if (target.hp <= 0) {
-      if (tryPhoenixWish(g, target)) return;
       target.hp = 0;
       target.alive = false;
       spawnBurst(g, target.x, target.y, target.def.color, 24);
@@ -2050,6 +2057,7 @@
     if (f.web && f.web.pulling) {
       f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
       if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
+      if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
       return;
     }
     let mx = inp.mx;
@@ -2066,6 +2074,7 @@
     }
     f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
     if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
+    if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -2089,6 +2098,7 @@
       aimY: g.mouse.worldY,
       shoot: !!(g.mouse.down || g.keys["Space"] || g.touchFire),
       web: !!(g.keys["KeyE"] || g.keys["KeyQ"]),
+      nova: !!(g.keys["KeyR"] || g.keys["KeyF"]),
     };
   }
 
@@ -2141,6 +2151,7 @@
       f.cloakT = Math.max(0, (f.cloakT || 0) - dt);
       f.wallCling = Math.max(0, (f.wallCling || 0) - dt);
       f.webCd = Math.max(0, (f.webCd || 0) - dt);
+      f.novaCd = Math.max(0, (f.novaCd || 0) - dt);
       if (f.web && f.web.life <= 0) f.web = null;
       if (effectiveDef(f).cloak) {
         // Невидимость, пока не стрелял недавно
@@ -2153,7 +2164,6 @@
         } else {
           f.hp -= 35 * dt;
           if (f.hp <= 0) {
-            if (tryPhoenixWish(g, f)) continue;
             f.hp = 0;
             f.alive = false;
             spawnBurst(g, f.x, f.y, f.def.color, 24);
@@ -2576,10 +2586,10 @@
           ctx.fill();
         }
         ctx.shadowBlur = 0;
-        if (!f.phoenixUsed && f.def.phoenixWish) {
-          ctx.font = "900 11px Nunito";
-          ctx.fillStyle = "#ffe082";
-          ctx.fillText("✦", f.x + f.r * 0.75, f.y - f.r * 0.75);
+        if (f.def.royalNova) {
+          ctx.font = "900 12px Nunito";
+          ctx.fillStyle = (f.novaCd || 0) <= 0 ? "#ffe082" : "rgba(255,255,255,0.35)";
+          ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x + f.r * 0.85, f.y - f.r * 0.8);
         }
       }
       const ring = f.isLocal ? "#ffd23f" : g.teamMode ? (f.team === 0 ? "#ffd23f" : "#1ec8b0") : "rgba(0,0,0,0.35)";
@@ -3129,6 +3139,7 @@
           <ol>
             <li><b>WASD</b> — движение, <b>мышь + ЛКМ</b> — прицел и выстрел</li>
             <li><b>E / Q</b> — паутина (Amalmanarx): летишь к стене и прилипаешь</li>
+            <li><b>R / F</b> — королевская вспышка Amalmanarx: радужной взрыв вокруг</li>
             <li><b>Spider-Man</b> — ЛКМ стреляет паутиной и тянет к стене</li>
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>
