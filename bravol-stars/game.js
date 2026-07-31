@@ -809,26 +809,23 @@
       name: "Амал",
       emoji: "✨",
       role: "Секрет",
-      desc: "Легенда Amal Games — сильнее всех",
-      ability: "Желание хозяина",
+      desc: "Легенда Amal Games — одним кликом сносит всю карту",
+      ability: "Амал Games: уничтожение карты",
       color: "#ffd23f",
       hp: 30000,
       speed: 350,
       range: 1000,
-      reload: 0.28,
+      reload: 1.2,
       bullets: 1,
       spread: 0,
-      damage: 5000,
+      damage: 99999,
       bulletSpeed: 1,
       bulletLife: 0.1,
       radius: 32,
-      meteor: 280,
+      mapNuke: true,
       cloak: true,
       lifesteal: 0.6,
-      healShot: 1200,
-      freeze: 3,
-      dash: true,
-      dashDist: 320,
+      healShot: 2000,
       unlock: 2,
     },
   ];
@@ -1224,6 +1221,33 @@
     if (d.healShot) {
       f.hp = Math.min(f.maxHp, f.hp + d.healShot * powerMul(f));
       spawnBurst(g, f.x, f.y, "#80ed99", 8);
+    }
+
+    if (d.mapNuke) {
+      // Amal Games: one click wipes the whole arena
+      g.shake = Math.max(g.shake, 40);
+      g.arena.walls.length = 0;
+      g.arena.bushes.length = 0;
+      for (const box of g.arena.boxes) {
+        if (!box.open) {
+          box.open = true;
+          dropCube(g, box.x, box.y, 1);
+        }
+      }
+      g.mines.length = 0;
+      g.bullets.length = 0;
+      for (let i = 0; i < 48; i++) {
+        const px = rand(40, ARENA - 40);
+        const py = rand(40, ARENA - 40);
+        spawnBurst(g, px, py, i % 2 ? "#ffd23f" : "#fff8e7", 10);
+      }
+      spawnBurst(g, f.x, f.y, d.color, 40);
+      for (const other of g.fighters) {
+        if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+        other.invuln = 0;
+        hurt(g, other, dmg, f);
+      }
+      return;
     }
 
     if (d.meteor) {
