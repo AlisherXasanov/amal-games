@@ -52,7 +52,19 @@
     try {
       const params = new URLSearchParams(global.location.search);
       const code = params.get("owner");
-      if (code) unlock(code);
+      if (!code) return;
+      if (unlock(code)) {
+        // Clean URL so the secret is not left in the address bar
+        try {
+          const clean = global.location.pathname + global.location.hash;
+          global.history.replaceState({}, "", clean);
+        } catch (_) {
+          /* ignore */
+        }
+        alert("Личный режим включён на этом устройстве.\nВсе бойцы, монеты и кнопка «Читы» — только у тебя.");
+      } else {
+        alert("Неверный код владельца");
+      }
     } catch (_) {
       /* ignore */
     }
