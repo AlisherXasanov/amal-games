@@ -905,27 +905,54 @@
   };
 
   const ABILITY_CATALOG = [
-    { key: "mapNuke", label: "Снос карты" },
-    { key: "meteor", label: "Метеор" },
-    { key: "laser", label: "Лазер" },
-    { key: "mine", label: "Мины" },
-    { key: "dash", label: "Рывок" },
-    { key: "ring", label: "Кольцо пуль" },
-    { key: "split", label: "Эхо-рикошет" },
-    { key: "homing", label: "Наведение" },
-    { key: "pierce", label: "Пробитие" },
-    { key: "poison", label: "Яд" },
-    { key: "freeze", label: "Лёд" },
-    { key: "chain", label: "Молнии" },
-    { key: "explosive", label: "Взрыв" },
-    { key: "knockback", label: "Отброс" },
-    { key: "lifesteal", label: "Вампиризм" },
-    { key: "healShot", label: "Лечение" },
-    { key: "cloak", label: "Невидимость-плащ" },
-    { key: "webSwing", label: "Паутина" },
-    { key: "wallStick", label: "Липкость к стенам" },
+    { key: "mapNuke", label: "Снос карты", icon: "💥" },
+    { key: "meteor", label: "Метеор", icon: "☄️" },
+    { key: "laser", label: "Лазер", icon: "📡" },
+    { key: "mine", label: "Мины", icon: "🪤" },
+    { key: "dash", label: "Рывок", icon: "⚡" },
+    { key: "ring", label: "Кольцо пуль", icon: "🌀" },
+    { key: "split", label: "Эхо-рикошет", icon: "🔊" },
+    { key: "homing", label: "Наведение", icon: "🎯" },
+    { key: "pierce", label: "Пробитие", icon: "🪡" },
+    { key: "poison", label: "Яд", icon: "☠️" },
+    { key: "freeze", label: "Лёд", icon: "❄️" },
+    { key: "chain", label: "Молнии", icon: "🌩️" },
+    { key: "explosive", label: "Взрыв", icon: "💣" },
+    { key: "knockback", label: "Отброс", icon: "💨" },
+    { key: "lifesteal", label: "Вампиризм", icon: "🩸" },
+    { key: "healShot", label: "Лечение", icon: "💚" },
+    { key: "cloak", label: "Плащ", icon: "👻" },
+    { key: "webSwing", label: "Паутина", icon: "🕷️" },
+    { key: "wallStick", label: "Липкость", icon: "🕸️" },
   ];
 
+  function defHasAbility(def, key) {
+    if (!def) return false;
+    const v = def[key];
+    if (typeof v === "boolean") return v;
+    if (typeof v === "number") return v > 0;
+    return !!v;
+  }
+
+  function abilitiesForDef(def) {
+    return ABILITY_CATALOG.filter((a) => defHasAbility(def, a.key));
+  }
+
+  function abilityIconsHtml(list, extraClass = "") {
+    if (!list.length) return "";
+    return `<div class="ability-icons ${extraClass}">${list
+      .map((a) => `<span class="ability-icon" title="${a.label}">${a.icon}</span>`)
+      .join("")}</div>`;
+  }
+
+  function selectedAbilityPreview(brawler) {
+    if (!brawler) return "";
+    if (isOwnerNow() && CHEATS.abilityMix) {
+      const on = ABILITY_CATALOG.filter((a) => ABILITY_MIX[a.key]);
+      return abilityIconsHtml(on, "preview");
+    }
+    return abilityIconsHtml(abilitiesForDef(brawler), "preview");
+  }
   const ABILITY_VALUES = {
     meteor: 200,
     pierce: 4,
@@ -2807,10 +2834,19 @@
                 <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
                 <h3 class="${superSecret ? "rainbow-text" : open && b.rainbow ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
                 <p class="${superSecret ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                ${open ? abilityIconsHtml(abilitiesForDef(b), "on-card") : ""}
                 <span class="role-tag ${superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
+          ${(() => {
+            const sel = BRAWLERS.find((x) => x.id === selectedId);
+            if (!sel || !isUnlocked(sel.id)) return "";
+            return `<div class="ability-preview-panel">
+              <div class="ability-preview-title">${sel.emoji} ${escapeAttr(sel.name)}</div>
+              ${selectedAbilityPreview(sel)}
+            </div>`;
+          })()}
           <div class="field-row">
             <input id="nick-input" maxlength="${NICK_MAX}" value="${escapeAttr(isOwnerNow() ? OWNER_NICK : nickname)}" placeholder="Твой ник" ${isOwnerNow() ? "readonly" : ""} />
           </div>
@@ -3284,6 +3320,13 @@
       isOwnerNow() || (player.def && player.def.rainbow)
         ? `<span class="rainbow-text">${isOwnerNow() ? OWNER_NAME + " · " : ""}${player.def.emoji} ${player.def.name}</span> · сила ×${player.power}`
         : `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
+    const hudAbilities = document.getElementById("hud-abilities");
+    if (hudAbilities) {
+      const icons = useAbilityMix(player)
+        ? ABILITY_CATALOG.filter((a) => ABILITY_MIX[a.key])
+        : abilitiesForDef(player.def);
+      hudAbilities.innerHTML = icons.map((a) => `<span class="ability-icon" title="${a.label}">${a.icon}</span>`).join("");
+    }
     aliveEl.textContent = String(alive);
     killsEl.textContent = String(player.kills);
     const t = Math.floor(g.time);
@@ -3359,10 +3402,13 @@
               <button class="btn ghost cheat-mini" id="btn-mix-all" type="button">Все вкл</button>
               <button class="btn ghost cheat-mini" id="btn-mix-none" type="button">Все выкл</button>
             </div>
-            <div class="ability-mix-list">
+            <div class="ability-mix-grid">
               ${ABILITY_CATALOG.map(
                 (a) =>
-                  `<label class="cheat-row"><input type="checkbox" data-ability="${a.key}" ${ABILITY_MIX[a.key] ? "checked" : ""}/> ${a.label}</label>`
+                  `<label class="ability-tile ${ABILITY_MIX[a.key] ? "on" : ""}" title="${a.label}">
+                    <input type="checkbox" data-ability="${a.key}" ${ABILITY_MIX[a.key] ? "checked" : ""} hidden />
+                    <span class="ability-tile-icon">${a.icon}</span>
+                  </label>`
               ).join("")}
             </div>
             <button class="btn cheat-kill" id="btn-kill-all" type="button">Убить всех</button>
@@ -3374,6 +3420,7 @@
               <div>
                 <div class="hp-bar"><div class="hp-fill" id="hp-fill"></div></div>
                 <div class="player-meta" id="hp-meta"></div>
+                <div class="ability-icons hud-abilities" id="hud-abilities"></div>
               </div>
             </div>
             <div class="touch-controls">
@@ -3424,6 +3471,8 @@
         el.addEventListener("change", () => {
           ABILITY_MIX[el.dataset.ability] = !!el.checked;
           saveAbilityMix();
+          const tile = el.closest(".ability-tile");
+          if (tile) tile.classList.toggle("on", el.checked);
         });
       });
       const mixAll = document.getElementById("btn-mix-all");
@@ -3433,6 +3482,8 @@
           setAllAbilityMix(true);
           cheatPanel.querySelectorAll("input[data-ability]").forEach((el) => {
             el.checked = true;
+            const tile = el.closest(".ability-tile");
+            if (tile) tile.classList.add("on");
           });
         });
       }
@@ -3441,6 +3492,8 @@
           setAllAbilityMix(false);
           cheatPanel.querySelectorAll("input[data-ability]").forEach((el) => {
             el.checked = false;
+            const tile = el.closest(".ability-tile");
+            if (tile) tile.classList.remove("on");
           });
         });
       }

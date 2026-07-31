@@ -996,6 +996,96 @@ body {
   padding-right: 4px;
 }
 
+.ability-mix-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.ability-tile {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  opacity: 0.45;
+  transition: transform 0.12s, opacity 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+
+.ability-tile.on {
+  opacity: 1;
+  border-color: rgba(255, 210, 63, 0.75);
+  box-shadow: 0 0 12px rgba(255, 210, 63, 0.25);
+  background: rgba(255, 210, 63, 0.12);
+}
+
+.ability-tile:hover {
+  transform: translateY(-2px);
+}
+
+.ability-tile-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.ability-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin: 6px 0 2px;
+}
+
+.ability-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.95rem;
+}
+
+.ability-icons.on-card .ability-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 0.85rem;
+}
+
+.ability-icons.preview .ability-icon {
+  width: 34px;
+  height: 34px;
+  font-size: 1.15rem;
+}
+
+.ability-preview-panel {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 210, 63, 0.25);
+  text-align: center;
+}
+
+.ability-preview-title {
+  font-weight: 900;
+  margin-bottom: 6px;
+  color: #ffe082;
+}
+
+.hud-abilities {
+  justify-content: flex-start;
+  margin-top: 6px;
+  max-width: min(52vw, 360px);
+}
+
+.player-card {
+  pointer-events: none;
+}
+
 .cheat-title {
   font-weight: 900;
   letter-spacing: 0.04em;
