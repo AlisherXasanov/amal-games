@@ -1160,8 +1160,7 @@
   function selectedAbilityPreview(brawler) {
     if (!brawler) return "";
     if (isOwnerNow() && CHEATS.abilityMix) {
-      const on = ABILITY_CATALOG.filter((a) => ABILITY_MIX[a.key]);
-      return abilityIconsHtml(on, "preview");
+      return abilityIconsHtml(abilitiesForDef(mergeAbilityMix(brawler)), "preview");
     }
     return abilityIconsHtml(abilitiesForDef(brawler), "preview");
   }
@@ -1181,7 +1180,7 @@
   function defaultAbilityMix() {
     const o = {};
     ABILITY_CATALOG.forEach((a) => {
-      o[a.key] = true;
+      o[a.key] = false;
     });
     return o;
   }
@@ -1206,38 +1205,45 @@
     return !!(f && f.isLocal && isOwnerNow() && CHEATS.abilityMix);
   }
 
-  function effectiveDef(f) {
-    if (!f) return null;
-    if (!useAbilityMix(f)) return f.def;
-    const d = { ...f.def };
+  /** Mix only adds extras — never strips the fighter's own kit. */
+  function mergeAbilityMix(base) {
+    if (!base) return null;
+    const d = { ...base };
     const on = (k) => !!ABILITY_MIX[k];
 
-    d.mapNuke = on("mapNuke");
-    d.meteor = on("meteor") ? Math.max(d.meteor || 0, ABILITY_VALUES.meteor) : 0;
-    d.laser = on("laser");
-    d.mine = on("mine");
-    d.dash = on("dash");
-    d.dashDist = on("dash") ? Math.max(d.dashDist || 0, ABILITY_VALUES.dashDist) : d.dashDist;
-    d.ring = on("ring");
+    if (on("mapNuke")) d.mapNuke = true;
+    if (on("meteor")) d.meteor = Math.max(d.meteor || 0, ABILITY_VALUES.meteor);
+    if (on("laser")) d.laser = true;
+    if (on("mine")) d.mine = true;
+    if (on("dash")) {
+      d.dash = true;
+      d.dashDist = Math.max(d.dashDist || 0, ABILITY_VALUES.dashDist);
+    }
     if (on("ring")) {
+      d.ring = true;
       d.bullets = Math.max(d.bullets || 1, 8);
       d.spread = 6.28;
     }
-    d.split = on("split");
-    d.homing = on("homing");
-    d.pierce = on("pierce") ? Math.max(d.pierce || 0, ABILITY_VALUES.pierce) : 0;
-    d.poison = on("poison") ? Math.max(d.poison || 0, ABILITY_VALUES.poison) : 0;
-    d.freeze = on("freeze") ? Math.max(d.freeze || 0, ABILITY_VALUES.freeze) : 0;
-    d.chain = on("chain") ? Math.max(d.chain || 0, ABILITY_VALUES.chain) : 0;
-    d.explosive = on("explosive") ? Math.max(d.explosive || 0, ABILITY_VALUES.explosive) : 0;
-    d.knockback = on("knockback") ? Math.max(d.knockback || 0, ABILITY_VALUES.knockback) : 0;
-    d.lifesteal = on("lifesteal") ? Math.max(d.lifesteal || 0, ABILITY_VALUES.lifesteal) : 0;
-    d.healShot = on("healShot") ? Math.max(d.healShot || 0, ABILITY_VALUES.healShot) : 0;
-    d.cloak = on("cloak");
-    d.webSwing = on("webSwing");
-    d.wallStick = on("wallStick");
-    d.webPrimary = false;
+    if (on("split")) d.split = true;
+    if (on("homing")) d.homing = true;
+    if (on("pierce")) d.pierce = Math.max(d.pierce || 0, ABILITY_VALUES.pierce);
+    if (on("poison")) d.poison = Math.max(d.poison || 0, ABILITY_VALUES.poison);
+    if (on("freeze")) d.freeze = Math.max(d.freeze || 0, ABILITY_VALUES.freeze);
+    if (on("chain")) d.chain = Math.max(d.chain || 0, ABILITY_VALUES.chain);
+    if (on("explosive")) d.explosive = Math.max(d.explosive || 0, ABILITY_VALUES.explosive);
+    if (on("knockback")) d.knockback = Math.max(d.knockback || 0, ABILITY_VALUES.knockback);
+    if (on("lifesteal")) d.lifesteal = Math.max(d.lifesteal || 0, ABILITY_VALUES.lifesteal);
+    if (on("healShot")) d.healShot = Math.max(d.healShot || 0, ABILITY_VALUES.healShot);
+    if (on("cloak")) d.cloak = true;
+    if (on("webSwing")) d.webSwing = true;
+    if (on("wallStick")) d.wallStick = true;
     return d;
+  }
+
+  function effectiveDef(f) {
+    if (!f) return null;
+    if (!useAbilityMix(f)) return f.def;
+    return mergeAbilityMix(f.def);
   }
 
   function isOwnerNow() {
@@ -1253,7 +1259,8 @@
     CHEATS.fly = on;
     CHEATS.invisible = on;
     CHEATS.superSpeed = on;
-    CHEATS.abilityMix = on;
+    // Don't force ability mix — owner toggles it in the panel to add extras.
+    if (!on) CHEATS.abilityMix = false;
     if (on) {
       BRAWLERS.forEach((b) => unlocked.add(b.id));
       if (coins < 999999) {
@@ -3867,9 +3874,7 @@
         : `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
     const hudAbilities = document.getElementById("hud-abilities");
     if (hudAbilities) {
-      const icons = useAbilityMix(player)
-        ? ABILITY_CATALOG.filter((a) => ABILITY_MIX[a.key])
-        : abilitiesForDef(player.def);
+      const icons = abilitiesForDef(effectiveDef(player) || player.def);
       hudAbilities.innerHTML = icons.map((a) => `<span class="ability-icon" title="${a.label}">${a.icon}</span>`).join("");
     }
     aliveEl.textContent = String(alive);
@@ -3941,11 +3946,11 @@
             <label class="cheat-row"><input type="checkbox" data-cheat="noclip" ${CHEATS.noclip ? "checked" : ""}/> Сквозь стены</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="fly" ${CHEATS.fly ? "checked" : ""}/> Улететь с карты</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="superSpeed" ${CHEATS.superSpeed ? "checked" : ""}/> Суперскорость</label>
-            <label class="cheat-row"><input type="checkbox" data-cheat="abilityMix" ${CHEATS.abilityMix ? "checked" : ""}/> Микс всех умений</label>
-            <div class="cheat-subtitle">Библиотека умений</div>
+            <label class="cheat-row"><input type="checkbox" data-cheat="abilityMix" ${CHEATS.abilityMix ? "checked" : ""}/> Микс умений (добавляет сверху)</label>
+            <div class="cheat-subtitle">Доп. умения (поверх скиллов бойца)</div>
             <div class="ability-mix-actions">
               <button class="btn ghost cheat-mini" id="btn-mix-all" type="button">Все вкл</button>
-              <button class="btn ghost cheat-mini" id="btn-mix-none" type="button">Все выкл</button>
+              <button class="btn ghost cheat-mini" id="btn-mix-none" type="button">Только свои</button>
             </div>
             <div class="ability-mix-grid">
               ${ABILITY_CATALOG.map(
