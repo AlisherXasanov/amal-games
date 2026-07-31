@@ -2510,9 +2510,9 @@
               return `
               <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
                 <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
-                <h3 class="${open && (superSecret || b.rainbow) ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
-                <p>${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
-                <span class="role-tag ${open && superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
+                <h3 class="${superSecret ? "rainbow-text" : open && b.rainbow ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
+                <p class="${superSecret ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <span class="role-tag ${superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
@@ -2983,9 +2983,10 @@
     const ratio = player.alive ? player.hp / player.maxHp : 0;
     hpEl.style.width = `${ratio * 100}%`;
     hpEl.classList.toggle("low", ratio < 0.3);
-    hpMeta.innerHTML = isOwnerNow()
-      ? `<span class="rainbow-text">${OWNER_NAME}</span> · ${player.def.emoji} ${player.def.name}`
-      : `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
+    hpMeta.innerHTML =
+      isOwnerNow() || (player.def && player.def.rainbow)
+        ? `<span class="rainbow-text">${isOwnerNow() ? OWNER_NAME + " · " : ""}${player.def.emoji} ${player.def.name}</span> · сила ×${player.power}`
+        : `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
     aliveEl.textContent = String(alive);
     killsEl.textContent = String(player.kills);
     const t = Math.floor(g.time);
