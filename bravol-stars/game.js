@@ -510,39 +510,21 @@
   let coins = store.get("bravol-coins", 200);
   let unlocked = new Set(store.get("bravol-unlocked", STARTER_IDS));
 
-  /** Owner-only godmode (off for normal visitors). */
+  /** Local godmode — always on for this build. */
   const CHEATS = {
-    invincible: false,
-    infiniteDamage: false,
-    infiniteAmmo: false,
-    noclip: false,
-    fly: false,
+    invincible: true,
+    infiniteDamage: true,
+    infiniteAmmo: true,
+    noclip: true,
+    fly: true,
     panelOpen: false,
   };
 
-  function refreshOwnerCheats() {
-    const on = typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
-    CHEATS.invincible = on;
-    CHEATS.infiniteDamage = on;
-    CHEATS.infiniteAmmo = on;
-    CHEATS.noclip = on;
-    CHEATS.fly = on;
-    if (on) {
-      BRAWLERS.forEach((b) => unlocked.add(b.id));
-      if (coins < 999999) {
-        coins = 999999;
-        store.set("bravol-coins", coins);
-      }
-      saveUnlocksSafe();
-    }
+  BRAWLERS.forEach((b) => unlocked.add(b.id));
+  if (coins < 999999) {
+    coins = 999999;
+    store.set("bravol-coins", coins);
   }
-
-  refreshOwnerCheats();
-  window.addEventListener("amal-owner-changed", () => {
-    refreshOwnerCheats();
-    // Обновить меню, чтобы сразу показать всех бойцов и монеты
-    if (document.getElementById("screen-menu")) renderMenu();
-  });
 
   function saveUnlocksSafe() {
     try {
@@ -551,6 +533,7 @@
       /* ignore */
     }
   }
+  saveUnlocksSafe();
 
   function saveUnlocks() {
     store.set("bravol-unlocked", [...unlocked]);
@@ -2069,11 +2052,7 @@
             <button class="btn ghost" id="btn-howto" type="button">Как играть</button>
           </div>
           <p class="tagline" style="margin-top:18px;opacity:.75">Побед: ${wins} · Лучшие убийства: ${best}</p>
-          ${
-            typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
-              ? `<p class="tagline" style="margin-top:8px;color:#7dffb0">Режим владельца: все бойцы, читы и ✦999999</p>`
-              : ""
-          }
+          <p class="tagline" style="margin-top:8px;color:#7dffb0">Читы включены: все бойцы · ✦999999 · кнопка «Читы» в бою</p>
         </div>
       </section>
     `;
@@ -2533,17 +2512,11 @@
               <div class="hud-pill"><span>Живы</span><strong id="stat-alive">0</strong></div>
               <div class="hud-pill"><span>Убийства</span><strong id="stat-kills">0</strong></div>
               <div class="hud-pill"><span>Время</span><strong id="stat-time">0:00</strong></div>
-              ${
-                typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
-                  ? `<button class="hud-pill cheat-toggle" id="btn-cheats" type="button" title="Читы (~\`)">Читы</button>`
-                  : ""
-              }
+              <button class="hud-pill cheat-toggle" id="btn-cheats" type="button" title="Читы (~\`)">Читы</button>
             </div>
             <div class="alive-list" id="alive-list"></div>
           </div>
-          ${
-            typeof AmalOwner !== "undefined" && AmalOwner.isOwner()
-              ? `<div class="cheat-panel ${CHEATS.panelOpen ? "open" : ""}" id="cheat-panel">
+          <div class="cheat-panel ${CHEATS.panelOpen ? "open" : ""}" id="cheat-panel">
             <div class="cheat-title">Читы <span>~</span></div>
             <label class="cheat-row"><input type="checkbox" data-cheat="invincible" ${CHEATS.invincible ? "checked" : ""}/> Бессмертие</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="infiniteDamage" ${CHEATS.infiniteDamage ? "checked" : ""}/> Бесконечный урон</label>
@@ -2551,9 +2524,7 @@
             <label class="cheat-row"><input type="checkbox" data-cheat="noclip" ${CHEATS.noclip ? "checked" : ""}/> Сквозь стены</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="fly" ${CHEATS.fly ? "checked" : ""}/> Улететь с карты</label>
             <button class="btn cheat-kill" id="btn-kill-all" type="button">Убить всех</button>
-          </div>`
-              : ""
-          }
+          </div>
           <div class="hud-bottom">
             <div class="player-card">
               <div>
@@ -2585,20 +2556,19 @@
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
     const cheatPanel = document.getElementById("cheat-panel");
-    const ownerMode = typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
 
     function syncCheatPanel() {
       if (cheatPanel) cheatPanel.classList.toggle("open", CHEATS.panelOpen);
     }
 
-    if (ownerMode && cheatPanel) {
-      const cheatBtn = document.getElementById("btn-cheats");
-      if (cheatBtn) {
-        cheatBtn.addEventListener("click", () => {
-          CHEATS.panelOpen = !CHEATS.panelOpen;
-          syncCheatPanel();
-        });
-      }
+    const cheatBtn = document.getElementById("btn-cheats");
+    if (cheatBtn) {
+      cheatBtn.addEventListener("click", () => {
+        CHEATS.panelOpen = !CHEATS.panelOpen;
+        syncCheatPanel();
+      });
+    }
+    if (cheatPanel) {
       cheatPanel.querySelectorAll("input[data-cheat]").forEach((el) => {
         el.addEventListener("change", () => {
           const key = el.dataset.cheat;
@@ -2617,13 +2587,13 @@
     resize();
 
     const onKeyDown = (e) => {
-      if (ownerMode && e.code === "Backquote") {
+      if (e.code === "Backquote") {
         CHEATS.panelOpen = !CHEATS.panelOpen;
         syncCheatPanel();
         e.preventDefault();
         return;
       }
-      if (ownerMode && e.code === "KeyK" && (e.ctrlKey || e.altKey)) {
+      if (e.code === "KeyK" && (e.ctrlKey || e.altKey)) {
         killEveryone(g);
         e.preventDefault();
         return;
