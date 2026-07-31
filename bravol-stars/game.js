@@ -1063,7 +1063,7 @@
       healShot: 800,
       dash: true,
       dashDist: 260,
-      poison: 2.5,
+      poison: 140,
       rainbow: true,
       agentAura: true,
       compileStorm: true,
