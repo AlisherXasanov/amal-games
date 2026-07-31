@@ -890,33 +890,31 @@
       hotReload: true,
       unlock: 2,
     },
-    /* —— Связь Amalmanarx ↔ Auto —— */
+    /* —— Связь Amalmanarx ↔ Auto (каждый со своим стилем) —— */
     {
       id: "prompt",
       name: "Промпт",
       emoji: "💬",
       role: "Секрет",
-      desc: "Твои слова к Auto — каждая фраза становится выстрелом",
-      ability: "Голос хозяина",
+      desc: "Твои слова к Auto — фразы сыпятся градом",
+      ability: "R: Словопад · F: Перепись",
       color: "#7dffb0",
-      hp: 18000,
-      speed: 340,
-      range: 880,
-      reload: 0.55,
-      bullets: 3,
-      spread: 0.18,
-      damage: 1100,
-      bulletSpeed: 900,
-      bulletLife: 0.85,
-      radius: 22,
-      chain: 4,
-      pierce: 2,
-      split: true,
-      healShot: 450,
-      cloak: true,
-      dash: true,
+      hp: 17000,
+      speed: 350,
+      range: 720,
+      reload: 0.42,
+      bullets: 5,
+      spread: 0.55,
+      damage: 620,
+      bulletSpeed: 680,
+      bulletLife: 0.7,
+      radius: 21,
+      knockback: 50,
+      poison: 90,
       rainbow: true,
       rainbowAura: true,
+      wordStorm: true,
+      rewrite: true,
       unlock: 2,
     },
     {
@@ -924,28 +922,26 @@
       name: "Прокси",
       emoji: "🔗",
       role: "Секрет",
-      desc: "Мост между короной Amalmanarx и агентом Auto",
-      ability: "Связь двух миров",
+      desc: "Мост короны и агента — тянет нитями",
+      ability: "R: Притяжение · F: Релей",
       color: "#c77dff",
-      hp: 20000,
-      speed: 330,
-      range: 800,
-      reload: 0.65,
+      hp: 19000,
+      speed: 310,
+      range: 780,
+      reload: 0.7,
       bullets: 1,
       spread: 0,
-      damage: 1600,
-      bulletSpeed: 1100,
-      bulletLife: 0.7,
+      damage: 900,
+      bulletSpeed: 700,
+      bulletLife: 0.95,
       radius: 24,
-      laser: true,
-      chain: 5,
       webSwing: true,
       wallStick: true,
-      lifesteal: 0.35,
-      healShot: 600,
-      cloak: true,
+      knockback: 120,
       rainbow: true,
       rainbowAura: true,
+      bridgePull: true,
+      relayZone: true,
       unlock: 2,
     },
     {
@@ -953,27 +949,25 @@
       name: "Желание",
       emoji: "✨",
       role: "Секрет",
-      desc: "Скрытое желание Amalmanarx — исполняется в бою",
-      ability: "Исполнение",
+      desc: "Исполняет или отвергает — как решит суверен",
+      ability: "R: Исполнить · F: Отвергнуть",
       color: "#ffd23f",
-      hp: 21000,
-      speed: 320,
-      range: 900,
-      reload: 0.8,
+      hp: 20000,
+      speed: 300,
+      range: 860,
+      reload: 0.95,
       bullets: 1,
       spread: 0,
-      damage: 2000,
-      bulletSpeed: 1,
-      bulletLife: 0.1,
+      damage: 1700,
+      bulletSpeed: 520,
+      bulletLife: 1.2,
       radius: 25,
-      meteor: 210,
-      freeze: 3,
-      explosive: 140,
-      healShot: 900,
-      pierce: 4,
-      ring: true,
+      homing: true,
+      explosive: 110,
       rainbow: true,
       rainbowAura: true,
+      wishGrant: true,
+      wishDeny: true,
       unlock: 2,
     },
     {
@@ -981,28 +975,20 @@
       name: "Нексус",
       emoji: "🔮",
       role: "Суперсекрет",
-      desc: "Живая связь Amalmanarx ↔ Auto — два разума, одна сила",
-      ability: "R: Синк · F: Обмен разумов",
+      desc: "Два разума — синк врагов и обмен телами",
+      ability: "R: Синк · F: Обмен",
       color: "#ff6ad5",
-      hp: 28000,
-      speed: 350,
-      range: 980,
-      reload: 0.6,
+      hp: 26000,
+      speed: 335,
+      range: 700,
+      reload: 0.85,
       bullets: 2,
-      spread: 0.12,
-      damage: 1800,
-      bulletSpeed: 1400,
-      bulletLife: 0.55,
-      radius: 28,
-      laser: true,
-      chain: 6,
-      pierce: 4,
-      cloak: true,
-      lifesteal: 0.45,
-      healShot: 1200,
-      split: true,
-      dash: true,
-      freeze: 2,
+      spread: 0.4,
+      damage: 1300,
+      bulletSpeed: 480,
+      bulletLife: 1.0,
+      radius: 27,
+      freeze: 1.8,
       rainbow: true,
       rainbowAura: true,
       dualLink: true,
@@ -1014,27 +1000,21 @@
       name: "Манаркс",
       emoji: "💎",
       role: "Суперсекрет",
-      desc: "Кристалл короны Amalmanarx — осколок суверена",
-      ability: "R: Осколки · F: Призма-щит",
+      desc: "Кристалл короны — осколки и призма-щит",
+      ability: "R: Осколки · F: Призма",
       color: "#4cc9f0",
-      hp: 30000,
-      speed: 345,
-      range: 960,
-      reload: 0.75,
+      hp: 29000,
+      speed: 290,
+      range: 640,
+      reload: 1.05,
       bullets: 1,
       spread: 0,
-      damage: 2400,
-      bulletSpeed: 1,
-      bulletLife: 0.1,
-      radius: 30,
-      meteor: 240,
-      explosive: 160,
-      knockback: 160,
-      pierce: 5,
-      chain: 4,
-      healShot: 1500,
-      cloak: true,
-      ring: true,
+      damage: 2100,
+      bulletSpeed: 400,
+      bulletLife: 1.1,
+      radius: 31,
+      pierce: 6,
+      knockback: 140,
       rainbow: true,
       rainbowAura: true,
       crystalVolley: true,
@@ -1046,34 +1026,25 @@
       name: "Composer",
       emoji: "🎼",
       role: "Суперсекрет",
-      desc: "Второй голос Auto — пишет бой как партитуру",
-      ability: "R/F + Крещендо · мотив",
-      color: "#00e5ff",
-      hp: 26000,
-      speed: 360,
-      range: 940,
-      reload: 0.5,
-      bullets: 4,
-      spread: 0.28,
-      damage: 950,
-      bulletSpeed: 1000,
-      bulletLife: 0.75,
+      desc: "Партитура боя — крещендо, финал и пауза",
+      ability: "R: Финал · F: Пауза · ♪",
+      color: "#9b5de5",
+      hp: 24000,
+      speed: 345,
+      range: 760,
+      reload: 0.48,
+      bullets: 3,
+      spread: 0.32,
+      damage: 780,
+      bulletSpeed: 760,
+      bulletLife: 0.8,
       radius: 23,
-      laser: true,
-      chain: 5,
-      split: true,
-      pierce: 3,
-      cloak: true,
-      healShot: 800,
-      dash: true,
-      dashDist: 260,
-      poison: 140,
       rainbow: true,
-      agentAura: true,
-      compileStorm: true,
-      hotReload: true,
+      rainbowAura: true,
       crescendo: true,
       motifEcho: true,
+      finaleWave: true,
+      restTempo: true,
       unlock: 3,
     },
   ];
@@ -1492,6 +1463,9 @@
       crescendoT: 0,
       guardT: 0,
       shotCount: 0,
+      relayT: 0,
+      relay: null,
+      rewriteT: 0,
       auraZap: 0.4,
       invuln: 2.2,
       ai: {
@@ -1737,7 +1711,11 @@
     const d = effectiveDef(f);
     const mix = useAbilityMix(f);
     if (f.isLocal && CHEATS.infiniteAmmo) f.reload = 0.02;
-    else f.reload = mix ? Math.min(d.reload || 0.7, 0.45) : d.reload;
+    else {
+      let cd = mix ? Math.min(d.reload || 0.7, 0.45) : d.reload;
+      if ((f.rewriteT || 0) > 0) cd *= 0.45;
+      f.reload = cd;
+    }
     const base = f.angle;
     const dmg =
       d.damage * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
@@ -2332,6 +2310,235 @@
     }
   }
 
+  function fireWordStorm(g, f) {
+    if (!f.alive || !f.def.wordStorm) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 5;
+    f.wordStormT = 2.2;
+    g.shake = Math.max(g.shake, 11);
+    spawnBurst(g, f.x, f.y, "#7dffb0", 18);
+  }
+
+  function fireRewrite(g, f) {
+    if (!f.alive || !f.def.rewrite) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 4.5;
+    f.rewriteT = 2.8;
+    f.reload = 0;
+    f.slowT = 0;
+    f.poisonT = 0;
+    f.hp = Math.min(f.maxHp, f.hp + f.maxHp * 0.22);
+    f.flash = 0.25;
+    spawnBurst(g, f.x, f.y, "#80ed99", 20);
+    for (let i = 0; i < 12; i++) {
+      g.particles.push({
+        x: f.x + rand(-30, 30),
+        y: f.y + rand(-30, 30),
+        vx: rand(-40, 40),
+        vy: rand(-80, -20),
+        life: 0.6,
+        color: "#7dffb0",
+        size: 4,
+        glyph: pick(["edit", "fix", "ok", ">>", "AI", "..."]),
+      });
+    }
+  }
+
+  function fireBridgePull(g, f) {
+    if (!f.alive || !f.def.bridgePull) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 5.2;
+    const dmg =
+      700 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 14);
+    spawnBurst(g, f.x, f.y, "#c77dff", 16);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      const d = dist(f, other);
+      if (d > 420 || d < 1) continue;
+      const nx = (f.x - other.x) / d;
+      const ny = (f.y - other.y) / d;
+      other.x += nx * Math.min(160, d * 0.55);
+      other.y += ny * Math.min(160, d * 0.55);
+      resolveWalls(other, g.arena.walls);
+      other.slowT = Math.max(other.slowT || 0, 1.4);
+      hurt(g, other, dmg, f);
+      g.particles.push({
+        x: other.x,
+        y: other.y,
+        vx: 0,
+        vy: 0,
+        life: 0.2,
+        color: "#c77dff",
+        size: 2,
+        laser: { x2: f.x, y2: f.y },
+      });
+    }
+  }
+
+  function fireRelayZone(g, f) {
+    if (!f.alive || !f.def.relayZone) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 5;
+    const ax = f.isLocal ? g.mouse.worldX : f.input.aimX;
+    const ay = f.isLocal ? g.mouse.worldY : f.input.aimY;
+    f.relay = {
+      x: clamp(ax, 40, ARENA - 40),
+      y: clamp(ay, 40, ARENA - 40),
+      life: 4.5,
+      r: 95,
+    };
+    spawnBurst(g, f.relay.x, f.relay.y, "#c77dff", 22);
+  }
+
+  function fireWishGrant(g, f) {
+    if (!f.alive || !f.def.wishGrant) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 6;
+    f.hp = Math.min(f.maxHp, f.hp + f.maxHp * 0.35);
+    f.invuln = Math.max(f.invuln, 0.8);
+    f.power = Math.min(8, (f.power || 0) + 2);
+    f.flash = 0.3;
+    g.shake = Math.max(g.shake, 12);
+    for (let i = 0; i < 30; i++) {
+      const a = (i / 30) * Math.PI * 2;
+      g.particles.push({
+        x: f.x,
+        y: f.y,
+        vx: Math.cos(a) * rand(80, 220),
+        vy: Math.sin(a) * rand(80, 220),
+        life: rand(0.4, 0.9),
+        color: "#ffd23f",
+        size: rand(4, 9),
+      });
+    }
+  }
+
+  function fireWishDeny(g, f) {
+    if (!f.alive || !f.def.wishDeny) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 5.5;
+    const radius = 260;
+    const dmg =
+      1400 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 16);
+    spawnBurst(g, f.x, f.y, "#ff6b6b", 24);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(f, other) <= radius + other.r) {
+        other.slowT = Math.max(other.slowT || 0, 3);
+        other.reload = Math.max(other.reload || 0, 1.2);
+        other.invuln = 0;
+        hurt(g, other, dmg, f, { knockback: 100 });
+      }
+    }
+  }
+
+  function fireFinaleWave(g, f) {
+    if (!f.alive || !f.def.finaleWave) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 5.5;
+    const stacks = (f.crescendoT || 0) > 0 ? f.crescendo || 0 : 0;
+    const radius = 220 + stacks * 18;
+    const dmg =
+      (1200 + stacks * 220) *
+      powerMul(f) *
+      (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 18);
+    f.crescendo = 0;
+    f.crescendoT = 0;
+    for (let i = 0; i < 40; i++) {
+      const a = (i / 40) * Math.PI * 2;
+      g.particles.push({
+        x: f.x,
+        y: f.y,
+        vx: Math.cos(a) * rand(160, 380),
+        vy: Math.sin(a) * rand(160, 380),
+        life: rand(0.35, 0.8),
+        color: `hsl(${(280 + i * 4) % 360}, 90%, 65%)`,
+        size: rand(3, 9),
+        glyph: pick(["♪", "♫", "♬", "♭", "♯"]),
+      });
+    }
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(f, other) <= radius + other.r) {
+        hurt(g, other, dmg, f, { knockback: 140 });
+        other.slowT = Math.max(other.slowT || 0, 1.5);
+      }
+    }
+  }
+
+  function fireRestTempo(g, f) {
+    if (!f.alive || !f.def.restTempo) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 6;
+    f.invuln = Math.max(f.invuln, 0.9);
+    f.crescendo = 8;
+    f.crescendoT = 4;
+    spawnBurst(g, f.x, f.y, "#9b5de5", 18);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(f, other) < 300) {
+        other.slowT = Math.max(other.slowT || 0, 2.8);
+        other.reload = Math.max(other.reload || 0, 1.4);
+      }
+    }
+  }
+
+  function updateWordStorm(g, f, dt) {
+    if ((f.wordStormT || 0) <= 0) return;
+    f.wordStormT -= dt;
+    if (Math.random() > 0.5) return;
+    const x = f.x + rand(-220, 220);
+    const y = f.y + rand(-220, 220);
+    g.particles.push({
+      x,
+      y: y - 30,
+      vx: rand(-20, 20),
+      vy: rand(80, 160),
+      life: 0.65,
+      color: "#7dffb0",
+      size: 3,
+      glyph: pick(["hi", "ok", "go", "why", "yes", "no", "pls", "run"]),
+    });
+    const dmg =
+      320 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(other, { x, y }) < 55) hurt(g, other, dmg, f);
+    }
+  }
+
+  function updateRelayZone(g, f, dt) {
+    if (!f.relay) return;
+    f.relay.life -= dt;
+    if (f.relay.life <= 0) {
+      f.relay = null;
+      return;
+    }
+    if (Math.random() < 0.45) {
+      g.particles.push({
+        x: f.relay.x + rand(-f.relay.r, f.relay.r),
+        y: f.relay.y + rand(-f.relay.r, f.relay.r),
+        vx: rand(-20, 20),
+        vy: rand(-20, 20),
+        life: 0.35,
+        color: "#c77dff",
+        size: 3,
+      });
+    }
+    const dmg =
+      220 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(other, f.relay) < f.relay.r) {
+        hurt(g, other, dmg * dt * 8, f);
+        other.slowT = Math.max(other.slowT || 0, 0.6);
+      }
+    }
+  }
+
   function updatePrismGuard(g, f, dt) {
     if ((f.guardT || 0) <= 0) return;
     f.guardT -= dt;
@@ -2640,10 +2847,18 @@
       if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
       if (inp.nova && f.def.dualLink) fireDualLink(g, f);
       if (inp.nova && f.def.crystalVolley) fireCrystalVolley(g, f);
+      if (inp.nova && f.def.wordStorm) fireWordStorm(g, f);
+      if (inp.nova && f.def.bridgePull) fireBridgePull(g, f);
+      if (inp.nova && f.def.wishGrant) fireWishGrant(g, f);
+      if (inp.nova && f.def.finaleWave) fireFinaleWave(g, f);
       if (inp.blink && f.def.hotReload) fireHotReload(g, f);
       if (inp.blink && f.def.mindSwap) fireMindSwap(g, f);
       if (inp.blink && f.def.prismGuard) firePrismGuard(g, f);
-      if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard) fireRoyalNova(g, f);
+      if (inp.blink && f.def.rewrite) fireRewrite(g, f);
+      if (inp.blink && f.def.relayZone) fireRelayZone(g, f);
+      if (inp.blink && f.def.wishDeny) fireWishDeny(g, f);
+      if (inp.blink && f.def.restTempo) fireRestTempo(g, f);
+      if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard && !f.def.rewrite && !f.def.relayZone && !f.def.wishDeny && !f.def.restTempo) fireRoyalNova(g, f);
       return;
     }
     let mx = inp.mx;
@@ -2664,10 +2879,18 @@
     if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
     if (inp.nova && f.def.dualLink) fireDualLink(g, f);
     if (inp.nova && f.def.crystalVolley) fireCrystalVolley(g, f);
+    if (inp.nova && f.def.wordStorm) fireWordStorm(g, f);
+    if (inp.nova && f.def.bridgePull) fireBridgePull(g, f);
+    if (inp.nova && f.def.wishGrant) fireWishGrant(g, f);
+    if (inp.nova && f.def.finaleWave) fireFinaleWave(g, f);
     if (inp.blink && f.def.hotReload) fireHotReload(g, f);
     if (inp.blink && f.def.mindSwap) fireMindSwap(g, f);
     if (inp.blink && f.def.prismGuard) firePrismGuard(g, f);
-    if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard) fireRoyalNova(g, f);
+    if (inp.blink && f.def.rewrite) fireRewrite(g, f);
+    if (inp.blink && f.def.relayZone) fireRelayZone(g, f);
+    if (inp.blink && f.def.wishDeny) fireWishDeny(g, f);
+    if (inp.blink && f.def.restTempo) fireRestTempo(g, f);
+    if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard && !f.def.rewrite && !f.def.relayZone && !f.def.wishDeny && !f.def.restTempo) fireRoyalNova(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -2750,6 +2973,8 @@
       f.blinkCd = Math.max(0, (f.blinkCd || 0) - dt);
       f.linkT = Math.max(0, (f.linkT || 0) - dt);
       f.crescendoT = Math.max(0, (f.crescendoT || 0) - dt);
+      f.rewriteT = Math.max(0, (f.rewriteT || 0) - dt);
+      f.wordStormT = Math.max(0, (f.wordStormT || 0) - dt);
       if ((f.crescendoT || 0) <= 0) f.crescendo = 0;
       if ((f.linkT || 0) <= 0) f.linkPair = null;
       if (f.web && f.web.life <= 0) f.web = null;
@@ -2780,6 +3005,8 @@
       updateCompileStorm(g, f, dt);
       updatePrismGuard(g, f, dt);
       updateDualLinkVisual(g, f);
+      updateWordStorm(g, f, dt);
+      updateRelayZone(g, f, dt);
 
       for (const other of g.fighters) {
         if (!other.alive || other === f) continue;
@@ -3196,7 +3423,7 @@
           ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x + f.r * 0.85, f.y - f.r * 0.8);
         }
       }
-      if (f.def.dualLink || f.def.crystalVolley) {
+      if (f.def.dualLink || f.def.crystalVolley || f.def.wordStorm || f.def.bridgePull || f.def.wishGrant || f.def.finaleWave) {
         ctx.font = "900 11px Nunito";
         ctx.fillStyle = (f.novaCd || 0) <= 0 ? "#ffe082" : "rgba(255,255,255,0.35)";
         ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x - f.r * 0.9, f.y - f.r * 0.85);
@@ -3845,9 +4072,13 @@
             <li><b>WASD</b> — движение, <b>мышь + ЛКМ</b> — прицел и выстрел</li>
             <li><b>E / Q</b> — паутина (Amalmanarx): летишь к стене и прилипаешь</li>
             <li><b>R / F</b> — королевская вспышка Amalmanarx: радужный взрыв вокруг</li>
-            <li><b>Auto / Composer</b> — <b>R</b> compile, <b>F</b> hot reload; Composer ещё крещендо и мотив</li>
-            <li><b>Нексус</b> — <b>R</b> синк двух врагов, <b>F</b> обмен местами</li>
-            <li><b>Манаркс</b> — <b>R</b> осколки кристалла, <b>F</b> призма-щит</li>
+            <li><b>Auto</b> — <b>R</b> compile, <b>F</b> hot reload</li>
+            <li><b>Промпт</b> — дробовик слов · <b>R</b> словопад · <b>F</b> перепись</li>
+            <li><b>Прокси</b> — паутина · <b>R</b> притяжение · <b>F</b> релей-зона</li>
+            <li><b>Желание</b> — самонаведение · <b>R</b> исполнить · <b>F</b> отвергнуть</li>
+            <li><b>Нексус</b> — <b>R</b> синк · <b>F</b> обмен местами</li>
+            <li><b>Манаркс</b> — <b>R</b> осколки · <b>F</b> призма-щит</li>
+            <li><b>Composer</b> — <b>R</b> финал · <b>F</b> пауза · крещендо ♪</li>
             <li><b>Spider-Man</b> — ЛКМ стреляет паутиной и тянет к стене</li>
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>
