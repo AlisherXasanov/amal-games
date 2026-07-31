@@ -3374,6 +3374,17 @@
       ctx.fill();
     }
 
+    for (const f of g.fighters) {
+      if (!f.alive || !f.relay) continue;
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(199,125,255,0.75)";
+      ctx.fillStyle = "rgba(199,125,255,0.12)";
+      ctx.lineWidth = 3;
+      ctx.arc(f.relay.x, f.relay.y, f.relay.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
     const local = g.fighters.find((f) => f.isLocal);
     for (const f of g.fighters) {
       if (!f.alive) continue;
