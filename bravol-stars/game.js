@@ -12,6 +12,9 @@
   const SECRET_CARD_COST = 250;
   const CHEST_COST = 120;
   const COIN_NAME = "Браволы";
+  const OWNER_NAME = "Amalmanarx Game";
+  const OWNER_NICK = "Amalmanarx";
+  const NICK_MAX = 28;
 
   const BRAWLERS = [
     {
@@ -806,12 +809,12 @@
     },
     {
       id: "amal",
-      name: "Амал",
-      emoji: "✨",
-      role: "Секрет",
-      desc: "Легенда Amal Games — одним кликом сносит всю карту",
-      ability: "Амал Games: уничтожение карты",
-      color: "#ffd23f",
+      name: "Amalmanarx",
+      emoji: "🌈",
+      role: "Суперсекрет",
+      desc: "Amalmanarx Game — радуга сносит всю карту одним кликом",
+      ability: "Amalmanarx Game: уничтожение карты",
+      color: "#ff6ad5",
       hp: 30000,
       speed: 350,
       range: 1000,
@@ -826,7 +829,8 @@
       cloak: true,
       lifesteal: 0.6,
       healShot: 2000,
-      unlock: 2,
+      rainbow: true,
+      unlock: 3,
     },
   ];
 
@@ -892,6 +896,8 @@
         coins = 999999;
         store.set("bravol-coins", coins);
       }
+      nickname = OWNER_NICK;
+      store.set("bravol-nick", nickname);
       saveUnlocksSafe();
     }
   }
@@ -936,7 +942,7 @@
     return BRAWLERS.filter((b) => b.unlock === 1 && !unlocked.has(b.id));
   }
   function secretPool() {
-    return BRAWLERS.filter((b) => b.unlock === 2 && !unlocked.has(b.id));
+    return BRAWLERS.filter((b) => (b.unlock === 2 || b.unlock === 3) && !unlocked.has(b.id));
   }
   function isFighterInvisible(f) {
     if (!f || !f.alive) return false;
@@ -1101,7 +1107,7 @@
     const points = spawnPoints().sort(() => Math.random() - 0.5);
     const fighters = [];
     fighters.push(
-      createFighter(def, nickname || "Ты", points[0].x, points[0].y, {
+      createFighter(def, localDisplayName(), points[0].x, points[0].y, {
         isLocal: true,
         team: 0,
         netId: "local",
@@ -2174,9 +2180,19 @@
         ctx.fillText("невидим", f.x, f.y - f.r - 26);
       }
 
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.font = "800 11px Nunito";
-      ctx.fillText(f.name, f.x, f.y + f.r + 14);
+      const rainbowName = (f.isLocal && isOwnerNow()) || f.def.rainbow;
+      if (rainbowName) {
+        if (f.isLocal && isOwnerNow()) {
+          fillRainbowText(ctx, OWNER_NAME, f.x, f.y + f.r + 12, "900 10px Nunito", g.time);
+          fillRainbowText(ctx, f.name, f.x, f.y + f.r + 24, "900 12px Nunito", g.time + 0.4);
+        } else {
+          fillRainbowText(ctx, f.name, f.x, f.y + f.r + 14, "900 12px Nunito", g.time);
+        }
+      } else {
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.font = "800 11px Nunito";
+        ctx.fillText(f.name, f.x, f.y + f.r + 14);
+      }
       ctx.globalAlpha = 1;
     }
 
@@ -2416,7 +2432,27 @@
   }
 
   function sanitizeName(n) {
-    return String(n || "Герой").slice(0, 14).trim() || "Герой";
+    return String(n || "Герой").slice(0, NICK_MAX).trim() || "Герой";
+  }
+
+  function localDisplayName() {
+    return isOwnerNow() ? OWNER_NICK : nickname || "Ты";
+  }
+
+  function fillRainbowText(ctx, text, x, y, font, t = 0) {
+    ctx.font = font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const chars = String(text).split("");
+    const widths = chars.map((ch) => ctx.measureText(ch).width);
+    const total = widths.reduce((a, b) => a + b, 0);
+    let cx = x - total / 2;
+    for (let i = 0; i < chars.length; i++) {
+      const hue = (t * 120 + i * 28) % 360;
+      ctx.fillStyle = `hsl(${hue}, 95%, 62%)`;
+      ctx.fillText(chars[i], cx + widths[i] / 2, y);
+      cx += widths[i];
+    }
   }
 
   function pickTeam(lob) {
@@ -2456,7 +2492,12 @@
         <div class="menu-bg"></div>
         <div class="menu-panel">
           <h1 class="brand">BRAVOL STARS</h1>
-          <p class="tagline">Соло, комнаты по коду и командные бои из любой точки</p>
+          ${
+            isOwnerNow()
+              ? `<p class="owner-title rainbow-text">${escapeAttr(OWNER_NAME)}</p>
+          <p class="tagline owner-nick rainbow-text">ник: ${escapeAttr(OWNER_NICK)}</p>`
+              : `<p class="tagline">Соло, комнаты по коду и командные бои из любой точки</p>`
+          }
           <div class="coin-bar">
             <span class="coin-pill">✦ ${coins} ${COIN_NAME}</span>
             <span class="coin-pill soft">Бойцы: ${unlockedCount}/${BRAWLERS.length}</span>
@@ -2465,17 +2506,18 @@
             ${BRAWLERS.map((b) => {
               const open = isUnlocked(b.id);
               const secret = b.unlock === 2;
+              const superSecret = b.unlock === 3;
               return `
-              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${secret ? "Секретная карта" : "Открой сундук"}"`}>
-                <div class="brawler-emoji">${open ? b.emoji : secret ? "🃏" : "🔒"}</div>
-                <h3>${open ? b.name : secret ? "Секрет" : "???"}</h3>
-                <p>${open ? b.desc : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
-                <span class="role-tag">${open ? b.ability || b.role : secret ? "Карта" : "Сундук"}</span>
+              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
+                <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
+                <h3 class="${open && (superSecret || b.rainbow) ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
+                <p>${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <span class="role-tag ${open && superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
           <div class="field-row">
-            <input id="nick-input" maxlength="14" value="${escapeAttr(nickname)}" placeholder="Твой ник" />
+            <input id="nick-input" maxlength="${NICK_MAX}" value="${escapeAttr(isOwnerNow() ? OWNER_NICK : nickname)}" placeholder="Твой ник" ${isOwnerNow() ? "readonly" : ""} />
           </div>
           <div class="menu-actions">
             <button class="btn" id="btn-solo" type="button">▶ Соло vs боты</button>
@@ -2499,8 +2541,10 @@
         if (!isUnlocked(id)) {
           const def = BRAWLERS.find((b) => b.id === id);
           renderChest(
-            def && def.unlock === 2
-              ? "Это секретный боец — открой секретную карту"
+            def && def.unlock >= 2
+              ? def.unlock === 3
+                ? "Это суперсекрет Amalmanarx — открой секретную карту"
+                : "Это секретный боец — открой секретную карту"
               : "Сначала открой сундук, чтобы получить этого бойца"
           );
           return;
@@ -2597,7 +2641,10 @@
       const secretsNow = secretPool();
       const reward =
         secretsNow.length && Math.random() < 0.12 ? pick(secretsNow) : pick(cur);
-      revealReward(reward, reward.unlock === 2 ? "🃏 Секрет:" : "Выпал");
+      revealReward(
+        reward,
+        reward.unlock === 3 ? "🌈 Суперсекрет:" : reward.unlock === 2 ? "🃏 Секрет:" : "Выпал"
+      );
     });
 
     secretBtn.addEventListener("click", () => {
@@ -2936,7 +2983,9 @@
     const ratio = player.alive ? player.hp / player.maxHp : 0;
     hpEl.style.width = `${ratio * 100}%`;
     hpEl.classList.toggle("low", ratio < 0.3);
-    hpMeta.textContent = `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
+    hpMeta.innerHTML = isOwnerNow()
+      ? `<span class="rainbow-text">${OWNER_NAME}</span> · ${player.def.emoji} ${player.def.name}`
+      : `${player.def.emoji} ${player.def.name} · сила ×${player.power}`;
     aliveEl.textContent = String(alive);
     killsEl.textContent = String(player.kills);
     const t = Math.floor(g.time);
@@ -2947,7 +2996,8 @@
       .sort((a, b) => Number(b.alive) - Number(a.alive) || b.kills - a.kills)
       .map((f) => {
         const teamCls = g.teamMode ? (f.team === 0 ? "team-a" : "team-b") : "";
-        return `<div class="alive-chip ${f.isLocal ? "you" : ""} ${teamCls} ${f.alive ? "" : "dead"}">${f.def.emoji} ${f.name}${f.kills ? ` · ${f.kills}` : ""}</div>`;
+        const rainbow = (f.isLocal && isOwnerNow()) || f.def.rainbow ? "rainbow-text" : "";
+        return `<div class="alive-chip ${f.isLocal ? "you" : ""} ${teamCls} ${f.alive ? "" : "dead"} ${rainbow}">${f.def.emoji} ${f.name}${f.kills ? ` · ${f.kills}` : ""}</div>`;
       })
       .join("");
   }

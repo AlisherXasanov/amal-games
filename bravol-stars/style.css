@@ -555,6 +555,79 @@ body {
   opacity: 0.85;
 }
 
+.brawler-card.super-secret {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(#121820, #121820) padding-box,
+    linear-gradient(120deg, #ff004c, #ffd23f, #7dffb0, #4cc9f0, #c77dff, #ff004c) border-box;
+  box-shadow: 0 0 22px rgba(255, 105, 180, 0.35);
+  animation: rainbow-border 3.5s linear infinite;
+}
+
+.brawler-card.super-secret::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from var(--rainbow-angle, 0deg), #ff004c, #ffd23f, #7dffb0, #4cc9f0, #c77dff, #ff004c);
+  opacity: 0.18;
+  animation: rainbow-spin 4s linear infinite;
+  pointer-events: none;
+}
+
+.brawler-card.super-secret > * {
+  position: relative;
+  z-index: 1;
+}
+
+.brawler-card.super-secret.locked {
+  opacity: 0.92;
+  filter: none;
+}
+
+.rainbow-text {
+  background: linear-gradient(90deg, #ff004c, #ffd23f, #7dffb0, #4cc9f0, #c77dff, #ff004c);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: rainbow-flow 2.4s linear infinite;
+  font-weight: 900;
+}
+
+.owner-title {
+  margin: 0 0 4px;
+  font-size: clamp(1.15rem, 3.5vw, 1.55rem);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.owner-nick {
+  margin: 0 0 12px !important;
+  opacity: 1 !important;
+}
+
+@keyframes rainbow-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 220% 50%; }
+}
+
+@keyframes rainbow-spin {
+  to { transform: rotate(1turn); }
+}
+
+@keyframes rainbow-border {
+  0%, 100% { box-shadow: 0 0 18px rgba(255, 0, 76, 0.35); }
+  33% { box-shadow: 0 0 22px rgba(125, 255, 176, 0.4); }
+  66% { box-shadow: 0 0 22px rgba(76, 201, 240, 0.4); }
+}
+
+.alive-chip.rainbow-text {
+  border-color: rgba(255, 210, 63, 0.7);
+}
+
 .chest-panel .chest-visual {
   font-size: 4.5rem;
   line-height: 1;
