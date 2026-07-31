@@ -982,7 +982,7 @@
       emoji: "🔮",
       role: "Суперсекрет",
       desc: "Живая связь Amalmanarx ↔ Auto — два разума, одна сила",
-      ability: "Слияние",
+      ability: "R: Синк · F: Обмен разумов",
       color: "#ff6ad5",
       hp: 28000,
       speed: 350,
@@ -1005,6 +1005,8 @@
       freeze: 2,
       rainbow: true,
       rainbowAura: true,
+      dualLink: true,
+      mindSwap: true,
       unlock: 3,
     },
     {
@@ -1013,7 +1015,7 @@
       emoji: "💎",
       role: "Суперсекрет",
       desc: "Кристалл короны Amalmanarx — осколок суверена",
-      ability: "Кристалл короны",
+      ability: "R: Осколки · F: Призма-щит",
       color: "#4cc9f0",
       hp: 30000,
       speed: 345,
@@ -1035,6 +1037,8 @@
       ring: true,
       rainbow: true,
       rainbowAura: true,
+      crystalVolley: true,
+      prismGuard: true,
       unlock: 3,
     },
     {
@@ -1043,7 +1047,7 @@
       emoji: "🎼",
       role: "Суперсекрет",
       desc: "Второй голос Auto — пишет бой как партитуру",
-      ability: "Партитура агента",
+      ability: "R/F + Крещендо · мотив",
       color: "#00e5ff",
       hp: 26000,
       speed: 360,
@@ -1068,6 +1072,8 @@
       agentAura: true,
       compileStorm: true,
       hotReload: true,
+      crescendo: true,
+      motifEcho: true,
       unlock: 3,
     },
   ];
@@ -1480,6 +1486,12 @@
       compileCd: 0,
       compileStormT: 0,
       blinkCd: 0,
+      linkT: 0,
+      linkPair: null,
+      crescendo: 0,
+      crescendoT: 0,
+      guardT: 0,
+      shotCount: 0,
       auraZap: 0.4,
       invuln: 2.2,
       ai: {
@@ -1600,7 +1612,9 @@
   }
 
   function powerMul(f) {
-    return 1 + f.power * 0.12;
+    const cresc =
+      f.def && f.def.crescendo && (f.crescendoT || 0) > 0 ? f.crescendo || 0 : 0;
+    return 1 + f.power * 0.12 + cresc * 0.1;
   }
 
   function sameTeam(g, a, b) {
@@ -1857,6 +1871,23 @@
         a = base + offset;
       }
       g.bullets.push(makeBullet(f, d, a, dmg));
+    }
+
+    if (d.motifEcho) {
+      f.shotCount = (f.shotCount || 0) + 1;
+      if (f.shotCount % 4 === 0) {
+        for (let i = 0; i < 8; i++) {
+          const a = base + (i / 8) * Math.PI * 2;
+          const note = makeBullet(f, d, a, dmg * 0.4);
+          note.vx = Math.cos(a) * 520;
+          note.vy = Math.sin(a) * 520;
+          note.r = 5;
+          note.explosive = 0;
+          note.color = "#7dffb0";
+          g.bullets.push(note);
+        }
+        spawnBurst(g, f.x, f.y, "#c77dff", 10);
+      }
     }
   }
 
@@ -2153,6 +2184,188 @@
     }
   }
 
+  function nearestEnemies(g, f, n, maxD) {
+    return g.fighters
+      .filter(
+        (o) =>
+          o.alive &&
+          o !== f &&
+          !sameTeam(g, f, o) &&
+          !isFighterInvisible(o) &&
+          dist(f, o) <= maxD
+      )
+      .sort((a, b) => dist(f, a) - dist(f, b))
+      .slice(0, n);
+  }
+
+  function fireDualLink(g, f) {
+    if (!f.alive || !f.def.dualLink) return;
+    if ((f.novaCd || 0) > 0) return;
+    const targets = nearestEnemies(g, f, 2, 520);
+    if (!targets.length) {
+      spawnBurst(g, f.x, f.y, "#ff6ad5", 6);
+      return;
+    }
+    f.novaCd = 5;
+    f.linkT = 5.5;
+    f.linkPair = targets.length >= 2 ? [targets[0].id, targets[1].id] : [targets[0].id, targets[0].id];
+    const dmg =
+      1600 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 12);
+    for (const t of targets) {
+      g.particles.push({
+        x: f.x,
+        y: f.y,
+        vx: 0,
+        vy: 0,
+        life: 0.28,
+        color: "#ff6ad5",
+        size: 2,
+        laser: { x2: t.x, y2: t.y },
+      });
+      t.slowT = Math.max(t.slowT || 0, 2);
+      hurt(g, t, dmg, f);
+      spawnBurst(g, t.x, t.y, "#c77dff", 12);
+    }
+    if (targets.length >= 2) {
+      g.particles.push({
+        x: targets[0].x,
+        y: targets[0].y,
+        vx: 0,
+        vy: 0,
+        life: 0.35,
+        color: "#7dffb0",
+        size: 2,
+        laser: { x2: targets[1].x, y2: targets[1].y },
+      });
+    }
+  }
+
+  function fireMindSwap(g, f) {
+    if (!f.alive || !f.def.mindSwap) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 4;
+    const foe = nearestEnemies(g, f, 1, 480)[0];
+    spawnBurst(g, f.x, f.y, "#ff6ad5", 14);
+    if (foe) {
+      const sx = f.x;
+      const sy = f.y;
+      f.x = foe.x;
+      f.y = foe.y;
+      foe.x = sx;
+      foe.y = sy;
+      foe.slowT = Math.max(foe.slowT || 0, 1.6);
+      foe.flash = 0.25;
+      resolveWalls(foe, g.arena.walls);
+      spawnBurst(g, foe.x, foe.y, "#c77dff", 14);
+    } else {
+      const ax = f.isLocal ? g.mouse.worldX : f.input.aimX;
+      const ay = f.isLocal ? g.mouse.worldY : f.input.aimY;
+      f.x = clamp(ax, f.r, ARENA - f.r);
+      f.y = clamp(ay, f.r, ARENA - f.r);
+    }
+    resolveWalls(f, g.arena.walls);
+    f.invuln = Math.max(f.invuln, 0.4);
+    f.flash = 0.2;
+    spawnBurst(g, f.x, f.y, "#7dffb0", 16);
+    if (f.isLocal) g.shake = Math.max(g.shake, 10);
+  }
+
+  function fireCrystalVolley(g, f) {
+    if (!f.alive || !f.def.crystalVolley) return;
+    if ((f.novaCd || 0) > 0) return;
+    f.novaCd = 4.8;
+    const dmg =
+      900 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    g.shake = Math.max(g.shake, 16);
+    spawnBurst(g, f.x, f.y, "#4cc9f0", 22);
+    for (let i = 0; i < 16; i++) {
+      const a = f.angle + (i / 16) * Math.PI * 2;
+      const shard = {
+        x: f.x + Math.cos(a) * (f.r + 6),
+        y: f.y + Math.sin(a) * (f.r + 6),
+        vx: Math.cos(a) * 780,
+        vy: Math.sin(a) * 780,
+        life: 70,
+        maxLife: 70,
+        dmg,
+        r: 6,
+        owner: f,
+        ownerId: f.id,
+        color: i % 2 ? "#4cc9f0" : "#ffe082",
+        poison: 0,
+        explosive: 0,
+        freeze: 1.2,
+        pierce: 4,
+        homing: false,
+        split: false,
+        chain: 0,
+        knockback: 40,
+        lifesteal: 0.15,
+        bounces: 0,
+        hitIds: [],
+      };
+      g.bullets.push(shard);
+    }
+  }
+
+  function firePrismGuard(g, f) {
+    if (!f.alive || !f.def.prismGuard) return;
+    if ((f.blinkCd || 0) > 0) return;
+    f.blinkCd = 5.5;
+    f.guardT = 1.6;
+    f.invuln = Math.max(f.invuln, 1.6);
+    f.hp = Math.min(f.maxHp, f.hp + f.maxHp * 0.18);
+    f.flash = 0.3;
+    g.shake = Math.max(g.shake, 10);
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      g.particles.push({
+        x: f.x + Math.cos(a) * (f.r + 14),
+        y: f.y + Math.sin(a) * (f.r + 14),
+        vx: Math.cos(a) * 40,
+        vy: Math.sin(a) * 40,
+        life: 0.7,
+        color: `hsl(${(i / 24) * 360}, 90%, 65%)`,
+        size: rand(3, 7),
+      });
+    }
+  }
+
+  function updatePrismGuard(g, f, dt) {
+    if ((f.guardT || 0) <= 0) return;
+    f.guardT -= dt;
+    if (Math.random() > 0.4) return;
+    const dmg =
+      280 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(f, other) < f.r + other.r + 90) {
+        hurt(g, other, dmg, f);
+        other.slowT = Math.max(other.slowT || 0, 0.5);
+      }
+    }
+  }
+
+  function updateDualLinkVisual(g, f) {
+    if ((f.linkT || 0) <= 0 || !f.linkPair) return;
+    const a = g.fighters.find((x) => x.id === f.linkPair[0]);
+    const b = g.fighters.find((x) => x.id === f.linkPair[1]);
+    if (!a || !b || !a.alive || !b.alive) return;
+    if (Math.random() < 0.35) {
+      g.particles.push({
+        x: a.x,
+        y: a.y,
+        vx: 0,
+        vy: 0,
+        life: 0.12,
+        color: "#ff6ad5",
+        size: 2,
+        laser: { x2: b.x, y2: b.y },
+      });
+    }
+  }
+
   function updateSovereignAura(g, f, dt) {
     if (!f.def.sovereignAura || !f.alive) return;
     f.auraT = (f.auraT || 0) + dt;
@@ -2215,6 +2428,45 @@
     }
     if (attacker && attacker.isLocal) g.shake = Math.max(g.shake, 5);
     spawnBurst(g, target.x, target.y, "#ff6b6b", 6);
+
+    if (
+      attacker &&
+      attacker.alive &&
+      attacker.def &&
+      attacker.def.crescendo &&
+      !meta.fromLink
+    ) {
+      attacker.crescendo = Math.min(8, (attacker.crescendo || 0) + 1);
+      attacker.crescendoT = 3.5;
+    }
+
+    if (
+      attacker &&
+      attacker.alive &&
+      (attacker.linkT || 0) > 0 &&
+      attacker.linkPair &&
+      !meta.fromLink
+    ) {
+      const [idA, idB] = attacker.linkPair;
+      const otherId = target.id === idA ? idB : target.id === idB ? idA : null;
+      if (otherId && otherId !== target.id) {
+        const other = g.fighters.find((x) => x.id === otherId);
+        if (other && other.alive) {
+          g.particles.push({
+            x: target.x,
+            y: target.y,
+            vx: 0,
+            vy: 0,
+            life: 0.1,
+            color: "#ff6ad5",
+            size: 2,
+            laser: { x2: other.x, y2: other.y },
+          });
+          hurt(g, other, amount * 0.4, attacker, { fromLink: true });
+        }
+      }
+    }
+
     if (target.hp <= 0) {
       target.hp = 0;
       target.alive = false;
@@ -2386,8 +2638,12 @@
       if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
       if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
       if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
+      if (inp.nova && f.def.dualLink) fireDualLink(g, f);
+      if (inp.nova && f.def.crystalVolley) fireCrystalVolley(g, f);
       if (inp.blink && f.def.hotReload) fireHotReload(g, f);
-      if (inp.blink && f.def.royalNova && !f.def.hotReload) fireRoyalNova(g, f);
+      if (inp.blink && f.def.mindSwap) fireMindSwap(g, f);
+      if (inp.blink && f.def.prismGuard) firePrismGuard(g, f);
+      if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard) fireRoyalNova(g, f);
       return;
     }
     let mx = inp.mx;
@@ -2406,8 +2662,12 @@
     if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
     if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
     if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
+    if (inp.nova && f.def.dualLink) fireDualLink(g, f);
+    if (inp.nova && f.def.crystalVolley) fireCrystalVolley(g, f);
     if (inp.blink && f.def.hotReload) fireHotReload(g, f);
-    if (inp.blink && f.def.royalNova && !f.def.hotReload) fireRoyalNova(g, f);
+    if (inp.blink && f.def.mindSwap) fireMindSwap(g, f);
+    if (inp.blink && f.def.prismGuard) firePrismGuard(g, f);
+    if (inp.blink && f.def.royalNova && !f.def.hotReload && !f.def.mindSwap && !f.def.prismGuard) fireRoyalNova(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -2488,6 +2748,10 @@
       f.novaCd = Math.max(0, (f.novaCd || 0) - dt);
       f.compileCd = Math.max(0, (f.compileCd || 0) - dt);
       f.blinkCd = Math.max(0, (f.blinkCd || 0) - dt);
+      f.linkT = Math.max(0, (f.linkT || 0) - dt);
+      f.crescendoT = Math.max(0, (f.crescendoT || 0) - dt);
+      if ((f.crescendoT || 0) <= 0) f.crescendo = 0;
+      if ((f.linkT || 0) <= 0) f.linkPair = null;
       if (f.web && f.web.life <= 0) f.web = null;
       if (effectiveDef(f).cloak) {
         // Невидимость, пока не стрелял недавно
@@ -2514,6 +2778,8 @@
       updateSovereignAura(g, f, dt);
       updateAgentAura(g, f, dt);
       updateCompileStorm(g, f, dt);
+      updatePrismGuard(g, f, dt);
+      updateDualLinkVisual(g, f);
 
       for (const other of g.fighters) {
         if (!other.alive || other === f) continue;
@@ -2929,6 +3195,25 @@
           ctx.fillStyle = (f.novaCd || 0) <= 0 ? "#ffe082" : "rgba(255,255,255,0.35)";
           ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x + f.r * 0.85, f.y - f.r * 0.8);
         }
+      }
+      if (f.def.dualLink || f.def.crystalVolley) {
+        ctx.font = "900 11px Nunito";
+        ctx.fillStyle = (f.novaCd || 0) <= 0 ? "#ffe082" : "rgba(255,255,255,0.35)";
+        ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x - f.r * 0.9, f.y - f.r * 0.85);
+        ctx.fillStyle = (f.blinkCd || 0) <= 0 ? "#c77dff" : "rgba(255,255,255,0.35)";
+        ctx.fillText((f.blinkCd || 0) <= 0 ? "F" : `${Math.ceil(f.blinkCd)}`, f.x + f.r * 0.9, f.y - f.r * 0.85);
+      }
+      if (f.def.crescendo && (f.crescendo || 0) > 0) {
+        ctx.font = "900 11px Nunito";
+        ctx.fillStyle = "#7dffb0";
+        ctx.fillText(`♪${f.crescendo}`, f.x, f.y - f.r - 28);
+      }
+      if ((f.guardT || 0) > 0) {
+        ctx.beginPath();
+        ctx.strokeStyle = `hsla(${(g.time * 200) % 360}, 95%, 70%, 0.85)`;
+        ctx.lineWidth = 5;
+        ctx.arc(f.x, f.y, f.r + 12, 0, Math.PI * 2);
+        ctx.stroke();
       }
       if (f.def.agentAura) {
         const pulse = 6 + Math.sin(g.time * 5) * 2;
@@ -3560,7 +3845,9 @@
             <li><b>WASD</b> — движение, <b>мышь + ЛКМ</b> — прицел и выстрел</li>
             <li><b>E / Q</b> — паутина (Amalmanarx): летишь к стене и прилипаешь</li>
             <li><b>R / F</b> — королевская вспышка Amalmanarx: радужный взрыв вокруг</li>
-            <li><b>Auto</b> — <b>R</b> compile-шторм, <b>F</b> hot reload (телепорт к курсору)</li>
+            <li><b>Auto / Composer</b> — <b>R</b> compile, <b>F</b> hot reload; Composer ещё крещендо и мотив</li>
+            <li><b>Нексус</b> — <b>R</b> синк двух врагов, <b>F</b> обмен местами</li>
+            <li><b>Манаркс</b> — <b>R</b> осколки кристалла, <b>F</b> призма-щит</li>
             <li><b>Spider-Man</b> — ЛКМ стреляет паутиной и тянет к стене</li>
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>
