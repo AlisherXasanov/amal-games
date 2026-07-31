@@ -812,8 +812,8 @@
       name: "Amalmanarx",
       emoji: "🌈",
       role: "Суперсекрет",
-      desc: "Amalmanarx Game — радуга сносит всю карту одним кликом",
-      ability: "Amalmanarx Game: уничтожение карты",
+      desc: "Amalmanarx Game — радуга, паутина к стенам и снос карты",
+      ability: "Паутина (E) + уничтожение карты",
       color: "#ff6ad5",
       hp: 30000,
       speed: 350,
@@ -830,7 +830,33 @@
       lifesteal: 0.6,
       healShot: 2000,
       rainbow: true,
+      webSwing: true,
+      wallStick: true,
       unlock: 3,
+    },
+    {
+      id: "spiderman",
+      name: "Spider-Man",
+      emoji: "🕷️",
+      role: "Секрет",
+      desc: "Стреляет паутиной и летит к стене, как паук",
+      ability: "Паутина: полёт к стене",
+      color: "#e63946",
+      hp: 7200,
+      speed: 310,
+      range: 720,
+      reload: 0.55,
+      bullets: 1,
+      spread: 0.02,
+      damage: 780,
+      bulletSpeed: 700,
+      bulletLife: 0.9,
+      radius: 22,
+      webSwing: true,
+      webPrimary: true,
+      wallStick: true,
+      pierce: 2,
+      unlock: 2,
     },
   ];
 
@@ -999,7 +1025,8 @@
 
   function resolveWalls(ent, walls) {
     const localGod = !!(ent.isLocal && CHEATS.noclip);
-    if (!localGod) {
+    const clinging = !!(ent.wallCling > 0 && ent.def && ent.def.wallStick);
+    if (!localGod && !clinging) {
       for (const w of walls) {
         if (!circleRectHit(ent.x, ent.y, ent.r, w.x, w.y, w.w, w.h)) continue;
         const left = Math.abs(ent.x - w.x);
@@ -1013,9 +1040,12 @@
         else ent.y = w.y + w.h + ent.r;
       }
     }
-    if (!(ent.isLocal && CHEATS.fly)) {
+    if (!(ent.isLocal && CHEATS.fly) && !clinging) {
       ent.x = clamp(ent.x, ent.r, ARENA - ent.r);
       ent.y = clamp(ent.y, ent.r, ARENA - ent.r);
+    } else if (clinging) {
+      ent.x = clamp(ent.x, ent.r * 0.2, ARENA - ent.r * 0.2);
+      ent.y = clamp(ent.y, ent.r * 0.2, ARENA - ent.r * 0.2);
     }
   }
 
@@ -1089,6 +1119,9 @@
       slowT: 0,
       dashT: 0,
       cloakT: 0,
+      web: null,
+      wallCling: 0,
+      webCd: 0,
       invuln: 2.2,
       ai: {
         roamAngle: rand(0, Math.PI * 2),
@@ -1215,6 +1248,115 @@
     return !!(g && g.teamMode && a && b && a.team === b.team);
   }
 
+  function rayHitWalls(g, x0, y0, dx, dy, maxDist) {
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len;
+    dy /= len;
+    let best = null;
+    let bestT = maxDist;
+
+    // Arena borders as attach points
+    const borders = [
+      { t: dx < 0 ? (0 - x0) / dx : Infinity, nx: 1, ny: 0 },
+      { t: dx > 0 ? (ARENA - x0) / dx : Infinity, nx: -1, ny: 0 },
+      { t: dy < 0 ? (0 - y0) / dy : Infinity, ny: 1, nx: 0 },
+      { t: dy > 0 ? (ARENA - y0) / dy : Infinity, ny: -1, nx: 0 },
+    ];
+    for (const b of borders) {
+      if (b.t > 8 && b.t < bestT) {
+        bestT = b.t;
+        best = {
+          x: x0 + dx * b.t,
+          y: y0 + dy * b.t,
+          nx: b.nx,
+          ny: b.ny,
+        };
+      }
+    }
+
+    const step = 8;
+    for (let dist = 12; dist < maxDist; dist += step) {
+      const x = x0 + dx * dist;
+      const y = y0 + dy * dist;
+      for (const w of g.arena.walls) {
+        if (x >= w.x && x <= w.x + w.w && y >= w.y && y <= w.y + w.h) {
+          if (dist < bestT) {
+            bestT = dist;
+            const cx = clamp(x, w.x, w.x + w.w);
+            const cy = clamp(y, w.y, w.y + w.h);
+            const left = Math.abs(x - w.x);
+            const right = Math.abs(x - (w.x + w.w));
+            const top = Math.abs(y - w.y);
+            const bottom = Math.abs(y - (w.y + w.h));
+            const m = Math.min(left, right, top, bottom);
+            let nx = 0;
+            let ny = 0;
+            if (m === left) nx = -1;
+            else if (m === right) nx = 1;
+            else if (m === top) ny = -1;
+            else ny = 1;
+            best = { x: cx + nx * 2, y: cy + ny * 2, nx, ny };
+          }
+          break;
+        }
+      }
+      if (best && bestT <= dist) break;
+    }
+    return best;
+  }
+
+  function fireWeb(g, f) {
+    if (!f.alive || !f.def.webSwing) return;
+    if (f.web && f.web.pulling) return;
+    if ((f.webCd || 0) > 0) return;
+    const ax = f.isLocal ? g.mouse.worldX : f.input.aimX;
+    const ay = f.isLocal ? g.mouse.worldY : f.input.aimY;
+    const hit = rayHitWalls(g, f.x, f.y, ax - f.x, ay - f.y, f.def.range || 700);
+    if (!hit) {
+      spawnBurst(g, f.x, f.y, "#cccccc", 4);
+      return;
+    }
+    f.webCd = 0.4;
+    f.web = {
+      x: hit.x,
+      y: hit.y,
+      nx: hit.nx || 0,
+      ny: hit.ny || 0,
+      pulling: true,
+      life: 2.5,
+    };
+    f.wallCling = 0;
+    spawnBurst(g, hit.x, hit.y, "#e8e8e8", 8);
+    if (f.isLocal) g.shake = Math.max(g.shake, 4);
+  }
+
+  function updateWebMovement(g, f, dt) {
+    if (!f.web) return;
+    f.web.life -= dt;
+    if (f.web.life <= 0) {
+      f.web = null;
+      return;
+    }
+    if (!f.web.pulling) return;
+    const dx = f.web.x - f.x;
+    const dy = f.web.y - f.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const pull = (f.def.webSpeed || 980) * dt;
+    f.x += (dx / d) * Math.min(pull, d);
+    f.y += (dy / d) * Math.min(pull, d);
+    f.angle = Math.atan2(dy, dx);
+    if (d < f.r + 18) {
+      f.web.pulling = false;
+      f.web.life = Math.max(f.web.life, 1.4);
+      if (f.def.wallStick) {
+        f.wallCling = 2.8;
+        f.x = f.web.x + (f.web.nx || 0) * (f.r + 2);
+        f.y = f.web.y + (f.web.ny || 0) * (f.r + 2);
+      }
+      spawnBurst(g, f.x, f.y, "#ffffff", 10);
+    }
+  }
+
   function shoot(g, f) {
     if (!f.alive || f.reload > 0) return;
     const d = f.def;
@@ -1223,6 +1365,20 @@
     const base = f.angle;
     const dmg =
       d.damage * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+
+    if (d.webPrimary) {
+      fireWeb(g, f);
+      // Light web damage along the line
+      if (f.web) {
+        for (const other of g.fighters) {
+          if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+          if (pointNearSegment(other.x, other.y, f.x, f.y, f.web.x, f.web.y, other.r + 12)) {
+            hurt(g, other, dmg * 0.55, f);
+          }
+        }
+      }
+      return;
+    }
 
     if (d.healShot) {
       f.hp = Math.min(f.maxHp, f.hp + d.healShot * powerMul(f));
@@ -1606,6 +1762,9 @@
   }
 
   function updateAI(g, f, dt) {
+    updateWebMovement(g, f, dt);
+    if (f.web && f.web.pulling) return;
+
     const ai = f.ai;
     ai.changeT -= dt;
     let tx = f.x + Math.cos(ai.roamAngle) * 100;
@@ -1641,8 +1800,13 @@
         ty = target.y + Math.sin(ai.roamAngle) * 80;
       }
       f.angle = ang(f, target);
+      f.input.aimX = target.x;
+      f.input.aimY = target.y;
       if (bestD < f.def.range * 1.05 && g.time > 1.5 && Math.random() < 0.035 * ai.aggression) {
         shoot(g, f);
+      }
+      if (f.def.webSwing && Math.random() < 0.012 * ai.aggression) {
+        fireWeb(g, f);
       }
     } else if (ai.changeT <= 0) {
       ai.roamAngle = rand(0, Math.PI * 2);
@@ -1653,14 +1817,21 @@
     const dy = ty - f.y;
     const len = Math.hypot(dx, dy) || 1;
     const slow = f.slowT > 0 ? 0.45 : 1;
-    const spd = f.def.speed * (0.85 + f.power * 0.04) * slow;
+    const clingMul = f.wallCling > 0 && f.def.wallStick ? 1.35 : 1;
+    const spd = f.def.speed * (0.85 + f.power * 0.04) * slow * clingMul;
     f.x += (dx / len) * spd * dt;
     f.y += (dy / len) * spd * dt;
     if (!target) f.angle = Math.atan2(dy, dx);
   }
 
   function applyInputToFighter(g, f, dt) {
+    updateWebMovement(g, f, dt);
     const inp = f.input;
+    if (f.web && f.web.pulling) {
+      f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
+      if (inp.web && f.def.webSwing && !f.def.webPrimary) fireWeb(g, f);
+      return;
+    }
     let mx = inp.mx;
     let my = inp.my;
     const len = Math.hypot(mx, my);
@@ -1668,11 +1839,13 @@
       const slow = f.slowT > 0 ? 0.45 : 1;
       const flyMul = f.isLocal && CHEATS.fly ? 3.2 : 1;
       const speedMul = f.isLocal && CHEATS.superSpeed ? 2.4 : 1;
-      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul;
+      const clingMul = f.wallCling > 0 && f.def.wallStick ? 1.45 : 1;
+      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul * clingMul;
       f.x += (mx / len) * spd * dt;
       f.y += (my / len) * spd * dt;
     }
     f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
+    if (inp.web && f.def.webSwing && !f.def.webPrimary) fireWeb(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -1695,6 +1868,7 @@
       aimX: g.mouse.worldX,
       aimY: g.mouse.worldY,
       shoot: !!(g.mouse.down || g.keys["Space"] || g.touchFire),
+      web: !!(g.keys["KeyE"] || g.keys["KeyQ"]),
     };
   }
 
@@ -1745,6 +1919,9 @@
       f.dashT = Math.max(0, f.dashT - dt);
       f.slowT = Math.max(0, f.slowT - dt);
       f.cloakT = Math.max(0, (f.cloakT || 0) - dt);
+      f.wallCling = Math.max(0, (f.wallCling || 0) - dt);
+      f.webCd = Math.max(0, (f.webCd || 0) - dt);
+      if (f.web && f.web.life <= 0) f.web = null;
       if (f.def.cloak) {
         // Невидимость, пока не стрелял недавно
         if (f.reload < 0.18) f.cloakT = Math.max(f.cloakT, 0.35);
@@ -2116,6 +2293,22 @@
       ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowBlur = 0;
+    }
+
+    for (const f of g.fighters) {
+      if (!f.alive || !f.web) continue;
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(240,240,245,0.85)";
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([6, 5]);
+      ctx.moveTo(f.x, f.y);
+      ctx.lineTo(f.web.x, f.web.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.fillStyle = "#f8f8ff";
+      ctx.arc(f.web.x, f.web.y, 5, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     const local = g.fighters.find((f) => f.isLocal);
@@ -2677,6 +2870,8 @@
           <h2>Как играть</h2>
           <ol>
             <li><b>WASD</b> — движение, <b>мышь + ЛКМ</b> — прицел и выстрел</li>
+            <li><b>E / Q</b> — паутина (Amalmanarx): летишь к стене и прилипаешь</li>
+            <li><b>Spider-Man</b> — ЛКМ стреляет паутиной и тянет к стене</li>
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>
             <li><b>Онлайн</b>: создай комнату, скинь код друзьям (1v1 / 2v2 / 3v3)</li>
