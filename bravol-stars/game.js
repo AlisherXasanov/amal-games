@@ -9,6 +9,7 @@
   };
 
   const STARTER_IDS = ["blaze", "nox", "tanko", "bolt", "hexa", "spike"];
+  const SECRET_CARD_COST = 250;
   const CHEST_COST = 120;
   const COIN_NAME = "Браволы";
 
@@ -706,6 +707,130 @@
       freeze: 2.5,
       unlock: 1,
     },
+    /* —— Секретные легенды (карта / личный режим) —— */
+    {
+      id: "shade",
+      name: "Шейд",
+      emoji: "🥷",
+      role: "Секрет",
+      desc: "Невидимый убийца из тени",
+      ability: "Плащ тени",
+      color: "#22223b",
+      hp: 9000,
+      speed: 360,
+      range: 420,
+      reload: 0.35,
+      bullets: 2,
+      spread: 0.08,
+      damage: 1800,
+      bulletSpeed: 800,
+      bulletLife: 0.55,
+      radius: 20,
+      dash: true,
+      dashDist: 280,
+      pierce: 3,
+      lifesteal: 0.5,
+      cloak: true,
+      unlock: 2,
+    },
+    {
+      id: "chronos",
+      name: "Хронос",
+      emoji: "⏳",
+      role: "Секрет",
+      desc: "Останавливает время вокруг цели",
+      ability: "Остановка времени",
+      color: "#c9ada7",
+      hp: 12000,
+      speed: 280,
+      range: 850,
+      reload: 0.7,
+      bullets: 1,
+      spread: 0,
+      damage: 2200,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 24,
+      meteor: 200,
+      freeze: 4.5,
+      chain: 4,
+      unlock: 2,
+    },
+    {
+      id: "mirage",
+      name: "Мираж",
+      emoji: "🪞",
+      role: "Секрет",
+      desc: "Кольцо иллюзий и невидимость",
+      ability: "Зеркальный шторм",
+      color: "#90e0ef",
+      hp: 10000,
+      speed: 300,
+      range: 500,
+      reload: 0.9,
+      bullets: 12,
+      spread: 6.28,
+      damage: 700,
+      bulletSpeed: 420,
+      bulletLife: 1.1,
+      radius: 22,
+      ring: true,
+      cloak: true,
+      split: true,
+      unlock: 2,
+    },
+    {
+      id: "voidking",
+      name: "Войд",
+      emoji: "🌌",
+      role: "Секрет",
+      desc: "Повелитель пустоты — почти бог арены",
+      ability: "Чёрная дыра",
+      color: "#3a0ca3",
+      hp: 22000,
+      speed: 300,
+      range: 950,
+      reload: 0.5,
+      bullets: 1,
+      spread: 0,
+      damage: 3200,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 30,
+      meteor: 260,
+      explosive: 180,
+      pierce: 5,
+      knockback: 200,
+      healShot: 800,
+      unlock: 2,
+    },
+    {
+      id: "amal",
+      name: "Амал",
+      emoji: "✨",
+      role: "Секрет",
+      desc: "Легенда Amal Games — сильнее всех",
+      ability: "Желание хозяина",
+      color: "#ffd23f",
+      hp: 30000,
+      speed: 350,
+      range: 1000,
+      reload: 0.28,
+      bullets: 1,
+      spread: 0,
+      damage: 5000,
+      bulletSpeed: 1,
+      bulletLife: 0.1,
+      radius: 32,
+      meteor: 280,
+      cloak: true,
+      lifesteal: 0.6,
+      healShot: 1200,
+      freeze: 3,
+      dash: true,
+      dashDist: 320,
+      unlock: 2,
+    },
   ];
 
   const NAMES = [
@@ -746,6 +871,8 @@
     infiniteAmmo: false,
     noclip: false,
     fly: false,
+    invisible: false,
+    superSpeed: false,
     panelOpen: false,
   };
 
@@ -760,6 +887,8 @@
     CHEATS.infiniteAmmo = on;
     CHEATS.noclip = on;
     CHEATS.fly = on;
+    CHEATS.invisible = on;
+    CHEATS.superSpeed = on;
     if (on) {
       BRAWLERS.forEach((b) => unlocked.add(b.id));
       if (coins < 999999) {
@@ -807,7 +936,15 @@
     }
   }
   function lockedPool() {
-    return BRAWLERS.filter((b) => b.unlock && !unlocked.has(b.id));
+    return BRAWLERS.filter((b) => b.unlock === 1 && !unlocked.has(b.id));
+  }
+  function secretPool() {
+    return BRAWLERS.filter((b) => b.unlock === 2 && !unlocked.has(b.id));
+  }
+  function isFighterInvisible(f) {
+    if (!f || !f.alive) return false;
+    if (f.isLocal && CHEATS.invisible) return true;
+    return (f.cloakT || 0) > 0;
   }
   function ensureSelectedValid() {
     if (!isUnlocked(selectedId)) {
@@ -948,6 +1085,7 @@
       poisonT: 0,
       slowT: 0,
       dashT: 0,
+      cloakT: 0,
       invuln: 2.2,
       ai: {
         roamAngle: rand(0, Math.PI * 2),
@@ -973,10 +1111,11 @@
       })
     );
     const used = new Set([def.id]);
+    const botPool = BRAWLERS.filter((b) => b.unlock !== 2);
     for (let i = 0; i < 5; i++) {
-      let botDef = pick(BRAWLERS);
+      let botDef = pick(botPool);
       let tries = 0;
-      while (used.has(botDef.id) && tries++ < 10) botDef = pick(BRAWLERS);
+      while (used.has(botDef.id) && tries++ < 10) botDef = pick(botPool);
       used.add(botDef.id);
       const p = points[i + 1];
       fighters.push(
@@ -1446,6 +1585,7 @@
 
     for (const other of g.fighters) {
       if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (isFighterInvisible(other)) continue;
       if (inBush(g, other) && dist(f, other) > 160) continue;
       const d = dist(f, other);
       if (d < bestD && !lineBlocked(g, f, other)) {
@@ -1497,7 +1637,8 @@
     if (len > 0) {
       const slow = f.slowT > 0 ? 0.45 : 1;
       const flyMul = f.isLocal && CHEATS.fly ? 3.2 : 1;
-      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul;
+      const speedMul = f.isLocal && CHEATS.superSpeed ? 2.4 : 1;
+      const spd = f.def.speed * (1 + f.power * 0.05) * slow * flyMul * speedMul;
       f.x += (mx / len) * spd * dt;
       f.y += (my / len) * spd * dt;
     }
@@ -1573,6 +1714,11 @@
       f.invuln = Math.max(0, f.invuln - dt);
       f.dashT = Math.max(0, f.dashT - dt);
       f.slowT = Math.max(0, f.slowT - dt);
+      f.cloakT = Math.max(0, (f.cloakT || 0) - dt);
+      if (f.def.cloak) {
+        // Невидимость, пока не стрелял недавно
+        if (f.reload < 0.18) f.cloakT = Math.max(f.cloakT, 0.35);
+      }
       if (f.poisonT > 0) {
         f.poisonT -= dt;
         if (f.isLocal && CHEATS.invincible) {
@@ -1614,6 +1760,7 @@
         let bestD = 520;
         for (const f of g.fighters) {
           if (!f.alive || f === b.owner || (b.owner && sameTeam(g, b.owner, f))) continue;
+          if (isFighterInvisible(f)) continue;
           if (b.hitIds && b.hitIds.includes(f.id)) continue;
           const d = dist(b, f);
           if (d < bestD) {
@@ -1944,13 +2091,17 @@
     const local = g.fighters.find((f) => f.isLocal);
     for (const f of g.fighters) {
       if (!f.alive) continue;
+      const cloaked = isFighterInvisible(f);
       const hidden =
-        inBush(g, f) &&
-        local &&
-        !f.isLocal &&
-        !(g.teamMode && f.team === local.team) &&
-        dist(local, f) > 150;
+        (cloaked && local && !f.isLocal && !(g.teamMode && f.team === local.team)) ||
+        (inBush(g, f) &&
+          local &&
+          !f.isLocal &&
+          !(g.teamMode && f.team === local.team) &&
+          dist(local, f) > 150);
       if (hidden) continue;
+
+      if (cloaked && f.isLocal) ctx.globalAlpha = 0.38;
 
       ctx.fillStyle = "rgba(0,0,0,0.25)";
       ctx.beginPath();
@@ -1993,9 +2144,16 @@
         ctx.fillText(`×${f.power}`, f.x, f.y - f.r - 24);
       }
 
+      if (cloaked && f.isLocal) {
+        ctx.fillStyle = "rgba(180,200,255,0.9)";
+        ctx.font = "800 11px Nunito";
+        ctx.fillText("невидим", f.x, f.y - f.r - 26);
+      }
+
       ctx.fillStyle = "rgba(0,0,0,0.55)";
       ctx.font = "800 11px Nunito";
       ctx.fillText(f.name, f.x, f.y + f.r + 14);
+      ctx.globalAlpha = 1;
     }
 
     for (const bush of g.arena.bushes) {
@@ -2282,12 +2440,13 @@
           <div class="brawler-grid scroll-grid">
             ${BRAWLERS.map((b) => {
               const open = isUnlocked(b.id);
+              const secret = b.unlock === 2;
               return `
-              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"}" data-id="${b.id}" type="button" ${open ? "" : "title=\"Открой сундук\""}>
-                <div class="brawler-emoji">${open ? b.emoji : "🔒"}</div>
-                <h3>${open ? b.name : "???"}</h3>
-                <p>${open ? b.desc : "Закрыт — открой сундук"}</p>
-                <span class="role-tag">${open ? b.ability || b.role : "Сундук"}</span>
+              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${secret ? "Секретная карта" : "Открой сундук"}"`}>
+                <div class="brawler-emoji">${open ? b.emoji : secret ? "🃏" : "🔒"}</div>
+                <h3>${open ? b.name : secret ? "Секрет" : "???"}</h3>
+                <p>${open ? b.desc : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <span class="role-tag">${open ? b.ability || b.role : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
@@ -2314,7 +2473,12 @@
       btn.addEventListener("click", () => {
         const id = btn.dataset.id;
         if (!isUnlocked(id)) {
-          renderChest("Сначала открой сундук, чтобы получить этого бойца");
+          const def = BRAWLERS.find((b) => b.id === id);
+          renderChest(
+            def && def.unlock === 2
+              ? "Это секретный боец — открой секретную карту"
+              : "Сначала открой сундук, чтобы получить этого бойца"
+          );
           return;
         }
         selectedId = id;
@@ -2343,21 +2507,26 @@
 
   function renderChest(notice) {
     const pool = lockedPool();
+    const secrets = secretPool();
     app.innerHTML = `
       <section class="screen active">
         <div class="menu-bg"></div>
         <div class="online-panel chest-panel">
-          <h2>Сундук бойцов</h2>
-          <p class="room-hint">Трать <b>${COIN_NAME}</b> за победы и убийства. Сундук открывает случайного закрытого бойца с уникальной способностью.</p>
+          <h2>Сундук и карты</h2>
+          <p class="room-hint">Обычный сундук даёт сильных бойцов. <b>Секретная карта</b> — редких легенд (Шейд, Хронос, Войд, Амал…).</p>
           <div class="coin-bar" style="justify-content:center;margin-bottom:12px">
             <span class="coin-pill">✦ ${coins} ${COIN_NAME}</span>
-            <span class="coin-pill soft">Закрыто: ${pool.length}</span>
+            <span class="coin-pill soft">Сундук: ${pool.length}</span>
+            <span class="coin-pill soft">Секреты: ${secrets.length}</span>
           </div>
           <div class="chest-visual" id="chest-visual">🎁</div>
-          <p class="status-line ${notice ? "error" : ""}" id="chest-status">${notice || `Стоимость: ${CHEST_COST} ✦`}</p>
+          <p class="status-line ${notice ? "error" : ""}" id="chest-status">${notice || `Сундук ${CHEST_COST}✦ · Карта ${SECRET_CARD_COST}✦`}</p>
           <div class="menu-actions">
             <button class="btn" id="btn-open" type="button" ${coins < CHEST_COST && pool.length ? "disabled" : ""}>
-              ${pool.length ? `Открыть за ${CHEST_COST}✦` : "Все бойцы открыты"}
+              ${pool.length ? `Сундук ${CHEST_COST}✦` : "Обычные открыты"}
+            </button>
+            <button class="btn secondary" id="btn-secret" type="button" ${!secrets.length || coins < SECRET_CARD_COST ? "disabled" : ""}>
+              ${secrets.length ? `🃏 Секретная карта ${SECRET_CARD_COST}✦` : "Секреты открыты"}
             </button>
             <button class="btn ghost" id="btn-back" type="button">Назад</button>
           </div>
@@ -2367,18 +2536,9 @@
 
     app.querySelector("#btn-back").addEventListener("click", renderMenu);
     const openBtn = app.querySelector("#btn-open");
-    openBtn.addEventListener("click", () => {
-      if (!pool.length) {
-        addCoins(40);
-        renderChest("Все уже открыты — получено 40✦ утешительных");
-        return;
-      }
-      if (coins < CHEST_COST) {
-        renderChest("Не хватает Браволов. Побеждай в боях!");
-        return;
-      }
-      addCoins(-CHEST_COST);
-      const reward = pick(pool);
+    const secretBtn = app.querySelector("#btn-secret");
+
+    function revealReward(reward, kind) {
       unlocked.add(reward.id);
       saveUnlocks();
       selectedId = reward.id;
@@ -2388,9 +2548,46 @@
       vis.textContent = reward.emoji;
       vis.classList.add("reveal");
       st.classList.remove("error");
-      st.innerHTML = `Выпал <b>${reward.name}</b> — ${reward.ability || reward.desc}`;
-      openBtn.textContent = "Ещё сундук";
-      openBtn.disabled = coins < CHEST_COST && lockedPool().length > 0;
+      st.innerHTML = `${kind} <b>${reward.name}</b> — ${reward.ability || reward.desc}`;
+      openBtn.disabled = coins < CHEST_COST || lockedPool().length === 0;
+      secretBtn.disabled = coins < SECRET_CARD_COST || secretPool().length === 0;
+      openBtn.textContent = lockedPool().length ? `Сундук ${CHEST_COST}✦` : "Обычные открыты";
+      secretBtn.textContent = secretPool().length
+        ? `🃏 Секретная карта ${SECRET_CARD_COST}✦`
+        : "Секреты открыты";
+    }
+
+    openBtn.addEventListener("click", () => {
+      const cur = lockedPool();
+      if (!cur.length) {
+        addCoins(40);
+        renderChest("Все обычные уже открыты — +40✦");
+        return;
+      }
+      if (coins < CHEST_COST) {
+        renderChest("Не хватает Браволов. Побеждай в боях!");
+        return;
+      }
+      addCoins(-CHEST_COST);
+      // 12% шанс вытянуть секрет вместо обычного
+      const secretsNow = secretPool();
+      const reward =
+        secretsNow.length && Math.random() < 0.12 ? pick(secretsNow) : pick(cur);
+      revealReward(reward, reward.unlock === 2 ? "🃏 Секрет:" : "Выпал");
+    });
+
+    secretBtn.addEventListener("click", () => {
+      const cur = secretPool();
+      if (!cur.length) {
+        renderChest("Все секретные бойцы уже у тебя!");
+        return;
+      }
+      if (coins < SECRET_CARD_COST) {
+        renderChest("Для секретной карты нужно больше Браволов");
+        return;
+      }
+      addCoins(-SECRET_CARD_COST);
+      revealReward(pick(cur), "🃏 Секретная карта:");
     });
   }
 
@@ -2780,8 +2977,10 @@
             <label class="cheat-row"><input type="checkbox" data-cheat="invincible" ${CHEATS.invincible ? "checked" : ""}/> Бессмертие</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="infiniteDamage" ${CHEATS.infiniteDamage ? "checked" : ""}/> Бесконечный урон</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="infiniteAmmo" ${CHEATS.infiniteAmmo ? "checked" : ""}/> Бесконечные патроны</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="invisible" ${CHEATS.invisible ? "checked" : ""}/> Невидимость</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="noclip" ${CHEATS.noclip ? "checked" : ""}/> Сквозь стены</label>
             <label class="cheat-row"><input type="checkbox" data-cheat="fly" ${CHEATS.fly ? "checked" : ""}/> Улететь с карты</label>
+            <label class="cheat-row"><input type="checkbox" data-cheat="superSpeed" ${CHEATS.superSpeed ? "checked" : ""}/> Суперскорость</label>
             <button class="btn cheat-kill" id="btn-kill-all" type="button">Убить всех</button>
           </div>`
               : ""
