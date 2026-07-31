@@ -528,10 +528,11 @@ body {
 }
 
 .scroll-grid {
-  max-height: min(42vh, 380px);
+  max-height: min(62vh, 560px);
   overflow-y: auto;
   padding-right: 4px;
   margin-bottom: 14px;
+  scroll-behavior: smooth;
 }
 
 .brawler-card.locked {
