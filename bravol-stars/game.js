@@ -808,6 +808,30 @@
       unlock: 2,
     },
     {
+      id: "spiderman",
+      name: "Spider-Man",
+      emoji: "🕷️",
+      role: "Секрет",
+      desc: "Стреляет паутиной и летит к стене, как паук",
+      ability: "Паутина: полёт к стене",
+      color: "#e63946",
+      hp: 7200,
+      speed: 310,
+      range: 720,
+      reload: 0.55,
+      bullets: 1,
+      spread: 0.02,
+      damage: 780,
+      bulletSpeed: 700,
+      bulletLife: 0.9,
+      radius: 22,
+      webSwing: true,
+      webPrimary: true,
+      wallStick: true,
+      pierce: 2,
+      unlock: 2,
+    },
+    {
       id: "amal",
       name: "Amalmanarx",
       emoji: "👑",
@@ -837,27 +861,33 @@
       unlock: 3,
     },
     {
-      id: "spiderman",
-      name: "Spider-Man",
-      emoji: "🕷️",
+      id: "auto",
+      name: "Auto",
+      emoji: "🤖",
       role: "Секрет",
-      desc: "Стреляет паутиной и летит к стене, как паук",
-      ability: "Паутина: полёт к стене",
-      color: "#e63946",
-      hp: 7200,
-      speed: 310,
-      range: 720,
-      reload: 0.55,
+      desc: "Агент Cursor — debug-луч, compile-шторм и hot reload",
+      ability: "R: Compile · F: Hot Reload",
+      color: "#00e5ff",
+      hp: 24000,
+      speed: 355,
+      range: 920,
+      reload: 0.7,
       bullets: 1,
-      spread: 0.02,
-      damage: 780,
-      bulletSpeed: 700,
-      bulletLife: 0.9,
-      radius: 22,
-      webSwing: true,
-      webPrimary: true,
-      wallStick: true,
-      pierce: 2,
+      spread: 0,
+      damage: 1400,
+      bulletSpeed: 2000,
+      bulletLife: 0.05,
+      radius: 26,
+      laser: true,
+      chain: 5,
+      pierce: 3,
+      healShot: 700,
+      cloak: true,
+      split: true,
+      rainbow: true,
+      agentAura: true,
+      compileStorm: true,
+      hotReload: true,
       unlock: 2,
     },
   ];
@@ -1145,6 +1175,15 @@
     return BRAWLERS.find((b) => b.id === id) || BRAWLERS[0];
   }
 
+  /** Always: обычные → сундук → секреты → суперсекрет (Amalmanarx в самом конце). */
+  function sortedBrawlersForMenu() {
+    return BRAWLERS.slice().sort((a, b) => {
+      if (a.id === "amal") return 1;
+      if (b.id === "amal") return -1;
+      return (a.unlock || 0) - (b.unlock || 0);
+    });
+  }
+
   function circleRectHit(cx, cy, r, rx, ry, rw, rh) {
     const nx = clamp(cx, rx, rx + rw);
     const ny = clamp(cy, ry, ry + rh);
@@ -1251,6 +1290,9 @@
       wallCling: 0,
       webCd: 0,
       novaCd: 0,
+      compileCd: 0,
+      compileStormT: 0,
+      blinkCd: 0,
       auraZap: 0.4,
       invuln: 2.2,
       ai: {
@@ -1792,6 +1834,104 @@
     }
   }
 
+  function fireCompileStorm(g, f) {
+    if (!f.alive || !f.def.compileStorm) return;
+    if ((f.compileCd || 0) > 0) return;
+    f.compileCd = 5.5;
+    f.compileStormT = 2.4;
+    g.shake = Math.max(g.shake, 14);
+    spawnBurst(g, f.x, f.y, "#7dffb0", 20);
+  }
+
+  function fireHotReload(g, f) {
+    if (!f.alive || !f.def.hotReload) return;
+    if ((f.blinkCd || 0) > 0) return;
+    const ax = f.isLocal ? g.mouse.worldX : f.input.aimX;
+    const ay = f.isLocal ? g.mouse.worldY : f.input.aimY;
+    f.blinkCd = 3.2;
+    spawnBurst(g, f.x, f.y, "#00e5ff", 16);
+    f.x = clamp(ax, f.r, ARENA - f.r);
+    f.y = clamp(ay, f.r, ARENA - f.r);
+    resolveWalls(f, g.arena.walls);
+    f.invuln = Math.max(f.invuln, 0.35);
+    f.flash = 0.2;
+    spawnBurst(g, f.x, f.y, "#7dffb0", 18);
+    if (f.isLocal) g.shake = Math.max(g.shake, 8);
+  }
+
+  function updateAgentAura(g, f, dt) {
+    if (!f.def.agentAura || !f.alive) return;
+    f.auraT = (f.auraT || 0) + dt;
+    if (Math.random() < 0.55) {
+      g.particles.push({
+        x: f.x + rand(-f.r, f.r),
+        y: f.y + rand(-f.r, f.r),
+        vx: rand(-40, 40),
+        vy: rand(-90, -20),
+        life: rand(0.25, 0.6),
+        color: Math.random() < 0.5 ? "#00e5ff" : "#7dffb0",
+        size: rand(2, 5),
+        glyph: pick(["{", "}", "<", ">", "/", ";"]),
+      });
+    }
+    f.auraZap = (f.auraZap || 0) - dt;
+    if (f.auraZap > 0) return;
+    f.auraZap = 0.7;
+    let best = null;
+    let bestD = 360;
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (isFighterInvisible(other)) continue;
+      const d = dist(f, other);
+      if (d < bestD) {
+        bestD = d;
+        best = other;
+      }
+    }
+    if (!best) return;
+    g.particles.push({
+      x: f.x,
+      y: f.y,
+      vx: 0,
+      vy: 0,
+      life: 0.14,
+      color: "#00e5ff",
+      size: 2,
+      laser: { x2: best.x, y2: best.y },
+    });
+    const dmg =
+      520 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    hurt(g, best, dmg, f);
+    spawnBurst(g, best.x, best.y, "#7dffb0", 8);
+  }
+
+  function updateCompileStorm(g, f, dt) {
+    if ((f.compileStormT || 0) <= 0) return;
+    f.compileStormT -= dt;
+    if (Math.random() > 0.55) return;
+    const x = rand(50, ARENA - 50);
+    const y = rand(50, ARENA - 50);
+    g.particles.push({
+      x,
+      y: y - 40,
+      vx: rand(-10, 10),
+      vy: rand(120, 220),
+      life: 0.7,
+      color: "#7dffb0",
+      size: 3,
+      glyph: pick(["0", "1", "{", "}", "fn", "=>", "AI"]),
+    });
+    const dmg =
+      380 * powerMul(f) * (f.isLocal && CHEATS.infiniteDamage ? 1e9 : 1);
+    for (const other of g.fighters) {
+      if (!other.alive || other === f || sameTeam(g, f, other)) continue;
+      if (dist(other, { x, y }) < 70) {
+        hurt(g, other, dmg, f);
+        other.slowT = Math.max(other.slowT || 0, 0.8);
+      }
+    }
+  }
+
   function fireRoyalNova(g, f) {
     if (!f.alive || !f.def.royalNova) return;
     if ((f.novaCd || 0) > 0) return;
@@ -2058,6 +2198,9 @@
       f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
       if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
       if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
+      if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
+      if (inp.blink && f.def.hotReload) fireHotReload(g, f);
+      if (inp.blink && f.def.royalNova && !f.def.hotReload) fireRoyalNova(g, f);
       return;
     }
     let mx = inp.mx;
@@ -2075,6 +2218,9 @@
     f.angle = Math.atan2(inp.aimY - f.y, inp.aimX - f.x);
     if (inp.web && effectiveDef(f).webSwing && !effectiveDef(f).webPrimary) fireWeb(g, f);
     if (inp.nova && f.def.royalNova) fireRoyalNova(g, f);
+    if (inp.nova && f.def.compileStorm) fireCompileStorm(g, f);
+    if (inp.blink && f.def.hotReload) fireHotReload(g, f);
+    if (inp.blink && f.def.royalNova && !f.def.hotReload) fireRoyalNova(g, f);
     if (inp.shoot) shoot(g, f);
   }
 
@@ -2098,7 +2244,8 @@
       aimY: g.mouse.worldY,
       shoot: !!(g.mouse.down || g.keys["Space"] || g.touchFire),
       web: !!(g.keys["KeyE"] || g.keys["KeyQ"]),
-      nova: !!(g.keys["KeyR"] || g.keys["KeyF"]),
+      nova: !!g.keys["KeyR"],
+      blink: !!g.keys["KeyF"],
     };
   }
 
@@ -2152,6 +2299,8 @@
       f.wallCling = Math.max(0, (f.wallCling || 0) - dt);
       f.webCd = Math.max(0, (f.webCd || 0) - dt);
       f.novaCd = Math.max(0, (f.novaCd || 0) - dt);
+      f.compileCd = Math.max(0, (f.compileCd || 0) - dt);
+      f.blinkCd = Math.max(0, (f.blinkCd || 0) - dt);
       if (f.web && f.web.life <= 0) f.web = null;
       if (effectiveDef(f).cloak) {
         // Невидимость, пока не стрелял недавно
@@ -2176,6 +2325,8 @@
       else applyInputToFighter(g, f, dt);
       resolveWalls(f, g.arena.walls);
       updateSovereignAura(g, f, dt);
+      updateAgentAura(g, f, dt);
+      updateCompileStorm(g, f, dt);
 
       for (const other of g.fighters) {
         if (!other.alive || other === f) continue;
@@ -2592,12 +2743,58 @@
           ctx.fillText((f.novaCd || 0) <= 0 ? "R" : `${Math.ceil(f.novaCd)}`, f.x + f.r * 0.85, f.y - f.r * 0.8);
         }
       }
-      const ring = f.isLocal ? "#ffd23f" : g.teamMode ? (f.team === 0 ? "#ffd23f" : "#1ec8b0") : "rgba(0,0,0,0.35)";
+      if (f.def.agentAura) {
+        const pulse = 6 + Math.sin(g.time * 5) * 2;
+        for (let ring = 0; ring < 3; ring++) {
+          const rr = f.r + pulse + ring * 7;
+          ctx.beginPath();
+          ctx.strokeStyle = `hsla(${(g.time * 160 + ring * 90) % 360}, 95%, 62%, ${0.85 - ring * 0.22})`;
+          ctx.lineWidth = 3.2 - ring * 0.5;
+          ctx.setLineDash(ring === 1 ? [5, 4] : []);
+          ctx.arc(f.x, f.y, rr, g.time * (1.2 + ring * 0.4), g.time * (1.2 + ring * 0.4) + Math.PI * 1.65);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
+        for (let i = 0; i < 4; i++) {
+          const a = -g.time * 2.8 + (i * Math.PI * 2) / 4;
+          const ox = f.x + Math.cos(a) * (f.r + 18);
+          const oy = f.y + Math.sin(a) * (f.r + 18);
+          const hue = (g.time * 180 + i * 90) % 360;
+          ctx.beginPath();
+          ctx.fillStyle = `hsl(${hue}, 95%, 58%)`;
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.shadowBlur = 12;
+          ctx.arc(ox, oy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        ctx.font = "900 11px Nunito";
+        ctx.fillStyle = (f.compileCd || 0) <= 0 ? "#7dffb0" : "rgba(255,255,255,0.35)";
+        ctx.fillText((f.compileCd || 0) <= 0 ? "R" : `${Math.ceil(f.compileCd)}`, f.x - f.r * 0.9, f.y - f.r * 0.85);
+        ctx.fillStyle = (f.blinkCd || 0) <= 0 ? "#00e5ff" : "rgba(255,255,255,0.35)";
+        ctx.fillText((f.blinkCd || 0) <= 0 ? "F" : `${Math.ceil(f.blinkCd)}`, f.x + f.r * 0.9, f.y - f.r * 0.85);
+      }
+      const ring = f.def.agentAura
+        ? `hsla(${(g.time * 160) % 360}, 95%, 60%, 0.95)`
+        : f.isLocal
+          ? "#ffd23f"
+          : g.teamMode
+            ? f.team === 0
+              ? "#ffd23f"
+              : "#1ec8b0"
+            : "rgba(0,0,0,0.35)";
       ctx.strokeStyle = ring;
-      ctx.lineWidth = f.isLocal ? 4 : 3;
+      ctx.lineWidth = f.isLocal || f.def.agentAura ? 4 : 3;
       ctx.beginPath();
       ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
       ctx.stroke();
+      if (f.def.agentAura) {
+        ctx.beginPath();
+        ctx.strokeStyle = `hsla(${(g.time * 160 + 180) % 360}, 95%, 65%, 0.55)`;
+        ctx.lineWidth = 2;
+        ctx.arc(f.x, f.y, f.r + 3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
 
       ctx.beginPath();
       ctx.strokeStyle = "rgba(255,255,255,0.7)";
@@ -2671,6 +2868,16 @@
         ctx.lineTo(p.laser.x2, p.laser.y2);
         ctx.stroke();
         ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        continue;
+      }
+      if (p.glyph) {
+        ctx.globalAlpha = clamp(p.life * 2.2, 0, 1);
+        ctx.fillStyle = p.color;
+        ctx.font = `900 ${10 + p.size}px Nunito`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.glyph, p.x, p.y);
         ctx.globalAlpha = 1;
         continue;
       }
@@ -2959,13 +3166,14 @@
               const open = isUnlocked(b.id);
               const secret = b.unlock === 2;
               const superSecret = b.unlock === 3;
+              const rainbowSecret = secret && b.rainbow;
               return `
-              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
+              <button class="brawler-card ${b.id === selectedId ? "selected" : ""} ${open ? "" : "locked"} ${secret ? "secret" : ""} ${superSecret ? "super-secret" : ""} ${rainbowSecret ? "rainbow-secret" : ""}" data-id="${b.id}" type="button" ${open ? "" : `title="${superSecret ? "Суперсекретная карта" : secret ? "Секретная карта" : "Открой сундук"}"`}>
                 <div class="brawler-emoji">${open ? b.emoji : superSecret ? "🌈" : secret ? "🃏" : "🔒"}</div>
-                <h3 class="${superSecret ? "rainbow-text" : open && b.rainbow ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
-                <p class="${superSecret ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
+                <h3 class="${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.name : superSecret ? "★★★" : secret ? "Секрет" : "???"}</h3>
+                <p class="${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.desc : superSecret ? "Суперсекрет Amalmanarx Game" : secret ? "Секретная карта бойца" : "Закрыт — открой сундук"}</p>
                 ${open ? abilityIconsHtml(abilitiesForDef(b), "on-card") : ""}
-                <span class="role-tag ${superSecret ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
+                <span class="role-tag ${superSecret || (open && b.rainbow) ? "rainbow-text" : ""}">${open ? b.ability || b.role : superSecret ? "Суперсекрет" : secret ? "Карта" : "Сундук"}</span>
               </button>`;
             }).join("")}
           </div>
@@ -3139,7 +3347,8 @@
           <ol>
             <li><b>WASD</b> — движение, <b>мышь + ЛКМ</b> — прицел и выстрел</li>
             <li><b>E / Q</b> — паутина (Amalmanarx): летишь к стене и прилипаешь</li>
-            <li><b>R / F</b> — королевская вспышка Amalmanarx: радужной взрыв вокруг</li>
+            <li><b>R / F</b> — королевская вспышка Amalmanarx: радужный взрыв вокруг</li>
+            <li><b>Auto</b> — <b>R</b> compile-шторм, <b>F</b> hot reload (телепорт к курсору)</li>
             <li><b>Spider-Man</b> — ЛКМ стреляет паутиной и тянет к стене</li>
             <li><b>${COIN_NAME} (✦)</b> — валюта: +за убийства и победы</li>
             <li><b>Сундук</b> за ${CHEST_COST}✦ открывает случайного бойца со своей способностью</li>

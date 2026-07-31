@@ -555,6 +555,36 @@ body {
   opacity: 0.85;
 }
 
+.brawler-card.rainbow-secret {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(#121a24, #182230) padding-box,
+    linear-gradient(
+      120deg,
+      #00e5ff,
+      #7dffb0,
+      #ffd23f,
+      #ff004c,
+      #c77dff,
+      #4cc9f0,
+      #00e5ff
+    ) border-box;
+  background-size: 100% 100%, 260% 260%;
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.2),
+    0 0 22px rgba(0, 229, 255, 0.35),
+    0 0 40px rgba(125, 255, 176, 0.2);
+  animation: rainbow-contour 2.4s linear infinite;
+}
+
+.brawler-card.rainbow-secret.selected {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.25),
+    0 0 28px rgba(0, 229, 255, 0.5),
+    0 0 48px rgba(199, 125, 255, 0.3);
+}
+
 .brawler-card.super-secret {
   position: relative;
   overflow: visible;
@@ -1080,10 +1110,6 @@ body {
   justify-content: flex-start;
   margin-top: 6px;
   max-width: min(52vw, 360px);
-}
-
-.player-card {
-  pointer-events: none;
 }
 
 .cheat-title {
