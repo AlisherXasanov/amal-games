@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { SPECIES_CATALOG } from '../data/plantProfiles'
+import { findSpeciesByName, generalCareProfile, SPECIES_CATALOG } from '../data/plantProfiles'
 import { useApp } from '../context/AppContext'
-import { fileToDataUrl, identifyPlant, manualIdentify } from '../lib/plantId'
+import { identifyPlant, manualIdentify } from '../lib/plantId'
+import { compressImageFile } from '../lib/photos'
 import type { IdentifyResult, Plant } from '../types'
 
 function uid() {
-  return crypto.randomUUID()
+  return crypto.randomUUID?.() ?? `plant-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
 export function AddPlantPage() {
@@ -14,32 +15,43 @@ export function AddPlantPage() {
   const navigate = useNavigate()
   const [photoDataUrl, setPhotoDataUrl] = useState<string>()
   const [busy, setBusy] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string>()
   const [suggestions, setSuggestions] = useState<IdentifyResult[]>([])
   const [selected, setSelected] = useState<IdentifyResult | null>(null)
+  const [speciesText, setSpeciesText] = useState('')
   const [name, setName] = useState('')
   const [notes, setNotes] = useState('')
 
-  const canSave = Boolean(selected && name.trim())
+  const canSave = Boolean(name.trim()) && !busy && !saving
 
-  const manualOptions = useMemo(() => SPECIES_CATALOG, [])
+  const manualOptions = useMemo(
+    () => SPECIES_CATALOG.filter((s) => s.id !== 'general'),
+    [],
+  )
 
   async function onPhoto(file: File | undefined) {
     if (!file) return
     setBusy(true)
     setError(undefined)
     try {
-      const dataUrl = await fileToDataUrl(file)
+      const dataUrl = await compressImageFile(file)
       setPhotoDataUrl(dataUrl)
-      const { result, error: idError, suggestions: list } = await identifyPlant(file)
-      setSuggestions(list)
-      if (result) {
-        setSelected(result)
-        setName(result.speciesRu)
-      } else if (list[0]) {
-        setSelected(null)
+
+      // Identification is optional — never block saving if it fails
+      try {
+        const { result, error: idError, suggestions: list } = await identifyPlant(file)
+        setSuggestions(list)
+        if (result) {
+          setSelected(result)
+          setSpeciesText(result.speciesRu)
+          if (!name.trim()) setName(result.speciesRu)
+        }
+        if (idError) setError(idError)
+      } catch {
+        setSuggestions([])
+        setError('Фото сохранено. Вид можно вписать вручную ниже.')
       }
-      if (idError) setError(idError)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ошибка загрузки фото')
     } finally {
@@ -47,24 +59,71 @@ export function AddPlantPage() {
     }
   }
 
-  async function onSave() {
-    if (!selected || !name.trim()) return
-    const now = new Date().toISOString()
-    const plant: Plant = {
-      id: uid(),
-      name: name.trim(),
-      species: selected.species,
-      speciesRu: selected.speciesRu,
-      photoDataUrl,
-      addedAt: now,
-      lastWateredAt: now,
-      lastFedAt: now,
-      lastRepottedAt: now,
-      careProfile: selected.careProfile,
-      notes: notes.trim() || undefined,
+  function resolveSpecies(): { species: string; speciesRu: string; careProfile: Plant['careProfile'] } {
+    if (selected) {
+      return {
+        species: selected.species,
+        speciesRu: selected.speciesRu,
+        careProfile: selected.careProfile,
+      }
     }
-    await upsertPlant(plant)
-    navigate(`/plant/${plant.id}`)
+
+    const typed = speciesText.trim()
+    if (typed) {
+      const matched = findSpeciesByName(typed)
+      if (matched) {
+        return {
+          species: matched.species,
+          speciesRu: matched.speciesRu,
+          careProfile: matched.care,
+        }
+      }
+      return {
+        species: typed,
+        speciesRu: typed,
+        careProfile: generalCareProfile(),
+      }
+    }
+
+    return {
+      species: 'Houseplant',
+      speciesRu: 'Комнатное растение',
+      careProfile: generalCareProfile(),
+    }
+  }
+
+  async function onSave() {
+    if (!name.trim() || saving) return
+    setSaving(true)
+    setError(undefined)
+    try {
+      const resolved = resolveSpecies()
+      const now = new Date().toISOString()
+      const plant: Plant = {
+        id: uid(),
+        name: name.trim(),
+        species: resolved.species,
+        speciesRu: resolved.speciesRu,
+        photoDataUrl,
+        addedAt: now,
+        lastWateredAt: now,
+        lastFedAt: now,
+        lastRepottedAt: now,
+        careProfile: resolved.careProfile,
+        notes: notes.trim() || undefined,
+      }
+      await upsertPlant(plant)
+      navigate(`/plant/${plant.id}`)
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Не удалось сохранить'
+      setError(
+        /quota|недостаточно|space/i.test(message)
+          ? 'Не хватает места для фото. Попробуйте другое фото или сохраните без него.'
+          : message,
+      )
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -72,54 +131,86 @@ export function AddPlantPage() {
       <header className="page-hero compact">
         <p className="brand">Цветы</p>
         <h1>Добавить растение</h1>
-        <p className="lede">Сфотографируйте цветок — попробуем определить вид и настроить уход.</p>
+        <p className="lede">
+          Сфотографируйте цветок или просто впишите название — сохранить можно в любом случае.
+        </p>
       </header>
 
       <label className="photo-picker">
         <input
           type="file"
           accept="image/*"
-          capture="environment"
           hidden
-          onChange={(e) => void onPhoto(e.target.files?.[0])}
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            e.target.value = ''
+            void onPhoto(file)
+          }}
         />
         {photoDataUrl ? (
           <img src={photoDataUrl} alt="Выбранное растение" />
         ) : (
-          <span>{busy ? 'Распознаём…' : 'Нажмите, чтобы сделать фото или выбрать из галереи'}</span>
+          <span>{busy ? 'Обрабатываем фото…' : 'Нажмите, чтобы сделать фото или выбрать из галереи'}</span>
         )}
       </label>
 
-      {error && <p className="notice">{error}</p>}
-
-      {(suggestions.length > 0 || selected) && (
-        <div className="field-block">
-          <h2>Вид растения</h2>
-          {selected?.source === 'plant.id' && (
-            <p className="muted">
-              Распознано: {selected.speciesRu} ({Math.round(selected.confidence * 100)}%)
-            </p>
-          )}
-          <div className="chip-grid">
-            {(selected?.source === 'plant.id' ? [selected, ...suggestions] : suggestions).map((s) => (
-              <button
-                key={`${s.species}-${s.source}`}
-                type="button"
-                className={selected?.species === s.species ? 'chip active' : 'chip'}
-                onClick={() => {
-                  setSelected(s)
-                  if (!name) setName(s.speciesRu)
-                }}
-              >
-                {s.speciesRu}
-              </button>
-            ))}
-          </div>
-        </div>
+      {photoDataUrl && (
+        <button
+          type="button"
+          className="btn ghost wide"
+          onClick={() => {
+            setPhotoDataUrl(undefined)
+          }}
+        >
+          Убрать фото
+        </button>
       )}
 
+      {error && <p className="notice">{error}</p>}
+
+      <label className="field">
+        <span>Имя в коллекции *</span>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Например, Роза на кухне"
+          autoComplete="off"
+        />
+      </label>
+
+      <label className="field">
+        <span>Какой это цветок (можно написать своими словами)</span>
+        <input
+          value={speciesText}
+          onChange={(e) => {
+            const value = e.target.value
+            setSpeciesText(value)
+            const matched = findSpeciesByName(value)
+            if (matched) {
+              setSelected({
+                species: matched.species,
+                speciesRu: matched.speciesRu,
+                confidence: 1,
+                careProfile: matched.care,
+                source: 'manual',
+              })
+            } else {
+              setSelected(null)
+            }
+          }}
+          placeholder="Например: роза, герань, орхидея, кактус…"
+          autoComplete="off"
+          list="species-suggestions"
+        />
+        <datalist id="species-suggestions">
+          {manualOptions.map((o) => (
+            <option key={o.id} value={o.speciesRu} />
+          ))}
+        </datalist>
+      </label>
+
       <div className="field-block">
-        <h2>Или выбрать вручную</h2>
+        <h2>Быстрый выбор из списка</h2>
         <select
           className="select"
           value=""
@@ -128,31 +219,51 @@ export function AddPlantPage() {
             if (!id) return
             const result = manualIdentify(id)
             setSelected(result)
-            setName(result.speciesRu)
+            setSpeciesText(result.speciesRu)
+            if (!name.trim()) setName(result.speciesRu)
           }}
         >
-          <option value="">Список распространённых видов…</option>
+          <option value="">Выберите вид…</option>
           {manualOptions.map((o) => (
             <option key={o.id} value={o.id}>
               {o.speciesRu}
             </option>
           ))}
         </select>
+        {suggestions.length > 0 && (
+          <div className="chip-grid" style={{ marginTop: 10 }}>
+            {suggestions.map((s) => (
+              <button
+                key={`${s.species}-${s.source}`}
+                type="button"
+                className={selected?.species === s.species ? 'chip active' : 'chip'}
+                onClick={() => {
+                  setSelected(s)
+                  setSpeciesText(s.speciesRu)
+                  if (!name.trim()) setName(s.speciesRu)
+                }}
+              >
+                {s.speciesRu}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <label className="field">
-        <span>Имя в коллекции</span>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Например, Монстера у окна" />
-      </label>
-
-      <label className="field">
         <span>Заметка</span>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} placeholder="Где стоит, особенности…" />
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder="Где стоит, особенности…"
+        />
       </label>
 
-      <button type="button" className="btn primary wide" disabled={!canSave || busy} onClick={() => void onSave()}>
-        Сохранить растение
+      <button type="button" className="btn primary wide" disabled={!canSave} onClick={() => void onSave()}>
+        {saving ? 'Сохраняем…' : 'Сохранить растение'}
       </button>
+      {!name.trim() && <p className="muted">Чтобы сохранить, впишите хотя бы имя в коллекции.</p>}
     </section>
   )
 }

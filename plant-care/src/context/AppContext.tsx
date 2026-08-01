@@ -62,7 +62,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const upsertPlant = useCallback(
     async (plant: Plant) => {
-      await savePlant(plant)
+      try {
+        await savePlant(plant)
+      } catch (error) {
+        // Retry once without photo if storage quota is exceeded
+        const message = error instanceof Error ? error.message : String(error)
+        if (plant.photoDataUrl && /quota|exceeded|недостаточно/i.test(message)) {
+          await savePlant({ ...plant, photoDataUrl: undefined })
+          await refreshPlants()
+          throw new Error('Растение сохранено без фото: не хватило места в телефоне.')
+        }
+        throw error instanceof Error ? error : new Error('Не удалось сохранить растение')
+      }
       await refreshPlants()
     },
     [refreshPlants],
