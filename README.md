@@ -6,6 +6,9 @@ A browser-game portal containing:
 - Brawl Stars (`bravol-stars/`)
 - Blockbust (`blockbust/`)
 
+## Apps
+- Plant Care PWA (`plant-care/`) — уход за цветами для iPhone Safari
+
 ## Also available
 - Zombie vs Plants
 - Snake — Arcade Edition
