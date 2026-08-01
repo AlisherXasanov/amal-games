@@ -12,7 +12,7 @@ export function SettingsPage() {
     updateSettings({
       ...settings,
       plantIdApiKey: apiKey.trim(),
-      cityLabel: cityLabel.trim() || 'Москва',
+      cityLabel: cityLabel.trim() || 'Узбекистан',
       useGeolocation: useGeo,
     })
     setSaved(true)

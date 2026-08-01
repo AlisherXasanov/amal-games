@@ -48,9 +48,9 @@ async function resolveCoords(): Promise<{ lat: number; lon: number; cityLabel: s
     }
   }
   return {
-    lat: settings.lat ?? 55.7558,
-    lon: settings.lon ?? 37.6173,
-    cityLabel: settings.cityLabel || 'Москва',
+    lat: settings.lat ?? 41.2995,
+    lon: settings.lon ?? 69.2401,
+    cityLabel: settings.cityLabel || 'Узбекистан',
   }
 }
 
