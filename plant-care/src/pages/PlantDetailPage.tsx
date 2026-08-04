@@ -1,15 +1,42 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { careTips, getPlantStatus, markFed, markRepotted, markWatered } from '../lib/care'
 import { CATEGORY_LABELS } from '../data/plantProfiles'
+import { PLANT_LOCATIONS } from '../data/locations'
 import { shopRecommendations, marketSearchUrls } from '../lib/shop'
 import { StatusBadge } from '../components/StatusBadge'
+
+const LIGHT_LABELS = {
+  low: 'мало света',
+  medium: 'средний свет',
+  bright: 'яркий свет',
+  direct: 'прямое солнце',
+} as const
+
+function presetFromLocation(location?: string) {
+  if (!location) return ''
+  return (PLANT_LOCATIONS as readonly string[]).includes(location) ? location : 'Другое'
+}
 
 export function PlantDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { plants, climate, upsertPlant, removePlant } = useApp()
   const plant = plants.find((p) => p.id === id)
+
+  const [locationPreset, setLocationPreset] = useState('')
+  const [locationCustom, setLocationCustom] = useState('')
+
+  useEffect(() => {
+    if (!plant) return
+    setLocationPreset(presetFromLocation(plant.location))
+    setLocationCustom(
+      plant.location && !(PLANT_LOCATIONS as readonly string[]).includes(plant.location)
+        ? plant.location
+        : '',
+    )
+  }, [plant])
 
   if (!plant) {
     return (
@@ -25,6 +52,16 @@ export function PlantDetailPage() {
   const status = getPlantStatus(plant, climate ?? undefined)
   const tips = careTips(plant, climate ?? undefined)
   const shop = shopRecommendations(plant)
+
+  function currentLocationValue() {
+    if (locationPreset === 'Другое') return locationCustom.trim()
+    return locationPreset.trim()
+  }
+
+  async function saveLocation() {
+    const next = currentLocationValue() || undefined
+    await upsertPlant({ ...plant!, location: next })
+  }
 
   return (
     <section className="page detail-page">
@@ -43,8 +80,75 @@ export function PlantDetailPage() {
           <h1>{plant.name}</h1>
           <p className="lede">
             {plant.speciesRu} · {CATEGORY_LABELS[plant.careProfile.category]}
+            {plant.location ? ` · ${plant.location}` : ''}
           </p>
         </div>
+      </div>
+
+      <div className="traits-panel">
+        <h2>Характеристики</h2>
+        <dl className="traits-grid">
+          <div>
+            <dt>Вид</dt>
+            <dd>{plant.speciesRu}</dd>
+          </div>
+          <div>
+            <dt>Тип</dt>
+            <dd>{CATEGORY_LABELS[plant.careProfile.category]}</dd>
+          </div>
+          <div>
+            <dt>Место</dt>
+            <dd>{plant.location || 'Не указано'}</dd>
+          </div>
+          <div>
+            <dt>Свет</dt>
+            <dd>{LIGHT_LABELS[plant.careProfile.light]}</dd>
+          </div>
+          <div>
+            <dt>Полив</dt>
+            <dd>примерно раз в {plant.careProfile.waterIntervalDays} дн.</dd>
+          </div>
+          <div>
+            <dt>Подкормка</dt>
+            <dd>{plant.careProfile.fertilizerType}</dd>
+          </div>
+        </dl>
+
+        <label className="field" style={{ marginTop: 12, marginBottom: 0 }}>
+          <span>Где стоит растение</span>
+          <select
+            className="select"
+            value={locationPreset}
+            onChange={(e) => {
+              setLocationPreset(e.target.value)
+            }}
+          >
+            <option value="">Выберите место…</option>
+            {PLANT_LOCATIONS.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
+        </label>
+        {locationPreset === 'Другое' && (
+          <label className="field" style={{ marginTop: 10, marginBottom: 0 }}>
+            <span>Своё место</span>
+            <input
+              value={locationCustom}
+              onChange={(e) => setLocationCustom(e.target.value)}
+              placeholder="Например, у входа во двор"
+            />
+          </label>
+        )}
+        <button
+          type="button"
+          className="btn ghost wide"
+          style={{ marginTop: 10 }}
+          onClick={() => void saveLocation()}
+        >
+          Сохранить место
+        </button>
       </div>
 
       <div className="status-grid">

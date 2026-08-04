@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { findSpeciesByName, generalCareProfile, SPECIES_CATALOG } from '../data/plantProfiles'
+import { PLANT_LOCATIONS } from '../data/locations'
 import { useApp } from '../context/AppContext'
 import { identifyPlant, manualIdentify } from '../lib/plantId'
 import { compressImageFile } from '../lib/photos'
@@ -21,6 +22,8 @@ export function AddPlantPage() {
   const [selected, setSelected] = useState<IdentifyResult | null>(null)
   const [speciesText, setSpeciesText] = useState('')
   const [name, setName] = useState('')
+  const [locationPreset, setLocationPreset] = useState('')
+  const [locationCustom, setLocationCustom] = useState('')
   const [notes, setNotes] = useState('')
 
   const canSave = Boolean(name.trim()) && !busy && !saving
@@ -30,6 +33,11 @@ export function AddPlantPage() {
     [],
   )
 
+  const resolvedLocation = (() => {
+    if (locationPreset === 'Другое') return locationCustom.trim() || undefined
+    return locationPreset.trim() || undefined
+  })()
+
   async function onPhoto(file: File | undefined) {
     if (!file) return
     setBusy(true)
@@ -38,7 +46,6 @@ export function AddPlantPage() {
       const dataUrl = await compressImageFile(file)
       setPhotoDataUrl(dataUrl)
 
-      // Identification is optional — never block saving if it fails
       try {
         const { result, error: idError, suggestions: list } = await identifyPlant(file)
         setSuggestions(list)
@@ -104,6 +111,7 @@ export function AddPlantPage() {
         name: name.trim(),
         species: resolved.species,
         speciesRu: resolved.speciesRu,
+        location: resolvedLocation,
         photoDataUrl,
         addedAt: now,
         lastWateredAt: now,
@@ -198,7 +206,7 @@ export function AddPlantPage() {
               setSelected(null)
             }
           }}
-          placeholder="Например: роза, герань, орхидея, кактус…"
+          placeholder="Например: роза, герань, глициния, кактус…"
           autoComplete="off"
           list="species-suggestions"
         />
@@ -208,6 +216,34 @@ export function AddPlantPage() {
           ))}
         </datalist>
       </label>
+
+      <label className="field">
+        <span>Где стоит растение</span>
+        <select
+          className="select"
+          value={locationPreset}
+          onChange={(e) => setLocationPreset(e.target.value)}
+        >
+          <option value="">Выберите место…</option>
+          {PLANT_LOCATIONS.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {locationPreset === 'Другое' && (
+        <label className="field">
+          <span>Своё место</span>
+          <input
+            value={locationCustom}
+            onChange={(e) => setLocationCustom(e.target.value)}
+            placeholder="Например, у входа во двор"
+            autoComplete="off"
+          />
+        </label>
+      )}
 
       <div className="field-block">
         <h2>Быстрый выбор из списка</h2>
@@ -256,7 +292,7 @@ export function AddPlantPage() {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder="Где стоит, особенности…"
+          placeholder="Особенности ухода, что любит…"
         />
       </label>
 

@@ -24,6 +24,8 @@ export interface Plant {
   name: string
   species: string
   speciesRu: string
+  /** Where the plant stands: room, balcony, yard, etc. */
+  location?: string
   photoDataUrl?: string
   addedAt: string
   lastWateredAt?: string

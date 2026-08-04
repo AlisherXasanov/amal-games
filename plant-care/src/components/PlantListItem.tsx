@@ -30,7 +30,10 @@ export function PlantListItem({ plant, climate }: { plant: Plant; climate: Clima
           <h3>{plant.name}</h3>
           <StatusBadge urgency={urgency} text={status.summary} />
         </div>
-        <p className="muted">{plant.speciesRu}</p>
+        <p className="muted">
+          {plant.speciesRu}
+          {plant.location ? ` · ${plant.location}` : ''}
+        </p>
       </div>
     </Link>
   )

@@ -450,6 +450,47 @@ h2 {
   background: linear-gradient(135deg, #d7e6d5, #f0e4d6);
 }
 
+.traits-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(8px);
+}
+
+.traits-panel h2 {
+  margin-bottom: 12px;
+}
+
+.traits-grid {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+.traits-grid div {
+  min-width: 0;
+}
+
+.traits-grid dt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.traits-grid dd {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
 .back-link {
   border: 0;
   background: transparent;
