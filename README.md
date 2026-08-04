@@ -1,16 +1,16 @@
 # Amal's Games
 
-A browser-game portal containing:
+Браузерный портал игр. Все игры открыты для всех игроков.
 
-## Featured
-- Brawl Stars (`bravol-stars/`)
-- Blockbust (`blockbust/`)
+## Игры в каталоге
+- **Космический курьер** (`space-courier/`) — обновлено: неуязвимость, бомбы ∞, станция без посылки
+- **Brawl Stars** (`bravol-stars/`)
+- **Blockbust** (`blockbust/`)
+- **Snake — Arcade Edition** (`snake-game/`)
+- **Ступеньки вверх** (`ladder-climb/`)
+- **Пиксель-Террариум** (`terraverse/`)
 
-## Also available
-- Zombie vs Plants
-- Snake — Arcade Edition
-- Pixel Terrarium
+## Не в каталоге
+- `zombie-vs-plants/` — не публикуется на портале
 
-The website is designed for static hosting on GitHub Pages.
-
-Open `games/index.html` or serve the `games` folder locally.
+Сайт рассчитан на GitHub Pages. Открой `index.html` или папку `games` локально.

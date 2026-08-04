@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Amal's Games</title>
-  <meta name="description" content="Браузерные игры Amal: Brawl Stars и Blockbust — играй бесплатно онлайн." />
+  <meta name="description" content="Браузерные игры Amal: Космический курьер, Brawl Stars, Blockbust, Змейка, Ступеньки, Террариум — играй бесплатно." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
@@ -34,7 +35,7 @@
       font-size: .95rem;
     }
     .section-title {
-      max-width: 960px;
+      max-width: 1100px;
       margin: 0.5rem auto 0;
       padding: 0 1rem;
       font-size: 0.85rem;
@@ -47,11 +48,11 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.5rem;
-      max-width: 960px;
+      max-width: 1100px;
       margin: 1rem auto 2rem;
       padding: 0 1rem;
     }
-    .grid.more {
+    .grid.all {
       margin-bottom: 3rem;
     }
     .card {
@@ -81,11 +82,12 @@
       justify-content: center;
       font-size: 3.5rem;
     }
-    .card-img.zombie { background: linear-gradient(135deg, #166534, #14532d); }
     .card-img.snake  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
     .card-img.terra   { background: linear-gradient(135deg, #78350f, #451a03); }
+    .card-img.ladder  { background: linear-gradient(135deg, #1e3a5f, #0f2744); }
     .card-img.blockbust { background: linear-gradient(135deg, #5b4305, #4c1d95); }
     .card-img.brawl { background: linear-gradient(135deg, #0b1c28, #c47a00); }
+    .card-img.courier { background: linear-gradient(135deg, #0a1a3a, #1a0a3a); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -113,6 +115,7 @@
       color: #fafafa;
     }
     .badge.new { background: #eab308; color: #111; }
+    .badge.update { background: #22c55e; color: #052e16; }
     .play-btn {
       display: inline-block;
       margin-top: 1rem;
@@ -125,11 +128,12 @@
       transition: opacity .15s;
     }
     .play-btn:hover { opacity: .85; }
-    .play-btn.zombie { background: #16a34a; }
     .play-btn.snake  { background: #6366f1; }
     .play-btn.terra   { background: #d97706; }
+    .play-btn.ladder  { background: #3b82f6; }
     .play-btn.blockbust { background: #eab308; color: #111; }
     .play-btn.brawl { background: #ffd23f; color: #102018; }
+    .play-btn.courier { background: #3de7ff; color: #041018; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -141,15 +145,25 @@
 <body>
   <header>
     <h1>Amal's Games</h1>
-    <p>Выбери игру и начни играть прямо в браузере</p>
+    <p>Все игры открыты для всех — выбирай и играй в браузере</p>
   </header>
 
-  <p class="section-title">Главные игры</p>
-  <div class="grid">
+  <p class="section-title">Все игры</p>
+  <div class="grid all">
+    <a class="card featured" href="space-courier/">
+      <div class="card-img courier">🚀</div>
+      <div class="card-body">
+        <span class="badge update">Обновлено</span>
+        <h2>Космический курьер</h2>
+        <p>15 миссий, неуязвимость, бомбы ∞. Лети на станцию — коробку брать не нужно. Очки всегда максимум.</p>
+        <span class="play-btn courier">Играть</span>
+      </div>
+    </a>
+
     <a class="card featured" href="bravol-stars/">
       <div class="card-img brawl">⭐</div>
       <div class="card-body">
-        <span class="badge new">Новое</span>
+        <span class="badge new">В каталоге</span>
         <h2>Brawl Stars</h2>
         <p>Арена в браузере: бойцы, комнаты по коду, режимы 1v1 / 2v2 / 3v3.</p>
         <span class="play-btn brawl">Играть</span>
@@ -159,44 +173,45 @@
     <a class="card featured" href="blockbust/">
       <div class="card-img blockbust">🧩</div>
       <div class="card-body">
-        <span class="badge new">Новое</span>
+        <span class="badge new">В каталоге</span>
         <h2>Blockbust</h2>
         <p>Головоломка с блоками: ставь фигуры, очищай линии, открывай скины и приключения.</p>
         <span class="play-btn blockbust">Играть</span>
-      </div>
-    </a>
-  </div>
-
-  <p class="section-title">Ещё игры</p>
-  <div class="grid more">
-    <a class="card" href="zombie-vs-plants/">
-      <div class="card-img zombie">🌱🧟</div>
-      <div class="card-body">
-        <h2>Zombie vs Plants</h2>
-        <p>Защити свой сад от зомби! Расставляй растения и отражай волны атак.</p>
-        <span class="play-btn zombie">Играть</span>
       </div>
     </a>
 
     <a class="card" href="snake-game/">
       <div class="card-img snake">🐍</div>
       <div class="card-body">
+        <span class="badge">Открыто</span>
         <h2>Snake — Arcade Edition</h2>
         <p>Классическая змейка с 20 уровнями, скинами и щитами. Собирай очки!</p>
         <span class="play-btn snake">Играть</span>
       </div>
     </a>
 
+    <a class="card" href="ladder-climb/">
+      <div class="card-img ladder">🪜</div>
+      <div class="card-body">
+        <span class="badge">Открыто</span>
+        <h2>Ступеньки вверх</h2>
+        <p>Маленькие ступеньки на верхний этаж: лёд, вода и другие препятствия. Не поскользнись.</p>
+        <span class="play-btn ladder">Играть</span>
+      </div>
+    </a>
+
     <a class="card" href="terraverse/">
       <div class="card-img terra">⛏️</div>
       <div class="card-body">
+        <span class="badge">Открыто</span>
         <h2>Пиксель-Террариум</h2>
-        <p>2D песочница в стиле Terraria — копай, строй и исследуй пещеры.</p>
+        <p>2D песочница: копай, строй, исследуй пещеры и сразись с подземным и небесным боссами.</p>
         <span class="play-btn terra">Играть</span>
       </div>
     </a>
   </div>
 
-  <footer>&copy; 2026 Amal's Games</footer>
+  <footer>&copy; 2026 Amal's Games · все игры доступны всем</footer>
+  <script src="./owner-cheats.js"></script>
 </body>
 </html>
