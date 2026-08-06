@@ -1,0 +1,294 @@
+:root {
+  --sand: #c4a574;
+  --dune: #8b6914;
+  --sky0: #5ec8e8;
+  --sky1: #f5c16c;
+  --dirt: #3d2a14;
+  --accent: #ff6b2c;
+  --lime: #b8e04a;
+  --text: #fff8e8;
+  --muted: #d4c4a8;
+  --panel: rgba(28, 18, 8, 0.88);
+  --line: rgba(255, 107, 44, 0.35);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, #3a2810 0%, transparent 55%),
+    radial-gradient(ellipse 70% 40% at 80% 100%, #1a1008 0%, transparent 50%),
+    linear-gradient(180deg, #1c1208, #0e0a06);
+  color: var(--text);
+  font-family: "Exo 2", system-ui, sans-serif;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.portal-back {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 40;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font: 600 13px/1 system-ui, sans-serif;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+}
+.portal-back:hover { background: rgba(0, 0, 0, 0.85); }
+
+#app {
+  height: 100dvh;
+  display: grid;
+  place-items: center;
+}
+
+.screen {
+  width: min(960px, 100vw);
+  height: min(640px, 100dvh);
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+canvas#game {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #1a1008;
+  cursor: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  text-align: center;
+  z-index: 5;
+  gap: 0.65rem;
+}
+
+.overlay.hidden { display: none; }
+
+.brand {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(2.8rem, 9vw, 4.2rem);
+  letter-spacing: 0.08em;
+  line-height: 0.95;
+  background: linear-gradient(180deg, #ffe08a 0%, #ff6b2c 55%, #c43a10 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 4px 0 rgba(80, 30, 0, 0.45));
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 28rem;
+  line-height: 1.45;
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1.6rem;
+  font: 800 1rem "Exo 2", system-ui;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ff9a4a, #ff6b2c);
+  color: #2a1200;
+  box-shadow: 0 5px 0 #a84010;
+  margin-top: 0.35rem;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #a84010; }
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
+.btn.ghost:active { transform: translateY(1px); }
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.55rem;
+  width: min(520px, 100%);
+  margin-top: 0.5rem;
+}
+
+.course-btn {
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.7rem 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font: 700 0.85rem "Exo 2", system-ui;
+  cursor: pointer;
+  text-align: center;
+}
+.course-btn:hover { border-color: var(--accent); background: rgba(255, 107, 44, 0.12); }
+.course-btn .sub {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.course-btn.best .sub { color: var(--lime); }
+
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  font-family: "Exo 2", system-ui;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 16px;
+  gap: 10px;
+}
+
+.hud-pill {
+  background: rgba(12, 8, 4, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 88px;
+  backdrop-filter: blur(4px);
+  flex: 0 0 auto;
+}
+
+.hud-pill.score {
+  margin-right: auto;
+  margin-left: 8px;
+}
+
+.hud-pill .label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hud-pill .value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.55rem;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--text);
+}
+.hud-pill.time .value { color: #ffe08a; }
+.hud-pill.score .value { color: var(--lime); }
+.hud-pill.speed .value { color: #7ec8ff; }
+
+.hud-center {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(12, 8, 4, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 6px 14px;
+  backdrop-filter: blur(4px);
+}
+.hud-center .leg {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.hud-center .flags {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-top: 4px;
+}
+.flag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.flag-dot.got { outline: 2px solid #fff; outline-offset: 1px; }
+
+.msg {
+  position: absolute;
+  top: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.msg.show { opacity: 1; }
+
+.touch {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 28%;
+  display: none;
+  pointer-events: none;
+  z-index: 4;
+  padding: 8px;
+  gap: 8px;
+}
+
+.pad {
+  pointer-events: auto;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font: 800 1.15rem "Exo 2", system-ui;
+  backdrop-filter: blur(3px);
+  -webkit-tap-highlight-color: transparent;
+}
+.pad:active, .pad.held { background: rgba(255, 107, 44, 0.45); }
+
+.hint-keys {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.hint-keys kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 700px), (pointer: coarse) {
+  .touch.on { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+}
