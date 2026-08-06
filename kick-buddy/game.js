@@ -1,7 +1,7 @@
 (() => {
   const W = 960;
   const H = 640;
-  const STORAGE = "kick-buddy-v3";
+  const STORAGE = "kick-buddy-v4";
   const FLOOR = H - 52;
   const GRAVITY = 2200;
 
@@ -139,9 +139,9 @@
     { id: "gold", name: "Золотой", cost: 800, cloth: "#f0d060", dark: "#c09020", eye: "#5a3800", desc: "Легендарный скин" },
   ];
 
-  const old = store.get("kick-buddy-v2", null);
+  const old = store.get("kick-buddy-v3", null) || store.get("kick-buddy-v2", null);
   const save = store.get(STORAGE, old ? {
-    coins: old.coins || 80,
+    coins: Math.max(300000, old.coins || 0),
     owned: old.owned || ["none"],
     shirt: old.shirt || "none",
     hat: old.hat || null,
@@ -149,16 +149,17 @@
     ownedWeapons: old.ownedWeapons || ["hand"],
     weapon: old.weapon || "hand",
     mute: !!old.mute,
-    buddyType: "classic",
-    ownedBuddies: ["classic"],
-    infDmg: false,
-    infCoins: false,
-    godMode: false,
-    giant: false,
-    limitedAdmin: false,
-    halfDmg: false,
+    buddyType: old.buddyType || "classic",
+    ownedBuddies: old.ownedBuddies || ["classic"],
+    infDmg: !!old.infDmg,
+    infCoins: !!old.infCoins,
+    godMode: !!old.godMode,
+    giant: !!old.giant,
+    limitedAdmin: !!old.limitedAdmin,
+    halfDmg: !!old.halfDmg,
+    gotSite300k: true,
   } : {
-    coins: 100,
+    coins: 300000,
     owned: ["none"],
     shirt: "none",
     hat: null,
@@ -174,6 +175,7 @@
     giant: false,
     limitedAdmin: false,
     halfDmg: false,
+    gotSite300k: true,
   });
   if (!save.owned) save.owned = ["none"];
   if (!save.owned.includes("none")) save.owned.push("none");
@@ -183,6 +185,11 @@
   if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.push("classic");
   if (typeof save.limitedAdmin !== "boolean") save.limitedAdmin = false;
   if (typeof save.halfDmg !== "boolean") save.halfDmg = false;
+  // На сайте — 300 000 монет (один раз, если ещё не выдавали)
+  if (!save.gotSite300k) {
+    save.coins = Math.max(save.coins || 0, 300000);
+    save.gotSite300k = true;
+  }
   // migrate old admin skin id → SkinAdminBuffer
   if (save.buddyType === "admin") save.buddyType = "SkinAdminBuffer";
   save.ownedBuddies = [...new Set(save.ownedBuddies.map((id) => (id === "admin" ? "SkinAdminBuffer" : id)))];
@@ -314,6 +321,7 @@
       giant: save.giant,
       limitedAdmin: !!save.limitedAdmin,
       halfDmg: !!save.halfDmg,
+      gotSite300k: !!save.gotSite300k,
     });
   }
 
@@ -413,6 +421,8 @@
     hp: 100,
     maxHp: 100,
     hurtT: 0,
+    faceAuraT: 0,
+    faceAuraColor: "#ffd76a",
     frozenT: 0,
     burnT: 0,
     poisonT: 0,
@@ -423,6 +433,7 @@
   const particles = [];
   const floats = [];
   const blasts = [];
+  const wallMarks = [];
   const projectiles = [];
   let drag = null;
   let listening = false;
@@ -583,11 +594,16 @@
     buddy.hurtT = 0.35;
     buddy.smile = 0.7;
 
-    const coins = save.infCoins ? Math.floor(dmg * 0.1) : Math.max(1, Math.floor(dmg * wpn.coinMul * 0.35));
+    const coins = save.infCoins
+      ? Math.floor(dmg * 0.1)
+      : Math.max(1, Math.floor(dmg * wpn.coinMul * 0.42)); // сильнее оружие → больше монет
     if (!save.infCoins) save.coins += coins;
     else save.coins = Math.max(save.coins, 999999);
     persist();
     syncHud();
+
+    buddy.faceAuraT = Math.max(buddy.faceAuraT, 0.45 + Math.min(1.4, (dmg * wpn.coinMul) / 180));
+    buddy.faceAuraColor = wpn.color || "#ffd76a";
 
     let ang = Math.atan2(buddy.y - fromY, buddy.x - fromX);
     if (!Number.isFinite(ang)) ang = buddy.facing >= 0 ? 0.2 : Math.PI - 0.2;
@@ -701,12 +717,55 @@
     return true;
   }
 
-  function applyProjectileHit(proj, fromX, fromY, splashScale = 1) {
+  function resolveProjWeapon(proj) {
     const base = weaponById(proj.wpnId);
     let wpn = { ...base };
     if (base.infHit || (save.infDmg && base.id !== "hand")) {
       wpn = { ...base, dmg: Math.max(base.dmg, 99999), coinMul: Math.max(base.coinMul, 10), knock: Math.max(base.knock, 1400) };
+    } else if (save.halfDmg && save.limitedAdmin && base.id !== "hand") {
+      wpn = { ...base, dmg: Math.round(base.dmg * 2), coinMul: base.coinMul * 1.5, knock: Math.round(base.knock * 1.25) };
     }
+    return wpn;
+  }
+
+  function grantCoinsFromWeapon(wpn, scale, x, y) {
+    const power = Math.max(1, (wpn.dmg || 1) * (wpn.coinMul || 1));
+    const coins = save.infCoins
+      ? Math.max(1, Math.floor(power * scale * 0.05))
+      : Math.max(1, Math.floor(power * scale));
+    if (!save.infCoins) save.coins += coins;
+    else save.coins = Math.max(save.coins, 999999);
+    persist();
+    syncHud();
+    floatText(x, y - 18, "+" + coins + "◎", "#e8a820");
+    return coins;
+  }
+
+  /** Попадание в стену/пол: метка с аурой + аура на лице Бади + монеты по силе */
+  function impactWall(x, y, proj) {
+    const wpn = resolveProjWeapon(proj);
+    const power = Math.max(1, wpn.dmg * wpn.coinMul);
+    const r = 16 + Math.min(90, Math.sqrt(power) * 2.2);
+    wallMarks.push({
+      x,
+      y,
+      life: 1.1 + Math.min(2.4, power / 220),
+      maxLife: 1.1 + Math.min(2.4, power / 220),
+      r,
+      color: wpn.color || proj.color || "#ffd76a",
+      power,
+    });
+    blasts.push({ x, y, life: 0.28 + Math.min(0.5, power / 400), r: r * 0.7, color: wpn.color || proj.color });
+    burst(x, y, wpn.color || proj.color, 6 + Math.min(24, power / 40), 140 + Math.min(360, power * 0.4));
+
+    buddy.faceAuraT = Math.max(buddy.faceAuraT, 0.55 + Math.min(1.8, power / 160));
+    buddy.faceAuraColor = wpn.color || "#ffd76a";
+    // в стену тоже дают монеты — чем сильнее пушка, тем больше (авто-очередь слабее за тик)
+    grantCoinsFromWeapon(wpn, wpn.auto ? 0.04 : 0.15, x, y);
+  }
+
+  function applyProjectileHit(proj, fromX, fromY, splashScale = 1) {
+    let wpn = resolveProjWeapon(proj);
     wpn.dmg = Math.max(1, Math.floor(wpn.dmg * splashScale));
     if (buddy.dead || wpn.dmg <= 0) return;
     attackBuddy(wpn, fromX, fromY, { skipCd: true });
@@ -725,7 +784,7 @@
       const falloff = Math.max(0.35, 1 - dist / (r + 40));
       applyProjectileHit(proj, x, y, falloff);
     } else {
-      say("Бабах по стене!");
+      impactWall(x, y, proj);
     }
   }
 
@@ -805,9 +864,8 @@
         const iy = Math.max(8, Math.min(H - 8, passed && toTarget < 40 ? p.targetY : p.y));
         if (p.explode && !p.hit) {
           explodeAt(ix, iy, p);
-        } else if (!p.hit && (p.kind === "bullet" || p.kind === "pellet" || p.kind === "pebble" || p.kind === "laser")) {
-          burst(ix, iy, p.color, 6, 160);
-          blasts.push({ x: ix, y: iy, life: 0.15, r: 12, color: p.color });
+        } else if (!p.hit && (p.kind === "bullet" || p.kind === "pellet" || p.kind === "pebble" || p.kind === "laser" || p.kind === "flame" || p.kind === "rocket")) {
+          impactWall(ix, iy, p);
         }
         projectiles.splice(i, 1);
       }
@@ -1725,6 +1783,7 @@
     buddy.phraseT = 0;
     killVoiceForever();
     if (buddy.hurtT > 0) buddy.hurtT -= dt;
+    if (buddy.faceAuraT > 0) buddy.faceAuraT -= dt;
     if (buddy.frozenT > 0) buddy.frozenT -= dt;
     if (buddy.burnT > 0) {
       buddy.burnT -= dt;
@@ -1862,6 +1921,10 @@
     for (const b of blasts) b.life -= dt;
     for (let i = blasts.length - 1; i >= 0; i--) {
       if (blasts[i].life <= 0) blasts.splice(i, 1);
+    }
+    for (const m of wallMarks) m.life -= dt;
+    for (let i = wallMarks.length - 1; i >= 0; i--) {
+      if (wallMarks[i].life <= 0) wallMarks.splice(i, 1);
     }
   }
 
@@ -2260,6 +2323,29 @@
     ctx.stroke();
     ctx.setLineDash([]);
 
+    // аура на лице (от удара / выстрела в стену) — сильнее удар → ярче и дольше
+    if (buddy.faceAuraT > 0) {
+      const a = Math.min(1, buddy.faceAuraT);
+      const pulse = 0.55 + Math.sin(buddy.bob * 8) * 0.2;
+      const gr = ctx.createRadialGradient(hx, hy, 6, hx, hy, 38 + a * 12);
+      const col = buddy.faceAuraColor || "#ffd76a";
+      gr.addColorStop(0, col);
+      gr.addColorStop(0.45, col);
+      gr.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.globalAlpha = 0.25 * a * pulse;
+      ctx.fillStyle = gr;
+      ctx.beginPath();
+      ctx.arc(hx, hy, 40 + a * 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.55 * a;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(hx, hy, 30 + a * 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
     ctx.restore();
 
     // elemental aura
@@ -2331,6 +2417,28 @@
     drawProjectiles();
     drawMuzzle();
 
+    // метки на стене с аурой — чем сильнее выстрел, тем больше кольцо
+    for (const m of wallMarks) {
+      const t = Math.max(0, m.life / (m.maxLife || 1));
+      const pulse = 0.75 + Math.sin(performance.now() * 0.012 + m.x) * 0.2;
+      ctx.globalAlpha = 0.35 * t * pulse;
+      const g = ctx.createRadialGradient(m.x, m.y, 2, m.x, m.y, m.r);
+      g.addColorStop(0, m.color);
+      g.addColorStop(0.55, m.color);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 0.7 * t;
+      ctx.strokeStyle = m.color;
+      ctx.lineWidth = 2 + Math.min(6, m.power / 80);
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.r * (0.55 + (1 - t) * 0.35), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
     for (const b of blasts) {
       const t = Math.max(0, b.life);
       ctx.globalAlpha = Math.min(1, t * 2);
@@ -2369,7 +2477,6 @@
   killVoiceForever();
   stopAllSpeech();
   persist(); // сохранить mute=true
-  canvas.style.cursor = isRanged(effectiveWeapon()) ? "crosshair" : "grab";
   canvas.style.cursor = isRanged(effectiveWeapon()) ? "crosshair" : "grab";
 
   let last = performance.now();
