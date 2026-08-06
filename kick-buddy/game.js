@@ -262,24 +262,15 @@
     }
   }
 
-  // Снести старые «командные» админы с чужих браузеров
+  // Снести ВСЕ старые флаги команды при каждом запуске (кроме активного v3 владельца)
   try {
-    if (!(window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner())) {
-      const host = String(location.hostname || "");
-      const local = host === "127.0.0.1" || host === "localhost" || host === "::1";
-      if (!local) localStorage.removeItem("kick-buddy-admin");
-    }
+    localStorage.removeItem("kick-buddy-admin");
+    localStorage.removeItem("amal-owner-v1");
+    localStorage.removeItem("amal-owner-v2");
   } catch { /* ignore */ }
 
   function markAdminLocal() {
-    // больше не пишем общий kick-buddy-admin — иначе команда могла войти по старому флагу
-    try {
-      if (window.AmalOwner && window.AmalOwner.unlock && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) {
-        /* уже владелец */
-      }
-    } catch {
-      /* ignore */
-    }
+    /* командный kick-buddy-admin больше не используем */
   }
 
   function grantAdminLoot() {
