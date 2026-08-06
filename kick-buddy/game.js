@@ -249,10 +249,11 @@
 
   function isAdmin() {
     try {
+      // playertest / checkcode — без админки
+      if (typeof forcePlayer !== "undefined" && forcePlayer) return false;
+      if (typeof playerTest !== "undefined" && playerTest) return false;
+      // Только владелец (AmalOwner) или localhost. Коды команды / kick-buddy-admin — ЗАПРЕЩЕНЫ
       if (window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) return true;
-      if (localStorage.getItem("kick-buddy-admin") === "1") return true;
-      // playertest=1: без авто-админа с localhost, но код из угла работает
-      if (playerTest) return false;
       const host = String(location.hostname || "");
       if (host === "127.0.0.1" || host === "localhost" || host === "::1") return true;
       return false;
@@ -261,45 +262,20 @@
     }
   }
 
-  // Один секрет настоящего админа — вводишь в «🔑 Код»
-  const OWNER_CODE = "AmalOwner2026";
-
-  function normalizeAdminCode(code) {
-    return String(code || "").trim();
-  }
-
-  function isValidFullAdminCode(code) {
-    const c = normalizeAdminCode(code);
-    if (!c) return false;
-    if (c === OWNER_CODE) return true;
-    if (c.toLowerCase() === "owner") return true;
-    try {
-      if (window.AmalOwner && typeof window.AmalOwner.unlock === "function") {
-        if (c === (window.AmalOwner.SECRET || OWNER_CODE)) return true;
-      }
-    } catch { /* ignore */ }
-    return false;
-  }
-
-  function redeemFullAdmin(code) {
-    if (!isValidFullAdminCode(code)) return false;
-    try { localStorage.setItem("kick-buddy-admin", "1"); } catch { /* ignore */ }
-    if (window.AmalOwner && window.AmalOwner.unlock) {
-      try { window.AmalOwner.unlock(OWNER_CODE); } catch { /* ignore */ }
+  // Снести старые «командные» админы с чужих браузеров
+  try {
+    if (!(window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner())) {
+      const host = String(location.hostname || "");
+      const local = host === "127.0.0.1" || host === "localhost" || host === "::1";
+      if (!local) localStorage.removeItem("kick-buddy-admin");
     }
-    // grantAdminLoot требует isAdmin() — флаг уже в localStorage
-    grantAdminLoot();
-    persist();
-    syncHud();
-    if (typeof syncAdminUi === "function") syncAdminUi();
-    return true;
-  }
+  } catch { /* ignore */ }
 
   function markAdminLocal() {
+    // больше не пишем общий kick-buddy-admin — иначе команда могла войти по старому флагу
     try {
-      localStorage.setItem("kick-buddy-admin", "1");
-      if (window.AmalOwner && window.AmalOwner.unlock) {
-        window.AmalOwner.unlock("AmalOwner2026");
+      if (window.AmalOwner && window.AmalOwner.unlock && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) {
+        /* уже владелец */
       }
     } catch {
       /* ignore */
@@ -442,21 +418,11 @@
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
     <button class="btn ghost" id="btn-limit">Лимит ★</button>
-    <button class="btn" id="btn-admin-code-bar">🔑 Код</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
     <button class="btn danger" id="btn-revive" hidden>Оживить Бади</button>
   `;
   screen.appendChild(toolbar);
-
-  // Угол + панель: ввод кода настоящей админки
-  const codeFab = document.createElement("button");
-  codeFab.type = "button";
-  codeFab.className = "admin-code-fab";
-  codeFab.id = "btn-admin-code";
-  codeFab.title = "Код админа от команды";
-  codeFab.textContent = "🔑 Код";
-  screen.appendChild(codeFab);
 
   const overlay = document.createElement("div");
   overlay.className = "overlay hidden";
@@ -1505,39 +1471,6 @@
     });
   }
 
-  function openTeamCodePanel() {
-    overlay.classList.remove("hidden");
-    if (isAdmin()) {
-      overlay.innerHTML = `
-        <div class="brand">КОД АДМИНА</div>
-        <p class="tagline">Ты уже полный админ. Чтобы проверить ввод кода заново — открой ссылку с <b>?checkcode=1</b></p>
-        <button class="btn danger" id="adm-open-panel">Админ-панель</button>
-        <button class="btn" id="close-shop">Закрыть</button>
-      `;
-      overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
-      overlay.querySelector("#adm-open-panel").onclick = () => openAdminPanel();
-      return;
-    }
-    overlay.innerHTML = `
-      <div class="brand">КОД АДМИНА</div>
-      <p class="tagline">Введи код → настоящий админ (SkinAdminBuffer, ∞)</p>
-      <input id="team-adm-code" type="text" autocomplete="off" placeholder="Введи код" style="width:min(340px,92%);padding:12px 14px;border-radius:12px;border:0;font:800 1.05rem Nunito;margin:10px 0" />
-      <button class="btn danger" id="team-adm-go">Проверить код</button>
-      <button class="btn" id="close-shop">Закрыть</button>
-    `;
-    overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
-    const input = overlay.querySelector("#team-adm-code");
-    const go = () => {
-      if (redeemFullAdmin(normalizeAdminCode(input && input.value))) openAdminPanel();
-      else alert("Неверный код.");
-    };
-    overlay.querySelector("#team-adm-go").onclick = go;
-    if (input) {
-      input.focus();
-      input.onkeydown = (ev) => { if (ev.key === "Enter") go(); };
-    }
-  }
-
   function openAdminPanel() {
     if (!isAdmin()) {
       if (save.limitedAdmin) {
@@ -1547,22 +1480,14 @@
       overlay.classList.remove("hidden");
       overlay.innerHTML = `
         <div class="brand">АДМИН</div>
-        <p class="tagline">Полный админ — по коду команды. Или купи <b>Лимит ★</b> (полу-админ).</p>
-        <input id="adm-code" type="password" placeholder="Код админа" style="width:min(320px,90%);padding:10px 12px;border-radius:10px;border:0;font:800 1rem Nunito;margin:8px 0" />
-        <button class="btn danger" id="adm-unlock">Войти и выдать всё</button>
-        <button class="btn ghost" id="adm-to-code" style="margin-top:8px">🔑 Ввести код (угол)</button>
-        <button class="btn ghost" id="adm-to-limit" style="margin-top:8px">Открыть Лимит ★</button>
+        <p class="tagline">Полный админ <b>только у владельца</b>. Коды команды запрещены.</p>
+        <p class="tagline">Можно купить полу-доступ в <b>Лимит ★</b>.</p>
+        <button class="btn ghost" id="adm-to-limit">Открыть Лимит ★</button>
         <button class="btn" id="close-shop">Закрыть</button>
       `;
       overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
       const toLim = overlay.querySelector("#adm-to-limit");
       if (toLim) toLim.onclick = () => openLimitShop(1);
-      const toCode = overlay.querySelector("#adm-to-code");
-      if (toCode) toCode.onclick = () => openTeamCodePanel();
-      overlay.querySelector("#adm-unlock").onclick = () => {
-        if (redeemFullAdmin(normalizeAdminCode(overlay.querySelector("#adm-code").value))) openAdminPanel();
-        else alert("Неверный код");
-      };
       return;
     }
 
@@ -1713,10 +1638,6 @@
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-limit").onclick = () => openLimitShop(1);
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
-  const openCode = () => openTeamCodePanel();
-  if (codeFab) codeFab.onclick = openCode;
-  const codeBar = toolbar.querySelector("#btn-admin-code-bar");
-  if (codeBar) codeBar.onclick = openCode;
   window.addEventListener("amal-owner-changed", () => syncAdminUi());
   syncAdminUi();
   toolbar.querySelector("#btn-revive").onclick = () => {
