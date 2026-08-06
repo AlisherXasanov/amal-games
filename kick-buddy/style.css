@@ -235,6 +235,24 @@ canvas#game {
 }
 .shop-card.vip-skin h4,
 .shop-card.vip-item h4 { color: #a5f3fc; }
+.shop-card.vip-plus-card {
+  border-color: #a855f7;
+  background: linear-gradient(145deg, rgba(124, 58, 237, 0.35), rgba(168, 85, 247, 0.18));
+  box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.35);
+}
+.shop-card.vip-plus-card h4 { color: #e9d5ff; }
+.vip-plus-label,
+.ex-badge.vip-plus-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background: #7c3aed;
+  color: #f3e8ff;
+  vertical-align: middle;
+}
 .ex-badge.vip-badge {
   background: #22d3ee;
   color: #0f172a;
