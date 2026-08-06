@@ -1610,16 +1610,25 @@
     }
   }
 
-  function openBuddyShop() {
+  function openBuddyShop(tab = "normal") {
     overlay.classList.remove("hidden");
     const admin = isAdmin();
-    const vip = isVip();
-    const cards = BUDDIES.filter((b) => {
+    const all = BUDDIES.filter((b) => {
       if (b.adminOnly && !admin) return false;
       if (b.vipPlusOnly && !isVipPlus() && !admin) return false;
       if (b.vipOnly && !isVip() && !admin) return false;
       return true;
-    }).map((b) => {
+    });
+    const groups = {
+      normal: all.filter((b) => !b.adminOnly && !b.vipOnly && !b.vipPlusOnly && !b.storeSkin && !b.limited),
+      shop: all.filter((b) => b.storeSkin || b.limited),
+      vip: all.filter((b) => b.vipOnly),
+      vipplus: all.filter((b) => b.vipPlusOnly),
+      admin: all.filter((b) => b.adminOnly),
+    };
+    if (!groups[tab]) tab = "normal";
+    const list = groups[tab] || groups.normal;
+    const cards = list.map((b) => {
       const owned = save.ownedBuddies.includes(b.id);
       const equipped = save.buddyType === b.id;
       const locked = (b.adminOnly && !admin) || (b.vipPlusOnly && !isVipPlus()) || (b.vipOnly && !isVip());
@@ -1661,15 +1670,27 @@
           <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
           ${action}
         </div>`;
-    }).join("");
+    }).join("") || `<div class="shop-card"><h4>Пусто</h4><p>В этой вкладке пока нет скинов.</p></div>`;
+
+    const tabBtn = (id, label) => `<button class="btn ${tab === id ? "danger" : "ghost"}" data-btab="${id}">${label}</button>`;
 
     overlay.innerHTML = `
       <div class="brand">ТИПЫ БАДИ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 админ · 💎 VIP</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · листай вкладки — все скины доступны</p>
+      <div class="shop-tabs">
+        ${tabBtn("normal", "Обычные")}
+        ${tabBtn("shop", "Магазин")}
+        ${tabBtn("vip", "VIP")}
+        ${tabBtn("vipplus", "VIP+")}
+        ${admin ? tabBtn("admin", "Админ") : ""}
+      </div>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
     overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+    overlay.querySelectorAll("[data-btab]").forEach((btn) => {
+      btn.onclick = () => openBuddyShop(btn.getAttribute("data-btab"));
+    });
     overlay.querySelectorAll("[data-bbuy]").forEach((btn) => {
       btn.onclick = () => {
         const id = btn.getAttribute("data-bbuy");
@@ -1687,7 +1708,7 @@
         persist();
         syncHud();
         say("Новый я!");
-        openBuddyShop();
+        openBuddyShop(tab);
       };
     });
     overlay.querySelectorAll("[data-bclaim]").forEach((btn) => {
@@ -1699,7 +1720,7 @@
         persist();
         syncHud();
         say("Админ-скин активирован!");
-        openBuddyShop();
+        openBuddyShop(tab);
       };
     });
     overlay.querySelectorAll("[data-beq]").forEach((btn) => {
@@ -1712,12 +1733,12 @@
         save.buddyType = id;
         persist();
         say(id === "SkinAdminBuffer" ? "Админ-скин на месте!" : b.vipPlus ? "VIP+!" : b.vip ? "VIP-стиль!" : "Это я!");
-        openBuddyShop();
+        openBuddyShop(tab);
       };
     });
   }
 
-  function openMarketShop(page = 1) {
+  function openMarketShop(page = 1, skinTab = "shop") {
     overlay.classList.remove("hidden");
     const vip = isVip();
     const vipP = isVipPlus();
@@ -1786,7 +1807,12 @@
           <p>Множитель действует на заработанные монеты (не на цены покупок).</p>
         </div>` + body;
     } else {
-      const skins = BUDDIES.filter((b) => b.storeSkin || b.vipOnly || b.vipPlusOnly);
+      if (!["shop", "vip", "vipplus"].includes(skinTab)) skinTab = "shop";
+      const skins = BUDDIES.filter((b) => {
+        if (skinTab === "shop") return !!b.storeSkin;
+        if (skinTab === "vip") return !!b.vipOnly;
+        return !!b.vipPlusOnly;
+      });
       body = skins.map((b) => {
         const owned = save.ownedBuddies.includes(b.id);
         const equipped = save.buddyType === b.id;
@@ -1811,25 +1837,39 @@
             <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
             ${action}
           </div>`;
-      }).join("");
+      }).join("") || `<div class="shop-card"><h4>Пусто</h4><p>В этой вкладке нет скинов.</p></div>`;
     }
+
+    const skinTabsHtml = page === 3 ? `
+      <div class="shop-tabs">
+        <button class="btn ${skinTab === "shop" ? "danger" : "ghost"}" id="mkt-stab-shop">SHOP · 3 скина</button>
+        <button class="btn ${skinTab === "vip" ? "danger" : "ghost"}" id="mkt-stab-vip">VIP</button>
+        <button class="btn ${skinTab === "vipplus" ? "danger" : "ghost"}" id="mkt-stab-vipplus">VIP+</button>
+      </div>` : "";
 
     overlay.innerHTML = `
       <div class="brand">МАГАЗИН</div>
       <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b>${boost > 1 ? " · буст ×" + boost : ""}${vipP ? ' · <span class="vip-plus-label">VIP+</span>' : vip ? " · VIP" : ""} · оружие отдельно</p>
-      <div style="display:flex;gap:8px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap">
+      <div class="shop-pager">
         <button class="btn ${page === 1 ? "danger" : "ghost"}" id="mkt-p1">1 · Пропуска</button>
         <button class="btn ${page === 2 ? "danger" : "ghost"}" id="mkt-p2">2 · ×Монеты</button>
         <button class="btn ${page === 3 ? "danger" : "ghost"}" id="mkt-p3">3 · Скины</button>
       </div>
+      ${skinTabsHtml}
       <div class="shop-grid">${body}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
 
     overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
-    overlay.querySelector("#mkt-p1").onclick = () => openMarketShop(1);
-    overlay.querySelector("#mkt-p2").onclick = () => openMarketShop(2);
-    overlay.querySelector("#mkt-p3").onclick = () => openMarketShop(3);
+    overlay.querySelector("#mkt-p1").onclick = () => openMarketShop(1, skinTab);
+    overlay.querySelector("#mkt-p2").onclick = () => openMarketShop(2, skinTab);
+    overlay.querySelector("#mkt-p3").onclick = () => openMarketShop(3, "shop");
+    const stabShop = overlay.querySelector("#mkt-stab-shop");
+    if (stabShop) stabShop.onclick = () => openMarketShop(3, "shop");
+    const stabVip = overlay.querySelector("#mkt-stab-vip");
+    if (stabVip) stabVip.onclick = () => openMarketShop(3, "vip");
+    const stabPlus = overlay.querySelector("#mkt-stab-vipplus");
+    if (stabPlus) stabPlus.onclick = () => openMarketShop(3, "vipplus");
 
     const spend = (cost) => {
       if (save.infCoins) return true;
@@ -1847,7 +1887,7 @@
         save.buddyType = "SkinLimitAdmin";
         persist();
         syncHud();
-        openMarketShop(1);
+        openMarketShop(1, skinTab);
       };
     }
     const limEq = overlay.querySelector("#mkt-lim-eq");
@@ -1855,7 +1895,7 @@
       limEq.onclick = () => {
         save.buddyType = "SkinLimitAdmin";
         persist();
-        openMarketShop(1);
+        openMarketShop(1, skinTab);
       };
     }
     const limCmds = overlay.querySelector("#mkt-lim-cmds");
@@ -1866,7 +1906,7 @@
         save.limitedAdmin = true;
         persist();
         syncHud();
-        openMarketShop(1);
+        openMarketShop(1, skinTab);
       };
     }
     const limOpen = overlay.querySelector("#mkt-lim-open");
@@ -1881,7 +1921,7 @@
         persist();
         syncHud();
         say("VIP!");
-        openMarketShop(3);
+        openMarketShop(3, "vip");
       };
     }
     const vipPlusBuy = overlay.querySelector("#mkt-vipplus");
@@ -1894,7 +1934,7 @@
         persist();
         syncHud();
         say("VIP+!");
-        openMarketShop(3);
+        openMarketShop(3, "vipplus");
       };
     }
 
@@ -1908,7 +1948,7 @@
         persist();
         syncHud();
         say("×" + mul + " монеты!");
-        openMarketShop(2);
+        openMarketShop(2, skinTab);
       };
     });
     overlay.querySelectorAll("[data-mkt-bbuy]").forEach((btn) => {
@@ -1924,7 +1964,7 @@
         persist();
         syncHud();
         say("Новый скин!");
-        openMarketShop(3);
+        openMarketShop(3, skinTab);
       };
     });
     overlay.querySelectorAll("[data-mkt-beq]").forEach((btn) => {
@@ -1935,7 +1975,7 @@
         if (b.vipOnly && !isVip()) return;
         save.buddyType = id;
         persist();
-        openMarketShop(3);
+        openMarketShop(3, skinTab);
       };
     });
   }
