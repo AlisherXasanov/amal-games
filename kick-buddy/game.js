@@ -114,7 +114,18 @@
       exclusive: true,
       premium: true,
       adminOnly: true,
-      desc: "★ Админ-скин · игроки видят, доступ только у админа",
+      desc: "★ Твой полный админ-скин · только тебе",
+    },
+    {
+      id: "SkinLimitAdmin",
+      name: "Лимит-Админ",
+      cost: 100000,
+      cloth: "#f0a060",
+      dark: "#b04018",
+      eye: "#ffe8a0",
+      exclusive: true,
+      limited: true,
+      desc: "Полу-админ скин · не как твой · можно купить за 100 000",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -144,6 +155,8 @@
     infCoins: false,
     godMode: false,
     giant: false,
+    limitedAdmin: false,
+    halfDmg: false,
   } : {
     coins: 100,
     owned: ["none"],
@@ -159,6 +172,8 @@
     infCoins: false,
     godMode: false,
     giant: false,
+    limitedAdmin: false,
+    halfDmg: false,
   });
   if (!save.owned) save.owned = ["none"];
   if (!save.owned.includes("none")) save.owned.push("none");
@@ -166,6 +181,8 @@
   if (!save.ownedWeapons.includes("hand")) save.ownedWeapons.push("hand");
   if (!save.ownedBuddies) save.ownedBuddies = ["classic"];
   if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.push("classic");
+  if (typeof save.limitedAdmin !== "boolean") save.limitedAdmin = false;
+  if (typeof save.halfDmg !== "boolean") save.halfDmg = false;
   // migrate old admin skin id → SkinAdminBuffer
   if (save.buddyType === "admin") save.buddyType = "SkinAdminBuffer";
   save.ownedBuddies = [...new Set(save.ownedBuddies.map((id) => (id === "admin" ? "SkinAdminBuffer" : id)))];
@@ -269,9 +286,11 @@
     if (curW.adminOnly) save.weapon = "hand";
     const curB = buddyById(save.buddyType);
     if (curB.adminOnly) save.buddyType = "classic";
+    // полный админ-лут сбрасываем, лимит-админ (покупка) оставляем
     save.infDmg = false;
     save.infCoins = false;
     save.godMode = false;
+    if (!save.limitedAdmin) save.halfDmg = false;
   }
 
   stripAdminLootIfNeeded();
@@ -293,6 +312,8 @@
       infCoins: save.infCoins,
       godMode: save.godMode,
       giant: save.giant,
+      limitedAdmin: !!save.limitedAdmin,
+      halfDmg: !!save.halfDmg,
     });
   }
 
@@ -312,6 +333,10 @@
     const w = weaponById(save.weapon);
     if (w.infHit || (save.infDmg && w.id !== "hand")) {
       return { ...w, dmg: Math.max(w.dmg, 99999), coinMul: Math.max(w.coinMul, 10), knock: Math.max(w.knock, 1400) };
+    }
+    // лимит-админ: половина силы — ×2 урон, не ∞
+    if (save.halfDmg && save.limitedAdmin && w.id !== "hand") {
+      return { ...w, dmg: Math.round(w.dmg * 2), coinMul: w.coinMul * 1.5, knock: Math.round(w.knock * 1.25) };
     }
     return w;
   }
@@ -348,6 +373,7 @@
     <button class="btn ghost" id="btn-shop">Одежда</button>
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
+    <button class="btn ghost" id="btn-limit">Лимит ★</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
     <button class="btn danger" id="btn-revive" hidden>Оживить Бади</button>
@@ -458,7 +484,10 @@
     el.hp.textContent = String(Math.max(0, Math.ceil(buddy.hp)));
     el.coins.textContent = save.infCoins ? "∞" : String(save.coins);
     const wName = weaponById(save.weapon).name;
-    el.weapon.textContent = (save.infDmg && save.weapon !== "hand") || weaponById(save.weapon).infHit ? wName + " ∞" : wName;
+    let mark = "";
+    if ((save.infDmg && save.weapon !== "hand") || weaponById(save.weapon).infHit) mark = " ∞";
+    else if (save.halfDmg && save.limitedAdmin && save.weapon !== "hand") mark = " ×2";
+    el.weapon.textContent = wName + mark;
   }
 
   function floatText(x, y, text, color) {
@@ -1110,6 +1139,156 @@
     });
   }
 
+  function openLimitShop(page = 1) {
+    overlay.classList.remove("hidden");
+    const skin = buddyById("SkinLimitAdmin");
+    const ownedSkin = save.ownedBuddies.includes("SkinLimitAdmin");
+    const equipped = save.buddyType === "SkinLimitAdmin";
+    const canSkin = save.infCoins || save.coins >= skin.cost;
+    const canCmds = save.infCoins || save.coins >= 200000;
+
+    let body = "";
+    if (page === 1) {
+      let action;
+      if (equipped) action = `<button class="btn" disabled>Выбран</button>`;
+      else if (ownedSkin) action = `<button class="btn" id="lim-eq-skin">Выбрать скин</button>`;
+      else action = `<button class="btn" id="lim-buy-skin" ${canSkin ? "" : "disabled"}>Купить · 100 000 ◎</button>`;
+      body = `
+        <div class="shop-card exclusive premium-skin${ownedSkin ? " owned" : ""}${equipped ? " equipped" : ""}">
+          <h4>★ Лимит-Админ</h4>
+          <p><span class="dmg" style="color:${skin.cloth}">██</span> Полу-админ скин — <b>не как твой SkinAdminBuffer</b>. Другой цвет, другая аура.</p>
+          <p class="tagline">Страница 1 из 2 · цена 100 000</p>
+          ${action}
+        </div>`;
+    } else {
+      if (save.limitedAdmin) {
+        body = `
+          <div class="shop-card equipped">
+            <h4>✓ Команды лимит-админа куплено</h4>
+            <p>Это <b>половина</b> админки — не полный доступ. Твой полный админ сильнее.</p>
+          </div>
+          <div class="shop-card ${save.halfDmg ? "equipped" : ""}">
+            <h4>×2 Урон</h4>
+            <p>Не ∞ · только удвоение</p>
+            <button class="btn" id="lim-halfdmg">${save.halfDmg ? "Выкл" : "Вкл"}</button>
+          </div>
+          <div class="shop-card">
+            <h4>+25 000 монет</h4>
+            <button class="btn" id="lim-coins">Выдать</button>
+          </div>
+          <div class="shop-card">
+            <h4>Оживить Бади</h4>
+            <button class="btn" id="lim-revive">Оживить</button>
+          </div>
+          <div class="shop-card">
+            <h4>Хил до 100 HP</h4>
+            <button class="btn" id="lim-heal">Вылечить</button>
+          </div>`;
+      } else {
+        body = `
+          <div class="shop-card exclusive">
+            <h4>⚡ Команды лимит-админа</h4>
+            <p>×2 урон, +25 000 монет, хил, оживить. <b>Без</b> ∞, без SkinAdminBuffer, без полного лута.</p>
+            <p class="tagline">Страница 2 из 2 · цена 200 000</p>
+            <button class="btn danger" id="lim-buy-cmds" ${canCmds ? "" : "disabled"}>Купить · 200 000 ◎</button>
+          </div>`;
+      }
+    }
+
+    overlay.innerHTML = `
+      <div class="brand">ЛИМИТ-АДМИН</div>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · купить можно · полный админ только у тебя</p>
+      <div style="display:flex;gap:8px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap">
+        <button class="btn ${page === 1 ? "danger" : "ghost"}" id="lim-p1">1 · Скин 100 000</button>
+        <button class="btn ${page === 2 ? "danger" : "ghost"}" id="lim-p2">2 · Команды 200 000</button>
+      </div>
+      <div class="shop-grid">${body}</div>
+      <button class="btn" id="close-shop">Закрыть</button>
+    `;
+
+    overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+    overlay.querySelector("#lim-p1").onclick = () => openLimitShop(1);
+    overlay.querySelector("#lim-p2").onclick = () => openLimitShop(2);
+
+    const buySkin = overlay.querySelector("#lim-buy-skin");
+    if (buySkin) {
+      buySkin.onclick = () => {
+        if (save.ownedBuddies.includes("SkinLimitAdmin")) return;
+        if (!save.infCoins) {
+          if (save.coins < 100000) return;
+          save.coins -= 100000;
+        }
+        save.ownedBuddies.push("SkinLimitAdmin");
+        save.buddyType = "SkinLimitAdmin";
+        persist();
+        syncHud();
+        openLimitShop(1);
+      };
+    }
+    const eqSkin = overlay.querySelector("#lim-eq-skin");
+    if (eqSkin) {
+      eqSkin.onclick = () => {
+        save.buddyType = "SkinLimitAdmin";
+        persist();
+        openLimitShop(1);
+      };
+    }
+    const buyCmds = overlay.querySelector("#lim-buy-cmds");
+    if (buyCmds) {
+      buyCmds.onclick = () => {
+        if (save.limitedAdmin) return;
+        if (!save.infCoins) {
+          if (save.coins < 200000) return;
+          save.coins -= 200000;
+        }
+        save.limitedAdmin = true;
+        persist();
+        syncHud();
+        openLimitShop(2);
+      };
+    }
+    const halfBtn = overlay.querySelector("#lim-halfdmg");
+    if (halfBtn) {
+      halfBtn.onclick = () => {
+        if (!save.limitedAdmin) return;
+        save.halfDmg = !save.halfDmg;
+        persist();
+        syncHud();
+        openLimitShop(2);
+      };
+    }
+    const coinsBtn = overlay.querySelector("#lim-coins");
+    if (coinsBtn) {
+      coinsBtn.onclick = () => {
+        if (!save.limitedAdmin) return;
+        save.coins += 25000;
+        persist();
+        syncHud();
+        openLimitShop(2);
+      };
+    }
+    const revBtn = overlay.querySelector("#lim-revive");
+    if (revBtn) {
+      revBtn.onclick = () => {
+        if (!save.limitedAdmin) return;
+        overlay.classList.add("hidden");
+        rebuildBuddy();
+      };
+    }
+    const healBtn = overlay.querySelector("#lim-heal");
+    if (healBtn) {
+      healBtn.onclick = () => {
+        if (!save.limitedAdmin) return;
+        buddy.hp = Math.max(buddy.hp, 100);
+        buddy.dead = false;
+        persist();
+        syncHud();
+        setDeadUI(false);
+        openLimitShop(2);
+      };
+    }
+  }
+
   function openBuddyShop() {
     overlay.classList.remove("hidden");
     const admin = isAdmin();
@@ -1134,12 +1313,14 @@
       }
       const badge = b.adminOnly
         ? `<span class="ex-badge">АДМИН</span>`
-        : b.exclusive
-          ? `<span class="ex-badge">EX</span>`
-          : "";
+        : b.limited
+          ? `<span class="ex-badge">ЛИМИТ</span>`
+          : b.exclusive
+            ? `<span class="ex-badge">EX</span>`
+            : "";
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
-          <h4>${b.adminOnly ? "🔒 " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.limited ? " limited-skin" : ""}${b.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
+          <h4>${b.adminOnly ? "🔒 " : b.limited ? "★ " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
           <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
           ${action}
         </div>`;
@@ -1197,16 +1378,23 @@
 
   function openAdminPanel() {
     if (!isAdmin()) {
+      if (save.limitedAdmin) {
+        openLimitShop(2);
+        return;
+      }
       overlay.classList.remove("hidden");
       overlay.innerHTML = `
         <div class="brand">АДМИН</div>
-        <p class="tagline">Введи код, чтобы вернуть всё оружие и админ-лут</p>
+        <p class="tagline">Полный админ — только по коду. Или купи <b>Лимит ★</b> (полу-админ).</p>
         <input id="adm-code" type="password" placeholder="Код админа" style="width:min(320px,90%);padding:10px 12px;border-radius:10px;border:0;font:800 1rem Nunito;margin:8px 0" />
         <button class="btn danger" id="adm-unlock">Войти и выдать всё</button>
-        <p class="tagline" style="margin-top:8px">Код: AmalOwner2026 · или набери OWNER · или localhost</p>
+        <button class="btn ghost" id="adm-to-limit" style="margin-top:8px">Открыть Лимит ★</button>
+        <p class="tagline" style="margin-top:8px">Код владельца · или localhost</p>
         <button class="btn" id="close-shop">Закрыть</button>
       `;
       overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+      const toLim = overlay.querySelector("#adm-to-limit");
+      if (toLim) toLim.onclick = () => openLimitShop(1);
       overlay.querySelector("#adm-unlock").onclick = () => {
         const code = (overlay.querySelector("#adm-code").value || "").trim();
         const ok =
@@ -1221,7 +1409,6 @@
           persist();
           syncHud();
           syncAdminUi();
-          say("Админ! Всё оружие и SkinAdminBuffer выданы!", { force: true, voice: true });
           openAdminPanel();
         } else {
           alert("Неверный код");
@@ -1375,6 +1562,7 @@
   toolbar.querySelector("#btn-shop").onclick = () => openShop();
   toolbar.querySelector("#btn-buddies").onclick = () => openBuddyShop();
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
+  toolbar.querySelector("#btn-limit").onclick = () => openLimitShop(1);
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
   window.addEventListener("amal-owner-changed", () => syncAdminUi());
   syncAdminUi();
@@ -1856,6 +2044,21 @@
       ctx.fill();
       ctx.fillStyle = "#fbbf24";
       ctx.fillRect(hx - 26, torsoY - 30, 52, 5);
+    } else if (skin.limited) {
+      // Лимит-админ — другая аура (янтарь), без фиолетового плаща
+      const pulse = 0.5 + Math.sin(buddy.bob * 2) * 0.18;
+      const g = ctx.createRadialGradient(hx, torsoY, 8, hx, torsoY, 64);
+      g.addColorStop(0, `rgba(255, 180, 80, ${0.4 * pulse})`);
+      g.addColorStop(0.5, `rgba(200, 60, 30, ${0.22 * pulse})`);
+      g.addColorStop(1, "rgba(120, 30, 10, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(hx, torsoY, 64, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#c8102e";
+      ctx.fillRect(hx - 22, torsoY - 8, 44, 8);
+      ctx.fillStyle = "#fce300";
+      ctx.fillRect(hx - 22, torsoY, 44, 4);
     }
 
     // legs
@@ -1957,7 +2160,7 @@
     ctx.lineWidth = skin.premium ? 2.5 : 2;
     ctx.stroke();
 
-    // SkinAdminBuffer crown
+    // SkinAdminBuffer crown / limited visor
     if (skin.premium) {
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath();
@@ -1979,6 +2182,11 @@
       ctx.arc(hx - 16, hy - 44, 2.2, 0, Math.PI * 2);
       ctx.arc(hx + 16, hy - 44, 2.2, 0, Math.PI * 2);
       ctx.fill();
+    } else if (skin.limited) {
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(hx - 24, hy - 10, 48, 8);
+      ctx.fillStyle = "#c8102e";
+      ctx.fillRect(hx - 24, hy - 10, 48, 3);
     }
 
     // eyes
