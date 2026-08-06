@@ -621,11 +621,12 @@
 
   const toolbar = document.createElement("div");
   toolbar.className = "toolbar";
+  // build 37shopfix — Магазин: лимит/VIP/VIP+/×монеты/скины
   toolbar.innerHTML = `
     <button class="btn ghost" id="btn-shop">Одежда</button>
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
-    <button class="btn" id="btn-market">Магазин</button>
+    <button class="btn market-btn" id="btn-market">МАГАЗИН ★</button>
     <button class="btn" id="btn-admin-code-bar">🔑 Код</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
@@ -640,6 +641,14 @@
   codeFab.title = "Ввести личный код";
   codeFab.textContent = "🔑 Код";
   screen.appendChild(codeFab);
+
+  const marketFab = document.createElement("button");
+  marketFab.type = "button";
+  marketFab.className = "market-fab";
+  marketFab.id = "btn-market-fab";
+  marketFab.title = "Магазин: VIP, VIP+, ×монеты, скины";
+  marketFab.textContent = "МАГАЗИН";
+  screen.appendChild(marketFab);
 
   const overlay = document.createElement("div");
   overlay.className = "overlay hidden";
@@ -2139,6 +2148,8 @@
   toolbar.querySelector("#btn-buddies").onclick = () => openBuddyShop();
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-market").onclick = () => openMarketShop(1);
+  const marketFabBtn = screen.querySelector("#btn-market-fab");
+  if (marketFabBtn) marketFabBtn.onclick = () => openMarketShop(1);
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
   const openCode = () => openCodePanel();
   if (codeFab) codeFab.onclick = openCode;
