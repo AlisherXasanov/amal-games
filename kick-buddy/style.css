@@ -77,6 +77,17 @@ html, body {
   box-shadow: 0 4px 0 #9a3412;
 }
 
+.shop-card.rainbow-skin {
+  border-color: #f472b6;
+  background: linear-gradient(135deg, rgba(244,114,182,0.25), rgba(56,189,248,0.2), rgba(167,139,250,0.25));
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.35);
+}
+.shop-card.rainbow-skin h4 { color: #fce7f3; }
+.ex-badge.rainbow-badge {
+  background: linear-gradient(90deg, #ef4444, #eab308, #22c55e, #3b82f6, #a855f7);
+  color: #111;
+}
+
 #app {
   height: 100dvh;
   display: grid;
