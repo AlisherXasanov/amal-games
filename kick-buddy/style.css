@@ -39,6 +39,22 @@ html, body {
 }
 .portal-back:hover { background: rgba(0, 0, 0, 0.85); }
 
+.admin-code-fab {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 35;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6d28d9, #c8102e);
+  color: #fff;
+  font: 800 13px Nunito, system-ui;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.4);
+}
+.admin-code-fab:hover { filter: brightness(1.08); }
+
 #app {
   height: 100dvh;
   display: grid;
