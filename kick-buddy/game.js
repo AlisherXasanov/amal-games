@@ -93,6 +93,12 @@
     { id: "vip_saber", name: "VIP-сабля", cost: 18000, dmg: 110, coinMul: 3.5, knock: 980, element: "shock", color: "#22d3ee", exclusive: true, vipOnly: true, desc: "💎 VIP · сильный ближний удар" },
     { id: "vip_pulse", name: "VIP-пульс", cost: 24000, dmg: 95, coinMul: 3.6, knock: 860, element: "shock", color: "#a78bfa", ranged: true, exclusive: true, vipOnly: true, proj: "laser", speed: 1800, size: 6, cd: 0.22, auto: true, spread: 0.06, desc: "💎 VIP · импульсная очередь" },
     { id: "vip_comet", name: "VIP-комета", cost: 32000, dmg: 175, coinMul: 4.1, knock: 1350, element: "fire", color: "#f472b6", ranged: true, exclusive: true, vipOnly: true, proj: "rocket", speed: 640, size: 11, cd: 0.7, explode: true, explodeR: 110, desc: "💎 VIP · комета с взрывом" },
+    // Редкие магазин-пушки (~1 млн)
+    { id: "rare_phoenix", name: "Феникс", cost: 750000, dmg: 320, coinMul: 5.5, knock: 1450, element: "fire", color: "#fb7185", ranged: true, exclusive: true, rareStore: true, proj: "flame", speed: 900, size: 16, cd: 0.05, auto: true, spread: 0.12, life: 0.7, desc: "★ Редкая · огненный поток · магазин" },
+    { id: "rare_thunder", name: "Гроза", cost: 820000, dmg: 380, coinMul: 5.8, knock: 1600, element: "shock", color: "#facc15", ranged: true, exclusive: true, rareStore: true, proj: "laser", speed: 2400, size: 7, cd: 0.28, desc: "★ Редкая · грозовой луч · магазин" },
+    { id: "rare_voidcannon", name: "Пустотная пушка", cost: 880000, dmg: 410, coinMul: 6.2, knock: 1700, element: "nuke", color: "#6366f1", ranged: true, exclusive: true, rareStore: true, proj: "rocket", speed: 700, size: 14, cd: 0.65, explode: true, explodeR: 130, desc: "★ Редкая · взрыв пустоты · магазин" },
+    { id: "rare_glacier", name: "Ледник", cost: 700000, dmg: 290, coinMul: 5.2, knock: 900, element: "ice", color: "#67e8f9", exclusive: true, rareStore: true, desc: "★ Редкая · ледяной удар · магазин" },
+    { id: "rare_dragon", name: "Дракон-клинок", cost: 950000, dmg: 450, coinMul: 6.5, knock: 1550, element: "fire", color: "#ef4444", exclusive: true, rareStore: true, desc: "★ Редкая · ближний дракон · магазин" },
     { id: "nuke", name: "Супербомба", cost: 1200, dmg: 200, coinMul: 4.5, knock: 1400, element: "nuke", color: "#3a9a4a", desc: "Максимум силы и монет" },
   ];
 
@@ -346,6 +352,61 @@
       vipPlus: true,
       vipPlusOnly: true,
       desc: "VIP+ · полярное сияние",
+    },
+    {
+      id: "SkinRareNebula",
+      name: "Туманность",
+      cost: 720000,
+      cloth: "#c084fc",
+      dark: "#4c1d95",
+      eye: "#fef08a",
+      exclusive: true,
+      rareStore: true,
+      desc: "★ Редкий скин · космос · ~1 млн",
+    },
+    {
+      id: "SkinRareInferno",
+      name: "Инферно",
+      cost: 780000,
+      cloth: "#f97316",
+      dark: "#7c2d12",
+      eye: "#fde68a",
+      exclusive: true,
+      rareStore: true,
+      desc: "★ Редкий скин · огонь · ~1 млн",
+    },
+    {
+      id: "SkinRareAbyss",
+      name: "Бездна",
+      cost: 850000,
+      cloth: "#1e3a8a",
+      dark: "#020617",
+      eye: "#38bdf8",
+      exclusive: true,
+      rareStore: true,
+      desc: "★ Редкий скин · бездна · ~1 млн",
+    },
+    {
+      id: "SkinRareSolar",
+      name: "Солнечный",
+      cost: 900000,
+      cloth: "#fde047",
+      dark: "#a16207",
+      eye: "#fff7ed",
+      exclusive: true,
+      rareStore: true,
+      desc: "★ Редкий скин · солнце · ~1 млн",
+    },
+    {
+      id: "SkinRareMythic",
+      name: "Мифик",
+      cost: 980000,
+      cloth: "#f0abfc",
+      dark: "#701a75",
+      eye: "#fdf4ff",
+      exclusive: true,
+      rareStore: true,
+      desc: "★ Редкий скин · мифик · почти 1 млн",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -747,28 +808,11 @@
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
     <button class="btn market-btn" id="btn-market">МАГАЗИН ★</button>
-    <button class="btn" id="btn-admin-code-bar">🔑 Код</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
     <button class="btn danger" id="btn-revive" hidden>Оживить Бади</button>
   `;
   screen.appendChild(toolbar);
-
-  const codeFab = document.createElement("button");
-  codeFab.type = "button";
-  codeFab.className = "admin-code-fab";
-  codeFab.id = "btn-admin-code";
-  codeFab.title = "Ввести личный код";
-  codeFab.textContent = "🔑 Код";
-  screen.appendChild(codeFab);
-
-  const marketFab = document.createElement("button");
-  marketFab.type = "button";
-  marketFab.className = "market-fab";
-  marketFab.id = "btn-market-fab";
-  marketFab.title = "Магазин: VIP, VIP+, ×монеты, скины";
-  marketFab.textContent = "МАГАЗИН";
-  screen.appendChild(marketFab);
 
   const overlay = document.createElement("div");
   overlay.className = "overlay hidden";
@@ -1736,8 +1780,9 @@
     const bought = hasBoughtAdmin();
     const all = BUDDIES.filter((b) => canUseBuddy(b) || (b.buyAdmin && !bought) || (b.adminOnly && !admin));
     const groups = {
-      normal: all.filter((b) => !b.adminOnly && !b.buyAdmin && !b.vipOnly && !b.vipPlusOnly && !b.storeSkin && !b.limited),
+      normal: all.filter((b) => !b.adminOnly && !b.buyAdmin && !b.vipOnly && !b.vipPlusOnly && !b.storeSkin && !b.limited && !b.rareStore),
       shop: all.filter((b) => b.storeSkin || b.limited),
+      rare: all.filter((b) => b.rareStore),
       vip: all.filter((b) => b.vipOnly),
       vipplus: all.filter((b) => b.vipPlusOnly),
       buyadmin: all.filter((b) => b.buyAdmin),
@@ -1801,6 +1846,7 @@
       <div class="shop-tabs">
         ${tabBtn("normal", "Обычные")}
         ${tabBtn("shop", "Магазин")}
+        ${tabBtn("rare", "★ Редкие")}
         ${tabBtn("vip", "VIP")}
         ${tabBtn("vipplus", "VIP+")}
         ${tabBtn("buyadmin", "Админ$")}
@@ -1934,13 +1980,14 @@
           <h4>Сейчас: ×${boost}</h4>
           <p>Множитель действует на заработанные монеты (не на цены покупок).</p>
         </div>` + body;
-    } else {
-      if (!["shop", "vip", "vipplus", "buyadmin"].includes(skinTab)) skinTab = "shop";
+    } else if (page === 3) {
+      if (!["shop", "vip", "vipplus", "buyadmin", "rare"].includes(skinTab)) skinTab = "shop";
       const skins = BUDDIES.filter((b) => {
         if (skinTab === "shop") return !!b.storeSkin;
         if (skinTab === "vip") return !!b.vipOnly;
         if (skinTab === "vipplus") return !!b.vipPlusOnly;
-        return !!b.buyAdmin;
+        if (skinTab === "buyadmin") return !!b.buyAdmin;
+        return !!b.rareStore;
       });
       body = skins.map((b) => {
         const owned = save.ownedBuddies.includes(b.id);
@@ -1959,8 +2006,8 @@
         } else {
           action = `<button class="btn" data-mkt-bbuy="${b.id}" ${can(b.cost) ? "" : "disabled"}>${b.cost.toLocaleString("ru-RU")} ◎</button>`;
         }
-        const klass = b.rainbow ? "rainbow-skin admin-only" : b.buyAdmin ? "admin-only" : b.vipPlusOnly ? "vip-plus-card" : b.vipOnly ? "vip-skin" : "exclusive";
-        const title = b.rainbow ? `🌈 ${b.name}` : b.buyAdmin ? `👑 ${b.name}` : b.vipPlusOnly ? `<span class="vip-plus-label">VIP+</span> ${b.name}` : b.vipOnly ? `💎 ${b.name}` : b.name;
+        const klass = b.rareStore ? "exclusive rare-card" : b.rainbow ? "rainbow-skin admin-only" : b.buyAdmin ? "admin-only" : b.vipPlusOnly ? "vip-plus-card" : b.vipOnly ? "vip-skin" : "exclusive";
+        const title = b.rareStore ? `★ ${b.name}` : b.rainbow ? `🌈 ${b.name}` : b.buyAdmin ? `👑 ${b.name}` : b.vipPlusOnly ? `<span class="vip-plus-label">VIP+</span> ${b.name}` : b.vipOnly ? `💎 ${b.name}` : b.name;
         return `
           <div class="shop-card ${klass}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${locked ? " locked" : ""}">
             <h4>${title}</h4>
@@ -1968,6 +2015,22 @@
             ${action}
           </div>`;
       }).join("") || `<div class="shop-card"><h4>Пусто</h4><p>В этой вкладке нет скинов.</p></div>`;
+    } else {
+      // page 4 — редкое оружие
+      body = WEAPONS.filter((w) => w.rareStore).map((w) => {
+        const owned = save.ownedWeapons.includes(w.id);
+        const equipped = save.weapon === w.id;
+        let action;
+        if (equipped) action = `<button class="btn" disabled>Выбрано</button>`;
+        else if (owned) action = `<button class="btn" data-mkt-weq="${w.id}">Взять</button>`;
+        else action = `<button class="btn" data-mkt-wbuy="${w.id}" ${can(w.cost) ? "" : "disabled"}>${w.cost.toLocaleString("ru-RU")} ◎</button>`;
+        return `
+          <div class="shop-card exclusive rare-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
+            <h4>★ ${w.name}</h4>
+            <p><span class="dmg">${w.dmg} урона · ×${w.coinMul}${w.ranged ? " · стрельба" : ""}</span><br>${w.desc}</p>
+            ${action}
+          </div>`;
+      }).join("");
     }
 
     const skinTabsHtml = page === 3 ? `
@@ -1975,16 +2038,18 @@
         <button class="btn ${skinTab === "shop" ? "danger" : "ghost"}" id="mkt-stab-shop">SHOP</button>
         <button class="btn ${skinTab === "vip" ? "danger" : "ghost"}" id="mkt-stab-vip">VIP</button>
         <button class="btn ${skinTab === "vipplus" ? "danger" : "ghost"}" id="mkt-stab-vipplus">VIP+</button>
-        <button class="btn ${skinTab === "buyadmin" ? "danger" : "ghost"}" id="mkt-stab-admin">Админ$ · 🌈</button>
+        <button class="btn ${skinTab === "buyadmin" ? "danger" : "ghost"}" id="mkt-stab-admin">Админ$</button>
+        <button class="btn ${skinTab === "rare" ? "danger" : "ghost"}" id="mkt-stab-rare">★ Редкие</button>
       </div>` : "";
 
     overlay.innerHTML = `
       <div class="brand">МАГАЗИН</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b>${boost > 1 ? " · буст ×" + boost : ""}${vipP ? ' · <span class="vip-plus-label">VIP+</span>' : vip ? " · VIP" : ""} · оружие отдельно</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b>${boost > 1 ? " · буст ×" + boost : ""}${vipP ? ' · <span class="vip-plus-label">VIP+</span>' : vip ? " · VIP" : ""}</p>
       <div class="shop-pager">
         <button class="btn ${page === 1 ? "danger" : "ghost"}" id="mkt-p1">1 · Пропуска</button>
         <button class="btn ${page === 2 ? "danger" : "ghost"}" id="mkt-p2">2 · ×Монеты</button>
         <button class="btn ${page === 3 ? "danger" : "ghost"}" id="mkt-p3">3 · Скины</button>
+        <button class="btn ${page === 4 ? "danger" : "ghost"}" id="mkt-p4">4 · ★ Пушки</button>
       </div>
       ${skinTabsHtml}
       <div class="shop-grid">${body}</div>
@@ -1994,7 +2059,9 @@
     overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
     overlay.querySelector("#mkt-p1").onclick = () => openMarketShop(1, skinTab);
     overlay.querySelector("#mkt-p2").onclick = () => openMarketShop(2, skinTab);
-    overlay.querySelector("#mkt-p3").onclick = () => openMarketShop(3, "shop");
+    overlay.querySelector("#mkt-p3").onclick = () => openMarketShop(3, "rare");
+    const p4 = overlay.querySelector("#mkt-p4");
+    if (p4) p4.onclick = () => openMarketShop(4);
     const stabShop = overlay.querySelector("#mkt-stab-shop");
     if (stabShop) stabShop.onclick = () => openMarketShop(3, "shop");
     const stabVip = overlay.querySelector("#mkt-stab-vip");
@@ -2003,6 +2070,8 @@
     if (stabPlus) stabPlus.onclick = () => openMarketShop(3, "vipplus");
     const stabAdm = overlay.querySelector("#mkt-stab-admin");
     if (stabAdm) stabAdm.onclick = () => openMarketShop(3, "buyadmin");
+    const stabRare = overlay.querySelector("#mkt-stab-rare");
+    if (stabRare) stabRare.onclick = () => openMarketShop(3, "rare");
 
     const spend = (cost) => {
       if (save.infCoins) return true;
@@ -2121,6 +2190,35 @@
         openMarketShop(3, skinTab);
       };
     });
+    overlay.querySelectorAll("[data-mkt-wbuy]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-mkt-wbuy");
+        const w = weaponById(id);
+        if (!w.rareStore || save.ownedWeapons.includes(id)) return;
+        if (!spend(w.cost)) return;
+        save.ownedWeapons.push(id);
+        save.weapon = id;
+        persist();
+        syncHud();
+        setDeadUI(buddy.dead);
+        canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
+        say("Редкая пушка!");
+        openMarketShop(4);
+      };
+    });
+    overlay.querySelectorAll("[data-mkt-weq]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-mkt-weq");
+        const w = weaponById(id);
+        if (!w.rareStore) return;
+        save.weapon = id;
+        persist();
+        syncHud();
+        setDeadUI(buddy.dead);
+        canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
+        openMarketShop(4);
+      };
+    });
   }
 
   function openVipShop() {
@@ -2165,23 +2263,12 @@
 
   function openAdminPanel() {
     if (!isAdmin()) {
-      if (save.limitedAdmin) {
+      // Код скрыт от Миши — вход только ?owner=1234 или долгий тап по Админ
+      if (save.limitedAdmin || save.boughtAdmin) {
         openLimitShop(2);
         return;
       }
-      overlay.classList.remove("hidden");
-      overlay.innerHTML = `
-        <div class="brand">АДМИН</div>
-        <p class="tagline">Сейчас ты без админ-команды. Жми <b>🔑 Код</b> и введи личный код.</p>
-        <button class="btn danger" id="adm-to-code">🔑 Ввести код</button>
-        <button class="btn ghost" id="adm-to-limit" style="margin-top:8px">Лимит ★</button>
-        <button class="btn" id="close-shop">Закрыть</button>
-      `;
-      overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
-      const toCode = overlay.querySelector("#adm-to-code");
-      if (toCode) toCode.onclick = () => openCodePanel();
-      const toLim = overlay.querySelector("#adm-to-limit");
-      if (toLim) toLim.onclick = () => openLimitShop(1);
+      openMarketShop(1);
       return;
     }
 
@@ -2331,13 +2418,33 @@
   toolbar.querySelector("#btn-buddies").onclick = () => openBuddyShop();
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-market").onclick = () => openMarketShop(1);
-  const marketFabBtn = screen.querySelector("#btn-market-fab");
-  if (marketFabBtn) marketFabBtn.onclick = () => openMarketShop(1);
-  toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
-  const openCode = () => openCodePanel();
-  if (codeFab) codeFab.onclick = openCode;
-  const codeBar = toolbar.querySelector("#btn-admin-code-bar");
-  if (codeBar) codeBar.onclick = openCode;
+  const adminBtn = toolbar.querySelector("#btn-admin");
+  let adminHoldTimer = null;
+  let adminOpenedCode = false;
+  adminBtn.onclick = () => {
+    if (adminOpenedCode) {
+      adminOpenedCode = false;
+      return;
+    }
+    openAdminPanel();
+  };
+  adminBtn.addEventListener("pointerdown", () => {
+    adminOpenedCode = false;
+    adminHoldTimer = setTimeout(() => {
+      adminHoldTimer = null;
+      adminOpenedCode = true;
+      openCodePanel(); // скрытый вход (долгое нажатие) — Миша не увидит кнопку Код
+    }, 900);
+  });
+  const clearAdminHold = () => {
+    if (adminHoldTimer) {
+      clearTimeout(adminHoldTimer);
+      adminHoldTimer = null;
+    }
+  };
+  adminBtn.addEventListener("pointerup", clearAdminHold);
+  adminBtn.addEventListener("pointerleave", clearAdminHold);
+  adminBtn.addEventListener("pointercancel", clearAdminHold);
   window.addEventListener("amal-owner-changed", () => syncAdminUi());
   syncAdminUi();
   toolbar.querySelector("#btn-revive").onclick = () => {

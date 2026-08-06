@@ -88,6 +88,12 @@ html, body {
   color: #111;
 }
 
+.shop-card.rare-card {
+  border-color: #f59e0b;
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.22), rgba(239, 68, 68, 0.14));
+}
+.shop-card.rare-card h4 { color: #fde68a; }
+
 #app {
   height: 100dvh;
   display: grid;
