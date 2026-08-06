@@ -228,6 +228,17 @@ canvas#game {
   background: linear-gradient(145deg, rgba(200, 16, 46, 0.22), rgba(252, 227, 0, 0.12));
 }
 .shop-card.limited-skin h4 { color: #ffb070; }
+.shop-card.vip-skin,
+.shop-card.vip-item {
+  border-color: #22d3ee;
+  background: linear-gradient(145deg, rgba(34, 211, 238, 0.2), rgba(244, 114, 182, 0.14));
+}
+.shop-card.vip-skin h4,
+.shop-card.vip-item h4 { color: #a5f3fc; }
+.ex-badge.vip-badge {
+  background: #22d3ee;
+  color: #0f172a;
+}
 .shop-card.minsk {
   border-color: rgba(200, 16, 46, 0.55);
   background: linear-gradient(145deg, rgba(0, 150, 57, 0.18), rgba(200, 16, 46, 0.12));

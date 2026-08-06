@@ -88,6 +88,11 @@
     { id: "minsk_inf_mg", name: "∞ Пулемёт Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 900, element: "none", color: "#c8102e", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "bullet", speed: 1600, size: 5, cd: 0.03, auto: true, spread: 0.14, desc: "🔒 Минск · ∞ урон · только админ" },
     { id: "minsk_inf_rpg", name: "∞ Базука Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 1600, element: "bomb", color: "#009639", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "rocket", speed: 700, size: 12, cd: 0.5, explode: true, explodeR: 140, desc: "🔒 Минск · ∞ урон · ракета" },
     { id: "minsk_inf_rail", name: "∞ Рельса Минск", cost: 0, dmg: 99999, coinMul: 15, knock: 1800, element: "shock", color: "#fce300", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "laser", speed: 3200, size: 7, cd: 0.35, desc: "🔒 Минск · ∞ урон · луч" },
+    { id: "admin_chaos", name: "Хаос-молот", cost: 0, dmg: 99999, coinMul: 14, knock: 1700, element: "nuke", color: "#7c3aed", adminOnly: true, desc: "🔒 Только админ · хаотичный удар" },
+    { id: "admin_starfall", name: "Звездопад", cost: 0, dmg: 99999, coinMul: 14, knock: 1500, element: "shock", color: "#f0abfc", ranged: true, adminOnly: true, infHit: true, proj: "laser", speed: 2600, size: 8, cd: 0.2, auto: true, spread: 0.2, desc: "🔒 Только админ · звёздный ливень" },
+    { id: "vip_saber", name: "VIP-сабля", cost: 18000, dmg: 110, coinMul: 3.5, knock: 980, element: "shock", color: "#22d3ee", exclusive: true, vipOnly: true, desc: "💎 VIP · сильный ближний удар" },
+    { id: "vip_pulse", name: "VIP-пульс", cost: 24000, dmg: 95, coinMul: 3.6, knock: 860, element: "shock", color: "#a78bfa", ranged: true, exclusive: true, vipOnly: true, proj: "laser", speed: 1800, size: 6, cd: 0.22, auto: true, spread: 0.06, desc: "💎 VIP · импульсная очередь" },
+    { id: "vip_comet", name: "VIP-комета", cost: 32000, dmg: 175, coinMul: 4.1, knock: 1350, element: "fire", color: "#f472b6", ranged: true, exclusive: true, vipOnly: true, proj: "rocket", speed: 640, size: 11, cd: 0.7, explode: true, explodeR: 110, desc: "💎 VIP · комета с взрывом" },
     { id: "nuke", name: "Супербомба", cost: 1200, dmg: 200, coinMul: 4.5, knock: 1400, element: "nuke", color: "#3a9a4a", desc: "Максимум силы и монет" },
   ];
 
@@ -128,6 +133,66 @@
       crown: true,
       desc: "👑 Покупной админ-скин с короной · не твой SkinAdminBuffer",
     },
+    {
+      id: "SkinAdminVoid",
+      name: "Админ · Пустота",
+      cost: 0,
+      cloth: "#1e1b4b",
+      dark: "#0f0a1a",
+      eye: "#c4b5fd",
+      exclusive: true,
+      premium: true,
+      adminOnly: true,
+      desc: "🔒 Только админ · тёмный пустотный скин",
+    },
+    {
+      id: "SkinAdminCrystal",
+      name: "Админ · Кристалл",
+      cost: 0,
+      cloth: "#67e8f9",
+      dark: "#0e7490",
+      eye: "#ecfeff",
+      exclusive: true,
+      premium: true,
+      adminOnly: true,
+      desc: "🔒 Только админ · кристальный скин",
+    },
+    {
+      id: "SkinVipNeon",
+      name: "VIP Неон",
+      cost: 15000,
+      cloth: "#4ade80",
+      dark: "#166534",
+      eye: "#f0abfc",
+      exclusive: true,
+      vip: true,
+      vipOnly: true,
+      desc: "💎 VIP-скин · неоновое свечение",
+    },
+    {
+      id: "SkinVipRoyal",
+      name: "VIP Рояль",
+      cost: 22000,
+      cloth: "#60a5fa",
+      dark: "#1e3a8a",
+      eye: "#fde68a",
+      exclusive: true,
+      vip: true,
+      vipOnly: true,
+      desc: "💎 VIP-скин · королевский синий",
+    },
+    {
+      id: "SkinVipChrome",
+      name: "VIP Хром",
+      cost: 28000,
+      cloth: "#e2e8f0",
+      dark: "#64748b",
+      eye: "#38bdf8",
+      exclusive: true,
+      vip: true,
+      vipOnly: true,
+      desc: "💎 VIP-скин · хромированный Бади",
+    },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
     { id: "mint", name: "Мятный", cost: 150, cloth: "#7dcea0", dark: "#54996f", eye: "#1a4030", desc: "Зелёный скин" },
@@ -158,6 +223,7 @@
     giant: !!old.giant,
     limitedAdmin: !!old.limitedAdmin,
     halfDmg: !!old.halfDmg,
+    vip: !!old.vip,
     gotSite300k: true,
   } : {
     coins: 300000,
@@ -176,6 +242,7 @@
     giant: false,
     limitedAdmin: false,
     halfDmg: false,
+    vip: false,
     gotSite300k: true,
   });
   if (!save.owned) save.owned = ["none"];
@@ -186,6 +253,7 @@
   if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.push("classic");
   if (typeof save.limitedAdmin !== "boolean") save.limitedAdmin = false;
   if (typeof save.halfDmg !== "boolean") save.halfDmg = false;
+  if (typeof save.vip !== "boolean") save.vip = false;
   // migrate: старый id admin → SkinAdminBuffer; чужой лимит-скин не трогаем
   if (save.buddyType === "admin") save.buddyType = "SkinAdminBuffer";
   save.ownedBuddies = [...new Set(save.ownedBuddies.map((id) => (id === "admin" ? "SkinAdminBuffer" : id)))];
@@ -264,6 +332,11 @@
     }
   }
 
+  const VIP_PASS_COST = 80000;
+  function isVip() {
+    return !!save.vip || isAdmin();
+  }
+
   function redeemOwnerCode(code) {
     // Убираем пробелы/запятые: «1, 2, 3, 4» и «1 2 3 4» = 1234
     const c = String(code || "").trim().toLowerCase().replace(/[\s,.\-_/]+/g, "");
@@ -321,6 +394,7 @@
     save.weapon = "admin";
     save.infDmg = true;
     save.infCoins = true;
+    save.vip = true;
     save.coins = Math.max(save.coins, 999999);
     return true;
   }
@@ -332,18 +406,24 @@
     }
     save.ownedWeapons = (save.ownedWeapons || []).filter((id) => {
       const w = WEAPONS.find((x) => x.id === id);
-      return !w || !w.adminOnly;
+      if (!w) return true;
+      if (w.adminOnly) return false;
+      if (w.vipOnly && !save.vip) return false;
+      return true;
     });
     if (!save.ownedWeapons.includes("hand")) save.ownedWeapons.unshift("hand");
     save.ownedBuddies = (save.ownedBuddies || []).filter((id) => {
       const b = BUDDIES.find((x) => x.id === id);
-      return !b || !b.adminOnly;
+      if (!b) return true;
+      if (b.adminOnly) return false;
+      if (b.vipOnly && !save.vip) return false;
+      return true;
     });
     if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.unshift("classic");
     const curW = weaponById(save.weapon);
-    if (curW.adminOnly) save.weapon = "hand";
+    if (curW.adminOnly || (curW.vipOnly && !save.vip)) save.weapon = "hand";
     const curB = buddyById(save.buddyType);
-    if (curB.adminOnly) save.buddyType = "classic";
+    if (curB.adminOnly || (curB.vipOnly && !save.vip)) save.buddyType = "classic";
     // полный админ-лут сбрасываем, лимит-админ (покупка) оставляем
     save.infDmg = false;
     save.infCoins = false;
@@ -378,6 +458,7 @@
       giant: save.giant,
       limitedAdmin: !!save.limitedAdmin,
       halfDmg: !!save.halfDmg,
+      vip: !!save.vip,
       gotSite300k: !!save.gotSite300k,
       gotBuyTest300k: !!save.gotBuyTest300k,
     });
@@ -440,6 +521,7 @@
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
     <button class="btn ghost" id="btn-limit">Лимит ★</button>
+    <button class="btn" id="btn-vip">VIP ♦</button>
     <button class="btn" id="btn-admin-code-bar">🔑 Код</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
@@ -1174,16 +1256,21 @@
   function openWeaponShop() {
     overlay.classList.remove("hidden");
     const admin = isAdmin();
+    const vip = isVip();
     const cards = WEAPONS.filter((w) => {
       if (w.cheat && !w.adminOnly && !save.ownedWeapons.includes(w.id) && !admin) return false;
       return true;
     }).map((w) => {
       const owned = save.ownedWeapons.includes(w.id);
       const equipped = save.weapon === w.id;
-      const locked = w.adminOnly && !admin;
+      const lockedAdmin = w.adminOnly && !admin;
+      const lockedVip = w.vipOnly && !vip;
+      const locked = lockedAdmin || lockedVip;
       let action;
-      if (locked) {
+      if (lockedAdmin) {
         action = `<button class="btn" disabled>Только админ</button>`;
+      } else if (lockedVip) {
+        action = `<button class="btn" disabled>Нужен VIP</button>`;
       } else if (equipped) {
         action = `<button class="btn" disabled>Выбрано</button>`;
       } else if (owned || (w.adminOnly && admin)) {
@@ -1197,11 +1284,11 @@
         action = `<button class="btn" data-wbuy="${w.id}" ${can ? "" : "disabled"}>${w.cost} ◎</button>`;
       }
       const power = w.dmg > 0
-        ? `<span class="dmg">${w.infHit ? "∞" : w.dmg} урона · ×${w.coinMul} монет${w.ranged ? " · стрельба" : ""}${w.minsk ? " · МИНСК" : ""}${w.exclusive ? " · EX" : ""}${w.adminOnly ? " · АДМИН" : ""}</span>`
+        ? `<span class="dmg">${w.infHit ? "∞" : w.dmg} урона · ×${w.coinMul} монет${w.ranged ? " · стрельба" : ""}${w.minsk ? " · МИНСК" : ""}${w.exclusive ? " · EX" : ""}${w.adminOnly ? " · АДМИН" : ""}${w.vipOnly ? " · VIP" : ""}</span>`
         : `<span class="dmg">без урона</span>`;
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}${w.minsk ? " minsk" : ""}${w.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
-          <h4>${w.adminOnly ? "🔒 " : w.minsk ? "🇧🇾 " : w.exclusive ? "★ " : ""}${w.name}</h4>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}${w.minsk ? " minsk" : ""}${w.adminOnly ? " admin-only" : ""}${w.vipOnly ? " vip-item" : ""}${locked ? " locked" : ""}">
+          <h4>${w.adminOnly ? "🔒 " : w.vipOnly ? "💎 " : w.minsk ? "🇧🇾 " : w.exclusive ? "★ " : ""}${w.name}</h4>
           <p>${power}<br>${w.desc}</p>
           ${action}
         </div>`;
@@ -1209,7 +1296,7 @@
 
     overlay.innerHTML = `
       <div class="brand">ОРУЖИЕ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 = только админ</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 админ · 💎 VIP</p>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1219,6 +1306,7 @@
         const id = btn.getAttribute("data-wbuy");
         const w = weaponById(id);
         if (w.adminOnly && !isAdmin()) return;
+        if (w.vipOnly && !isVip()) return;
         if (save.ownedWeapons.includes(id)) return;
         if (!save.infCoins) {
           if (save.coins < w.cost) return;
@@ -1253,6 +1341,7 @@
         const id = btn.getAttribute("data-weq");
         const w = weaponById(id);
         if (w.adminOnly && !isAdmin()) return;
+        if (w.vipOnly && !isVip()) return;
         save.weapon = id;
         persist();
         syncHud();
@@ -1418,13 +1507,16 @@
   function openBuddyShop() {
     overlay.classList.remove("hidden");
     const admin = isAdmin();
-    const cards = BUDDIES.filter((b) => !b.adminOnly || admin).map((b) => {
+    const vip = isVip();
+    const cards = BUDDIES.filter((b) => (!b.adminOnly || admin) && (!b.vipOnly || vip || admin)).map((b) => {
       const owned = save.ownedBuddies.includes(b.id);
       const equipped = save.buddyType === b.id;
-      const locked = b.adminOnly && !admin;
+      const locked = (b.adminOnly && !admin) || (b.vipOnly && !vip);
       let action;
-      if (locked) {
+      if (b.adminOnly && !admin) {
         action = `<button class="btn" disabled>Только админ</button>`;
+      } else if (b.vipOnly && !vip) {
+        action = `<button class="btn" disabled>Нужен VIP</button>`;
       } else if (equipped) {
         action = `<button class="btn" disabled>Выбран</button>`;
       } else if (owned || (b.adminOnly && admin)) {
@@ -1439,14 +1531,16 @@
       }
       const badge = b.adminOnly
         ? `<span class="ex-badge">АДМИН</span>`
-        : b.limited
-          ? `<span class="ex-badge">ЛИМИТ</span>`
-          : b.exclusive
-            ? `<span class="ex-badge">EX</span>`
-            : "";
+        : b.vip
+          ? `<span class="ex-badge vip-badge">VIP</span>`
+          : b.limited
+            ? `<span class="ex-badge">ЛИМИТ</span>`
+            : b.exclusive
+              ? `<span class="ex-badge">EX</span>`
+              : "";
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.limited ? " limited-skin" : ""}${b.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
-          <h4>${b.adminOnly ? "🔒 " : b.limited ? "★ " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.limited ? " limited-skin" : ""}${b.vip ? " vip-skin" : ""}${b.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
+          <h4>${b.adminOnly ? "🔒 " : b.vip ? "💎 " : b.limited ? "★ " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
           <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
           ${action}
         </div>`;
@@ -1454,7 +1548,7 @@
 
     overlay.innerHTML = `
       <div class="brand">ТИПЫ БАДИ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 SkinAdminBuffer — только админ</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 админ · 💎 VIP</p>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1464,6 +1558,7 @@
         const id = btn.getAttribute("data-bbuy");
         const b = buddyById(id);
         if (b.adminOnly && !isAdmin()) return;
+        if (b.vipOnly && !isVip()) return;
         if (save.ownedBuddies.includes(id)) return;
         if (!save.infCoins) {
           if (save.coins < b.cost) return;
@@ -1485,7 +1580,7 @@
         save.buddyType = id;
         persist();
         syncHud();
-        say("SkinAdminBuffer активирован!");
+        say("Админ-скин активирован!");
         openBuddyShop();
       };
     });
@@ -1494,10 +1589,175 @@
         const id = btn.getAttribute("data-beq");
         const b = buddyById(id);
         if (b.adminOnly && !isAdmin()) return;
+        if (b.vipOnly && !isVip()) return;
         save.buddyType = id;
         persist();
-        say(id === "SkinAdminBuffer" ? "Админ-скин на месте!" : "Это я!");
+        say(id === "SkinAdminBuffer" ? "Админ-скин на месте!" : b.vip ? "VIP-стиль!" : "Это я!");
         openBuddyShop();
+      };
+    });
+  }
+
+  function openVipShop(page = 1) {
+    overlay.classList.remove("hidden");
+    const vip = isVip();
+    const canPass = save.infCoins || save.coins >= VIP_PASS_COST;
+    let body = "";
+
+    if (page === 1) {
+      if (vip) {
+        body = `
+          <div class="shop-card equipped vip-skin">
+            <h4>💎 VIP активен</h4>
+            <p>Доступны VIP-скины и VIP-оружие на страницах 2–3. Админ получает VIP автоматически.</p>
+          </div>`;
+      } else {
+        body = `
+          <div class="shop-card exclusive vip-skin">
+            <h4>💎 Купить VIP</h4>
+            <p>Открывает магазин VIP-скинов и VIP-оружия. Не админ-права — только премиум-контент.</p>
+            <p class="tagline">Цена · ${VIP_PASS_COST.toLocaleString("ru-RU")} ◎</p>
+            <button class="btn danger" id="vip-buy-pass" ${canPass ? "" : "disabled"}>Купить VIP · ${VIP_PASS_COST.toLocaleString("ru-RU")}</button>
+          </div>`;
+      }
+    } else if (page === 2) {
+      if (!vip) {
+        body = `<div class="shop-card locked"><h4>Сначала купи VIP</h4><p>Страница 1 · пропуск VIP</p></div>`;
+      } else {
+        body = BUDDIES.filter((b) => b.vipOnly).map((b) => {
+          const owned = save.ownedBuddies.includes(b.id);
+          const equipped = save.buddyType === b.id;
+          let action;
+          if (equipped) action = `<button class="btn" disabled>Надет</button>`;
+          else if (owned) action = `<button class="btn" data-vip-beq="${b.id}">Надеть</button>`;
+          else {
+            const can = save.infCoins || save.coins >= b.cost;
+            action = `<button class="btn" data-vip-bbuy="${b.id}" ${can ? "" : "disabled"}>${b.cost.toLocaleString("ru-RU")} ◎</button>`;
+          }
+          return `
+            <div class="shop-card vip-skin${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
+              <h4>💎 ${b.name}</h4>
+              <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
+              ${action}
+            </div>`;
+        }).join("");
+      }
+    } else {
+      if (!vip) {
+        body = `<div class="shop-card locked"><h4>Сначала купи VIP</h4><p>Страница 1 · пропуск VIP</p></div>`;
+      } else {
+        body = WEAPONS.filter((w) => w.vipOnly).map((w) => {
+          const owned = save.ownedWeapons.includes(w.id);
+          const equipped = save.weapon === w.id;
+          let action;
+          if (equipped) action = `<button class="btn" disabled>Выбрано</button>`;
+          else if (owned) action = `<button class="btn" data-vip-weq="${w.id}">Взять</button>`;
+          else {
+            const can = save.infCoins || save.coins >= w.cost;
+            action = `<button class="btn" data-vip-wbuy="${w.id}" ${can ? "" : "disabled"}>${w.cost.toLocaleString("ru-RU")} ◎</button>`;
+          }
+          return `
+            <div class="shop-card vip-item${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
+              <h4>💎 ${w.name}</h4>
+              <p><span class="dmg">${w.dmg} урона · ×${w.coinMul}</span><br>${w.desc}</p>
+              ${action}
+            </div>`;
+        }).join("");
+      }
+    }
+
+    overlay.innerHTML = `
+      <div class="brand">VIP ♦</div>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b>${vip ? " · VIP ✓" : ""}</p>
+      <div style="display:flex;gap:8px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap">
+        <button class="btn ${page === 1 ? "danger" : "ghost"}" id="vip-p1">1 · Пропуск</button>
+        <button class="btn ${page === 2 ? "danger" : "ghost"}" id="vip-p2">2 · Скины</button>
+        <button class="btn ${page === 3 ? "danger" : "ghost"}" id="vip-p3">3 · Оружие</button>
+      </div>
+      <div class="shop-grid">${body}</div>
+      <button class="btn" id="close-shop">Закрыть</button>
+    `;
+
+    overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+    overlay.querySelector("#vip-p1").onclick = () => openVipShop(1);
+    overlay.querySelector("#vip-p2").onclick = () => openVipShop(2);
+    overlay.querySelector("#vip-p3").onclick = () => openVipShop(3);
+
+    const buyPass = overlay.querySelector("#vip-buy-pass");
+    if (buyPass) {
+      buyPass.onclick = () => {
+        if (save.vip) return;
+        if (!save.infCoins) {
+          if (save.coins < VIP_PASS_COST) return;
+          save.coins -= VIP_PASS_COST;
+        }
+        save.vip = true;
+        persist();
+        syncHud();
+        say("VIP открыт!");
+        openVipShop(2);
+      };
+    }
+    overlay.querySelectorAll("[data-vip-bbuy]").forEach((btn) => {
+      btn.onclick = () => {
+        if (!isVip()) return;
+        const id = btn.getAttribute("data-vip-bbuy");
+        const b = buddyById(id);
+        if (!b.vipOnly || save.ownedBuddies.includes(id)) return;
+        if (!save.infCoins) {
+          if (save.coins < b.cost) return;
+          save.coins -= b.cost;
+        }
+        save.ownedBuddies.push(id);
+        save.buddyType = id;
+        persist();
+        syncHud();
+        say("VIP-скин!");
+        openVipShop(2);
+      };
+    });
+    overlay.querySelectorAll("[data-vip-beq]").forEach((btn) => {
+      btn.onclick = () => {
+        if (!isVip()) return;
+        save.buddyType = btn.getAttribute("data-vip-beq");
+        persist();
+        say("VIP-стиль!");
+        openVipShop(2);
+      };
+    });
+    overlay.querySelectorAll("[data-vip-wbuy]").forEach((btn) => {
+      btn.onclick = () => {
+        if (!isVip()) return;
+        const id = btn.getAttribute("data-vip-wbuy");
+        const w = weaponById(id);
+        if (!w.vipOnly || save.ownedWeapons.includes(id)) return;
+        if (!save.infCoins) {
+          if (save.coins < w.cost) return;
+          save.coins -= w.cost;
+        }
+        save.ownedWeapons.push(id);
+        save.weapon = id;
+        persist();
+        syncHud();
+        setDeadUI(buddy.dead);
+        canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
+        say("VIP-пушка!");
+        openVipShop(3);
+      };
+    });
+    overlay.querySelectorAll("[data-vip-weq]").forEach((btn) => {
+      btn.onclick = () => {
+        if (!isVip()) return;
+        const id = btn.getAttribute("data-vip-weq");
+        const w = weaponById(id);
+        if (w.vipOnly && !isVip()) return;
+        save.weapon = id;
+        persist();
+        syncHud();
+        setDeadUI(buddy.dead);
+        canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
+        say("Готово!");
+        openVipShop(3);
       };
     });
   }
@@ -1706,6 +1966,7 @@
   toolbar.querySelector("#btn-buddies").onclick = () => openBuddyShop();
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-limit").onclick = () => openLimitShop(1);
+  toolbar.querySelector("#btn-vip").onclick = () => openVipShop(1);
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
   const openCode = () => openCodePanel();
   if (codeFab) codeFab.onclick = openCode;
@@ -2217,6 +2478,26 @@
       ctx.fill();
       ctx.fillStyle = "#fbbf24";
       ctx.fillRect(hx - 24, torsoY - 28, 48, 4);
+    } else if (skin.vip) {
+      const pulse = 0.5 + Math.sin(buddy.bob * 2.4) * 0.2;
+      const g = ctx.createRadialGradient(hx, torsoY, 8, hx, torsoY, 72);
+      g.addColorStop(0, `rgba(34, 211, 238, ${0.4 * pulse})`);
+      g.addColorStop(0.45, `rgba(244, 114, 182, ${0.28 * pulse})`);
+      g.addColorStop(1, "rgba(15, 23, 42, 0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(hx, torsoY, 72, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath();
+      ctx.moveTo(hx - 24, torsoY - 24);
+      ctx.quadraticCurveTo(hx - 50, torsoY + 6, hx - 30, buddy.y + 44 - squat);
+      ctx.quadraticCurveTo(hx, torsoY + 34, hx + 30, buddy.y + 44 - squat);
+      ctx.quadraticCurveTo(hx + 50, torsoY + 6, hx + 24, torsoY - 24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#22d3ee";
+      ctx.fillRect(hx - 22, torsoY - 26, 44, 4);
     }
 
     // legs
@@ -2254,6 +2535,12 @@
       tg.addColorStop(0.45, cloth);
       tg.addColorStop(1, clothDark);
       ctx.fillStyle = tg;
+    } else if (skin.vip) {
+      const tg = ctx.createLinearGradient(hx - 32, torsoY - 36, hx + 32, torsoY + 34);
+      tg.addColorStop(0, "#ecfeff");
+      tg.addColorStop(0.4, cloth);
+      tg.addColorStop(1, clothDark);
+      ctx.fillStyle = tg;
     } else {
       ctx.fillStyle = cloth;
     }
@@ -2287,6 +2574,19 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("АДМИН", hx, torsoY + 2);
+    } else if (skin.vip) {
+      ctx.strokeStyle = "#22d3ee";
+      ctx.lineWidth = 2.5;
+      roundRectPath(hx - 32, torsoY - 36, 64, 70 - squat * 0.3, 18);
+      ctx.stroke();
+      ctx.fillStyle = "#22d3ee";
+      roundRectPath(hx - 18, torsoY - 6, 36, 16, 6);
+      ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "900 10px Nunito, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("VIP", hx, torsoY + 2);
     }
     // shoulder patches
     ctx.fillStyle = clothDark;
@@ -2376,6 +2676,20 @@
       ctx.fillStyle = "#fef3c7";
       ctx.beginPath();
       ctx.arc(hx, hy - 46, 3, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (skin.vip) {
+      ctx.fillStyle = "#22d3ee";
+      ctx.beginPath();
+      ctx.moveTo(hx - 18, hy - 18);
+      ctx.lineTo(hx - 10, hy - 36);
+      ctx.lineTo(hx, hy - 24);
+      ctx.lineTo(hx + 10, hy - 36);
+      ctx.lineTo(hx + 18, hy - 18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#f0abfc";
+      ctx.beginPath();
+      ctx.arc(hx, hy - 36, 3.5, 0, Math.PI * 2);
       ctx.fill();
     }
 

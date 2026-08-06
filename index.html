@@ -93,6 +93,7 @@
     .card-img.arsenal { background: linear-gradient(135deg, #0a2a28, #3a0a4a); }
     .card-img.buddy { background: linear-gradient(135deg, #e8d9a8, #c48a40); }
     .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #4a1a08); }
+    .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #5a9e3a 55%, #8b5a2b); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -144,6 +145,7 @@
     .play-btn.arsenal { background: #00f5d4; color: #041816; }
     .play-btn.buddy { background: #e05030; color: #fff8f0; }
     .play-btn.zvp { background: #6aaa3a; color: #0a1808; }
+    .play-btn.craft { background: #5a9e3a; color: #0a1808; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -160,12 +162,22 @@
 
   <p class="section-title">Все игры</p>
   <div class="grid all">
+    <a class="card featured" href="minecraft/">
+      <div class="card-img craft">⛏️</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>CraftWorld</h2>
+        <p>Креатив и noclip, 7 биомов, данжи с лутом, руды, лава, TNT, день/ночь — полный воксельный sandbox.</p>
+        <span class="play-btn craft">Играть</span>
+      </div>
+    </a>
+
     <a class="card featured" href="kick-buddy/">
       <div class="card-img buddy">🥊</div>
       <div class="card-body">
         <span class="badge update">Обновлено</span>
         <h2>Kick Buddy</h2>
-        <p>Стрельба в стену с аурой и монетами, лимит-админ, старт 300 000 ◎. SkinAdminBuffer только тебе.</p>
+        <p>Стрельба, VIP ♦, лимит-админ, старт 300 000 ◎. SkinAdminBuffer и новые админ-скины — только тебе.</p>
         <span class="play-btn buddy">Играть</span>
       </div>
     </a>
