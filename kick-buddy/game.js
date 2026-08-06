@@ -75,9 +75,19 @@
     { id: "flamethrower", name: "Огнемёт", cost: 880, dmg: 18, coinMul: 2.7, knock: 280, element: "fire", color: "#e05030", ranged: true, exclusive: true, proj: "flame", speed: 480, size: 14, cd: 0.04, auto: true, spread: 0.18, life: 0.55, desc: "Эксклюзив · зажми — струя огня" },
     { id: "minigun", name: "Миниган", cost: 1400, dmg: 38, coinMul: 3.2, knock: 580, element: "none", color: "#2a2a30", ranged: true, exclusive: true, proj: "bullet", speed: 1500, size: 4, cd: 0.03, auto: true, spread: 0.16, desc: "Эксклюзив · бешеный темп огня" },
     { id: "railgun", name: "Рельсотрон", cost: 1600, dmg: 220, coinMul: 4.2, knock: 1500, element: "shock", color: "#3de7ff", ranged: true, exclusive: true, proj: "laser", speed: 2800, size: 6, cd: 0.9, desc: "Эксклюзив · луч сквозь комнату" },
+    // Минская серия
+    { id: "minsk_potato", name: "Картофелемёт Минск", cost: 650, dmg: 45, coinMul: 2.8, knock: 580, element: "none", color: "#c4a050", ranged: true, exclusive: true, minsk: true, proj: "pebble", speed: 780, size: 8, cd: 0.32, desc: "Из Минска · картошка летит куда кликнешь" },
+    { id: "minsk_tractor", name: "Трактор Минск", cost: 900, dmg: 95, coinMul: 3.3, knock: 1300, element: "none", color: "#3a7a30", minsk: true, exclusive: true, desc: "Из Минска · мощный удар Беларусью" },
+    { id: "minsk_mg", name: "Пулемёт Минск", cost: 1100, dmg: 42, coinMul: 3.1, knock: 560, element: "none", color: "#c8102e", ranged: true, exclusive: true, minsk: true, proj: "bullet", speed: 1450, size: 4, cd: 0.04, auto: true, spread: 0.1, desc: "Из Минска · зажми — очередь" },
+    { id: "minsk_rpg", name: "Базука Минск", cost: 1300, dmg: 180, coinMul: 3.9, knock: 1250, element: "bomb", color: "#009639", ranged: true, exclusive: true, minsk: true, proj: "rocket", speed: 580, size: 11, cd: 0.8, explode: true, explodeR: 100, desc: "Из Минска · ракета в стену/Бади" },
+    { id: "minsk_sniper", name: "Снайперка Минск", cost: 1500, dmg: 170, coinMul: 3.7, knock: 950, element: "none", color: "#ffffff", ranged: true, exclusive: true, minsk: true, proj: "bullet", speed: 2400, size: 3, cd: 0.65, desc: "Из Минска · точный выстрел" },
     { id: "bomb", name: "Бомба", cost: 480, dmg: 90, coinMul: 3, knock: 900, element: "bomb", color: "#3a3a3a", desc: "Взрыв · много монет" },
     { id: "meteor", name: "Метеор", cost: 750, dmg: 130, coinMul: 3.6, knock: 1000, element: "fire", color: "#c44a10", desc: "Огненный удар с неба" },
-    { id: "admin", name: "Молот админа", cost: 900, dmg: 160, coinMul: 4, knock: 1200, element: "shock", color: "#a78bfa", desc: "Для админа команды" },
+    // Админ / ∞ из Минска
+    { id: "admin", name: "Молот админа", cost: 0, dmg: 250, coinMul: 5, knock: 1500, element: "shock", color: "#a78bfa", adminOnly: true, desc: "🔒 Только админ · игроки видят, но взять нельзя" },
+    { id: "minsk_inf_mg", name: "∞ Пулемёт Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 900, element: "none", color: "#c8102e", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "bullet", speed: 1600, size: 5, cd: 0.03, auto: true, spread: 0.14, desc: "🔒 Минск · ∞ урон · только админ" },
+    { id: "minsk_inf_rpg", name: "∞ Базука Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 1600, element: "bomb", color: "#009639", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "rocket", speed: 700, size: 12, cd: 0.5, explode: true, explodeR: 140, desc: "🔒 Минск · ∞ урон · ракета" },
+    { id: "minsk_inf_rail", name: "∞ Рельса Минск", cost: 0, dmg: 99999, coinMul: 15, knock: 1800, element: "shock", color: "#fce300", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "laser", speed: 3200, size: 7, cd: 0.35, desc: "🔒 Минск · ∞ урон · луч" },
     { id: "nuke", name: "Супербомба", cost: 1200, dmg: 200, coinMul: 4.5, knock: 1400, element: "nuke", color: "#3a9a4a", desc: "Максимум силы и монет" },
   ];
 
@@ -97,13 +107,14 @@
     {
       id: "SkinAdminBuffer",
       name: "SkinAdminBuffer",
-      cost: 5000,
+      cost: 0,
       cloth: "#d4b8ff",
       dark: "#6d28d9",
       eye: "#fde68a",
       exclusive: true,
       premium: true,
-      desc: "★ №1 эксклюзив · самый дорогой и красивый админ-скин",
+      adminOnly: true,
+      desc: "★ Админ-скин · игроки видят, доступ только у админа",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -166,21 +177,104 @@
   if (typeof save.godMode !== "boolean") save.godMode = false;
   if (typeof save.giant !== "boolean") save.giant = false;
 
-  // Infinite-damage admin weapon (unlocked via admin panel)
+  // Infinite-damage admin weapon (visible in shop, unlock only for admin)
   if (!WEAPONS.find((w) => w.id === "infdmg")) {
     WEAPONS.push({
       id: "infdmg",
-      name: "∞ Урон",
+      name: "∞ Урон Минск",
       cost: 0,
       dmg: 99999,
-      coinMul: 10,
+      coinMul: 12,
       knock: 1600,
       element: "nuke",
-      color: "#ff0044",
-      desc: "Админ-команда: бесконечный урон",
+      color: "#c8102e",
+      desc: "🔒 Минск · ∞ урон · только админ",
       cheat: true,
+      adminOnly: true,
+      minsk: true,
+      infHit: true,
     });
+  } else {
+    const inf = WEAPONS.find((w) => w.id === "infdmg");
+    inf.adminOnly = true;
+    inf.cheat = true;
+    inf.minsk = true;
+    inf.infHit = true;
+    inf.name = "∞ Урон Минск";
+    inf.desc = "🔒 Минск · ∞ урон · только админ";
+    inf.color = "#c8102e";
   }
+
+  function isAdmin() {
+    try {
+      if (window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) return true;
+      if (localStorage.getItem("kick-buddy-admin") === "1") return true;
+      const host = String(location.hostname || "");
+      if (host === "127.0.0.1" || host === "localhost" || host === "::1") return true;
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  function markAdminLocal() {
+    try {
+      localStorage.setItem("kick-buddy-admin", "1");
+      if (window.AmalOwner && window.AmalOwner.unlock) {
+        window.AmalOwner.unlock("AmalOwner2026");
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function grantAdminLoot() {
+    if (!isAdmin()) return false;
+    markAdminLocal();
+    // Всё оружие + весь админ-лут
+    WEAPONS.forEach((w) => {
+      if (!save.ownedWeapons.includes(w.id)) save.ownedWeapons.push(w.id);
+    });
+    BUDDIES.forEach((b) => {
+      if (!save.ownedBuddies.includes(b.id)) save.ownedBuddies.push(b.id);
+    });
+    CLOTHES.forEach((c) => {
+      if (!save.owned.includes(c.id)) save.owned.push(c.id);
+    });
+    save.buddyType = "SkinAdminBuffer";
+    save.weapon = "admin";
+    save.infDmg = true;
+    save.infCoins = true;
+    save.coins = Math.max(save.coins, 999999);
+    return true;
+  }
+
+  function stripAdminLootIfNeeded() {
+    if (isAdmin()) {
+      grantAdminLoot();
+      return;
+    }
+    save.ownedWeapons = (save.ownedWeapons || []).filter((id) => {
+      const w = WEAPONS.find((x) => x.id === id);
+      return !w || !w.adminOnly;
+    });
+    if (!save.ownedWeapons.includes("hand")) save.ownedWeapons.unshift("hand");
+    save.ownedBuddies = (save.ownedBuddies || []).filter((id) => {
+      const b = BUDDIES.find((x) => x.id === id);
+      return !b || !b.adminOnly;
+    });
+    if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.unshift("classic");
+    const curW = weaponById(save.weapon);
+    if (curW.adminOnly) save.weapon = "hand";
+    const curB = buddyById(save.buddyType);
+    if (curB.adminOnly) save.buddyType = "classic";
+    save.infDmg = false;
+    save.infCoins = false;
+    save.godMode = false;
+  }
+
+  stripAdminLootIfNeeded();
+  persist();
 
   function persist() {
     store.set(STORAGE, {
@@ -215,7 +309,7 @@
 
   function effectiveWeapon() {
     const w = weaponById(save.weapon);
-    if (save.infDmg && w.id !== "hand") {
+    if (w.infHit || (save.infDmg && w.id !== "hand")) {
       return { ...w, dmg: Math.max(w.dmg, 99999), coinMul: Math.max(w.coinMul, 10), knock: Math.max(w.knock, 1400) };
     }
     return w;
@@ -367,7 +461,7 @@
     el.hp.textContent = String(Math.max(0, Math.ceil(buddy.hp)));
     el.coins.textContent = save.infCoins ? "∞" : String(save.coins);
     const wName = weaponById(save.weapon).name;
-    el.weapon.textContent = save.infDmg && save.weapon !== "hand" ? wName + " ∞" : wName;
+    el.weapon.textContent = (save.infDmg && save.weapon !== "hand") || weaponById(save.weapon).infHit ? wName + " ∞" : wName;
   }
 
   function floatText(x, y, text, color) {
@@ -583,9 +677,10 @@
 
   function applyProjectileHit(proj, fromX, fromY, splashScale = 1) {
     const base = weaponById(proj.wpnId);
-    let wpn = save.infDmg && base.id !== "hand"
-      ? { ...base, dmg: Math.max(base.dmg, 99999), coinMul: Math.max(base.coinMul, 10), knock: Math.max(base.knock, 1400) }
-      : { ...base };
+    let wpn = { ...base };
+    if (base.infHit || (save.infDmg && base.id !== "hand")) {
+      wpn = { ...base, dmg: Math.max(base.dmg, 99999), coinMul: Math.max(base.coinMul, 10), knock: Math.max(base.knock, 1400) };
+    }
     wpn.dmg = Math.max(1, Math.floor(wpn.dmg * splashScale));
     if (buddy.dead || wpn.dmg <= 0) return;
     attackBuddy(wpn, fromX, fromY, { skipCd: true });
@@ -1018,22 +1113,35 @@
 
   function openWeaponShop() {
     overlay.classList.remove("hidden");
-    const cards = WEAPONS.filter((w) => !w.cheat || save.ownedWeapons.includes(w.id)).map((w) => {
+    const admin = isAdmin();
+    const cards = WEAPONS.filter((w) => {
+      if (w.cheat && !w.adminOnly && !save.ownedWeapons.includes(w.id) && !admin) return false;
+      return true;
+    }).map((w) => {
       const owned = save.ownedWeapons.includes(w.id);
       const equipped = save.weapon === w.id;
+      const locked = w.adminOnly && !admin;
       let action;
-      if (equipped) action = `<button class="btn" disabled>Выбрано</button>`;
-      else if (owned) action = `<button class="btn" data-weq="${w.id}">Взять</button>`;
-      else {
+      if (locked) {
+        action = `<button class="btn" disabled>Только админ</button>`;
+      } else if (equipped) {
+        action = `<button class="btn" disabled>Выбрано</button>`;
+      } else if (owned || (w.adminOnly && admin)) {
+        if (w.adminOnly && admin && !owned) {
+          action = `<button class="btn" data-wclaim="${w.id}">Взять (админ)</button>`;
+        } else {
+          action = `<button class="btn" data-weq="${w.id}">Взять</button>`;
+        }
+      } else {
         const can = save.infCoins || save.coins >= w.cost;
         action = `<button class="btn" data-wbuy="${w.id}" ${can ? "" : "disabled"}>${w.cost} ◎</button>`;
       }
       const power = w.dmg > 0
-        ? `<span class="dmg">${w.dmg} урона · ×${w.coinMul} монет${w.ranged ? " · стрельба" : ""}${w.exclusive ? " · EX" : ""}</span>`
+        ? `<span class="dmg">${w.infHit ? "∞" : w.dmg} урона · ×${w.coinMul} монет${w.ranged ? " · стрельба" : ""}${w.minsk ? " · МИНСК" : ""}${w.exclusive ? " · EX" : ""}${w.adminOnly ? " · АДМИН" : ""}</span>`
         : `<span class="dmg">без урона</span>`;
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}">
-          <h4>${w.exclusive ? "★ " : ""}${w.name}</h4>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}${w.minsk ? " minsk" : ""}${w.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
+          <h4>${w.adminOnly ? "🔒 " : w.minsk ? "🇧🇾 " : w.exclusive ? "★ " : ""}${w.name}</h4>
           <p>${power}<br>${w.desc}</p>
           ${action}
         </div>`;
@@ -1041,7 +1149,7 @@
 
     overlay.innerHTML = `
       <div class="brand">ОРУЖИЕ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · EX = эксклюзив · клик в стену = выстрел</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 = только админ</p>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1050,6 +1158,7 @@
       btn.onclick = () => {
         const id = btn.getAttribute("data-wbuy");
         const w = weaponById(id);
+        if (w.adminOnly && !isAdmin()) return;
         if (save.ownedWeapons.includes(id)) return;
         if (!save.infCoins) {
           if (save.coins < w.cost) return;
@@ -1065,13 +1174,29 @@
         openWeaponShop();
       };
     });
-    overlay.querySelectorAll("[data-weq]").forEach((btn) => {
+    overlay.querySelectorAll("[data-wclaim]").forEach((btn) => {
       btn.onclick = () => {
-        save.weapon = btn.getAttribute("data-weq");
+        if (!isAdmin()) return;
+        const id = btn.getAttribute("data-wclaim");
+        if (!save.ownedWeapons.includes(id)) save.ownedWeapons.push(id);
+        save.weapon = id;
         persist();
         syncHud();
         setDeadUI(buddy.dead);
-        const w = effectiveWeapon();
+        canvas.style.cursor = isRanged(weaponById(id)) ? "crosshair" : "grab";
+        say("Админ-оружие готово!");
+        openWeaponShop();
+      };
+    });
+    overlay.querySelectorAll("[data-weq]").forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.getAttribute("data-weq");
+        const w = weaponById(id);
+        if (w.adminOnly && !isAdmin()) return;
+        save.weapon = id;
+        persist();
+        syncHud();
+        setDeadUI(buddy.dead);
         canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
         say(w.id === "hand" ? "Только руками!" : isRanged(w) ? "Прицел готов!" : "Готов бить!");
         openWeaponShop();
@@ -1081,28 +1206,42 @@
 
   function openBuddyShop() {
     overlay.classList.remove("hidden");
+    const admin = isAdmin();
     const cards = BUDDIES.map((b) => {
       const owned = save.ownedBuddies.includes(b.id);
       const equipped = save.buddyType === b.id;
+      const locked = b.adminOnly && !admin;
       let action;
-      if (equipped) action = `<button class="btn" disabled>Выбран</button>`;
-      else if (owned) action = `<button class="btn" data-beq="${b.id}">Выбрать</button>`;
-      else {
+      if (locked) {
+        action = `<button class="btn" disabled>Только админ</button>`;
+      } else if (equipped) {
+        action = `<button class="btn" disabled>Выбран</button>`;
+      } else if (owned || (b.adminOnly && admin)) {
+        if (b.adminOnly && admin && !owned) {
+          action = `<button class="btn" data-bclaim="${b.id}">Взять (админ)</button>`;
+        } else {
+          action = `<button class="btn" data-beq="${b.id}">Выбрать</button>`;
+        }
+      } else {
         const can = save.coins >= b.cost || save.infCoins;
         action = `<button class="btn" data-bbuy="${b.id}" ${can ? "" : "disabled"}>${b.cost} ◎</button>`;
       }
-      const badge = b.exclusive ? `<span class="ex-badge">EX · №1</span>` : "";
+      const badge = b.adminOnly
+        ? `<span class="ex-badge">АДМИН</span>`
+        : b.exclusive
+          ? `<span class="ex-badge">EX</span>`
+          : "";
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}">
-          <h4>${b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
-          <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}${b.exclusive ? `<br><b style="color:#ffd76a">${b.cost} ◎ · самый дорогой</b>` : ""}</p>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.adminOnly ? " admin-only" : ""}${locked ? " locked" : ""}">
+          <h4>${b.adminOnly ? "🔒 " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
+          <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
           ${action}
         </div>`;
     }).join("");
 
     overlay.innerHTML = `
       <div class="brand">ТИПЫ БАДИ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · ★ SkinAdminBuffer — топ эксклюзив</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 SkinAdminBuffer — только админ</p>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1111,6 +1250,7 @@
       btn.onclick = () => {
         const id = btn.getAttribute("data-bbuy");
         const b = buddyById(id);
+        if (b.adminOnly && !isAdmin()) return;
         if (save.ownedBuddies.includes(id)) return;
         if (!save.infCoins) {
           if (save.coins < b.cost) return;
@@ -1120,29 +1260,87 @@
         save.buddyType = id;
         persist();
         syncHud();
-        say(id === "SkinAdminBuffer" ? "SkinAdminBuffer активирован!" : "Новый я!");
+        say("Новый я!");
+        openBuddyShop();
+      };
+    });
+    overlay.querySelectorAll("[data-bclaim]").forEach((btn) => {
+      btn.onclick = () => {
+        if (!isAdmin()) return;
+        const id = btn.getAttribute("data-bclaim");
+        if (!save.ownedBuddies.includes(id)) save.ownedBuddies.push(id);
+        save.buddyType = id;
+        persist();
+        syncHud();
+        say("SkinAdminBuffer активирован!");
         openBuddyShop();
       };
     });
     overlay.querySelectorAll("[data-beq]").forEach((btn) => {
       btn.onclick = () => {
-        save.buddyType = btn.getAttribute("data-beq");
+        const id = btn.getAttribute("data-beq");
+        const b = buddyById(id);
+        if (b.adminOnly && !isAdmin()) return;
+        save.buddyType = id;
         persist();
-        say(save.buddyType === "SkinAdminBuffer" ? "Админ-скин на месте!" : "Это я!");
+        say(id === "SkinAdminBuffer" ? "Админ-скин на месте!" : "Это я!");
         openBuddyShop();
       };
     });
   }
 
   function openAdminPanel() {
+    if (!isAdmin()) {
+      overlay.classList.remove("hidden");
+      overlay.innerHTML = `
+        <div class="brand">АДМИН</div>
+        <p class="tagline">Введи код, чтобы вернуть всё оружие и админ-лут</p>
+        <input id="adm-code" type="password" placeholder="Код админа" style="width:min(320px,90%);padding:10px 12px;border-radius:10px;border:0;font:800 1rem Nunito;margin:8px 0" />
+        <button class="btn danger" id="adm-unlock">Войти и выдать всё</button>
+        <p class="tagline" style="margin-top:8px">Код: AmalOwner2026 · или набери OWNER · или localhost</p>
+        <button class="btn" id="close-shop">Закрыть</button>
+      `;
+      overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+      overlay.querySelector("#adm-unlock").onclick = () => {
+        const code = (overlay.querySelector("#adm-code").value || "").trim();
+        const ok =
+          code === "AmalOwner2026" ||
+          code.toLowerCase() === "owner" ||
+          code.toLowerCase() === "admin" ||
+          (window.AmalOwner && window.AmalOwner.unlock && window.AmalOwner.unlock(code));
+        if (ok) {
+          try { localStorage.setItem("kick-buddy-admin", "1"); } catch { /* ignore */ }
+          if (window.AmalOwner && window.AmalOwner.unlock) window.AmalOwner.unlock("AmalOwner2026");
+          grantAdminLoot();
+          persist();
+          syncHud();
+          syncAdminUi();
+          say("Админ! Всё оружие и SkinAdminBuffer выданы!", { force: true, voice: true });
+          openAdminPanel();
+        } else {
+          alert("Неверный код");
+        }
+      };
+      return;
+    }
+
+    grantAdminLoot();
+    persist();
+    syncHud();
+
     overlay.classList.remove("hidden");
     overlay.innerHTML = `
       <div class="brand">АДМИН</div>
-      <p class="tagline">Команды админа команды · шериф одобряет</p>
+      <p class="tagline">Тебе выдано ВСЁ: оружие, ∞ Минск, SkinAdminBuffer, Молот</p>
       <div class="shop-grid">
+        <div class="shop-card equipped">
+          <h4>Выдать всё снова</h4>
+          <p>Все пушки + админ-скин + ∞ монеты</p>
+          <button class="btn danger" id="adm-grant-all">Выдать мне всё</button>
+        </div>
         <div class="shop-card ${save.infDmg ? "equipped" : ""}">
           <h4>∞ Урон</h4>
-          <p>Любое оружие (кроме руки) бьёт на 99999</p>
+          <p>Любое оружие бьёт на 99999</p>
           <button class="btn" id="adm-infdmg">${save.infDmg ? "Выкл" : "Вкл"}</button>
         </div>
         <div class="shop-card ${save.infCoins ? "equipped" : ""}">
@@ -1152,32 +1350,22 @@
         </div>
         <div class="shop-card">
           <h4>+99999 монет</h4>
-          <p>Разовая выдача</p>
           <button class="btn" id="adm-addcoins">Выдать</button>
         </div>
         <div class="shop-card">
-          <h4>Всё оружие</h4>
-          <p>Открыть весь арсенал + ∞ урон</p>
-          <button class="btn" id="adm-allw">Открыть</button>
-        </div>
-        <div class="shop-card">
-          <h4>Все типы Бади</h4>
-          <p>Открыть все скины</p>
-          <button class="btn" id="adm-allb">Открыть</button>
+          <h4>Молот + SkinAdminBuffer</h4>
+          <button class="btn" id="adm-equip">Экипировать сейчас</button>
         </div>
         <div class="shop-card ${save.godMode ? "equipped" : ""}">
           <h4>Режим бога</h4>
-          <p>Бади не теряет HP · бессмертие</p>
           <button class="btn" id="adm-god">${save.godMode ? "Выкл" : "Вкл"}</button>
         </div>
         <div class="shop-card ${save.giant ? "equipped" : ""}">
           <h4>Гигант-Бади</h4>
-          <p>Увеличить Бади в 1.6×</p>
           <button class="btn" id="adm-giant">${save.giant ? "Выкл" : "Вкл"}</button>
         </div>
         <div class="shop-card">
           <h4>Убить / Оживить</h4>
-          <p>Мгновенно 0 HP или полный HP</p>
           <button class="btn" id="adm-kill">Убить</button>
           <button class="btn" id="adm-revive" style="margin-top:6px">Оживить</button>
         </div>
@@ -1185,10 +1373,28 @@
       <button class="btn" id="close-shop">Закрыть</button>
     `;
     overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
+    overlay.querySelector("#adm-grant-all").onclick = () => {
+      grantAdminLoot();
+      persist();
+      syncHud();
+      say("Всё выдано!", { force: true });
+      openAdminPanel();
+    };
+    overlay.querySelector("#adm-equip").onclick = () => {
+      save.weapon = "admin";
+      save.buddyType = "SkinAdminBuffer";
+      if (!save.ownedWeapons.includes("admin")) save.ownedWeapons.push("admin");
+      if (!save.ownedBuddies.includes("SkinAdminBuffer")) save.ownedBuddies.push("SkinAdminBuffer");
+      persist();
+      syncHud();
+      say("Молот и SkinAdminBuffer на месте!", { force: true });
+      openAdminPanel();
+    };
     overlay.querySelector("#adm-infdmg").onclick = () => {
       save.infDmg = !save.infDmg;
       if (save.infDmg && !save.ownedWeapons.includes("infdmg")) save.ownedWeapons.push("infdmg");
-      if (save.infDmg) save.weapon = "infdmg";
+      if (save.infDmg && !save.ownedWeapons.includes("admin")) save.ownedWeapons.push("admin");
+      if (save.infDmg) save.weapon = "minsk_inf_mg";
       persist();
       syncHud();
       openAdminPanel();
@@ -1204,23 +1410,6 @@
       save.coins += 99999;
       persist();
       syncHud();
-      openAdminPanel();
-    };
-    overlay.querySelector("#adm-allw").onclick = () => {
-      WEAPONS.forEach((w) => {
-        if (!save.ownedWeapons.includes(w.id)) save.ownedWeapons.push(w.id);
-      });
-      save.infDmg = true;
-      save.weapon = "infdmg";
-      persist();
-      syncHud();
-      openAdminPanel();
-    };
-    overlay.querySelector("#adm-allb").onclick = () => {
-      BUDDIES.forEach((b) => {
-        if (!save.ownedBuddies.includes(b.id)) save.ownedBuddies.push(b.id);
-      });
-      persist();
       openAdminPanel();
     };
     overlay.querySelector("#adm-god").onclick = () => {
@@ -1244,6 +1433,25 @@
     };
   }
 
+  function syncAdminUi() {
+    const btn = toolbar.querySelector("#btn-admin");
+    if (btn) {
+      btn.hidden = false;
+      btn.title = isAdmin() ? "Админ-панель · лут выдан" : "Войти как админ";
+    }
+    if (isAdmin()) {
+      grantAdminLoot();
+      persist();
+      if (typeof syncHud === "function" && el && el.hp) syncHud();
+      if (typeof setDeadUI === "function") setDeadUI(buddy.dead);
+      if (canvas) canvas.style.cursor = isRanged(effectiveWeapon()) ? "crosshair" : "grab";
+      if (hint) hint.textContent = "Админ: всё оружие + SkinAdminBuffer + ∞ Минск уже твои";
+    } else {
+      stripAdminLootIfNeeded();
+      persist();
+      if (typeof syncHud === "function" && el && el.hp) syncHud();
+    }
+  }
   function equipClothes(id) {
     const item = itemById(id);
     if (item.kind === "shirt") save.shirt = id;
@@ -1262,6 +1470,8 @@
   toolbar.querySelector("#btn-buddies").onclick = () => openBuddyShop();
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
+  window.addEventListener("amal-owner-changed", () => syncAdminUi());
+  syncAdminUi();
   toolbar.querySelector("#btn-mute").onclick = () => {
     save.mute = !save.mute;
     persist();

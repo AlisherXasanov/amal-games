@@ -201,6 +201,26 @@ canvas#game {
   box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.35), 0 8px 24px rgba(109, 40, 217, 0.25);
 }
 .shop-card.premium-skin h4 { color: #fde68a; }
+.shop-card.admin-only {
+  border-color: #a78bfa;
+  background: linear-gradient(145deg, rgba(109, 40, 217, 0.28), rgba(251, 191, 36, 0.12));
+}
+.shop-card.admin-only h4 { color: #ddd6fe; }
+.shop-card.minsk {
+  border-color: rgba(200, 16, 46, 0.55);
+  background: linear-gradient(145deg, rgba(0, 150, 57, 0.18), rgba(200, 16, 46, 0.12));
+}
+.shop-card.minsk h4 { color: #ffd0d6; }
+.shop-card.locked {
+  opacity: 0.72;
+  filter: grayscale(0.15);
+}
+.shop-card.locked .btn[disabled] {
+  opacity: 0.9;
+  background: #3f3f46;
+  color: #e4e4e7;
+  box-shadow: none;
+}
 .ex-badge {
   display: inline-block;
   margin-left: 4px;
