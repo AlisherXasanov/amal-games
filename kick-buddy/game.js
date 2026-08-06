@@ -261,14 +261,8 @@
     }
   }
 
-  // Коды настоящей админки (как у тебя) — выдаёт админ-команда
+  // Один секрет настоящего админа — вводишь в «🔑 Код»
   const OWNER_CODE = "AmalOwner2026";
-  const TEAM_ADMIN_CODES = [
-    "AmalTeam2026",
-    "AmalAdmin-ALPHA",
-    "AmalAdmin-BETA",
-    "AmalAdmin-MINSK",
-  ];
 
   function normalizeAdminCode(code) {
     return String(code || "").trim();
@@ -279,10 +273,8 @@
     if (!c) return false;
     if (c === OWNER_CODE) return true;
     if (c.toLowerCase() === "owner") return true;
-    if (TEAM_ADMIN_CODES.some((x) => x.toLowerCase() === c.toLowerCase())) return true;
     try {
       if (window.AmalOwner && typeof window.AmalOwner.unlock === "function") {
-        // не вызываем unlock здесь — только проверка секрета
         if (c === (window.AmalOwner.SECRET || OWNER_CODE)) return true;
       }
     } catch { /* ignore */ }
@@ -1518,13 +1510,8 @@
     if (isAdmin()) {
       overlay.innerHTML = `
         <div class="brand">КОД АДМИНА</div>
-        <p class="tagline">Ты уже полный админ · SkinAdminBuffer и весь лут твои</p>
-        <div class="shop-card equipped">
-          <h4>Коды для выдачи командой</h4>
-          <p>Дай человеку один код — у него будет <b>настоящий</b> админ, как у тебя:</p>
-          <p style="margin-top:8px;line-height:1.7;word-break:break-all"><b>${[OWNER_CODE, ...TEAM_ADMIN_CODES].join("<br>")}</b></p>
-        </div>
-        <button class="btn danger" id="adm-open-panel">Открыть админ-панель</button>
+        <p class="tagline">Ты уже полный админ. Чтобы проверить ввод кода заново — открой ссылку с <b>?checkcode=1</b></p>
+        <button class="btn danger" id="adm-open-panel">Админ-панель</button>
         <button class="btn" id="close-shop">Закрыть</button>
       `;
       overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
@@ -1533,17 +1520,16 @@
     }
     overlay.innerHTML = `
       <div class="brand">КОД АДМИНА</div>
-      <p class="tagline">Код от админ-команды → <b>настоящий</b> админ (SkinAdminBuffer, ∞), не Лимит ★</p>
+      <p class="tagline">Введи код → настоящий админ (SkinAdminBuffer, ∞)</p>
       <input id="team-adm-code" type="text" autocomplete="off" placeholder="Введи код" style="width:min(340px,92%);padding:12px 14px;border-radius:12px;border:0;font:800 1.05rem Nunito;margin:10px 0" />
-      <button class="btn danger" id="team-adm-go">Активировать полный админ</button>
-      <p class="tagline" style="margin-top:10px">Кнопка «🔑 Код» в правом верхнем углу</p>
+      <button class="btn danger" id="team-adm-go">Проверить код</button>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
     overlay.querySelector("#close-shop").onclick = () => overlay.classList.add("hidden");
     const input = overlay.querySelector("#team-adm-code");
     const go = () => {
       if (redeemFullAdmin(normalizeAdminCode(input && input.value))) openAdminPanel();
-      else alert("Неверный код. Нужен код от админ-команды.");
+      else alert("Неверный код.");
     };
     overlay.querySelector("#team-adm-go").onclick = go;
     if (input) {
@@ -1612,11 +1598,6 @@
           <h4>Молот + SkinAdminBuffer</h4>
           <button class="btn" id="adm-equip">Экипировать сейчас</button>
         </div>
-        <div class="shop-card">
-          <h4>🔑 Коды команды</h4>
-          <p>Коды для выдачи людям (настоящий админ)</p>
-          <button class="btn" id="adm-show-codes">Показать коды</button>
-        </div>
         <div class="shop-card ${save.godMode ? "equipped" : ""}">
           <h4>Режим бога</h4>
           <button class="btn" id="adm-god">${save.godMode ? "Выкл" : "Вкл"}</button>
@@ -1651,8 +1632,6 @@
       say("Молот и SkinAdminBuffer на месте!", { force: true });
       openAdminPanel();
     };
-    const showCodesBtn = overlay.querySelector("#adm-show-codes");
-    if (showCodesBtn) showCodesBtn.onclick = () => openTeamCodePanel();
     overlay.querySelector("#adm-infdmg").onclick = () => {
       save.infDmg = !save.infDmg;
       if (save.infDmg && !save.ownedWeapons.includes("infdmg")) save.ownedWeapons.push("infdmg");
