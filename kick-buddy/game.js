@@ -197,9 +197,10 @@
   if (typeof save.infCoins !== "boolean") save.infCoins = false;
   if (typeof save.godMode !== "boolean") save.godMode = false;
   if (typeof save.giant !== "boolean") save.giant = false;
-  // ?playertest=1 — проверка покупки без полного админа
+  // playertest=1 ИЛИ без ?keepadmin=1 — сброс админки, чтобы проверить ввод кода
   const playerTest = /(?:\?|&)playertest=1(?:&|$)/.test(String(location.search || ""));
-  if (playerTest) {
+  const forcePlayer = playerTest || /(?:\?|&)checkcode=1(?:&|$)/.test(String(location.search || ""));
+  if (forcePlayer) {
     try { localStorage.removeItem("kick-buddy-admin"); } catch { /* ignore */ }
     save.coins = 300000;
     save.limitedAdmin = false;
@@ -449,13 +450,14 @@
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
     <button class="btn ghost" id="btn-limit">Лимит ★</button>
+    <button class="btn" id="btn-admin-code-bar">🔑 Код</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
     <button class="btn danger" id="btn-revive" hidden>Оживить Бади</button>
   `;
   screen.appendChild(toolbar);
 
-  // Угол: ввод кода настоящей админки (выдаёт команда)
+  // Угол + панель: ввод кода настоящей админки
   const codeFab = document.createElement("button");
   codeFab.type = "button";
   codeFab.className = "admin-code-fab";
@@ -1732,8 +1734,10 @@
   toolbar.querySelector("#btn-weapons").onclick = () => openWeaponShop();
   toolbar.querySelector("#btn-limit").onclick = () => openLimitShop(1);
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
-  const codeBtn = screen.querySelector("#btn-admin-code") || codeFab;
-  if (codeBtn) codeBtn.onclick = () => openTeamCodePanel();
+  const openCode = () => openTeamCodePanel();
+  if (codeFab) codeFab.onclick = openCode;
+  const codeBar = toolbar.querySelector("#btn-admin-code-bar");
+  if (codeBar) codeBar.onclick = openCode;
   window.addEventListener("amal-owner-changed", () => syncAdminUi());
   syncAdminUi();
   toolbar.querySelector("#btn-revive").onclick = () => {
