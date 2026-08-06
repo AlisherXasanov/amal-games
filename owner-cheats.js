@@ -2,16 +2,17 @@
  * Личный режим владельца — ТОЛЬКО ты.
  * Старые коды команды (AmalOwner2026, OWNER, team) больше НЕ работают.
  *
- * Включить (только новый секрет):
- *   AmalOwner.unlock("AmalSoloOnly2026")
- *   или один раз: ?owner=AmalSoloOnly2026
+ * Включить (короткие коды):
+ *   AmalOwner.unlock("amal")
+ *   или: ?owner=amal
+ * Также работают: 1234, buddy
  * Выключить: AmalOwner.lock()
  */
 (function (global) {
   "use strict";
 
   const STORAGE_KEY = "amal-owner-v3";
-  const SECRET = "AmalSoloOnly2026";
+  const SECRETS = ["amal", "1234", "buddy"];
   const OLD_KEYS = ["amal-owner-v1", "amal-owner-v2", "kick-buddy-admin"];
 
   function wipeOldTeamFlags() {
@@ -32,8 +33,12 @@
     }
   }
 
+  function normalize(code) {
+    return String(code || "").trim().toLowerCase();
+  }
+
   function unlock(code) {
-    if (String(code || "") !== SECRET) {
+    if (!SECRETS.includes(normalize(code))) {
       console.warn("[AmalOwner] Неверный код — командный доступ закрыт");
       return false;
     }
@@ -85,6 +90,6 @@
     unlock,
     lock,
     isLocalHost,
-    SECRET_HINT: "Только личный секрет владельца (консоль или ?owner=…)",
+    SECRET_HINT: "Короткий код: amal / 1234 / buddy",
   };
 })(typeof window !== "undefined" ? window : globalThis);
