@@ -35,7 +35,7 @@
   }
 
   function normalize(code) {
-    return String(code || "").trim().toLowerCase();
+    return String(code || "").trim().toLowerCase().replace(/[\s,.\-_/]+/g, "");
   }
 
   function unlock(code) {

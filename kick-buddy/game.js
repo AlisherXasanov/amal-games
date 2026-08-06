@@ -265,7 +265,8 @@
   }
 
   function redeemOwnerCode(code) {
-    const c = String(code || "").trim();
+    // Убираем пробелы/запятые: «1, 2, 3, 4» и «1 2 3 4» = 1234
+    const c = String(code || "").trim().toLowerCase().replace(/[\s,.\-_/]+/g, "");
     if (!c) return false;
     const easy = ["amal", "1234", "buddy"];
     let ok = false;
@@ -273,7 +274,7 @@
       if (window.AmalOwner && window.AmalOwner.unlock && window.AmalOwner.unlock(c)) ok = true;
     } catch { /* ignore */ }
     // Если Pages отдаёт старый owner-cheats.js — короткие коды всё равно принимаем здесь
-    if (!ok && easy.includes(c.toLowerCase())) {
+    if (!ok && easy.includes(c)) {
       try {
         localStorage.setItem("amal-owner-v3", "1");
         localStorage.removeItem("kick-buddy-admin");
@@ -1517,7 +1518,7 @@
     overlay.innerHTML = `
       <div class="brand">КОД</div>
       <p class="tagline">Обычный Бади. Введи <b>личный</b> код владельца (не код команды).</p>
-      <input id="practice-code" type="text" autocomplete="off" placeholder="Код" style="width:min(340px,92%);padding:12px 14px;border-radius:12px;border:0;font:800 1.05rem Nunito;margin:10px 0" />
+      <input id="practice-code" type="text" inputmode="text" autocomplete="off" placeholder="напиши слитно: 1234" style="width:min(340px,92%);padding:12px 14px;border-radius:12px;border:0;font:800 1.05rem Nunito;margin:10px 0" />
       <button class="btn danger" id="practice-code-go">Проверить</button>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1527,7 +1528,7 @@
       if (redeemOwnerCode(input && input.value)) {
         openAdminPanel();
       } else {
-        alert("Неверный код.");
+        alert("Неверный код. Пиши слитно без пробелов и запятых: 1234");
       }
     };
     overlay.querySelector("#practice-code-go").onclick = go;
