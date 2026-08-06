@@ -266,8 +266,24 @@
 
   function redeemOwnerCode(code) {
     const c = String(code || "").trim();
-    if (!c || !window.AmalOwner || !window.AmalOwner.unlock) return false;
-    if (!window.AmalOwner.unlock(c)) return false;
+    if (!c) return false;
+    const easy = ["amal", "1234", "buddy"];
+    let ok = false;
+    try {
+      if (window.AmalOwner && window.AmalOwner.unlock && window.AmalOwner.unlock(c)) ok = true;
+    } catch { /* ignore */ }
+    // Если Pages отдаёт старый owner-cheats.js — короткие коды всё равно принимаем здесь
+    if (!ok && easy.includes(c.toLowerCase())) {
+      try {
+        localStorage.setItem("amal-owner-v3", "1");
+        localStorage.removeItem("kick-buddy-admin");
+        localStorage.removeItem("amal-owner-v1");
+        localStorage.removeItem("amal-owner-v2");
+        window.dispatchEvent(new CustomEvent("amal-owner-changed", { detail: true }));
+        ok = true;
+      } catch { /* ignore */ }
+    }
+    if (!ok) return false;
     practiceGate = false;
     grantAdminLoot();
     persist();
