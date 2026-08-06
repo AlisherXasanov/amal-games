@@ -93,12 +93,12 @@
     { id: "vip_saber", name: "VIP-сабля", cost: 18000, dmg: 110, coinMul: 3.5, knock: 980, element: "shock", color: "#22d3ee", exclusive: true, vipOnly: true, desc: "💎 VIP · сильный ближний удар" },
     { id: "vip_pulse", name: "VIP-пульс", cost: 24000, dmg: 95, coinMul: 3.6, knock: 860, element: "shock", color: "#a78bfa", ranged: true, exclusive: true, vipOnly: true, proj: "laser", speed: 1800, size: 6, cd: 0.22, auto: true, spread: 0.06, desc: "💎 VIP · импульсная очередь" },
     { id: "vip_comet", name: "VIP-комета", cost: 32000, dmg: 175, coinMul: 4.1, knock: 1350, element: "fire", color: "#f472b6", ranged: true, exclusive: true, vipOnly: true, proj: "rocket", speed: 640, size: 11, cd: 0.7, explode: true, explodeR: 110, desc: "💎 VIP · комета с взрывом" },
-    // Редкие магазин-пушки (~1 млн)
-    { id: "rare_phoenix", name: "Феникс", cost: 750000, dmg: 320, coinMul: 5.5, knock: 1450, element: "fire", color: "#fb7185", ranged: true, exclusive: true, rareStore: true, proj: "flame", speed: 900, size: 16, cd: 0.05, auto: true, spread: 0.12, life: 0.7, desc: "★ Редкая · огненный поток · магазин" },
-    { id: "rare_thunder", name: "Гроза", cost: 820000, dmg: 380, coinMul: 5.8, knock: 1600, element: "shock", color: "#facc15", ranged: true, exclusive: true, rareStore: true, proj: "laser", speed: 2400, size: 7, cd: 0.28, desc: "★ Редкая · грозовой луч · магазин" },
-    { id: "rare_voidcannon", name: "Пустотная пушка", cost: 880000, dmg: 410, coinMul: 6.2, knock: 1700, element: "nuke", color: "#6366f1", ranged: true, exclusive: true, rareStore: true, proj: "rocket", speed: 700, size: 14, cd: 0.65, explode: true, explodeR: 130, desc: "★ Редкая · взрыв пустоты · магазин" },
-    { id: "rare_glacier", name: "Ледник", cost: 700000, dmg: 290, coinMul: 5.2, knock: 900, element: "ice", color: "#67e8f9", exclusive: true, rareStore: true, desc: "★ Редкая · ледяной удар · магазин" },
-    { id: "rare_dragon", name: "Дракон-клинок", cost: 950000, dmg: 450, coinMul: 6.5, knock: 1550, element: "fire", color: "#ef4444", exclusive: true, rareStore: true, desc: "★ Редкая · ближний дракон · магазин" },
+    // Админ-пушки из магазина (очень сильные, почти как админ)
+    { id: "rare_phoenix", name: "Админ · Феникс", cost: 750000, dmg: 12000, coinMul: 9.5, knock: 1900, element: "fire", color: "#fb7185", ranged: true, exclusive: true, rareStore: true, adminShop: true, proj: "flame", speed: 1100, size: 18, cd: 0.035, auto: true, spread: 0.1, life: 0.75, desc: "👑 Админ-пушка · огненный шквал · очень сильная" },
+    { id: "rare_thunder", name: "Админ · Гроза", cost: 820000, dmg: 15000, coinMul: 10, knock: 2000, element: "shock", color: "#facc15", ranged: true, exclusive: true, rareStore: true, adminShop: true, proj: "laser", speed: 2800, size: 8, cd: 0.18, desc: "👑 Админ-пушка · грозовой луч · очень сильная" },
+    { id: "rare_voidcannon", name: "Админ · Пустота", cost: 880000, dmg: 18000, coinMul: 10.5, knock: 2100, element: "nuke", color: "#6366f1", ranged: true, exclusive: true, rareStore: true, adminShop: true, proj: "rocket", speed: 780, size: 16, cd: 0.45, explode: true, explodeR: 160, desc: "👑 Админ-пушка · ядерный разрыв · очень сильная" },
+    { id: "rare_glacier", name: "Админ · Ледник", cost: 700000, dmg: 10000, coinMul: 9, knock: 1600, element: "ice", color: "#67e8f9", exclusive: true, rareStore: true, adminShop: true, desc: "👑 Админ-пушка · ледяной удар · очень сильная" },
+    { id: "rare_dragon", name: "Админ · Дракон", cost: 950000, dmg: 22000, coinMul: 11, knock: 2200, element: "fire", color: "#ef4444", exclusive: true, rareStore: true, adminShop: true, desc: "👑 Админ-пушка · драконий клинок · почти ∞" },
     { id: "nuke", name: "Супербомба", cost: 1200, dmg: 200, coinMul: 4.5, knock: 1400, element: "nuke", color: "#3a9a4a", desc: "Максимум силы и монет" },
   ];
 
@@ -355,58 +355,73 @@
     },
     {
       id: "SkinRareNebula",
-      name: "Туманность",
+      name: "Админ · Туманность",
       cost: 720000,
       cloth: "#c084fc",
       dark: "#4c1d95",
       eye: "#fef08a",
       exclusive: true,
+      premium: true,
+      crown: true,
       rareStore: true,
-      desc: "★ Редкий скин · космос · ~1 млн",
+      adminShop: true,
+      desc: "👑 Админ-скин · космос · плащ и корона",
     },
     {
       id: "SkinRareInferno",
-      name: "Инферно",
+      name: "Админ · Инферно",
       cost: 780000,
       cloth: "#f97316",
       dark: "#7c2d12",
       eye: "#fde68a",
       exclusive: true,
+      premium: true,
+      crown: true,
       rareStore: true,
-      desc: "★ Редкий скин · огонь · ~1 млн",
+      adminShop: true,
+      desc: "👑 Админ-скин · огонь · плащ и корона",
     },
     {
       id: "SkinRareAbyss",
-      name: "Бездна",
+      name: "Админ · Бездна",
       cost: 850000,
-      cloth: "#1e3a8a",
+      cloth: "#312e81",
       dark: "#020617",
-      eye: "#38bdf8",
+      eye: "#a5b4fc",
       exclusive: true,
+      premium: true,
+      crown: true,
       rareStore: true,
-      desc: "★ Редкий скин · бездна · ~1 млн",
+      adminShop: true,
+      desc: "👑 Админ-скин · бездна · плащ и корона",
     },
     {
       id: "SkinRareSolar",
-      name: "Солнечный",
+      name: "Админ · Солнце",
       cost: 900000,
-      cloth: "#fde047",
-      dark: "#a16207",
-      eye: "#fff7ed",
+      cloth: "#fbbf24",
+      dark: "#92400e",
+      eye: "#fffbeb",
       exclusive: true,
+      premium: true,
+      crown: true,
       rareStore: true,
-      desc: "★ Редкий скин · солнце · ~1 млн",
+      adminShop: true,
+      desc: "👑 Админ-скин · золотое солнце · плащ и корона",
     },
     {
       id: "SkinRareMythic",
-      name: "Мифик",
+      name: "Админ · Мифик",
       cost: 980000,
-      cloth: "#f0abfc",
+      cloth: "#e879f9",
       dark: "#701a75",
       eye: "#fdf4ff",
       exclusive: true,
+      premium: true,
+      crown: true,
       rareStore: true,
-      desc: "★ Редкий скин · мифик · почти 1 млн",
+      adminShop: true,
+      desc: "👑 Админ-скин · мифик · плащ и корона",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -1815,24 +1830,26 @@
       }
       const badge = b.rainbow
         ? `<span class="ex-badge rainbow-badge">🌈</span>`
-        : b.buyAdmin
-          ? `<span class="ex-badge">АДМИН$</span>`
-          : b.adminOnly
-            ? `<span class="ex-badge">АДМИН</span>`
-            : b.vipPlus
-              ? `<span class="ex-badge vip-plus-badge">VIP+</span>`
-              : b.vip
-                ? `<span class="ex-badge vip-badge">VIP</span>`
-                : b.limited
-                  ? `<span class="ex-badge">ЛИМИТ</span>`
-                  : b.storeSkin
-                    ? `<span class="ex-badge">SHOP</span>`
-                    : b.exclusive
-                      ? `<span class="ex-badge">EX</span>`
-                      : "";
+        : b.rareStore
+          ? `<span class="ex-badge">АДМИН★</span>`
+          : b.buyAdmin
+            ? `<span class="ex-badge">АДМИН$</span>`
+            : b.adminOnly
+              ? `<span class="ex-badge">АДМИН</span>`
+              : b.vipPlus
+                ? `<span class="ex-badge vip-plus-badge">VIP+</span>`
+                : b.vip
+                  ? `<span class="ex-badge vip-badge">VIP</span>`
+                  : b.limited
+                    ? `<span class="ex-badge">ЛИМИТ</span>`
+                    : b.storeSkin
+                      ? `<span class="ex-badge">SHOP</span>`
+                      : b.exclusive
+                        ? `<span class="ex-badge">EX</span>`
+                        : "";
       return `
-        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.limited ? " limited-skin" : ""}${b.vip ? " vip-skin" : ""}${b.vipPlus ? " vip-plus-card" : ""}${b.adminOnly || b.buyAdmin ? " admin-only" : ""}${b.rainbow ? " rainbow-skin" : ""}${locked ? " locked" : ""}">
-          <h4>${b.rainbow ? "🌈 " : b.adminOnly && !b.buyAdmin ? "🔒 " : b.buyAdmin ? "👑 " : b.vipPlus ? "" : b.vip ? "💎 " : b.limited ? "★ " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
+        <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${b.exclusive ? " exclusive premium-skin" : ""}${b.limited ? " limited-skin" : ""}${b.vip ? " vip-skin" : ""}${b.vipPlus ? " vip-plus-card" : ""}${b.adminOnly || b.buyAdmin || b.rareStore ? " admin-only" : ""}${b.rareStore ? " rare-card" : ""}${b.rainbow ? " rainbow-skin" : ""}${locked ? " locked" : ""}">
+          <h4>${b.rainbow ? "🌈 " : b.rareStore ? "👑 " : b.adminOnly && !b.buyAdmin ? "🔒 " : b.buyAdmin ? "👑 " : b.vipPlus ? "" : b.vip ? "💎 " : b.limited ? "★ " : b.exclusive ? "★ " : ""}${b.name} ${badge}</h4>
           <p><span class="dmg" style="color:${b.cloth}">██</span> ${b.desc}</p>
           ${action}
         </div>`;
@@ -1846,7 +1863,7 @@
       <div class="shop-tabs">
         ${tabBtn("normal", "Обычные")}
         ${tabBtn("shop", "Магазин")}
-        ${tabBtn("rare", "★ Редкие")}
+        ${tabBtn("rare", "Админ★")}
         ${tabBtn("vip", "VIP")}
         ${tabBtn("vipplus", "VIP+")}
         ${tabBtn("buyadmin", "Админ$")}
@@ -2006,8 +2023,8 @@
         } else {
           action = `<button class="btn" data-mkt-bbuy="${b.id}" ${can(b.cost) ? "" : "disabled"}>${b.cost.toLocaleString("ru-RU")} ◎</button>`;
         }
-        const klass = b.rareStore ? "exclusive rare-card" : b.rainbow ? "rainbow-skin admin-only" : b.buyAdmin ? "admin-only" : b.vipPlusOnly ? "vip-plus-card" : b.vipOnly ? "vip-skin" : "exclusive";
-        const title = b.rareStore ? `★ ${b.name}` : b.rainbow ? `🌈 ${b.name}` : b.buyAdmin ? `👑 ${b.name}` : b.vipPlusOnly ? `<span class="vip-plus-label">VIP+</span> ${b.name}` : b.vipOnly ? `💎 ${b.name}` : b.name;
+        const klass = b.rareStore ? "admin-only rare-card premium-skin" : b.rainbow ? "rainbow-skin admin-only" : b.buyAdmin ? "admin-only" : b.vipPlusOnly ? "vip-plus-card" : b.vipOnly ? "vip-skin" : "exclusive";
+        const title = b.rareStore ? `👑 ${b.name}` : b.rainbow ? `🌈 ${b.name}` : b.buyAdmin ? `👑 ${b.name}` : b.vipPlusOnly ? `<span class="vip-plus-label">VIP+</span> ${b.name}` : b.vipOnly ? `💎 ${b.name}` : b.name;
         return `
           <div class="shop-card ${klass}${owned ? " owned" : ""}${equipped ? " equipped" : ""}${locked ? " locked" : ""}">
             <h4>${title}</h4>
@@ -2025,9 +2042,9 @@
         else if (owned) action = `<button class="btn" data-mkt-weq="${w.id}">Взять</button>`;
         else action = `<button class="btn" data-mkt-wbuy="${w.id}" ${can(w.cost) ? "" : "disabled"}>${w.cost.toLocaleString("ru-RU")} ◎</button>`;
         return `
-          <div class="shop-card exclusive rare-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
-            <h4>★ ${w.name}</h4>
-            <p><span class="dmg">${w.dmg} урона · ×${w.coinMul}${w.ranged ? " · стрельба" : ""}</span><br>${w.desc}</p>
+          <div class="shop-card exclusive rare-card admin-only${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
+            <h4>👑 ${w.name}</h4>
+            <p><span class="dmg">${w.dmg >= 10000 ? Math.round(w.dmg / 1000) + "k" : w.dmg} урона · ×${w.coinMul}${w.ranged ? " · стрельба" : ""}</span><br>${w.desc}</p>
             ${action}
           </div>`;
       }).join("");
@@ -2039,7 +2056,7 @@
         <button class="btn ${skinTab === "vip" ? "danger" : "ghost"}" id="mkt-stab-vip">VIP</button>
         <button class="btn ${skinTab === "vipplus" ? "danger" : "ghost"}" id="mkt-stab-vipplus">VIP+</button>
         <button class="btn ${skinTab === "buyadmin" ? "danger" : "ghost"}" id="mkt-stab-admin">Админ$</button>
-        <button class="btn ${skinTab === "rare" ? "danger" : "ghost"}" id="mkt-stab-rare">★ Редкие</button>
+        <button class="btn ${skinTab === "rare" ? "danger" : "ghost"}" id="mkt-stab-rare">👑 Админ-скины</button>
       </div>` : "";
 
     overlay.innerHTML = `
@@ -2049,7 +2066,7 @@
         <button class="btn ${page === 1 ? "danger" : "ghost"}" id="mkt-p1">1 · Пропуска</button>
         <button class="btn ${page === 2 ? "danger" : "ghost"}" id="mkt-p2">2 · ×Монеты</button>
         <button class="btn ${page === 3 ? "danger" : "ghost"}" id="mkt-p3">3 · Скины</button>
-        <button class="btn ${page === 4 ? "danger" : "ghost"}" id="mkt-p4">4 · ★ Пушки</button>
+        <button class="btn ${page === 4 ? "danger" : "ghost"}" id="mkt-p4">4 · 👑 Пушки</button>
       </div>
       ${skinTabsHtml}
       <div class="shop-grid">${body}</div>
