@@ -114,7 +114,7 @@
       exclusive: true,
       premium: true,
       adminOnly: true,
-      desc: "★ Твой полный админ-скин · только тебе",
+      desc: "🔒 Только твой админ-скин · никто купить не может",
     },
     {
       id: "SkinLimitAdmin",
@@ -125,7 +125,7 @@
       eye: "#ffe8a0",
       exclusive: true,
       limited: true,
-      desc: "Полу-админ скин · не как твой · можно купить за 100 000",
+      desc: "Полу-админ скин для покупки · не SkinAdminBuffer",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -185,22 +185,37 @@
   if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.push("classic");
   if (typeof save.limitedAdmin !== "boolean") save.limitedAdmin = false;
   if (typeof save.halfDmg !== "boolean") save.halfDmg = false;
-  // На сайте — 300 000 монет (один раз, если ещё не выдавали)
-  if (!save.gotSite300k) {
-    save.coins = Math.max(save.coins || 0, 300000);
-    save.gotSite300k = true;
-  }
-  // migrate old admin skin id → SkinAdminBuffer
+  // migrate: старый id admin → SkinAdminBuffer; чужой лимит-скин не трогаем
   if (save.buddyType === "admin") save.buddyType = "SkinAdminBuffer";
   save.ownedBuddies = [...new Set(save.ownedBuddies.map((id) => (id === "admin" ? "SkinAdminBuffer" : id)))];
   if (!BUDDIES.find((b) => b.id === save.buddyType)) save.buddyType = "classic";
   if (!WEAPONS.find((w) => w.id === save.weapon)) save.weapon = "hand";
   if (typeof save.mute !== "boolean") save.mute = true;
-  save.mute = true; // всегда тишина — голос и фразы выключены
+  save.mute = true;
   if (typeof save.infDmg !== "boolean") save.infDmg = false;
   if (typeof save.infCoins !== "boolean") save.infCoins = false;
   if (typeof save.godMode !== "boolean") save.godMode = false;
   if (typeof save.giant !== "boolean") save.giant = false;
+  // ?playertest=1 — проверка покупки без полного админа
+  const playerTest = /(?:\?|&)playertest=1(?:&|$)/.test(String(location.search || ""));
+  if (playerTest) {
+    try { localStorage.removeItem("kick-buddy-admin"); } catch { /* ignore */ }
+    save.coins = 300000;
+    save.limitedAdmin = false;
+    save.halfDmg = false;
+    save.infDmg = false;
+    save.infCoins = false;
+    save.godMode = false;
+    save.ownedBuddies = (save.ownedBuddies || []).filter((id) => id !== "SkinAdminBuffer");
+    if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.unshift("classic");
+    if (save.buddyType === "SkinAdminBuffer") save.buddyType = "classic";
+    save.gotBuyTest300k = true;
+    save.gotSite300k = true;
+  } else if (!save.gotBuyTest300k) {
+    save.coins = Math.max(save.coins || 0, 300000);
+    save.gotBuyTest300k = true;
+    save.gotSite300k = true;
+  }
 
   // Infinite-damage admin weapon (visible in shop, unlock only for admin)
   if (!WEAPONS.find((w) => w.id === "infdmg")) {
@@ -231,6 +246,7 @@
   }
 
   function isAdmin() {
+    if (playerTest) return false;
     try {
       if (window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) return true;
       if (localStorage.getItem("kick-buddy-admin") === "1") return true;
@@ -322,6 +338,7 @@
       limitedAdmin: !!save.limitedAdmin,
       halfDmg: !!save.halfDmg,
       gotSite300k: !!save.gotSite300k,
+      gotBuyTest300k: !!save.gotBuyTest300k,
     });
   }
 
@@ -1212,9 +1229,9 @@
       else if (ownedSkin) action = `<button class="btn" id="lim-eq-skin">Выбрать скин</button>`;
       else action = `<button class="btn" id="lim-buy-skin" ${canSkin ? "" : "disabled"}>Купить · 100 000 ◎</button>`;
       body = `
-        <div class="shop-card exclusive premium-skin${ownedSkin ? " owned" : ""}${equipped ? " equipped" : ""}">
+        <div class="shop-card exclusive limited-skin${ownedSkin ? " owned" : ""}${equipped ? " equipped" : ""}">
           <h4>★ Лимит-Админ</h4>
-          <p><span class="dmg" style="color:${skin.cloth}">██</span> Полу-админ скин — <b>не как твой SkinAdminBuffer</b>. Другой цвет, другая аура.</p>
+          <p><span class="dmg" style="color:${skin.cloth}">██</span> Покупной полу-скин. <b>SkinAdminBuffer только у владельца</b> — его купить нельзя.</p>
           <p class="tagline">Страница 1 из 2 · цена 100 000</p>
           ${action}
         </div>`;
@@ -1255,7 +1272,7 @@
 
     overlay.innerHTML = `
       <div class="brand">ЛИМИТ-АДМИН</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · купить можно · полный админ только у тебя</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · SkinAdminBuffer 🔒 только тебе</p>
       <div style="display:flex;gap:8px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap">
         <button class="btn ${page === 1 ? "danger" : "ghost"}" id="lim-p1">1 · Скин 100 000</button>
         <button class="btn ${page === 2 ? "danger" : "ghost"}" id="lim-p2">2 · Команды 200 000</button>
