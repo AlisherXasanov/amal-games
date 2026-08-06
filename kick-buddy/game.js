@@ -171,7 +171,8 @@
   save.ownedBuddies = [...new Set(save.ownedBuddies.map((id) => (id === "admin" ? "SkinAdminBuffer" : id)))];
   if (!BUDDIES.find((b) => b.id === save.buddyType)) save.buddyType = "classic";
   if (!WEAPONS.find((w) => w.id === save.weapon)) save.weapon = "hand";
-  if (typeof save.mute !== "boolean") save.mute = false;
+  if (typeof save.mute !== "boolean") save.mute = true;
+  save.mute = true; // всегда тишина — голос и фразы выключены
   if (typeof save.infDmg !== "boolean") save.infDmg = false;
   if (typeof save.infCoins !== "boolean") save.infCoins = false;
   if (typeof save.godMode !== "boolean") save.godMode = false;
@@ -347,9 +348,6 @@
     <button class="btn ghost" id="btn-shop">Одежда</button>
     <button class="btn ghost" id="btn-buddies">Типы Бади</button>
     <button class="btn danger" id="btn-weapons">Оружие</button>
-    <button class="btn ghost" id="btn-mute">${save.mute ? "Бади молчит" : "Бади болтает"}</button>
-    <button class="btn" id="btn-say">Сказать</button>
-    <button class="btn" id="btn-listen">Слушать</button>
     <button class="btn" id="btn-jump">Прыг!</button>
     <button class="btn danger" id="btn-admin">Админ</button>
     <button class="btn danger" id="btn-revive" hidden>Оживить Бади</button>
@@ -420,41 +418,40 @@
     };
   }
 
-  let speakTimer = null;
-  let speakDelay = null;
+  // ГОЛОС УБИТ НАВСЕГДА — даже старый кэш/браузер не сможет говорить
+  try {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak = function () {};
+      window.speechSynthesis.resume = function () {};
+      window.speechSynthesis.pause = function () {};
+    }
+  } catch { /* ignore */ }
+
+  // Голос (TTS) отключён навсегда — только тишина
   let speaking = false;
+  let speechBusy = false;
   let voiceLockUntil = 0;
 
-  function clearSpeakKeepAlive() {
-    if (speakTimer) {
-      clearInterval(speakTimer);
-      speakTimer = null;
-    }
+  function killVoiceForever() {
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak = function () {};
+    } catch { /* ignore */ }
   }
 
   function stopAllSpeech() {
-    clearSpeakKeepAlive();
-    if (speakDelay) {
-      clearTimeout(speakDelay);
-      speakDelay = null;
-    }
     speaking = false;
-    voiceLockUntil = Infinity;
+    speechBusy = false;
     buddy.phrase = "";
     buddy.phraseT = 0;
-    try {
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-        // second cancel — some browsers keep a queued utterance after the first
-        setTimeout(() => {
-          try {
-            if (save.mute && window.speechSynthesis) window.speechSynthesis.cancel();
-          } catch { /* ignore */ }
-        }, 40);
-      }
-    } catch {
-      /* ignore */
-    }
+    voiceLockUntil = 0;
+    killVoiceForever();
+  }
+
+  function syncMuteButtons() {
+    // кнопки речи убраны
   }
 
   function syncHud() {
@@ -489,12 +486,12 @@
     if (dead) {
       hint.textContent = "Бади погиб (0 HP). Нажми «Оживить Бади»";
     } else if (save.mute) {
-      hint.textContent = "Бади молчит полностью — ни голоса, ни фраз. Жми «Бади болтает», чтобы снова слышать";
+      hint.textContent = "Бади молчит. Одежда · оружие · прыжки";
     } else {
       const w = effectiveWeapon();
       hint.textContent = isRanged(w)
         ? (w.auto ? "Зажми ЛКМ — очередь летит куда целишься (стена, пол, Бади)" : "Кликни куда угодно — снаряд летит в эту точку")
-        : "Бади болтает сам. Ближнее оружие — удар по Бади · Рука — таскай";
+        : "Ближнее оружие — удар по Бади · Рука — таскай";
     }
   }
 
@@ -589,26 +586,26 @@
       buddy.burnT = Math.max(buddy.burnT, wpn.id === "meteor" ? 3.2 : wpn.proj === "flame" ? 1.4 : 2.2);
       buddy.frozenT = 0;
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 20, life: 0.35, r: wpn.id === "meteor" ? 70 : 40, color: "#e05030" });
-      if (!quiet) say("Жарко!", { voice: false });
+      if (!quiet) say("Жарко!");
     } else if (wpn.element === "ice") {
       buddy.frozenT = 1.8;
       buddy.burnT = 0;
       buddy.vx *= 0.2;
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 20, life: 0.4, r: 36, color: "#5ec8e8" });
-      if (!quiet) say("Холодно!", { voice: false });
+      if (!quiet) say("Холодно!");
     } else if (wpn.element === "poison") {
       buddy.poisonT = 3.5;
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 20, life: 0.4, r: 38, color: "#6aaa3a" });
-      if (!quiet) say("Фу, яд!", { voice: false });
+      if (!quiet) say("Фу, яд!");
     } else if (wpn.element === "shock") {
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 30, life: 0.25, r: 50, color: wpn.color });
-      if (!quiet) say(wpn.id === "admin" || wpn.id === "railgun" ? "Бзззт!" : "Бзззт!", { voice: !save.mute && Math.random() < 0.35 });
+      if (!quiet) say("Бзззт!");
     } else if (wpn.element === "wind") {
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 20, life: 0.3, r: 55, color: "#a8d8ff" });
-      if (!quiet) say("Уносит!", { voice: false });
+      if (!quiet) say("Уносит!");
     } else if (wpn.element === "lasso") {
       if (!opts.skipCd) blasts.push({ x: buddy.x, y: buddy.y - 20, life: 0.3, r: 45, color: "#c4a060" });
-      if (!quiet) say("Шериф поймал!", { voice: !save.mute && Math.random() < 0.4 });
+      if (!quiet) say("Шериф поймал!");
     } else if (wpn.element === "bomb" || wpn.element === "nuke") {
       if (!opts.skipCd) {
         blasts.push({
@@ -620,9 +617,9 @@
         });
         burst(buddy.x, buddy.y, "#ffe08a", wpn.element === "nuke" ? 40 : 22, 500);
       }
-      if (!quiet) say(wpn.element === "nuke" ? "Какой взрыв!" : "Бабах!", { voice: !opts.skipCd });
+      if (!quiet) say(wpn.element === "nuke" ? "Какой взрыв!" : "Бабах!");
     } else if (!quiet) {
-      say(["Ай!", "Ой!", "Больно!", "Ещё!"][Math.floor(Math.random() * 4)], { voice: false });
+      say(["Ай!", "Ой!", "Больно!", "Ещё!"][Math.floor(Math.random() * 4)]);
     }
 
     if (buddy.hp <= 0 && !save.godMode) killBuddy(wpn);
@@ -699,7 +696,7 @@
       const falloff = Math.max(0.35, 1 - dist / (r + 40));
       applyProjectileHit(proj, x, y, falloff);
     } else {
-      say("Бабах по стене!", { voice: false });
+      say("Бабах по стене!");
     }
   }
 
@@ -904,98 +901,13 @@
     ctx.restore();
   }
 
-  function say(text, opts = {}) {
-    // Full silence mode: no bubble, no voice, nothing
-    if (save.mute) return;
-
-    const t = text || PHRASES[Math.floor(Math.random() * PHRASES.length)];
-    buddy.phrase = t;
-    buddy.phraseT = Math.max(2.8, Math.min(7, 1.6 + t.length * 0.08));
-    buddy.smile = 1.4;
-
-    const wantVoice = opts.silent !== true && opts.voice !== false;
-    const now = performance.now();
-    if (wantVoice) {
-      if (opts.force || (!speaking && now >= voiceLockUntil)) {
-        voiceLockUntil = now + Math.max(1600, Math.min(4500, t.length * 90));
-        speak(t, { force: !!opts.force });
-      }
-    }
+  function say() {
+    // Полная тишина: ни голоса, ни пузырей
+    return;
   }
 
-  function speak(text, opts = {}) {
-    try {
-      if (save.mute) {
-        stopAllSpeech();
-        return;
-      }
-      if (!window.speechSynthesis || !text) return;
-      const clean = String(text).replace(/[!?…]+$/g, (m) => m[0]).trim();
-      if (!clean) return;
-
-      const startUtter = () => {
-        if (save.mute) return;
-        try {
-          const u = new SpeechSynthesisUtterance(clean);
-          u.lang = "ru-RU";
-          u.rate = 0.98;
-          u.pitch = 1.15;
-          u.volume = 1;
-          const voices = window.speechSynthesis.getVoices();
-          const ru =
-            voices.find((v) => /ru[-_]?RU/i.test(v.lang) && /Google|Microsoft|Neural|Premium/i.test(v.name)) ||
-            voices.find((v) => /ru/i.test(v.lang));
-          if (ru) u.voice = ru;
-
-          u.onstart = () => {
-            if (save.mute) {
-              window.speechSynthesis.cancel();
-              return;
-            }
-            speaking = true;
-            clearSpeakKeepAlive();
-            speakTimer = setInterval(() => {
-              if (save.mute || !window.speechSynthesis.speaking) {
-                clearSpeakKeepAlive();
-                speaking = false;
-                return;
-              }
-              window.speechSynthesis.pause();
-              window.speechSynthesis.resume();
-            }, 8000);
-          };
-          u.onend = () => {
-            speaking = false;
-            clearSpeakKeepAlive();
-            if (!save.mute && !buddy.dead) buddy.sayCd = Math.min(buddy.sayCd, 0.35);
-          };
-          u.onerror = () => {
-            speaking = false;
-            clearSpeakKeepAlive();
-            if (!save.mute) buddy.sayCd = Math.min(buddy.sayCd, 0.5);
-          };
-
-          window.speechSynthesis.speak(u);
-        } catch {
-          speaking = false;
-        }
-      };
-
-      if (opts.force || !speaking) {
-        clearSpeakKeepAlive();
-        if (speakDelay) clearTimeout(speakDelay);
-        window.speechSynthesis.cancel();
-        speaking = false;
-        speakDelay = setTimeout(() => {
-          speakDelay = null;
-          startUtter();
-        }, 30);
-      } else {
-        buddy.sayCd = Math.min(buddy.sayCd, 0.4);
-      }
-    } catch {
-      /* ignore */
-    }
+  function speak() {
+    // TTS вырезан
   }
 
   function jump(power = 680, opts = {}) {
@@ -1005,15 +917,9 @@
     buddy.onGround = false;
     buddy.squat = 0.15;
     if (opts.quiet) {
-      if (!save.mute) {
-        buddy.phrase = ["оп", "прыг", "хе"][Math.floor(Math.random() * 3)];
-        buddy.phraseT = 0.6;
-      }
-    } else if (!buddy.dead) {
-      say(["Уиии!", "Прыгаю!", "Выше!", "Лечу!"][Math.floor(Math.random() * 4)], {
-        voice: !save.mute && Math.random() < 0.35,
-        fromAuto: true,
-      });
+      // тихие прыжки без речи
+    } else if (!buddy.dead && !save.mute) {
+      say(["Уиии!", "Прыгаю!", "Выше!", "Лечу!"][Math.floor(Math.random() * 4)]);
     }
     for (let i = 0; i < (opts.quiet ? 4 : 8); i++) {
       particles.push({
@@ -1472,92 +1378,10 @@
   toolbar.querySelector("#btn-admin").onclick = () => openAdminPanel();
   window.addEventListener("amal-owner-changed", () => syncAdminUi());
   syncAdminUi();
-  toolbar.querySelector("#btn-mute").onclick = () => {
-    save.mute = !save.mute;
-    persist();
-    const btn = toolbar.querySelector("#btn-mute");
-    btn.textContent = save.mute ? "Бади молчит" : "Бади болтает";
-    if (save.mute) {
-      stopAllSpeech();
-      voiceLockUntil = Infinity;
-      if (listening && recognition) {
-        try { recognition.stop(); } catch { /* ignore */ }
-        listening = false;
-        const lb = toolbar.querySelector("#btn-listen");
-        if (lb) lb.textContent = "Слушать";
-      }
-      setDeadUI(buddy.dead);
-    } else {
-      voiceLockUntil = 0;
-      buddy.sayCd = 0.2;
-      setDeadUI(buddy.dead);
-      say("Снова болтаю!", { force: true, voice: true });
-    }
-  };
   toolbar.querySelector("#btn-revive").onclick = () => {
     if (buddy.dead) rebuildBuddy();
   };
-  toolbar.querySelector("#btn-say").onclick = () => {
-    if (save.mute) return;
-    voiceLockUntil = 0;
-    speaking = false;
-    say(undefined, { force: true });
-  };
   toolbar.querySelector("#btn-jump").onclick = () => jump(720);
-  toolbar.querySelector("#btn-listen").onclick = () => {
-    if (save.mute) return;
-    toggleListen();
-  };
-
-  function toggleListen() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const btn = toolbar.querySelector("#btn-listen");
-    if (!SR) {
-      say("Микрофон недоступен");
-      return;
-    }
-    if (listening && recognition) {
-      try { recognition.stop(); } catch { /* ignore */ }
-      listening = false;
-      btn.textContent = "Слушать";
-      return;
-    }
-    recognition = new SR();
-    recognition.lang = "ru-RU";
-    recognition.interimResults = false;
-    recognition.continuous = false;
-    recognition.onstart = () => {
-      listening = true;
-      btn.textContent = "Слушаю…";
-      buddy.phrase = "…";
-      buddy.phraseT = 3;
-    };
-    recognition.onresult = (ev) => {
-      const text = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript || "").trim();
-      if (text) {
-        voiceLockUntil = 0;
-        speaking = false;
-        say(text);
-        save.coins += 2;
-        persist();
-        syncHud();
-      }
-    };
-    recognition.onerror = () => {
-      listening = false;
-      btn.textContent = "Слушать";
-      say("Не расслышал");
-    };
-    recognition.onend = () => {
-      listening = false;
-      btn.textContent = "Слушать";
-    };
-    try {
-      recognition.start();
-    } catch {
-      say("Включи микрофон");
-    }
-  }
 
   function hitTest(x, y) {
     const dx = x - buddy.x;
@@ -1709,6 +1533,9 @@
     if (buddy.smile > 1) buddy.smile -= dt * 0.5;
     else if (buddy.smile < 1) buddy.smile = Math.min(1, buddy.smile + dt);
     if (buddy.phraseT > 0) buddy.phraseT -= dt;
+    buddy.phrase = "";
+    buddy.phraseT = 0;
+    killVoiceForever();
     if (buddy.hurtT > 0) buddy.hurtT -= dt;
     if (buddy.frozenT > 0) buddy.frozenT -= dt;
     if (buddy.burnT > 0) {
@@ -1743,7 +1570,12 @@
 
     // Dead: stay down until revive (no auto-rebuild)
     if (buddy.dead) {
-      buddy.phraseT = Math.max(buddy.phraseT, 0.1);
+      if (save.mute) {
+        buddy.phrase = "";
+        buddy.phraseT = 0;
+      } else {
+        buddy.phraseT = Math.max(buddy.phraseT, 0.1);
+      }
     }
 
     if (!drag && !buddy.dead) {
@@ -1771,8 +1603,7 @@
       }
 
       if (buddy.sayCd <= 0 && !listening && !save.mute) {
-        say(undefined, { fromAuto: true, voice: true });
-        buddy.sayCd = 1.4 + Math.random() * 1.6;
+        buddy.sayCd = 99;
       }
     }
 
@@ -1807,7 +1638,7 @@
           if (buddy.vy > 500) {
             buddy.vy = -buddy.vy * 0.35;
             buddy.onGround = false;
-            if (!buddy.dead) say(["Бух!", "Ой!", "Мягкая посадка!"][Math.floor(Math.random() * 3)], { voice: false });
+            if (!buddy.dead && !save.mute) say(["Бух!", "Ой!", "Мягкая посадка!"][Math.floor(Math.random() * 3)]);
           } else {
             buddy.vy = 0;
             buddy.onGround = true;
@@ -2257,8 +2088,8 @@
     ctx.fillStyle = buddy.hp / buddy.maxHp > 0.3 ? "#3a9a4a" : "#e05030";
     ctx.fillRect(hx - bw / 2, hy - 48, bw * Math.max(0, buddy.hp / buddy.maxHp), 7);
 
-    // speech bubble (not rotated)
-    if (buddy.phraseT > 0 && buddy.phrase) {
+    // speech bubble (not rotated) — в режиме молчания никогда не рисуем
+    if (!save.mute && buddy.phraseT > 0 && buddy.phrase) {
       const text = buddy.phrase;
       ctx.font = "800 16px Nunito, system-ui";
       const tw = Math.min(280, ctx.measureText(text).width);
@@ -2327,17 +2158,10 @@
 
   syncHud();
   setDeadUI(false);
-  toolbar.querySelector("#btn-mute").textContent = save.mute ? "Бади молчит" : "Бади болтает";
-  if (window.speechSynthesis) {
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-  }
-  if (save.mute) {
-    stopAllSpeech();
-  } else {
-    buddy.sayCd = 0.6;
-    say("Я буду болтать без остановки!", { force: true, voice: true });
-  }
+  killVoiceForever();
+  stopAllSpeech();
+  persist(); // сохранить mute=true
+  canvas.style.cursor = isRanged(effectiveWeapon()) ? "crosshair" : "grab";
   canvas.style.cursor = isRanged(effectiveWeapon()) ? "crosshair" : "grab";
 
   let last = performance.now();
