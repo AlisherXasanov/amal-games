@@ -118,14 +118,15 @@
     },
     {
       id: "SkinLimitAdmin",
-      name: "Лимит-Админ",
+      name: "Админ (лимит)",
       cost: 100000,
-      cloth: "#f0a060",
-      dark: "#b04018",
-      eye: "#ffe8a0",
+      cloth: "#e8b060",
+      dark: "#8a4010",
+      eye: "#fff3c4",
       exclusive: true,
       limited: true,
-      desc: "Полу-админ скин для покупки · не SkinAdminBuffer",
+      crown: true,
+      desc: "👑 Покупной админ-скин с короной · не твой SkinAdminBuffer",
     },
     { id: "classic", name: "Классика", cost: 0, cloth: "#c4a060", dark: "#a88848", eye: "#1a1410", desc: "Обычный тряпичный Бади" },
     { id: "snow", name: "Снежный", cost: 120, cloth: "#e8f0f8", dark: "#b8c8d8", eye: "#3a5080", desc: "Белый зимний Бади" },
@@ -206,9 +207,9 @@
     save.infDmg = false;
     save.infCoins = false;
     save.godMode = false;
-    save.ownedBuddies = (save.ownedBuddies || []).filter((id) => id !== "SkinAdminBuffer");
+    save.ownedBuddies = (save.ownedBuddies || []).filter((id) => id !== "SkinAdminBuffer" && id !== "SkinLimitAdmin");
     if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.unshift("classic");
-    if (save.buddyType === "SkinAdminBuffer") save.buddyType = "classic";
+    if (save.buddyType === "SkinAdminBuffer" || save.buddyType === "SkinLimitAdmin") save.buddyType = "classic";
     save.gotBuyTest300k = true;
     save.gotSite300k = true;
   } else if (!save.gotBuyTest300k) {
@@ -314,6 +315,12 @@
     save.infCoins = false;
     save.godMode = false;
     if (!save.limitedAdmin) save.halfDmg = false;
+  }
+
+  // Жёстко: SkinAdminBuffer только у настоящего админа
+  if (!isAdmin()) {
+    save.ownedBuddies = (save.ownedBuddies || []).filter((id) => id !== "SkinAdminBuffer");
+    if (save.buddyType === "SkinAdminBuffer") save.buddyType = "classic";
   }
 
   stripAdminLootIfNeeded();
@@ -1225,14 +1232,15 @@
     let body = "";
     if (page === 1) {
       let action;
-      if (equipped) action = `<button class="btn" disabled>Выбран</button>`;
-      else if (ownedSkin) action = `<button class="btn" id="lim-eq-skin">Выбрать скин</button>`;
-      else action = `<button class="btn" id="lim-buy-skin" ${canSkin ? "" : "disabled"}>Купить · 100 000 ◎</button>`;
+      if (equipped) action = `<button class="btn" disabled>Надет · корона</button>`;
+      else if (ownedSkin) action = `<button class="btn" id="lim-eq-skin">Надеть с короной</button>`;
+      else action = `<button class="btn danger" id="lim-buy-skin" ${canSkin ? "" : "disabled"}>Купить Админ 👑 · 100 000</button>`;
       body = `
         <div class="shop-card exclusive limited-skin${ownedSkin ? " owned" : ""}${equipped ? " equipped" : ""}">
-          <h4>★ Лимит-Админ</h4>
-          <p><span class="dmg" style="color:${skin.cloth}">██</span> Покупной полу-скин. <b>SkinAdminBuffer только у владельца</b> — его купить нельзя.</p>
-          <p class="tagline">Страница 1 из 2 · цена 100 000</p>
+          <h4>👑 АДМИН (лимит)</h4>
+          <p><span class="dmg" style="color:${skin.cloth}">██</span> Другой админ-скин <b>с короной</b> — для покупки здесь.</p>
+          <p class="tagline">Твой <b>SkinAdminBuffer</b> (фиолетовый) купить нельзя · только у тебя</p>
+          <p class="tagline">Страница 1 · 100 000 ◎</p>
           ${action}
         </div>`;
     } else {
@@ -1271,10 +1279,10 @@
     }
 
     overlay.innerHTML = `
-      <div class="brand">ЛИМИТ-АДМИН</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · SkinAdminBuffer 🔒 только тебе</p>
+      <div class="brand">ЛИМИТ ★</div>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b></p>
       <div style="display:flex;gap:8px;justify-content:center;margin:8px 0 12px;flex-wrap:wrap">
-        <button class="btn ${page === 1 ? "danger" : "ghost"}" id="lim-p1">1 · Скин 100 000</button>
+        <button class="btn ${page === 1 ? "danger" : "ghost"}" id="lim-p1">1 · 👑 Админ-скин</button>
         <button class="btn ${page === 2 ? "danger" : "ghost"}" id="lim-p2">2 · Команды 200 000</button>
       </div>
       <div class="shop-grid">${body}</div>
@@ -1367,7 +1375,7 @@
   function openBuddyShop() {
     overlay.classList.remove("hidden");
     const admin = isAdmin();
-    const cards = BUDDIES.map((b) => {
+    const cards = BUDDIES.filter((b) => !b.adminOnly || admin).map((b) => {
       const owned = save.ownedBuddies.includes(b.id);
       const equipped = save.buddyType === b.id;
       const locked = b.adminOnly && !admin;
@@ -2125,20 +2133,26 @@
       ctx.fillStyle = "#fbbf24";
       ctx.fillRect(hx - 26, torsoY - 30, 52, 5);
     } else if (skin.limited) {
-      // Лимит-админ — другая аура (янтарь), без фиолетового плаща
+      // Покупной админ — янтарная аура + плащ (не фиолетовый)
       const pulse = 0.5 + Math.sin(buddy.bob * 2) * 0.18;
-      const g = ctx.createRadialGradient(hx, torsoY, 8, hx, torsoY, 64);
-      g.addColorStop(0, `rgba(255, 180, 80, ${0.4 * pulse})`);
-      g.addColorStop(0.5, `rgba(200, 60, 30, ${0.22 * pulse})`);
+      const g = ctx.createRadialGradient(hx, torsoY, 8, hx, torsoY, 70);
+      g.addColorStop(0, `rgba(255, 200, 80, ${0.42 * pulse})`);
+      g.addColorStop(0.5, `rgba(200, 80, 20, ${0.22 * pulse})`);
       g.addColorStop(1, "rgba(120, 30, 10, 0)");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(hx, torsoY, 64, 0, Math.PI * 2);
+      ctx.arc(hx, torsoY, 70, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#c8102e";
-      ctx.fillRect(hx - 22, torsoY - 8, 44, 8);
-      ctx.fillStyle = "#fce300";
-      ctx.fillRect(hx - 22, torsoY, 44, 4);
+      ctx.fillStyle = "#9a3412";
+      ctx.beginPath();
+      ctx.moveTo(hx - 26, torsoY - 26);
+      ctx.quadraticCurveTo(hx - 52, torsoY + 8, hx - 32, buddy.y + 46 - squat);
+      ctx.quadraticCurveTo(hx, torsoY + 36, hx + 32, buddy.y + 46 - squat);
+      ctx.quadraticCurveTo(hx + 52, torsoY + 8, hx + 26, torsoY - 26);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fbbf24";
+      ctx.fillRect(hx - 24, torsoY - 28, 48, 4);
     }
 
     // legs
@@ -2170,6 +2184,12 @@
       tg.addColorStop(0.4, cloth);
       tg.addColorStop(1, clothDark);
       ctx.fillStyle = tg;
+    } else if (skin.limited) {
+      const tg = ctx.createLinearGradient(hx - 32, torsoY - 36, hx + 32, torsoY + 34);
+      tg.addColorStop(0, "#ffe8c8");
+      tg.addColorStop(0.45, cloth);
+      tg.addColorStop(1, clothDark);
+      ctx.fillStyle = tg;
     } else {
       ctx.fillStyle = cloth;
     }
@@ -2180,7 +2200,7 @@
       ctx.lineWidth = 2.5;
       roundRectPath(hx - 32, torsoY - 36, 64, 70 - squat * 0.3, 18);
       ctx.stroke();
-      // ADMIN badge
+      // ADMIN badge — только твой SkinAdminBuffer
       ctx.fillStyle = "#fbbf24";
       roundRectPath(hx - 22, torsoY - 6, 44, 16, 6);
       ctx.fill();
@@ -2189,6 +2209,20 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("ADMIN", hx, torsoY + 2);
+    } else if (skin.limited) {
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 2;
+      roundRectPath(hx - 32, torsoY - 36, 64, 70 - squat * 0.3, 18);
+      ctx.stroke();
+      // АДМИН badge — покупной лимит (другой)
+      ctx.fillStyle = "#f59e0b";
+      roundRectPath(hx - 26, torsoY - 6, 52, 16, 6);
+      ctx.fill();
+      ctx.fillStyle = "#431407";
+      ctx.font = "900 9px Nunito, system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("АДМИН", hx, torsoY + 2);
     }
     // shoulder patches
     ctx.fillStyle = clothDark;
@@ -2240,7 +2274,7 @@
     ctx.lineWidth = skin.premium ? 2.5 : 2;
     ctx.stroke();
 
-    // SkinAdminBuffer crown / limited visor
+    // SkinAdminBuffer crown / limited crown
     if (skin.premium) {
       ctx.fillStyle = "#fbbf24";
       ctx.beginPath();
@@ -2262,11 +2296,23 @@
       ctx.arc(hx - 16, hy - 44, 2.2, 0, Math.PI * 2);
       ctx.arc(hx + 16, hy - 44, 2.2, 0, Math.PI * 2);
       ctx.fill();
-    } else if (skin.limited) {
-      ctx.fillStyle = "#1a1a1a";
-      ctx.fillRect(hx - 24, hy - 10, 48, 8);
-      ctx.fillStyle = "#c8102e";
-      ctx.fillRect(hx - 24, hy - 10, 48, 3);
+    } else if (skin.limited || skin.crown) {
+      // Другая корона (медная) — покупной админ
+      ctx.fillStyle = "#d97706";
+      ctx.beginPath();
+      ctx.moveTo(hx - 20, hy - 20);
+      ctx.lineTo(hx - 14, hy - 40);
+      ctx.lineTo(hx - 5, hy - 26);
+      ctx.lineTo(hx, hy - 46);
+      ctx.lineTo(hx + 5, hy - 26);
+      ctx.lineTo(hx + 14, hy - 40);
+      ctx.lineTo(hx + 20, hy - 20);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fef3c7";
+      ctx.beginPath();
+      ctx.arc(hx, hy - 46, 3, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     // eyes
