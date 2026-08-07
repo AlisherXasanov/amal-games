@@ -499,14 +499,10 @@
 
   function adminAbilities() {
     return [
-      { icon: "∞", title: "Бесконечные монеты и рекорд" },
-      { icon: "🎬", title: "Фон «Кинозал»" },
-      { icon: "🌟", title: "Все кубики + «Звёздный огонь»" },
-      { icon: "⚡", title: "Мини-игра «Скорость III»" },
-      { icon: "👻", title: "Ставить фигуры поверх других" },
-      { icon: "🛡️", title: "Без проигрыша (не конец игры)" },
-      { icon: "🗺️", title: "Все уровни приключений" },
-      { icon: "🧹", title: "Очистить поле одной кнопкой" },
+      { icon: "✅", title: "Уже работает само", text: "Монеты и рекорд бесконечные. Не проигрываешь. Можно ставить фигуры поверх других. Все уровни открыты." },
+      { icon: "🎬", title: "Кинозал", text: "Твой особый фон. Кнопка ниже его включает." },
+      { icon: "🌟", title: "Звёздный огонь", text: "Эксклюзивный скин кубиков только для тебя." },
+      { icon: "🧹", title: "Очистить поле", text: "Если поле забито — одной кнопкой убрать всё." },
     ];
   }
 
@@ -1259,9 +1255,7 @@
       </header>
       ${
         isOwner()
-          ? `<div class="admin-chip">👑 Админ · фон ${sk.name}${
-              state.bgId === ADMIN_BG_ID ? " ✓" : ""
-            }</div>`
+          ? `<div class="admin-chip">👑 Ты админ · нажми 👑 сверху для меню</div>`
           : ""
       }
       <div class="stats">
@@ -1389,17 +1383,21 @@
       }
       ${
         state.modal === "admin" && isOwner()
-          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Админ</h2><p class="sub">Твои способности в Blockbust</p></div><button data-act="close">✕</button></div>
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Моё меню Blockbust</h2><p class="sub">Простыми словами: что умеет админ</p></div><button data-act="close">✕</button></div>
+            <div style="margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#fde68a;font-size:12px;font-weight:700;line-height:1.45">
+              Жёлтая кнопка 👑 сверху — это это меню. Ниже справа 👑 — заметки и кто играет на всём сайте.
+            </div>
             <ul class="admin-list">${adminAbilities()
               .map(
                 (a) =>
-                  `<li><span class="admin-ico">${a.icon}</span><span>${a.title}</span></li>`,
+                  `<li><span class="admin-ico">${a.icon}</span><span><b>${a.title}</b><div style="font-size:11px;opacity:.75;font-weight:600;margin-top:2px">${a.text}</div></span></li>`,
               )
               .join("")}</ul>
-            <button class="primary" data-act="admin-cinema" style="width:100%;margin-top:12px;background:${sk.accent}">🎬 Включить «Кинозал»</button>
-            <button data-act="admin-clear" style="width:100%;margin-top:8px">🧹 Очистить поле</button>
-            <button data-act="admin-starfire" style="width:100%;margin-top:8px">🌟 Кубики «Звёздный огонь»</button>
-            <p class="sub" style="margin-top:12px">Если чип «Админ» не виден — открой ссылку с ?owner=AmalOwner2026</p>
+            <p style="margin:14px 0 6px;font-size:13px;font-weight:800">Нажми, если нужно:</p>
+            <button class="primary" data-act="admin-cinema" style="width:100%;background:${sk.accent}">1. Включить фон Кинозал</button>
+            <button data-act="admin-starfire" style="width:100%;margin-top:8px">2. Надеть Звёздный огонь</button>
+            <button data-act="admin-clear" style="width:100%;margin-top:8px">3. Очистить игровое поле</button>
+            <button data-act="close" style="width:100%;margin-top:12px">Закрыть</button>
           </div></div>`
           : ""
       }

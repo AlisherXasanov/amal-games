@@ -212,6 +212,14 @@
 .amal-hub-chip{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));pointer-events:auto;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.7);color:#fde68a;font-size:11px;font-weight:800;max-width:55vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .amal-hub-err{color:#fca5a5;font-size:12px;margin-top:8px;font-weight:700}
 .amal-hub-ok{color:#86efac;font-size:12px;margin-top:8px;font-weight:700}
+.amal-hub-help{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#fde68a;font-size:12px;font-weight:700;line-height:1.45}
+.amal-hub-step{margin-top:12px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.amal-hub-step h3{margin:0 0 6px;font-size:14px}
+.amal-hub-step p{margin:0;font-size:12px;opacity:.75;line-height:1.4}
+.amal-hub-big{display:grid;gap:8px;margin-top:12px}
+.amal-hub-big button{width:100%;text-align:left;padding:12px 14px;font-size:14px}
+.amal-hub-big button b{display:block;font-size:15px}
+.amal-hub-big button span{display:block;font-size:11px;opacity:.7;font-weight:600;margin-top:2px}
 `;
     document.head.appendChild(css);
   }
@@ -231,10 +239,12 @@
 
   let root;
   let view = "home";
+  let adminPage = "menu";
   let open = false;
   let gateMode = false;
   let msg = "";
   let err = "";
+  let replyTo = "";
 
   function closeUi() {
     if (gateMode && !getNick()) return;
@@ -248,6 +258,8 @@
   function openUi(mode) {
     open = true;
     view = mode || (isOwner() ? "admin" : "note");
+    adminPage = "menu";
+    replyTo = "";
     if (!getNick()) {
       gateMode = true;
       view = "nick";
@@ -272,9 +284,9 @@
         nick,
       )} · ${escapeHtml(gameTitle(gameIdFromPath()))}</button>`;
     }
-    html += `<button type="button" class="amal-hub-fab ${owner ? "admin" : ""}" data-amal="open" title="Ник и заметки">${
-      owner ? "👑" : "📝"
-    }</button>`;
+    html += `<button type="button" class="amal-hub-fab ${owner ? "admin" : ""}" data-amal="open" title="${
+      owner ? "Моё админ-меню" : "Ник и заметки"
+    }">${owner ? "👑" : "📝"}</button>`;
 
     if (open || gateMode) {
       html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal" data-amal="modal">`;
@@ -376,62 +388,101 @@
   function adminHtml() {
     const players = recentPlayers();
     const notes = loadNotes().slice().reverse().slice(0, 40);
-    return `
-      <h2>👑 Админ-инбокс</h2>
-      <p class="sub">Кто играл и какие заметки прислали (на этом устройстве / общем браузере)</p>
+    const incoming = notes.filter((n) => !n.fromAdmin);
+    const tabs = `
       <div class="amal-hub-tabs">
-        <button type="button" data-amal="tab-note">Заметка</button>
-        <button type="button" class="on" data-amal="tab-admin">Админ</button>
-        <button type="button" data-amal="tab-updates">Обновления</button>
+        <button type="button" class="on" data-amal="tab-admin">Моё меню</button>
+        <button type="button" data-amal="tab-note">Как игрок</button>
+        <button type="button" data-amal="tab-updates">Что нового</button>
+      </div>`;
+
+    if (adminPage === "players") {
+      return `
+        <h2>1. Кто играет</h2>
+        <p class="sub">Здесь ники людей, которые заходили с этого браузера</p>
+        ${tabs}
+        <div class="amal-hub-help">Читай так: <b>ник</b> — в какую игру зашёл — когда</div>
+        <ul class="amal-hub-list">${
+          players.length
+            ? players
+                .map(
+                  (p) =>
+                    `<li><div class="meta">${fmtTime(p.at)}</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px">Играет в: ${escapeHtml(
+                      p.gameTitle || p.game,
+                    )}</div></li>`,
+                )
+                .join("")
+            : `<li class="meta">Пока никто не заходил. Когда напишут ник — появятся здесь.</li>`
+        }</ul>
+        <div class="amal-hub-row">
+          <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
+          <button type="button" data-amal="close">Закрыть</button>
+        </div>`;
+    }
+
+    if (adminPage === "inbox") {
+      return `
+        <h2>2. Сообщения тебе</h2>
+        <p class="sub">Что написали игроки</p>
+        ${tabs}
+        <div class="amal-hub-help">Жёлтая кнопка «Ответить» подставит ник. «Прочитано» — убрать из важных.</div>
+        <ul class="amal-hub-list">${
+          incoming.length
+            ? incoming
+                .map(
+                  (n) =>
+                    `<li><div class="meta">От: <b>${escapeHtml(n.nick)}</b> · ${escapeHtml(
+                      gameTitle(n.game),
+                    )} · ${fmtTime(n.at)}${n.status === "done" ? " · прочитано" : ""}</div>${escapeHtml(n.text)}
+                    <div class="amal-hub-row" style="margin-top:6px">
+                      <button type="button" class="primary" data-amal="reply" data-to="${escapeHtml(n.nick)}">Ответить</button>
+                      <button type="button" data-amal="mark" data-id="${escapeHtml(n.id)}">Прочитано</button>
+                    </div></li>`,
+                )
+                .join("")
+            : `<li class="meta">Сообщений пока нет. Игрок жмёт 📝 и пишет тебе.</li>`
+        }</ul>
+        <div class="amal-hub-row">
+          <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
+          <button type="button" data-amal="close">Закрыть</button>
+        </div>`;
+    }
+
+    if (adminPage === "write") {
+      return `
+        <h2>3. Написать игроку</h2>
+        <p class="sub">Твой ответ сохранится у него в заметках (на этом же браузере)</p>
+        ${tabs}
+        <div class="amal-hub-help">Сначала ник игрока, потом текст, потом «Отправить».</div>
+        <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник игрока, например AmalNova" value="${escapeHtml(
+          replyTo || "",
+        )}" />
+        <textarea id="amal-admin-note" maxlength="500" placeholder="Напиши ответ..."></textarea>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row">
+          <button type="button" class="primary" data-amal="admin-send" style="flex:1">Отправить</button>
+          <button type="button" data-amal="admin-menu">← Меню</button>
+        </div>`;
+    }
+
+    return `
+      <h2>👑 Привет, Амаль!</h2>
+      <p class="sub">Это твоё простое админ-меню. Выбери, что сделать:</p>
+      ${tabs}
+      <div class="amal-hub-help">Коротко: смотри кто играет → читай сообщения → отвечай. Кнопка 👑 всегда внизу справа.</div>
+      <div class="amal-hub-big">
+        <button type="button" data-amal="admin-players"><b>1. Кто играет</b><span>Список ников и в какую игру зашли</span></button>
+        <button type="button" data-amal="admin-inbox"><b>2. Сообщения мне</b><span>Заметки от игроков${
+          incoming.length ? " · новых: " + incoming.filter((n) => n.status !== "done").length : ""
+        }</span></button>
+        <button type="button" data-amal="admin-write"><b>3. Написать игроку</b><span>Ответить на ник</span></button>
+        <button type="button" data-amal="export"><b>4. Скопировать всё</b><span>Если хочешь сохранить список себе</span></button>
       </div>
-      <h3 style="margin:14px 0 0;font-size:13px">Игроки</h3>
-      <ul class="amal-hub-list">${
-        players.length
-          ? players
-              .map(
-                (p) =>
-                  `<li><div class="meta">${fmtTime(p.at)}</div><b>${escapeHtml(p.nick)}</b> — ${escapeHtml(
-                    p.gameTitle || p.game,
-                  )}</li>`,
-              )
-              .join("")
-          : `<li class="meta">Пока никого нет</li>`
-      }</ul>
-      <h3 style="margin:14px 0 0;font-size:13px">Заметки</h3>
-      <ul class="amal-hub-list">${
-        notes.length
-          ? notes
-              .map(
-                (n) =>
-                  `<li data-note-id="${escapeHtml(n.id)}"><div class="meta">${escapeHtml(n.nick)}${
-                    n.toNick ? " → " + escapeHtml(n.toNick) : ""
-                  } · ${escapeHtml(gameTitle(n.game))} · ${fmtTime(n.at)}${
-                    n.fromAdmin ? " · админ" : ""
-                  }</div>${escapeHtml(n.text)}
-                  ${
-                    !n.fromAdmin
-                      ? `<div class="amal-hub-row" style="margin-top:6px"><button type="button" data-amal="reply" data-to="${escapeHtml(
-                          n.nick,
-                        )}">Ответить</button><button type="button" data-amal="mark" data-id="${escapeHtml(
-                          n.id,
-                        )}">Готово</button></div>`
-                      : ""
-                  }
-                  </li>`,
-              )
-              .join("")
-          : `<li class="meta">Входящих нет</li>`
-      }</ul>
-      <textarea id="amal-admin-note" maxlength="500" placeholder="Ответ игроку или общая заметка"></textarea>
-      <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник игрока (для ответа)" style="margin-top:8px" />
-      ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
       ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
-      <div class="amal-hub-row">
-        <button type="button" class="primary" data-amal="admin-send" style="flex:1">Отправить игроку</button>
-        <button type="button" data-amal="export">Копировать всё</button>
-        <button type="button" data-amal="close">✕</button>
-      </div>
-    `;
+      <div class="amal-hub-row" style="margin-top:12px">
+        <button type="button" data-amal="close" style="flex:1">Закрыть</button>
+      </div>`;
   }
 
   function bindUi() {
@@ -465,6 +516,23 @@
         if (act === "tab-admin") {
           if (!isOwner()) return;
           view = "admin";
+          adminPage = "menu";
+          paint();
+        }
+        if (act === "admin-menu") {
+          adminPage = "menu";
+          paint();
+        }
+        if (act === "admin-players") {
+          adminPage = "players";
+          paint();
+        }
+        if (act === "admin-inbox") {
+          adminPage = "inbox";
+          paint();
+        }
+        if (act === "admin-write") {
+          adminPage = "write";
           paint();
         }
         if (act === "save-nick") {
@@ -523,9 +591,12 @@
           paint();
         }
         if (act === "reply") {
-          const to = el.getAttribute("data-to") || "";
-          const input = root.querySelector("#amal-admin-to");
-          if (input) input.value = to;
+          replyTo = el.getAttribute("data-to") || "";
+          adminPage = "write";
+          view = "admin";
+          msg = "Ник подставлен — пиши ответ ниже";
+          err = "";
+          paint();
         }
         if (act === "mark") {
           const id = el.getAttribute("data-id");
