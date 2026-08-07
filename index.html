@@ -34,6 +34,23 @@
       color: #71717a;
       font-size: .95rem;
     }
+    .games-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-top: 1rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #3f3f46;
+      background: #18181b;
+      color: #e4e4e7;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .games-count strong {
+      color: #6ee7b7;
+      font-size: 1.05rem;
+    }
     .section-title {
       max-width: 1100px;
       margin: 0.5rem auto 0;
@@ -160,6 +177,7 @@
   <header>
     <h1>Amal's Games</h1>
     <p>Все игры открыты для всех — выбирай и играй в браузере</p>
+    <p class="games-count" id="games-count">Игр в каталоге: <strong>—</strong></p>
     <p style="margin-top:0.75rem">
       <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру — меню</a>
       ·
@@ -301,6 +319,13 @@
   </div>
 
   <footer>&copy; 2026 Amal's Games · все игры доступны всем</footer>
+  <script>
+    (() => {
+      const n = document.querySelectorAll(".grid.all > a.card").length;
+      const el = document.getElementById("games-count");
+      if (el) el.innerHTML = "Игр в каталоге: <strong>" + n + "</strong>";
+    })();
+  </script>
   <script src="./owner-cheats.js"></script>
 </body>
 </html>
