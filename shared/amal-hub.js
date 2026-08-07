@@ -904,10 +904,10 @@
     if (owner && inGame && !open && !gateMode) {
       const players = recentPlayers();
       html += `<div class="amal-hub-dock">
-        <button type="button" class="primary" data-amal="quick-grant">⚡ Админка</button>
-        <button type="button" data-amal="admin-players">👥 Кто (${players.length})</button>
+        <button type="button" class="primary" data-amal="admin-live">📡 Live</button>
+        <button type="button" data-amal="quick-grant">⚡</button>
+        <button type="button" data-amal="admin-players">👥 ${players.length}</button>
         <button type="button" data-amal="admin-write">✉️</button>
-        <button type="button" data-amal="admin-inbox">📩</button>
         <button type="button" data-amal="open">☰</button>
       </div>`;
     } else {
