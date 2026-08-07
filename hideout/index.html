@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укрытие — Hideout</title>
-  <meta name="description" content="Прятки в доме на 5 этажах: 10 прячущихся, 2 искателя, лестницы и много вещей." />
+  <meta name="description" content="Прятки: 10 карт, 5 этажей в доме, 10 прячущихся и 2 искателя." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=5" />
+  <link rel="stylesheet" href="./style.css?v=10" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -17,7 +17,10 @@
     <div class="screen" id="screen">
       <canvas id="gameCanvas" width="960" height="640"></canvas>
 
-      <div class="hud" id="hud" hidden></div>
+      <div class="hud" id="hud" hidden>
+        <div class="hud-row" id="hudInfo"></div>
+        <button type="button" class="btn-menu" id="btnMenu">В меню</button>
+      </div>
       <div class="toast" id="toast"></div>
 
       <div class="touch" id="touch" hidden>
@@ -27,22 +30,29 @@
 
       <div class="panel menu" id="menu">
         <h1>Укрытие</h1>
-        <p class="sub">5 этажей с одинаковым полом. 10 прячущихся и 2 искателя. Лестница переносит на другой этаж.</p>
+        <p class="sub">Выбери роль. Потом выберешь карту.</p>
         <div class="roles">
-          <button type="button" class="btn seeker" id="btnSeeker" data-role="seeker">Искатель</button>
-          <button type="button" class="btn hider" id="btnHider" data-role="hider">Прячущийся</button>
+          <button type="button" class="btn seeker" data-role="seeker">Искатель</button>
+          <button type="button" class="btn hider" data-role="hider">Прячущийся</button>
         </div>
         <p class="hints">
-          <b>Прячущийся:</b> E у вещи → спрячься → стой тихо. На лестнице E — другой этаж.<br>
-          <b>Искатель:</b> обыщи все этажи, E — проверить вблизи.<br>
-          WASD — ходить.
+          10 прячущихся · 2 искателя · 10 карт<br>
+          Пойманный становится искателем.<br>
+          Во время пряток искатели ничего не видят.
         </p>
+      </div>
+
+      <div class="panel maps" id="mapSelect" hidden>
+        <h1>Карты</h1>
+        <p class="sub">Выбери место для пряток</p>
+        <div class="map-grid" id="mapGrid"></div>
+        <button type="button" class="btn ghost" id="btnBackRole">← Назад</button>
       </div>
 
       <div id="endPanel" class="panel" hidden style="display:none" aria-hidden="true"></div>
     </div>
   </div>
 
-  <script src="./game.js?v=8"></script>
+  <script src="./game.js?v=10"></script>
 </body>
 </html>

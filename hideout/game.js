@@ -57,18 +57,40 @@
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const hud = document.getElementById("hud");
+  const hudInfo = document.getElementById("hudInfo");
   const toastEl = document.getElementById("toast");
   const touch = document.getElementById("touch");
   const menu = document.getElementById("menu");
+  const mapSelect = document.getElementById("mapSelect");
+  const mapGrid = document.getElementById("mapGrid");
   const endPanel = document.getElementById("endPanel");
   const stickEl = document.getElementById("stick");
   const actBtn = document.getElementById("actBtn");
+  const btnMenu = document.getElementById("btnMenu");
+  const btnBackRole = document.getElementById("btnBackRole");
+
+  const MAPS = [
+    { id: "house", name: "Дом", icon: "🏠", floors: 5, theme: "house" },
+    { id: "street", name: "Улица", icon: "🛣️", floors: 1, theme: "street" },
+    { id: "carousel", name: "Карусель", icon: "🎠", floors: 1, theme: "carousel" },
+    { id: "playground", name: "Площадка", icon: "🛝", floors: 1, theme: "playground" },
+    { id: "park", name: "Парк", icon: "🌳", floors: 1, theme: "park" },
+    { id: "school", name: "Школа", icon: "🏫", floors: 1, theme: "school" },
+    { id: "shop", name: "Магазин", icon: "🛒", floors: 1, theme: "shop" },
+    { id: "museum", name: "Музей", icon: "🏛️", floors: 1, theme: "museum" },
+    { id: "farm", name: "Ферма", icon: "🌾", floors: 1, theme: "farm" },
+    { id: "beach", name: "Пляж", icon: "🏖️", floors: 1, theme: "beach" },
+  ];
+
+  let pendingRole = null;
+  let selectedMap = MAPS[0];
 
   function showEl(el) {
     if (!el) return;
     el.hidden = false;
     el.removeAttribute("aria-hidden");
     if (el === touch) el.style.removeProperty("display");
+    else if (el === hud) el.style.setProperty("display", "flex", "important");
     else el.style.setProperty("display", "flex", "important");
   }
   function hideEl(el) {
@@ -81,7 +103,38 @@
   hideEl(endPanel);
   hideEl(hud);
   hideEl(touch);
+  hideEl(mapSelect);
   showEl(menu);
+
+  mapGrid.innerHTML = MAPS.map(
+    (m) =>
+      `<button type="button" class="map-card" data-map="${m.id}"><span class="ico">${m.icon}</span><span class="ttl">${m.name}</span></button>`
+  ).join("");
+
+  mapGrid.querySelectorAll("[data-map]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedMap = MAPS.find((m) => m.id === btn.dataset.map) || MAPS[0];
+      startGame(pendingRole, selectedMap);
+    });
+  });
+
+  btnBackRole.addEventListener("click", () => {
+    hideEl(mapSelect);
+    showEl(menu);
+    state = "menu";
+  });
+
+  btnMenu.addEventListener("click", () => goToMenu());
+
+  function goToMenu() {
+    state = "menu";
+    g = null;
+    hideEl(hud);
+    hideEl(touch);
+    hideEl(endPanel);
+    hideEl(mapSelect);
+    showEl(menu);
+  }
 
   let toastTimer = 0;
   function toast(msg, ms = 2400) {
@@ -91,8 +144,8 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
   }
 
-  // Одинаковая планировка этажа
-  const walls = [
+  // Базовые стены дома
+  const HOUSE_WALLS = [
     { x: 0, y: 0, w: MW, h: 28 },
     { x: 0, y: MH - 28, w: MW, h: 28 },
     { x: 0, y: 0, w: 28, h: MH },
@@ -108,6 +161,21 @@
     { x: 1040, y: 480, w: 20, h: 250 },
     { x: 1120, y: 280, w: 220, h: 20 },
   ];
+  const OPEN_WALLS = [
+    { x: 0, y: 0, w: MW, h: 20 },
+    { x: 0, y: MH - 20, w: MW, h: 20 },
+    { x: 0, y: 0, w: 20, h: MH },
+    { x: MW - 20, y: 0, w: 20, h: MH },
+  ];
+
+  function wallsFor(map) {
+    if (!map || map.theme === "house" || map.theme === "school" || map.theme === "shop" || map.theme === "museum") {
+      return HOUSE_WALLS;
+    }
+    return OPEN_WALLS;
+  }
+
+  let walls = HOUSE_WALLS;
 
   const ROOMS = [
     { name: "Гостиная", x: 40, y: 40, w: 300, h: 320 },
@@ -183,7 +251,12 @@
   function pickFree(floor) {
     const room = ROOMS[(Math.random() * ROOMS.length) | 0];
     const p = pickInRoom(room);
-    return { x: p.x, y: p.y, floor: floor == null ? ((Math.random() * FLOORS) | 0) : floor };
+    const maxF = g && g.floorMax ? g.floorMax : selectedMap.floors || 1;
+    return {
+      x: p.x,
+      y: p.y,
+      floor: floor == null ? ((Math.random() * maxF) | 0) : floor,
+    };
   }
 
   function makePropsForFloor(floor) {
@@ -248,7 +321,12 @@
   let cam = { x: 0, y: 0 };
 
   menu.querySelectorAll("[data-role]").forEach((btn) => {
-    btn.addEventListener("click", () => startGame(btn.dataset.role));
+    btn.addEventListener("click", () => {
+      pendingRole = btn.dataset.role;
+      hideEl(menu);
+      showEl(mapSelect);
+      state = "maps";
+    });
   });
 
   function makeActor(role, isPlayer, x, y, floor, name) {
@@ -279,13 +357,18 @@
     };
   }
 
-  function startGame(playerRole) {
+  function startGame(playerRole, map) {
+    selectedMap = map || selectedMap || MAPS[0];
+    walls = wallsFor(selectedMap);
+    const floorMax = selectedMap.floors || 1;
+
     const props = [];
-    for (let f = 0; f < FLOORS; f++) props.push(...makePropsForFloor(f));
+    for (let f = 0; f < floorMax; f++) props.push(...makePropsForFloor(f));
 
     const actors = [];
-    const pSpawn = pickFree(0);
-    const player = makeActor(playerRole, true, pSpawn.x, pSpawn.y, pSpawn.floor, "Ты");
+    const pSpawn = pickFree(selectedMap.theme === "house" ? 0 : 0);
+    pSpawn.floor = Math.min(pSpawn.floor, floorMax - 1);
+    const player = makeActor(playerRole, true, pSpawn.x, pSpawn.y, 0, "Ты");
     actors.push(player);
 
     let hiders = playerRole === "hider" ? 1 : 0;
@@ -293,11 +376,11 @@
 
     while (hiders < HIDER_COUNT) {
       const s = pickFree();
+      s.floor = s.floor % floorMax;
       actors.push(makeActor("hider", false, s.x, s.y, s.floor, "Прячущийся " + (hiders + 1)));
       hiders++;
     }
     while (seekers < SEEKER_COUNT) {
-      const s = pickFree(0);
       actors.push(makeActor("seeker", false, 80 + seekers * 40, MH / 2, 0, "Искатель " + seekers));
       seekers++;
     }
@@ -307,6 +390,8 @@
       player,
       actors,
       props,
+      map: selectedMap,
+      floorMax,
       phase: "hide",
       hideLeft: HIDE_SEC,
       seekLeft: SEEK_SEC,
@@ -317,11 +402,12 @@
     cam.x = player.x - VW / 2;
     cam.y = player.y - VH / 2;
     hideEl(menu);
+    hideEl(mapSelect);
     hideEl(endPanel);
     showEl(hud);
     showEl(touch);
     state = "play";
-    toast("5 этажей! Лестница = смена этажа. Прячься!");
+    toast(selectedMap.name + ": прячься! Искатели пока ничего не видят");
     last = performance.now();
     requestAnimationFrame(loop);
   }
@@ -379,7 +465,7 @@
   function useStairs(ent, stair) {
     if (ent.stairCd > 0) return false;
     let next = ent.floor;
-    if (stair.dir === "up") next = Math.min(FLOORS - 1, ent.floor + 1);
+    if (stair.dir === "up") next = Math.min(g.floorMax - 1, ent.floor + 1);
     else next = Math.max(0, ent.floor - 1);
     if (next === ent.floor) {
       if (ent.isPlayer) toast(stair.dir === "up" ? "Уже самый верхний этаж" : "Уже первый этаж");
@@ -397,7 +483,7 @@
     }
     ent.floor = next;
     ent.stairCd = 1.1;
-    if (ent.isPlayer) toast("Этаж " + (next + 1) + " / " + FLOORS);
+    if (ent.isPlayer) toast("Этаж " + (next + 1) + " / " + g.floorMax);
     return true;
   }
 
@@ -431,7 +517,7 @@
     let best = null;
     let bd = 99;
     for (const a of g.actors) {
-      if (a.role !== "hider" || a.caught || a.floor !== seeker.floor) continue;
+      if (a.role !== "hider" || a.floor !== seeker.floor) continue;
       const d = dist(seeker, a);
       const need = a.prop ? PROP_CATCH_R : CATCH_R;
       const bonus = a.prop && a.moving ? 8 : 0;
@@ -444,20 +530,29 @@
       if (seeker.isPlayer) toast("Пусто на этом месте");
       return;
     }
-    best.caught = true;
+    // Пойманный становится искателем
     if (best.prop) {
       best.prop.taken = false;
       best.prop = null;
     }
-    const left = g.actors.filter((a) => a.role === "hider" && !a.caught).length;
-    toast(best.isPlayer ? "Тебя нашли!" : "Пойман! Осталось прячущихся: " + left);
+    best.propLocked = false;
+    best.role = "seeker";
+    best.r = 15;
+    best.speed = 155;
+    best.caught = false;
+    if (best.isPlayer) {
+      g.playerRole = "seeker";
+      toast("Тебя нашли! Теперь ты искатель — ищи остальных!");
+    } else {
+      const left = g.actors.filter((a) => a.role === "hider").length;
+      toast("Пойман → стал искателем! Прячущихся: " + left);
+    }
   }
 
   function playerAction() {
     const p = g.player;
-    if (p.caught) return;
     const st = stairAt(p);
-    if (st) {
+    if (st && g.floorMax > 1) {
       useStairs(p, st);
       return;
     }
@@ -565,7 +660,6 @@
         const visibleHider = g.actors.find(
           (a) =>
             a.role === "hider" &&
-            !a.caught &&
             a.floor === ent.floor &&
             ((!a.prop && dist(ent, a) < VISION_SEEKER * 0.95) ||
               (a.prop && a.moving && dist(ent, a) < 90 && Math.random() < 0.35))
@@ -619,22 +713,15 @@
   }
 
   function checkEnd() {
-    const hiders = g.actors.filter((a) => a.role === "hider");
-    const alive = hiders.filter((a) => !a.caught);
-    if (alive.length === 0) {
+    const hidersLeft = g.actors.filter((a) => a.role === "hider").length;
+    if (hidersLeft === 0) {
       g.win = "seeker";
-      g.msg = "Все прячущиеся найдены!";
-      return true;
-    }
-    if (g.player.role === "hider" && g.player.caught) {
-      // игрок выбыл, но раунд может идти — закончим для простоты
-      g.win = "seeker";
-      g.msg = "Тебя нашли!";
+      g.msg = "Все прячущиеся пойманы и стали искателями!";
       return true;
     }
     if (g.phase === "seek" && g.seekLeft <= 0) {
       g.win = "hider";
-      g.msg = "Время вышло! Спрятались: " + alive.length;
+      g.msg = "Время вышло! Ещё прячутся: " + hidersLeft;
       return true;
     }
     return false;
@@ -645,24 +732,22 @@
     g.phase = "end";
     hideEl(hud);
     hideEl(touch);
-    const youWin =
-      (g.playerRole === "seeker" && g.win === "seeker") ||
-      (g.playerRole === "hider" && g.win === "hider");
+    // Победа по текущей роли в конце
+    const win =
+      g.win === "seeker"
+        ? g.player.role === "seeker"
+        : g.player.role === "hider";
     showEl(endPanel);
     endPanel.innerHTML = `
-      <h1>${youWin ? "Победа!" : "Поражение"}</h1>
+      <h1>${win ? "Победа!" : "Поражение"}</h1>
       <p class="sub">${g.msg}</p>
       <div class="roles">
         <button type="button" class="btn again" id="again">Ещё раз</button>
         <button type="button" class="btn ghost" id="tomenu">В меню</button>
       </div>
     `;
-    endPanel.querySelector("#again").onclick = () => startGame(g.playerRole);
-    endPanel.querySelector("#tomenu").onclick = () => {
-      hideEl(endPanel);
-      showEl(menu);
-      state = "menu";
-    };
+    endPanel.querySelector("#again").onclick = () => startGame(g.playerRole, g.map);
+    endPanel.querySelector("#tomenu").onclick = () => goToMenu();
   }
 
   function update(dt) {
@@ -670,7 +755,7 @@
       g.hideLeft = Math.max(0, g.hideLeft - dt);
       if (g.hideLeft <= 0) {
         g.phase = "seek";
-        toast("Поиск по всем 5 этажам!");
+        toast("Поиск! Пойманный становится искателем");
         let i = 0;
         for (const a of g.actors) {
           if (a.role === "seeker") {
@@ -714,16 +799,19 @@
   }
 
   function updateHud() {
-    const role = g.playerRole === "seeker" ? "Искатель" : "Прячущийся";
+    if (!hudInfo) return;
+    const role = g.player.role === "seeker" ? "Искатель" : "Прячущийся";
     const phaseTxt = g.phase === "hide" ? "ПРЯТКИ" : "ПОИСК";
     const timeTxt = Math.ceil(g.phase === "hide" ? g.hideLeft : g.seekLeft) + "с";
-    const floor = g.player.floor + 1;
-    const left = g.actors.filter((a) => a.role === "hider" && !a.caught).length;
-    hud.innerHTML = `
+    const floor =
+      g.floorMax > 1 ? `Этаж ${g.player.floor + 1}/${g.floorMax}` : g.map.name;
+    const left = g.actors.filter((a) => a.role === "hider").length;
+    const seekers = g.actors.filter((a) => a.role === "seeker").length;
+    hudInfo.innerHTML = `
       <span class="pill">${role}</span>
-      <span class="pill">Этаж ${floor}/${FLOORS}</span>
+      <span class="pill">${floor}</span>
       <span class="pill">${phaseTxt} · ${timeTxt}</span>
-      <span class="pill">Прячутся: ${left}</span>
+      <span class="pill">Пряч. ${left} · Иск. ${seekers}</span>
     `;
   }
 
@@ -1017,7 +1105,7 @@
   }
 
   function drawActor(a) {
-    if (a.caught || a.floor !== g.player.floor) return;
+    if (a.floor !== g.player.floor) return;
     if (a.prop) {
       if (a.isPlayer) {
         ctx.fillStyle = "rgba(255,210,80,0.4)";
@@ -1034,7 +1122,7 @@
   function drawStairs() {
     for (const s of STAIRS) {
       const can =
-        (s.dir === "up" && g.player.floor < FLOORS - 1) ||
+        (s.dir === "up" && g.player.floor < g.floorMax - 1) ||
         (s.dir === "down" && g.player.floor > 0);
       ctx.fillStyle = can ? "#c9a24a" : "#8a8070";
       roundRect(s.x, s.y, s.w, s.h, 6);
@@ -1113,17 +1201,101 @@
     ctx.textAlign = "left";
     for (const r of ROOMS) ctx.fillText(r.name, r.x + 10, r.y + 20);
 
-    // номер этажа на полу
+    // номер этажа / название карты
     ctx.fillStyle = "rgba(80,50,20,0.15)";
-    ctx.font = "800 64px Outfit, sans-serif";
+    ctx.font = "800 48px Outfit, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText((g.player.floor + 1) + " ЭТАЖ", MW / 2, MH / 2);
+    const label =
+      g.floorMax > 1
+        ? g.player.floor + 1 + " ЭТАЖ"
+        : g.map.name.toUpperCase();
+    ctx.fillText(label, MW / 2, MH / 2);
 
-    drawStairs();
+    if (g.floorMax > 1) drawStairs();
+
+    // декорации по теме карты
+    drawThemeDecor();
+  }
+
+  function drawThemeDecor() {
+    const t = g.map.theme;
+    if (t === "street" || t === "park" || t === "beach" || t === "carousel" || t === "playground" || t === "farm") {
+      // открытый пол другого цвета
+      // (поверх паркета лёгкий оттенок)
+      ctx.fillStyle =
+        t === "beach"
+          ? "rgba(240,220,160,0.35)"
+          : t === "park"
+            ? "rgba(80,160,80,0.2)"
+            : t === "farm"
+              ? "rgba(180,150,80,0.25)"
+              : "rgba(90,90,90,0.12)";
+      ctx.fillRect(40, 40, MW - 80, MH - 80);
+    }
+    if (t === "carousel") {
+      ctx.strokeStyle = "#e05080";
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.arc(MW / 2, MH / 2 - 40, 120, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        ctx.fillStyle = i % 2 ? "#ff80a0" : "#80c0ff";
+        ctx.beginPath();
+        ctx.arc(MW / 2 + Math.cos(a) * 90, MH / 2 - 40 + Math.sin(a) * 90, 18, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (t === "playground") {
+      ctx.fillStyle = "#d0d0d0";
+      roundRect(200, 200, 160, 20, 4);
+      ctx.fill();
+      ctx.fillStyle = "#e8a020";
+      roundRect(500, 180, 40, 100, 4);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(540, 180);
+      ctx.lineTo(620, 280);
+      ctx.lineTo(540, 280);
+      ctx.fill();
+    }
+    if (t === "park") {
+      for (const [x, y] of [[120, 160], [400, 200], [700, 150], [1000, 220], [300, 500], [800, 560]]) {
+        ctx.fillStyle = "#4a7a30";
+        ctx.beginPath();
+        ctx.arc(x, y, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#6b4a2e";
+        ctx.fillRect(x - 4, y, 8, 30);
+      }
+    }
+    if (t === "beach") {
+      ctx.fillStyle = "#3a90c0";
+      ctx.fillRect(40, MH - 200, MW - 80, 160);
+      ctx.fillStyle = "#f0e0a0";
+      ctx.fillRect(40, MH - 220, MW - 80, 40);
+    }
   }
 
   function drawFog() {
     const p = g.player;
+    // Во время пряток искатели не видят НИЧЕГО
+    if (g.phase === "hide" && p.role === "seeker") {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = "#050508";
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "#eee";
+      ctx.font = "800 28px Outfit, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Темно… Жди", VW / 2, VH / 2 - 10);
+      ctx.font = "700 16px Outfit, sans-serif";
+      ctx.fillStyle = "#aaa";
+      ctx.fillText("Прячущиеся прячутся. Ты ничего не видишь.", VW / 2, VH / 2 + 24);
+      ctx.fillText(Math.ceil(g.hideLeft) + "с", VW / 2, VH / 2 + 52);
+      ctx.restore();
+      return;
+    }
     const vision = p.role === "hider" ? VISION_HIDER : VISION_SEEKER;
     ctx.save();
     ctx.fillStyle = "rgba(8,6,12,0.88)";
@@ -1160,6 +1332,11 @@
   function draw() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, VW, VH);
+    // Искатель в фазе пряток — только чёрный экран
+    if (g.phase === "hide" && g.player.role === "seeker") {
+      drawFog();
+      return;
+    }
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
     drawHouse();
@@ -1171,11 +1348,13 @@
   }
 
   function loop(now) {
-    if (state !== "play") return;
+    if (state !== "play" || !g) return;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     update(dt);
-    draw();
-    if (state === "play") requestAnimationFrame(loop);
+    if (state === "play" && g) {
+      draw();
+      requestAnimationFrame(loop);
+    }
   }
 })();
