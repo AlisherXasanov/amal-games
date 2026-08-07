@@ -28,12 +28,16 @@
     { id: "s1", cells: [[0, 1, 1], [1, 1, 0]], color: "green", w: 3 },
     { id: "rect23", cells: [[1, 1, 1], [1, 1, 1]], color: "red", w: 3 },
     { id: "plus", cells: [[0, 1, 0], [1, 1, 1], [0, 1, 0]], color: "yellow", w: 2 },
+    { id: "bigL", cells: [[1, 0, 0], [1, 0, 0], [1, 1, 1]], color: "pink", w: 3 },
+    { id: "u", cells: [[1, 0, 1], [1, 1, 1]], color: "cyan", w: 3 },
+    { id: "diag", cells: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], color: "green", w: 2 },
   ];
 
-  const SKINS = [
+  // Фон стола (вторично)
+  const BG_SKINS = [
     {
       id: "sun",
-      name: "Жёлтый",
+      name: "Закат",
       icon: "☀️",
       bg: "radial-gradient(ellipse at top,#5b4305 0%,#211804 48%,#0e0b03 100%)",
       accent: "#facc15",
@@ -42,7 +46,7 @@
     },
     {
       id: "violet",
-      name: "Фиолетовый",
+      name: "Ночь",
       icon: "🔮",
       bg: "radial-gradient(ellipse at top,#2a1f5e 0%,#0f1024 45%,#070712 100%)",
       accent: "#8b5cf6",
@@ -69,12 +73,80 @@
     },
     {
       id: "rainbow",
-      name: "Радуга",
+      name: "Радуга-фон",
       icon: "🌈",
       bg: "radial-gradient(ellipse at top,#4c1d95 0%,#9a3412 35%,#166534 65%,#0c4a6e 100%)",
       accent: "#f472b6",
       glowL: "#facc15",
       glowR: "#22d3ee",
+    },
+  ];
+
+  // Скины САМИХ кубиков
+  const CUBE_SKINS = [
+    {
+      id: "gloss",
+      name: "Глянец",
+      icon: "💎",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(145deg, ${hex}ff 0%, ${hex}cc 42%, ${hex}88 100%), radial-gradient(circle at 28% 22%, #ffffffaa, transparent 42%)`,
+      shadow: "inset 0 1px 0 #fff8, 0 2px 6px #0006",
+    },
+    {
+      id: "candy",
+      name: "Конфета",
+      icon: "🍬",
+      free: true,
+      paint: (hex) =>
+        `repeating-linear-gradient(135deg, ${hex} 0 6px, ${hex}cc 6px 12px), linear-gradient(180deg, #fff6, transparent)`,
+      shadow: "inset 0 0 0 1px #fff4, 0 2px 5px #0005",
+    },
+    {
+      id: "neon",
+      name: "Неон",
+      icon: "⚡",
+      free: true,
+      paint: (hex) => `linear-gradient(160deg, #0b0b12 10%, ${hex} 55%, #fff 120%)`,
+      shadow: (hex) => `0 0 10px ${hex}, 0 0 18px ${hex}88, inset 0 0 8px #fff3`,
+    },
+    {
+      id: "gem",
+      name: "Кристалл",
+      icon: "🔮",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(125deg, #fff9 0%, ${hex}ee 28%, ${hex} 55%, #0006 100%), linear-gradient(320deg, transparent 40%, #fff5 70%, transparent)`,
+      shadow: "inset 0 0 0 1px #fff5, 0 3px 8px #0007",
+    },
+    {
+      id: "metal",
+      name: "Металл",
+      icon: "🪙",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(180deg, #fff8 0%, ${hex} 35%, ${hex}99 70%, #0005 100%)`,
+      shadow: "inset 0 2px 0 #fff5, inset 0 -2px 0 #0005, 0 2px 4px #0006",
+    },
+    {
+      id: "pixel",
+      name: "Пиксель",
+      icon: "🟦",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(90deg, ${hex} 50%, ${hex}bb 50%), linear-gradient(0deg, ${hex} 50%, ${hex}99 50%)`,
+      shadow: "inset 0 0 0 1px #0004",
+    },
+    // TEMP exclusive — claim only while TEMP_HOUR3_EVENT; keep forever if owned
+    {
+      id: "hour3",
+      name: "Третий час",
+      icon: "⏳",
+      exclusive: true,
+      eventId: "hour3",
+      paint: (hex) =>
+        `conic-gradient(from 40deg, #fde047, ${hex}, #f97316, #a855f7, #22d3ee, #fde047), radial-gradient(circle at 30% 25%, #fff9, transparent 45%)`,
+      shadow: "0 0 14px #facc15aa, inset 0 1px 0 #fff8, 0 3px 10px #0007",
     },
   ];
 
@@ -85,17 +157,39 @@
     { id: 4, title: "Сотня", desc: "Набери 100 очков", kind: "score", target: 100 },
     { id: 5, title: "Серия", desc: "Сделай 5 очисток", kind: "clears", target: 5 },
     { id: 6, title: "Двухсотка", desc: "Набери 200 очков", kind: "score", target: 200 },
+    { id: 7, title: "Марафон", desc: "Набери 350 очков", kind: "score", target: 350 },
+    { id: 8, title: "Комбо ×3", desc: "Собери комбо ×3", kind: "combo", target: 3 },
+  ];
+
+  const MINI_GAMES = [
+    { id: "classic", name: "Классика", icon: "🧩", desc: "Обычная игра без таймера" },
+    { id: "blitz", name: "Блиц 60с", icon: "⏱️", desc: "Успей набрать очки за минуту" },
+    { id: "zen", name: "Дзен", icon: "🧘", desc: "Без проигрыша — только счёт" },
+    { id: "color", name: "Цветолов", icon: "🎯", desc: "Очищай линии с целевым цветом" },
+    { id: "tiny", name: "Мини-поле", icon: "🔳", desc: "Поле 6×6 — теснее и злее" },
+    { id: "speed3", name: "Скорость III", icon: "⚡", desc: "Эксклюзив «Третий час»", exclusive: true },
   ];
 
   const KEYS = {
     best: "bb-web-best",
     coins: "bb-web-coins",
     skin: "bb-web-skin",
+    cube: "bb-web-cube",
     adventure: "bb-web-adv",
+    surprise: "bb-web-temp-surprise-v1",
+    ownedCubes: "bb-web-owned-cubes-v1",
+    ownedSpeed: "bb-web-owned-speed-v1",
+    hour3Claim: "bb-web-hour3-claimed-v1",
+    miniBest: "bb-web-mini-best-v1",
   };
 
   const INF = 999999999;
-  const BUG_INF_FLOOR = 1_000_000; // старый баг писал INF всем — чистим у гостей
+  const BUG_INF_FLOOR = 1_000_000;
+
+  // TEMP: сюрприз + ивент «Третий час». Убрать, когда Амаль скажет «убери сюрприз».
+  const TEMP_VISITOR_SURPRISE = true;
+  const TEMP_HOUR3_EVENT = true;
+  const SURPRISE_COINS = 99;
 
   const store = {
     get(k, fallback) {
@@ -139,19 +233,90 @@
     return Math.max(0, Math.floor(v));
   }
 
+  function loadOwnedCubes() {
+    const list = store.get(KEYS.ownedCubes, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function hasOwnedSpeed() {
+    return !!store.get(KEYS.ownedSpeed, false) || isOwner();
+  }
+
+  function ownsCube(id) {
+    if (isOwner()) return true;
+    const def = CUBE_SKINS.find((c) => c.id === id);
+    if (!def) return false;
+    if (def.free) return true;
+    return loadOwnedCubes().includes(id);
+  }
+
+  function canClaimHour3() {
+    if (!TEMP_HOUR3_EVENT || isOwner()) return false;
+    return !store.get(KEYS.hour3Claim, false);
+  }
+
+  function claimHour3Exclusives() {
+    const owned = new Set(loadOwnedCubes());
+    owned.add("hour3");
+    store.set(KEYS.ownedCubes, [...owned]);
+    store.set(KEYS.ownedSpeed, true);
+    store.set(KEYS.hour3Claim, true);
+    state.ownedCubes = [...owned];
+    state.ownedSpeed = true;
+    state.cubeId = "hour3";
+    store.set(KEYS.cube, "hour3");
+  }
+
+  function surprisePending() {
+    if (!TEMP_VISITOR_SURPRISE || isOwner()) return false;
+    return !store.get(KEYS.surprise, false);
+  }
+
+  function claimSurprise() {
+    if (!surprisePending()) {
+      state.modal = null;
+      render();
+      return;
+    }
+    state.coins += SURPRISE_COINS;
+    store.set(KEYS.coins, state.coins);
+    store.set(KEYS.surprise, true);
+    state.bgId = "rainbow";
+    store.set(KEYS.skin, "rainbow");
+    if (canClaimHour3()) claimHour3Exclusives();
+    state.modal = null;
+    toast(
+      hasOwnedSpeed()
+        ? `Сюрприз! +${SURPRISE_COINS} · кубики «Третий час» · Скорость III`
+        : `Сюрприз! +${SURPRISE_COINS} монет`,
+    );
+    render();
+  }
+
   function applyOwnerRewards() {
     if (!isOwner()) return;
     state.best = INF;
     state.coins = INF;
     store.set(KEYS.best, INF);
     store.set(KEYS.coins, INF);
+    const owned = new Set(loadOwnedCubes());
+    owned.add("hour3");
+    store.set(KEYS.ownedCubes, [...owned]);
+    store.set(KEYS.ownedSpeed, true);
+    state.ownedCubes = [...owned];
+    state.ownedSpeed = true;
   }
 
   let uid = 0;
   const nextUid = () => `p-${Date.now()}-${++uid}`;
 
+  function boardSize() {
+    return state.mode === "tiny" ? 6 : SIZE;
+  }
+
   function emptyBoard() {
-    return Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+    const n = boardSize();
+    return Array.from({ length: n }, () => Array(n).fill(null));
   }
 
   function pieceSize(cells) {
@@ -176,8 +341,9 @@
   }
 
   function canPlace(board, cells, row, col) {
+    const n = board.length;
     const { h, w } = pieceSize(cells);
-    if (row < 0 || col < 0 || row + h > SIZE || col + w > SIZE) return false;
+    if (row < 0 || col < 0 || row + h > n || col + w > n) return false;
     if (isOwner()) return true;
     for (let r = 0; r < cells.length; r++) {
       for (let c = 0; c < cells[r].length; c++) {
@@ -188,9 +354,10 @@
   }
 
   function hasAny(board, cells) {
+    const n = board.length;
     const { h, w } = pieceSize(cells);
-    for (let r = 0; r <= SIZE - h; r++) {
-      for (let c = 0; c <= SIZE - w; c++) {
+    for (let r = 0; r <= n - h; r++) {
+      for (let c = 0; c <= n - w; c++) {
         if (canPlace(board, cells, r, c)) return true;
       }
     }
@@ -206,12 +373,13 @@
   }
 
   function findClears(board) {
+    const n = board.length;
     const rows = [];
     const cols = [];
-    for (let r = 0; r < SIZE; r++) if (board[r].every(Boolean)) rows.push(r);
-    for (let c = 0; c < SIZE; c++) {
+    for (let r = 0; r < n; r++) if (board[r].every(Boolean)) rows.push(r);
+    for (let c = 0; c < n; c++) {
       let full = true;
-      for (let r = 0; r < SIZE; r++) if (!board[r][c]) full = false;
+      for (let r = 0; r < n; r++) if (!board[r][c]) full = false;
       if (full) cols.push(c);
     }
     return { rows, cols, lines: rows.length + cols.length };
@@ -222,28 +390,43 @@
     const next = board.map((row) => [...row]);
     const rs = new Set(clear.rows);
     const cs = new Set(clear.cols);
-    for (let r = 0; r < SIZE; r++) {
-      for (let c = 0; c < SIZE; c++) {
+    const n = board.length;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         if (rs.has(r) || cs.has(c)) next[r][c] = null;
       }
     }
     return next;
   }
 
-  function scoreMove(placed, clear, comboBefore) {
+  function scoreMove(placed, clear, comboBefore, boardBefore) {
     let points = placed;
     let combo = comboBefore;
+    let colorHits = 0;
     if (clear.lines > 0) {
       combo += 1;
       points += clear.lines * 10 + (clear.lines > 1 ? clear.lines * clear.lines * 5 : 0) + (combo - 1) * 10;
+      if (state.mode === "color" && state.targetColor && boardBefore) {
+        const rs = new Set(clear.rows);
+        const cs = new Set(clear.cols);
+        const n = boardBefore.length;
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            if ((rs.has(r) || cs.has(c)) && boardBefore[r][c] === state.targetColor) colorHits += 1;
+          }
+        }
+        points += colorHits * 3;
+        state.stats.colorHits = (state.stats.colorHits || 0) + colorHits;
+      }
+      if (state.mode === "speed3") points = Math.round(points * 1.35);
     } else combo = 0;
-    return { points, combo };
+    return { points, combo, colorHits };
   }
 
-  function goalProgress(level, state, stats) {
-    if (level.kind === "score") return state.score;
+  function goalProgress(level, st, stats) {
+    if (level.kind === "score") return st.score;
     if (level.kind === "lines") return stats.lines;
-    if (level.kind === "combo") return Math.max(state.combo, stats.bestCombo);
+    if (level.kind === "combo") return Math.max(st.combo, stats.bestCombo);
     return stats.clears;
   }
 
@@ -265,10 +448,17 @@
     levelWon: false,
     best: 0,
     coins: 0,
-    skinId: store.get(KEYS.skin, "sun"),
+    bgId: store.get(KEYS.skin, "sun"),
+    cubeId: store.get(KEYS.cube, "gloss"),
+    ownedCubes: loadOwnedCubes(),
+    ownedSpeed: hasOwnedSpeed(),
     adventure: store.get(KEYS.adventure, { maxUnlocked: 1, completed: [] }),
+    miniBest: store.get(KEYS.miniBest, {}),
     activeLevel: null,
-    stats: { lines: 0, clears: 0, bestCombo: 0 },
+    targetColor: null,
+    timeLeft: null,
+    timerId: null,
+    stats: { lines: 0, clears: 0, bestCombo: 0, colorHits: 0 },
     modal: null,
     toast: null,
     selected: null,
@@ -276,14 +466,29 @@
     cell: 40,
   };
 
+  if (!ownsCube(state.cubeId)) state.cubeId = "gloss";
   state.best = loadBest();
   state.coins = loadCoins();
   if (isOwner()) applyOwnerRewards();
 
   const app = document.getElementById("app");
 
-  function skin() {
-    return SKINS.find((s) => s.id === state.skinId) || SKINS[0];
+  function bgSkin() {
+    return BG_SKINS.find((s) => s.id === state.bgId) || BG_SKINS[0];
+  }
+
+  function cubeSkin() {
+    const id = ownsCube(state.cubeId) ? state.cubeId : "gloss";
+    return CUBE_SKINS.find((c) => c.id === id) || CUBE_SKINS[0];
+  }
+
+  function cubePaint(colorKey) {
+    const hex = COLORS[colorKey] || "#888";
+    const sk = cubeSkin();
+    const bg = typeof sk.paint === "function" ? sk.paint(hex) : hex;
+    const sh =
+      typeof sk.shadow === "function" ? sk.shadow(hex) : sk.shadow || "inset 0 1px 0 #fff6";
+    return { background: bg, boxShadow: sh };
   }
 
   function toast(msg) {
@@ -294,12 +499,52 @@
         state.toast = null;
         render();
       }
-    }, 1400);
+    }, 1600);
   }
 
-  function startClassic() {
-    state.mode = "classic";
-    state.activeLevel = null;
+  function clearTimer() {
+    if (state.timerId) {
+      clearInterval(state.timerId);
+      state.timerId = null;
+    }
+    state.timeLeft = null;
+  }
+
+  function startTimer(sec) {
+    clearTimer();
+    state.timeLeft = sec;
+    const tickMs = state.mode === "speed3" ? 700 : 1000;
+    state.timerId = setInterval(() => {
+      if (state.gameOver || state.levelWon) return;
+      state.timeLeft -= 1;
+      if (state.timeLeft <= 0) {
+        state.timeLeft = 0;
+        state.gameOver = true;
+        clearTimer();
+        saveMiniBest();
+        toast("Время!");
+      }
+      render();
+    }, tickMs);
+  }
+
+  function saveMiniBest() {
+    if (state.mode === "adventure") return;
+    const map = { ...state.miniBest };
+    map[state.mode] = Math.max(map[state.mode] || 0, state.score);
+    state.miniBest = map;
+    store.set(KEYS.miniBest, map);
+    if (state.mode === "classic") {
+      if (isOwner()) {
+        state.best = INF;
+      } else {
+        state.best = Math.max(state.best, state.score);
+      }
+      store.set(KEYS.best, state.best);
+    }
+  }
+
+  function resetRoundFields() {
     state.board = emptyBoard();
     state.hand = makeHand(state.board);
     state.score = 0;
@@ -307,27 +552,46 @@
     state.bestCombo = 0;
     state.gameOver = false;
     state.levelWon = false;
-    state.stats = { lines: 0, clears: 0, bestCombo: 0 };
-    state.modal = null;
+    state.stats = { lines: 0, clears: 0, bestCombo: 0, colorHits: 0 };
     state.selected = null;
     state.drag = null;
+    state.activeLevel = null;
+    state.targetColor = null;
+  }
+
+  function startClassic() {
+    clearTimer();
+    state.mode = "classic";
+    resetRoundFields();
+    state.modal = null;
+    render();
+  }
+
+  function startMini(id) {
+    if (id === "speed3" && !hasOwnedSpeed()) {
+      toast("Скорость III — только для гостей «Третьего часа»");
+      return;
+    }
+    clearTimer();
+    state.mode = id;
+    resetRoundFields();
+    state.modal = null;
+    if (id === "color") {
+      const keys = Object.keys(COLORS);
+      state.targetColor = keys[Math.floor(Math.random() * keys.length)];
+    }
+    if (id === "blitz") startTimer(60);
+    if (id === "speed3") startTimer(45);
+    measure();
     render();
   }
 
   function startLevel(level) {
+    clearTimer();
     state.mode = "adventure";
+    resetRoundFields();
     state.activeLevel = level;
-    state.board = emptyBoard();
-    state.hand = makeHand(state.board);
-    state.score = 0;
-    state.combo = 0;
-    state.bestCombo = 0;
-    state.gameOver = false;
-    state.levelWon = false;
-    state.stats = { lines: 0, clears: 0, bestCombo: 0 };
     state.modal = null;
-    state.selected = null;
-    state.drag = null;
     render();
   }
 
@@ -336,6 +600,7 @@
     const piece = state.hand[handIndex];
     if (!piece || !canPlace(state.board, piece.cells, row, col)) return;
 
+    const boardBefore = state.board.map((r) => [...r]);
     const board = state.board.map((r) => [...r]);
     for (let r = 0; r < piece.cells.length; r++) {
       for (let c = 0; c < piece.cells[r].length; c++) {
@@ -344,7 +609,7 @@
     }
     const clear = findClears(board);
     const nextBoard = applyClears(board, clear);
-    const { points, combo } = scoreMove(countCells(piece.cells), clear, state.combo);
+    const { points, combo } = scoreMove(countCells(piece.cells), clear, state.combo, boardBefore);
 
     let hand = state.hand.map((p, i) => (i === handIndex ? null : p));
     if (hand.every((p) => !p)) hand = makeHand(nextBoard);
@@ -359,16 +624,20 @@
     state.stats.bestCombo = Math.max(state.stats.bestCombo, combo);
     state.selected = null;
 
-    if (state.mode === "classic") {
+    if (state.mode !== "adventure") {
       if (isOwner()) {
         state.best = INF;
         state.coins = INF;
       } else {
-        state.best = Math.max(state.best, state.score);
-        if (clear.lines > 0) state.coins += clear.lines * 2 + (combo > 1 ? combo : 0);
+        if (state.mode === "classic") state.best = Math.max(state.best, state.score);
+        if (clear.lines > 0) {
+          const mul = state.mode === "speed3" ? 2 : 1;
+          state.coins += (clear.lines * 2 + (combo > 1 ? combo : 0)) * mul;
+        }
       }
       store.set(KEYS.best, state.best);
       store.set(KEYS.coins, state.coins);
+      saveMiniBest();
     }
 
     if (state.mode === "adventure" && state.activeLevel) {
@@ -384,13 +653,17 @@
     }
 
     const remaining = hand.filter(Boolean);
+    const softFail = state.mode !== "zen";
     if (
+      softFail &&
       !isOwner() &&
       !state.levelWon &&
       remaining.length &&
       remaining.every((p) => !hasAny(nextBoard, p.cells))
     ) {
       state.gameOver = true;
+      clearTimer();
+      saveMiniBest();
     }
 
     render();
@@ -403,9 +676,12 @@
     for (let r = 0; r < h; r++) {
       for (let c = 0; c < w; c++) {
         const on = piece.cells[r]?.[c];
-        html += `<div style="width:${cellSize}px;height:${cellSize}px;border-radius:22%;background:${
-          on ? COLORS[piece.color] : "transparent"
-        }"></div>`;
+        if (!on) {
+          html += `<div style="width:${cellSize}px;height:${cellSize}px"></div>`;
+          continue;
+        }
+        const paint = cubePaint(piece.color);
+        html += `<div class="cube" style="width:${cellSize}px;height:${cellSize}px;border-radius:22%;background:${paint.background};box-shadow:${paint.boxShadow}"></div>`;
       }
     }
     html += "</div>";
@@ -413,20 +689,22 @@
   }
 
   function boardHtml(preview) {
+    const n = boardSize();
     const s = state.cell;
-    let html = `<div class="board" id="board" style="grid-template-columns:repeat(${SIZE},${s}px)">`;
-    for (let r = 0; r < SIZE; r++) {
-      for (let c = 0; c < SIZE; c++) {
+    let html = `<div class="board" id="board" style="grid-template-columns:repeat(${n},${s}px)">`;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
         const color = state.board[r][c];
         let cls = "cell";
-        let bg = "rgba(255,255,255,0.06)";
+        let style = `width:${s}px;height:${s}px;background:rgba(255,255,255,0.06)`;
         if (color) {
-          cls += " filled";
-          bg = `linear-gradient(145deg, ${COLORS[color]}, ${COLORS[color]}b8)`;
+          cls += " filled cube";
+          const paint = cubePaint(color);
+          style = `width:${s}px;height:${s}px;background:${paint.background};box-shadow:${paint.boxShadow}`;
         }
         if (preview?.[r]?.[c] === "ok") cls += " ok";
         if (preview?.[r]?.[c] === "bad") cls += " bad";
-        html += `<div class="${cls}" style="width:${s}px;height:${s}px;background:${bg}"></div>`;
+        html += `<div class="${cls}" style="${style}"></div>`;
       }
     }
     html += "</div>";
@@ -434,14 +712,15 @@
   }
 
   function previewMask() {
-    const mask = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+    const n = boardSize();
+    const mask = Array.from({ length: n }, () => Array(n).fill(null));
     const paint = (piece, row, col, valid) => {
       for (let r = 0; r < piece.cells.length; r++) {
         for (let c = 0; c < piece.cells[r].length; c++) {
           if (!piece.cells[r][c]) continue;
           const rr = row + r;
           const cc = col + c;
-          if (rr >= 0 && rr < SIZE && cc >= 0 && cc < SIZE) mask[rr][cc] = valid ? "ok" : "bad";
+          if (rr >= 0 && rr < n && cc >= 0 && cc < n) mask[rr][cc] = valid ? "ok" : "bad";
         }
       }
     };
@@ -470,14 +749,24 @@
     };
   }
 
+  function modeTitle() {
+    if (state.mode === "adventure" && state.activeLevel) {
+      return `Приключение · Ур. ${state.activeLevel.id}: ${state.activeLevel.title}`;
+    }
+    const g = MINI_GAMES.find((m) => m.id === state.mode);
+    return g ? `${g.icon} ${g.name}` : "Веб-версия · Собирай линии";
+  }
+
   function render() {
-    const sk = skin();
+    const sk = bgSkin();
+    const cube = cubeSkin();
     document.body.style.background = sk.bg;
-    const goal = state.activeLevel
-      ? goalProgress(state.activeLevel, state, state.stats)
-      : 0;
+    document.body.dataset.cube = cube.id;
+    document.body.dataset.speed = state.mode === "speed3" ? "1" : "0";
+    const goal = state.activeLevel ? goalProgress(state.activeLevel, state, state.stats) : 0;
     const target = state.activeLevel?.target || 1;
     const preview = previewMask();
+    const colorName = state.targetColor || "";
 
     app.innerHTML = `
       <div class="glow left" style="background:${sk.glowL}"></div>
@@ -485,15 +774,12 @@
       <header class="hud">
         <div class="brand">
           <h1 style="text-shadow:0 2px 12px ${sk.accent}">Blockbust</h1>
-          <p>${
-            state.mode === "adventure" && state.activeLevel
-              ? `Приключение · Ур. ${state.activeLevel.id}: ${state.activeLevel.title}`
-              : "Веб-версия · Собирай линии"
-          }</p>
+          <p>${modeTitle()}</p>
         </div>
         <div class="actions">
+          <button data-act="minis">🎮 Мини-игры</button>
           <button data-act="adventure">🗺️ Приключения</button>
-          <button data-act="skins">${sk.icon} Скины</button>
+          <button data-act="skins">${cube.icon === "neon" ? "⚡" : cube.icon} Кубики</button>
           <button class="primary" data-act="new" style="background:${sk.accent}">${
             state.mode === "adventure" ? "Заново" : "Новая игра"
           }</button>
@@ -501,11 +787,24 @@
       </header>
       <div class="stats">
         <div class="stat"><div class="label">Счёт</div><div class="value" style="color:${sk.accent}">${state.score}</div></div>
-        <div class="stat"><div class="label">${state.mode === "adventure" ? "Цель" : "Рекорд"}</div><div class="value" style="color:#facc15">${
-          state.mode === "adventure" ? `${goal}/${target}` : state.best
+        <div class="stat"><div class="label">${
+          state.timeLeft != null ? "Время" : state.mode === "adventure" ? "Цель" : "Рекорд"
+        }</div><div class="value" style="color:#facc15">${
+          state.timeLeft != null
+            ? state.timeLeft
+            : state.mode === "adventure"
+              ? `${goal}/${target}`
+              : state.mode === "classic"
+                ? state.best
+                : state.miniBest[state.mode] || 0
         }</div></div>
         <div class="stat"><div class="label">Монеты</div><div class="value" style="color:#fbbf24">${state.coins}</div></div>
       </div>
+      ${
+        state.mode === "color"
+          ? `<div class="goal-bar"><div class="inner"><div class="row"><span>Цель: линии с цветом</span><span style="color:${COLORS[colorName]}">■ ${colorName}</span></div></div></div>`
+          : ""
+      }
       ${
         state.mode === "adventure" && state.activeLevel
           ? `<div class="goal-bar"><div class="inner"><div class="row"><span>${goalLabel(
@@ -516,10 +815,17 @@
             )}%;background:${sk.accent}"></span></div></div></div>`
           : ""
       }
+      ${
+        TEMP_HOUR3_EVENT
+          ? `<div class="event-banner">⏳ Ивент «Третий час»: эксклюзивные кубики и Скорость III — успей забрать. Потом новым уже нельзя, у тебя останется.</div>`
+          : ""
+      }
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
       <div class="hand">
-        <div class="hint">Перетащи фигуру на поле</div>
+        <div class="hint">Перетащи фигуру · кубики: ${cube.name}${
+          state.ownedSpeed ? " · ⚡ Скорость III твоя" : ""
+        }</div>
         <div class="slots">
           ${state.hand
             .map((piece, i) => {
@@ -543,13 +849,65 @@
           : ""
       }
       ${
-        state.modal === "skins"
-          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>Скины</h2><p class="sub">Все открыты · жёлтый старт · радуга в коллекции</p></div><button data-act="close">✕</button></div><div class="grid-cards three">${SKINS.map(
-              (s) =>
-                `<button class="card" data-skin="${s.id}" style="background:${s.bg}"><div style="font-size:22px">${s.icon}</div><div style="margin-top:6px;font-size:12px;font-weight:900">${s.name}</div><div style="font-size:10px;opacity:.7">${
-                  s.id === state.skinId ? "Выбран" : "Открыт"
-                }</div></button>`,
+        state.modal === "surprise"
+          ? `<div class="overlay surprise-overlay"><div class="modal surprise-modal" style="text-align:center" data-stop="1"><div class="surprise-burst" aria-hidden="true">✨🎁⏳</div><h2>Сюрприз!</h2><p class="sub">Добро пожаловать в Blockbust.<br/>Гостю — подарок и ивент «Третий час».</p><p class="surprise-gift">+${SURPRISE_COINS} монет<br/>⏳ эксклюзивные кубики<br/>⚡ Скорость III навсегда</p><button class="primary" data-act="claim-surprise" style="width:100%;margin-top:14px;background:${sk.accent}">Забрать подарок</button></div></div>`
+          : ""
+      }
+      ${
+        state.modal === "minis"
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>Мини-игры</h2><p class="sub">Выбери режим</p></div><button data-act="close">✕</button></div><div class="grid-cards">${MINI_GAMES.map(
+              (g) => {
+                const locked = g.exclusive && !hasOwnedSpeed();
+                const best = state.miniBest[g.id] || 0;
+                return `<button class="card ${locked ? "locked" : ""}" data-mini="${g.id}" ${
+                  locked ? "disabled" : ""
+                }><div style="font-size:20px">${g.icon}</div><div style="font-weight:900;font-size:13px;margin-top:4px">${
+                  locked ? `🔒 ${g.name}` : g.name
+                }</div><div style="font-size:11px;opacity:.65;margin-top:4px">${g.desc}</div>${
+                  best ? `<div style="font-size:10px;color:#facc15;margin-top:4px;font-weight:800">Рекорд ${best}</div>` : ""
+                }</button>`;
+              },
             ).join("")}</div></div></div>`
+          : ""
+      }
+      ${
+        state.modal === "skins"
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>Кубики</h2><p class="sub">Скин на сами блоки · фон отдельно ниже</p></div><button data-act="close">✕</button></div>
+            <div class="grid-cards three" style="margin-top:12px">${CUBE_SKINS.map((c) => {
+              const have = ownsCube(c.id);
+              const locked = !have;
+              const sample = cubePaintPreview(c);
+              return `<button class="card ${locked ? "locked" : ""}" data-cube="${c.id}" ${
+                locked ? "disabled" : ""
+              }><div class="cube-preview" style="background:${sample.background};box-shadow:${sample.boxShadow}"></div><div style="margin-top:8px;font-size:12px;font-weight:900">${
+                c.icon === "neon" ? "⚡" : c.icon
+              } ${c.name}</div><div style="font-size:10px;opacity:.7">${
+                locked
+                  ? c.exclusive
+                    ? TEMP_HOUR3_EVENT
+                      ? "Только из сюрприза"
+                      : "Больше не выдаётся"
+                    : "Закрыто"
+                  : c.id === state.cubeId
+                    ? "Выбран"
+                    : c.exclusive
+                      ? "Твой эксклюзив"
+                      : "Открыт"
+              }</div></button>`;
+            }).join("")}</div>
+            <h3 style="margin:16px 0 0;font-size:14px">Фон стола</h3>
+            <div class="grid-cards three">${BG_SKINS.map(
+              (s) =>
+                `<button class="card" data-bg="${s.id}" style="background:${s.bg}"><div style="font-size:18px">${s.icon}</div><div style="margin-top:6px;font-size:11px;font-weight:900">${s.name}</div><div style="font-size:10px;opacity:.7">${
+                  s.id === state.bgId ? "Выбран" : "Сменить"
+                }</div></button>`,
+            ).join("")}</div>
+            ${
+              TEMP_HOUR3_EVENT && canClaimHour3()
+                ? `<button class="primary" data-act="claim-hour3" style="width:100%;margin-top:14px;background:${sk.accent}">⏳ Забрать эксклюзив «Третий час»</button>`
+                : ""
+            }
+          </div></div>`
           : ""
       }
       ${
@@ -577,17 +935,25 @@
       ${
         state.gameOver && !state.levelWon
           ? `<div class="overlay"><div class="modal" style="text-align:center"><div style="font-size:40px">💥</div><h2>${
-              state.mode === "adventure" ? "Уровень не пройден" : "Игра окончена"
-            }</h2><p class="sub">Нет места для фигур</p><button class="primary" data-act="new" style="width:100%;margin-top:14px;background:${sk.accent}">Ещё раз</button>${
+              state.timeLeft === 0 ? "Время вышло" : state.mode === "adventure" ? "Уровень не пройден" : "Игра окончена"
+            }</h2><p class="sub">Счёт: ${state.score}</p><button class="primary" data-act="new" style="width:100%;margin-top:14px;background:${sk.accent}">Ещё раз</button>${
               state.mode === "adventure"
                 ? `<button data-act="adventure" style="width:100%;margin-top:8px">Карта уровней</button>`
-                : ""
+                : `<button data-act="minis" style="width:100%;margin-top:8px">Мини-игры</button>`
             }</div></div>`
           : ""
       }
     `;
 
     bind();
+  }
+
+  function cubePaintPreview(def) {
+    const hex = "#38bdf8";
+    const background = typeof def.paint === "function" ? def.paint(hex) : hex;
+    const boxShadow =
+      typeof def.shadow === "function" ? def.shadow(hex) : def.shadow || "inset 0 1px 0 #fff6";
+    return { background, boxShadow };
   }
 
   function bind() {
@@ -597,10 +963,15 @@
         const act = btn.getAttribute("data-act");
         if (act === "new") {
           if (state.mode === "adventure" && state.activeLevel) startLevel(state.activeLevel);
+          else if (MINI_GAMES.some((m) => m.id === state.mode)) startMini(state.mode);
           else startClassic();
         }
         if (act === "skins") {
           state.modal = "skins";
+          render();
+        }
+        if (act === "minis") {
+          state.modal = "minis";
           render();
         }
         if (act === "adventure") {
@@ -610,6 +981,14 @@
         if (act === "close") {
           state.modal = null;
           render();
+        }
+        if (act === "claim-surprise") claimSurprise();
+        if (act === "claim-hour3") {
+          if (canClaimHour3()) {
+            claimHour3Exclusives();
+            toast("⏳ Кубики «Третий час» и Скорость III — твои навсегда");
+            render();
+          }
         }
         if (act === "classic") startClassic();
         if (act === "next") {
@@ -623,14 +1002,33 @@
       };
     });
 
-    app.querySelectorAll("[data-skin]").forEach((btn) => {
+    app.querySelectorAll("[data-cube]").forEach((btn) => {
       btn.onclick = (e) => {
         e.stopPropagation();
-        state.skinId = btn.getAttribute("data-skin");
-        store.set(KEYS.skin, state.skinId);
+        const id = btn.getAttribute("data-cube");
+        if (!ownsCube(id)) return;
+        state.cubeId = id;
+        store.set(KEYS.cube, id);
         state.modal = null;
-        toast(`Скин: ${skin().name}`);
+        toast(`Кубики: ${cubeSkin().name}`);
         render();
+      };
+    });
+
+    app.querySelectorAll("[data-bg]").forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        state.bgId = btn.getAttribute("data-bg");
+        store.set(KEYS.skin, state.bgId);
+        toast(`Фон: ${bgSkin().name}`);
+        render();
+      };
+    });
+
+    app.querySelectorAll("[data-mini]").forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        startMini(btn.getAttribute("data-mini"));
       };
     });
 
@@ -699,10 +1097,11 @@
   });
 
   function measure() {
+    const n = boardSize();
     const w = Math.min(window.innerWidth - 32, 480);
-    const h = window.innerHeight - 280;
+    const h = window.innerHeight - 300;
     const board = Math.min(w, h, 420);
-    state.cell = Math.max(28, Math.min(52, Math.floor((board - 4 * 7) / SIZE)));
+    state.cell = Math.max(26, Math.min(52, Math.floor((board - 4 * (n - 1)) / n)));
   }
 
   window.addEventListener("resize", () => {
@@ -712,17 +1111,24 @@
 
   measure();
   startClassic();
+  if (surprisePending()) {
+    state.modal = "surprise";
+    render();
+  } else if (canClaimHour3()) {
+    state.modal = "surprise";
+    render();
+  }
 
   window.addEventListener("amal-owner-changed", (e) => {
     if (e.detail) {
       applyOwnerRewards();
-      toast("Режим владельца: ∞ монеты и рекорд");
+      toast("Режим владельца: ∞ и все эксклюзивы");
     } else {
       store.set(KEYS.best, 0);
       store.set(KEYS.coins, 0);
       state.best = 0;
       state.coins = 0;
-      toast("Обычный режим: читы выключены");
+      toast("Обычный режим");
     }
     render();
   });

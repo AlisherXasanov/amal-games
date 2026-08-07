@@ -358,3 +358,107 @@ button.primary {
   right: -40px;
   bottom: 80px;
 }
+
+/* TEMP surprise — удалить вместе с TEMP_VISITOR_SURPRISE */
+.surprise-overlay {
+  animation: surprise-fade 0.35s ease;
+}
+
+.surprise-modal {
+  border-color: rgba(250, 204, 21, 0.45);
+  box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.2), 0 24px 70px rgba(250, 204, 21, 0.18);
+  animation: surprise-pop 0.45s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+
+.surprise-burst {
+  font-size: 2rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  animation: surprise-wiggle 1.2s ease-in-out infinite;
+}
+
+.surprise-gift {
+  margin: 14px 0 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: #facc15;
+}
+
+@keyframes surprise-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes surprise-pop {
+  from {
+    transform: scale(0.82);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes surprise-wiggle {
+  0%,
+  100% {
+    transform: rotate(-4deg) scale(1);
+  }
+  50% {
+    transform: rotate(4deg) scale(1.06);
+  }
+}
+
+.cube-preview {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  margin: 0 auto;
+}
+
+.cell.cube,
+.cube {
+  border-radius: 22%;
+}
+
+.event-banner {
+  position: relative;
+  z-index: 2;
+  margin: 8px 12px 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+body[data-speed="1"] .board {
+  box-shadow: 0 0 0 1px rgba(250, 204, 21, 0.35), 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+body[data-cube="hour3"] .cell.filled,
+body[data-cube="hour3"] .cube {
+  animation: hour3-shimmer 2.4s linear infinite;
+}
+
+@keyframes hour3-shimmer {
+  0% {
+    filter: saturate(1) brightness(1);
+  }
+  50% {
+    filter: saturate(1.25) brightness(1.08);
+  }
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+}
+
+
