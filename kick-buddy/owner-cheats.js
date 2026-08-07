@@ -14,7 +14,7 @@
   const STORAGE_KEY = "amal-owner-v3";
   // bump: force Pages refresh for easy codes
   const SECRETS = ["amal", "1234", "buddy"];
-  const OLD_KEYS = ["amal-owner-v1", "amal-owner-v2", "kick-buddy-admin"];
+  const OLD_KEYS = ["kick-buddy-admin"];
 
   function wipeOldTeamFlags() {
     try {

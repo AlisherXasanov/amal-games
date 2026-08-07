@@ -105,6 +105,11 @@
     }
   }
 
+  function faceUrl(nick) {
+    const seed = encodeURIComponent(String(nick || "player").slice(0, 24));
+    return "https://api.dicebear.com/7.x/adventurer/svg?seed=" + seed + "&size=128";
+  }
+
   function canGrantAdmin() {
     return isOwner();
   }
@@ -806,6 +811,14 @@
 .amal-hub-toast{pointer-events:none;position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:2147483010;background:rgba(15,23,42,.95);border:1px solid rgba(251,191,36,.45);color:#fde68a;padding:10px 14px;border-radius:14px;font-size:13px;font-weight:800;max-width:90vw;box-shadow:0 12px 30px rgba(0,0,0,.4)}
 .amal-hub-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#86efac;font-size:11px;font-weight:800}
 .amal-hub-pill.off{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.35);color:#fca5a5}
+.amal-hub-live{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+.amal-hub-face{border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:12px 10px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));text-align:center}
+.amal-hub-face img{width:72px;height:72px;border-radius:50%;background:#0f172a;border:2px solid rgba(251,191,36,.45);object-fit:cover}
+.amal-hub-face .nm{margin-top:8px;font-size:13px;font-weight:900}
+.amal-hub-face .gm{margin-top:4px;font-size:11px;opacity:.7;font-weight:700}
+.amal-hub-face .on{margin-top:6px;font-size:10px;font-weight:800;color:#86efac}
+.amal-hub-face.offline .on{color:#fca5a5}
+.amal-hub-face.offline img{filter:grayscale(.4);opacity:.75}
 `;
     document.head.appendChild(css);
   }
@@ -1101,6 +1114,40 @@
         ${back}`;
     }
 
+
+    if (adminPage === "live" && fullOwner) {
+      const list = recentPlayers(1000 * 60 * 30);
+      return `
+        <div class="amal-hub-hero"><div class="badge">📡</div><div>
+          <h2>Живая карта</h2>
+          <p class="sub">Лица игроков в реальном времени · можно смотреть с каталога, не заходя в их игру</p>
+        </div></div>
+        <div style="margin-top:10px">${onlinePill} · игроков: <b>${list.length}</b></div>
+        <div class="amal-hub-help">Оставь эту вкладку открытой. Когда гость зайдёт и напишет ник — здесь появится его лицо и игра.</div>
+        <div class="amal-hub-live">${
+          list.length
+            ? list
+                .map((p) => {
+                  const online = p.live || Date.now() - p.at < 120000;
+                  return `<div class="amal-hub-face ${online ? "" : "offline"}">
+                    <img src="${faceUrl(p.nick)}" alt="" loading="lazy" />
+                    <div class="nm">${escapeHtml(p.nick)}</div>
+                    <div class="gm">${escapeHtml(p.gameTitle || p.game)}</div>
+                    <div class="on">${online ? "● сейчас играет" : "○ был недавно"}</div>
+                    <div class="amal-hub-row" style="margin-top:8px;justify-content:center">
+                      <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️</button>
+                      <button type="button" class="primary" data-amal="quick-grant-nick" data-nick="${escapeHtml(p.nick)}">⚡</button>
+                    </div>
+                  </div>`;
+                })
+                .join("")
+            : `<div class="amal-hub-face"><div class="nm">Пока никого</div><div class="gm">Жду гостей…</div></div>`
+        }</div>
+        <div class="amal-hub-row" style="margin-top:12px">
+          <button type="button" data-amal="admin-live" style="flex:1">Обновить</button>
+        </div>
+        ${back}`;
+    }
     if (adminPage === "broadcast" && fullOwner) {
       return `
         <div class="amal-hub-hero"><div class="badge">📢</div><div>
@@ -1207,7 +1254,7 @@
         <div class="amal-hub-stat"><div class="n">${players.length}</div><div class="l">в списке</div></div>
         <div class="amal-hub-stat"><div class="n">${unread.length}</div><div class="l">писем</div></div>
       </div>
-      <div class="amal-hub-grid2">
+      <div class="amal-hub-grid2"><button type="button" data-amal="admin-live"><span class="ico">📡</span><b>Живая карта</b><span>Лица онлайн</span></button>
         <button type="button" data-amal="admin-players"><span class="ico">👥</span><b>Кто играет</b><span>Ники и игры</span></button>
         <button type="button" data-amal="admin-inbox"><span class="ico">📩</span><b>Входящие</b><span>${
           unread.length ? unread.length + " новых" : "пусто"
@@ -1347,6 +1394,13 @@
           view = "admin";
           msg = "Сейчас игра: " + gameTitle(gameIdFromPath()) + " — она уже отмечена галочкой";
           err = "";
+          paint();
+        }
+        if (act === "admin-live") {
+          if (!canGrantAdmin()) return;
+          adminPage = "live";
+          open = true;
+          view = "admin";
           paint();
         }
         if (act === "admin-players") {
@@ -1576,7 +1630,18 @@
         paint();
       }
     }
+    try {
+      if (isOwner() && new URLSearchParams(location.search).get("live") === "1") {
+        open = true;
+        view = "admin";
+        adminPage = "live";
+        paint();
+      }
+    } catch (_) {}
     setInterval(bumpPresence, 8000);
+    setInterval(() => {
+      if (open && adminPage === "live" && isOwner()) paint();
+    }, 3000);
     global.addEventListener("amal-owner-changed", () => {
       try {
         if (presencePeer) {
