@@ -94,6 +94,7 @@
     .card-img.buddy { background: linear-gradient(135deg, #e8d9a8, #c48a40); }
     .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #4a1a08); }
     .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #5a9e3a 55%, #8b5a2b); }
+    .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #3d2a18 60%, #0c1612); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -146,6 +147,7 @@
     .play-btn.buddy { background: #e05030; color: #fff8f0; }
     .play-btn.zvp { background: #6aaa3a; color: #0a1808; }
     .play-btn.craft { background: #5a9e3a; color: #0a1808; }
+    .play-btn.hideout { background: #e8c547; color: #0c1612; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -158,16 +160,31 @@
   <header>
     <h1>Amal's Games</h1>
     <p>Все игры открыты для всех — выбирай и играй в браузере</p>
+    <p style="margin-top:0.75rem">
+      <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру — меню</a>
+      ·
+      <a href="voice-ai-proposal/" style="color:#6ee7b7;font-weight:600;text-decoration:none">предложение</a>
+    </p>
   </header>
 
   <p class="section-title">Все игры</p>
   <div class="grid all">
+    <a class="card featured" href="hideout/">
+      <div class="card-img hideout">🔦</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>Укрытие</h2>
+        <p>Искатели ищут предметы, прячущиеся прячутся и сливаются с командой и ботами.</p>
+        <span class="play-btn hideout">Играть</span>
+      </div>
+    </a>
+
     <a class="card featured" href="minecraft/">
       <div class="card-img craft">⛏️</div>
       <div class="card-body">
         <span class="badge new">Новое</span>
         <h2>CraftWorld</h2>
-        <p>Креатив и noclip, 7 биомов, данжи с лутом, руды, лава, TNT, день/ночь — полный воксельный sandbox.</p>
+        <p>Мир 96×96, мобы, Визер и Дракон Края, крафт, HP, данжи, деревня и админ/X-ray.</p>
         <span class="play-btn craft">Играть</span>
       </div>
     </a>
