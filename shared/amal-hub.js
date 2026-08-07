@@ -532,8 +532,10 @@
 .amal-hub-list{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
 .amal-hub-list li{border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px;background:rgba(255,255,255,.04);font-size:13px}
 .amal-hub-list .meta{opacity:.65;font-size:11px;margin-bottom:6px;font-weight:800}
-.amal-hub-chip{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));pointer-events:auto;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.82);color:#e2e8f0;font-size:11px;font-weight:800;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px)}
+.amal-hub-chip{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));left:auto;pointer-events:auto;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.82);color:#e2e8f0;font-size:11px;font-weight:800;max-width:min(58vw,280px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px);z-index:2147483001}
 .amal-hub-chip.owner{border-color:rgba(251,191,36,.45);color:#fde68a;background:rgba(69,26,3,.85)}
+.amal-hub-exit{pointer-events:auto;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2147483002;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.78);color:#fff;font:700 13px/1.2 system-ui,sans-serif;text-decoration:none;backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.amal-hub-exit:hover{background:rgba(0,0,0,.92)}
 .amal-hub-err{color:#fca5a5;font-size:12px;margin-top:8px;font-weight:800}
 .amal-hub-ok{color:#86efac;font-size:12px;margin-top:8px;font-weight:800}
 .amal-hub-help{margin-top:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(125,211,252,.28);background:rgba(14,165,233,.12);color:#e0f2fe;font-size:13px;font-weight:700;line-height:1.45}
@@ -612,8 +614,14 @@
     const gid = gameIdFromPath();
     const inGame = gid && gid !== "portal";
     let html = "";
+
+    // Всегда сверху слева — выход к каталогу, не перекрываем чипом хозяина
+    if (inGame) {
+      html += `<a class="amal-hub-exit" href="../" title="Выйти ко всем играм">← Все игры</a>`;
+    }
+
     if (owner) {
-      html += `<button type="button" class="amal-hub-chip owner" data-amal="open">👑 Хозяин · не в списке игроков</button>`;
+      html += `<button type="button" class="amal-hub-chip owner" data-amal="open">👑 Хозяин</button>`;
     } else if (nick) {
       html += `<button type="button" class="amal-hub-chip" data-amal="open">${escapeHtml(
         nick,
