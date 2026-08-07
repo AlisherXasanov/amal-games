@@ -80,7 +80,24 @@
       glowL: "#facc15",
       glowR: "#22d3ee",
     },
+    // Админский фон — кинозал / киноэкран
+    {
+      id: "cinema",
+      name: "Кинозал",
+      icon: "🎬",
+      exclusive: true,
+      bg:
+        "radial-gradient(ellipse 70% 45% at 50% 38%, #f8fafc22 0%, transparent 55%)," +
+        "linear-gradient(90deg, #450a0a 0%, #7f1d1d 8%, #1c1917 14%, #0a0a0a 50%, #1c1917 86%, #7f1d1d 92%, #450a0a 100%)," +
+        "repeating-linear-gradient(0deg, transparent 0 18px, #111111aa 18px 20px)," +
+        "radial-gradient(ellipse at bottom, #431407 0%, #0c0a09 55%, #000 100%)",
+      accent: "#fbbf24",
+      glowL: "#ef4444",
+      glowR: "#f59e0b",
+    },
   ];
+
+  const ADMIN_BG_ID = "cinema";
 
   // Скины САМИХ кубиков — обычные открыты всем с первого входа
   const CUBE_SKINS = [
@@ -438,6 +455,15 @@
     store.set(KEYS.ownedSpeed, true);
     state.ownedCubes = [...owned];
     state.ownedSpeed = true;
+    state.bgId = ADMIN_BG_ID;
+    store.set(KEYS.skin, ADMIN_BG_ID);
+  }
+
+  function ownsBg(id) {
+    const def = BG_SKINS.find((s) => s.id === id);
+    if (!def) return false;
+    if (def.exclusive) return isOwner();
+    return true;
   }
 
   let uid = 0;
@@ -609,6 +635,10 @@
     state.cubeId = "gloss";
     store.set(KEYS.cube, "gloss");
   }
+  if (!ownsBg(state.bgId)) {
+    state.bgId = "sun";
+    store.set(KEYS.skin, "sun");
+  }
   state.best = loadBest();
   state.coins = loadCoins();
   if (isOwner()) applyOwnerRewards();
@@ -616,7 +646,8 @@
   const app = document.getElementById("app");
 
   function bgSkin() {
-    return BG_SKINS.find((s) => s.id === state.bgId) || BG_SKINS[0];
+    const id = ownsBg(state.bgId) ? state.bgId : "sun";
+    return BG_SKINS.find((s) => s.id === id) || BG_SKINS[0];
   }
 
   function cubeSkin() {
@@ -1281,12 +1312,21 @@
               }</div></button>`;
             }).join("")}</div>
             <h3 style="margin:16px 0 0;font-size:14px">Фон стола</h3>
-            <div class="grid-cards three">${BG_SKINS.map(
-              (s) =>
-                `<button class="card" data-bg="${s.id}" style="background:${s.bg}"><div style="font-size:18px">${s.icon}</div><div style="margin-top:6px;font-size:11px;font-weight:900">${s.name}</div><div style="font-size:10px;opacity:.7">${
-                  s.id === state.bgId ? "Выбран" : "Сменить"
-                }</div></button>`,
-            ).join("")}</div>
+            <div class="grid-cards three">${BG_SKINS.map((s) => {
+              const have = ownsBg(s.id);
+              const locked = !have;
+              return `<button class="card ${locked ? "locked" : ""}" data-bg="${s.id}" style="background:${s.bg}" ${
+                locked ? "disabled" : ""
+              }><div style="font-size:18px">${s.icon}</div><div style="margin-top:6px;font-size:11px;font-weight:900">${s.name}</div><div style="font-size:10px;opacity:.7">${
+                locked
+                  ? "Только админ"
+                  : s.id === state.bgId
+                    ? "Выбран"
+                    : s.exclusive
+                      ? "Админ · открыт"
+                      : "Сменить"
+              }</div></button>`;
+            }).join("")}</div>
           </div></div>`
           : ""
       }
@@ -1405,7 +1445,12 @@
     app.querySelectorAll("[data-bg]").forEach((btn) => {
       btn.onclick = (e) => {
         e.stopPropagation();
-        state.bgId = btn.getAttribute("data-bg");
+        const id = btn.getAttribute("data-bg");
+        if (!ownsBg(id)) {
+          toast("Фон «Кинозал» — только админ");
+          return;
+        }
+        state.bgId = id;
         store.set(KEYS.skin, state.bgId);
         toast(`Фон: ${bgSkin().name}`);
         render();
@@ -1543,12 +1588,16 @@
   window.addEventListener("amal-owner-changed", (e) => {
     if (e.detail) {
       applyOwnerRewards();
-      toast("Режим владельца: ∞ и все эксклюзивы");
+      toast("Режим владельца: ∞ и фон «Кинозал»");
     } else {
       store.set(KEYS.best, 0);
       store.set(KEYS.coins, 0);
       state.best = 0;
       state.coins = 0;
+      if (state.bgId === ADMIN_BG_ID) {
+        state.bgId = "sun";
+        store.set(KEYS.skin, "sun");
+      }
       toast("Обычный режим");
     }
     render();
