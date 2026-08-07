@@ -169,15 +169,30 @@
   function rand(a, b) {
     return a + Math.random() * (b - a);
   }
+  function isBlocked(x, y, r = 16) {
+    for (const w of walls) {
+      if (circleRectHit(x, y, r, w)) return true;
+    }
+    return x < 40 || y < 40 || x > MW - 40 || y > MH - 40;
+  }
+
   function pickInRoom(room) {
-    return {
-      x: rand(room.x + 40, room.x + room.w - 40),
-      y: rand(room.y + 40, room.y + room.h - 40),
-    };
+    for (let i = 0; i < 25; i++) {
+      const p = {
+        x: rand(room.x + 50, room.x + room.w - 50),
+        y: rand(room.y + 50, room.y + room.h - 50),
+      };
+      if (!isBlocked(p.x, p.y, 18)) return p;
+    }
+    return { x: room.x + room.w / 2, y: room.y + room.h / 2 };
   }
   function pickFree() {
-    const room = ROOMS[(Math.random() * ROOMS.length) | 0];
-    return pickInRoom(room);
+    for (let i = 0; i < 30; i++) {
+      const room = ROOMS[(Math.random() * ROOMS.length) | 0];
+      const p = pickInRoom(room);
+      if (!isBlocked(p.x, p.y, 18)) return p;
+    }
+    return { x: 200, y: 200 };
   }
 
   const keys = Object.create(null);
@@ -258,6 +273,9 @@
       face: 1,
       bob: Math.random() * 6,
       stillTime: 0,
+      stuckTime: 0,
+      lastX: x,
+      lastY: y,
     };
   }
 
@@ -432,6 +450,21 @@
     if (ent.isPlayer || ent.caught) return;
     if (g.phase === "hide" && ent.role === "seeker") return;
 
+    // если упёрся в стену — сразу новая цель
+    const moved = Math.hypot(ent.x - ent.lastX, ent.y - ent.lastY);
+    if (ent.moving && moved < 2 * dt * ent.speed * 0.15) ent.stuckTime += dt;
+    else ent.stuckTime = 0;
+    ent.lastX = ent.x;
+    ent.lastY = ent.y;
+    if (ent.stuckTime > 0.55) {
+      ent.stuckTime = 0;
+      ent.aiTimer = 0;
+      ent.patrolRoom = (Math.random() * ROOMS.length) | 0;
+      const spot = pickInRoom(ROOMS[ent.patrolRoom]);
+      ent.aiTx = spot.x;
+      ent.aiTy = spot.y;
+    }
+
     ent.aiTimer -= dt;
     if (ent.aiTimer <= 0) {
       ent.aiTimer = rand(1.0, 2.2);
@@ -453,32 +486,27 @@
             ent.aiTy = best.y;
           }
         } else {
-          // бот-хозяин почти всегда стоит тихо
           ent.aiTx = ent.x;
           ent.aiTy = ent.y;
           ent.propLocked = true;
         }
       } else {
-        // SEEKER: честный поиск
         const hider = g.actors.find((a) => a.role === "hider" && !a.caught);
         let chase = false;
         if (hider && !hider.prop) {
-          // виден как человек только в радиусе зрения
           if (dist(ent, hider) < VISION_SEEKER * 0.95) chase = true;
         } else if (hider && hider.prop && hider.moving) {
-          // движущаяся вещь — подозрительно, но только рядом
           if (dist(ent, hider) < 90 && Math.random() < 0.35) chase = true;
         }
 
         if (chase && hider) {
-          ent.aiTx = hider.x + rand(-30, 30);
-          ent.aiTy = hider.y + rand(-30, 30);
-          ent.aiTimer = rand(0.4, 0.8);
+          ent.aiTx = hider.x + rand(-20, 20);
+          ent.aiTy = hider.y + rand(-20, 20);
+          ent.aiTimer = rand(0.35, 0.7);
         } else {
-          // патруль случайной комнаты / угла
-          if (Math.random() < 0.45) {
+          if (Math.random() < 0.5) {
             ent.patrolRoom = (ent.patrolRoom + 1) % ROOMS.length;
-          } else if (Math.random() < 0.25) {
+          } else if (Math.random() < 0.3) {
             ent.patrolRoom = (Math.random() * ROOMS.length) | 0;
           }
           const room = ROOMS[ent.patrolRoom];
@@ -492,14 +520,38 @@
     let dx = ent.aiTx - ent.x;
     let dy = ent.aiTy - ent.y;
     const len = Math.hypot(dx, dy) || 1;
-    if (len < 16) {
+    if (len < 20) {
       dx = 0;
       dy = 0;
       if (ent.role === "hider" && !ent.prop && g.phase === "hide") becomeProp(ent);
-      if (ent.role === "seeker" && g.phase === "seek" && Math.random() < 0.03) tryCatch(ent);
+      // подошёл близко — проверить (не врезаясь бесконечно)
+      if (ent.role === "seeker" && g.phase === "seek") {
+        tryCatch(ent);
+        ent.aiTimer = 0.2;
+        const room = ROOMS[(Math.random() * ROOMS.length) | 0];
+        const spot = pickInRoom(room);
+        ent.aiTx = spot.x;
+        ent.aiTy = spot.y;
+      }
     } else {
       dx /= len;
       dy /= len;
+      // обход стены: если прямо заблокировано, шаг в сторону
+      const lookX = ent.x + dx * 22;
+      const lookY = ent.y + dy * 22;
+      if (isBlocked(lookX, lookY, ent.r + 2)) {
+        const left = { x: -dy, y: dx };
+        const right = { x: dy, y: -dx };
+        if (!isBlocked(ent.x + left.x * 22, ent.y + left.y * 22, ent.r + 2)) {
+          dx = left.x;
+          dy = left.y;
+        } else if (!isBlocked(ent.x + right.x * 22, ent.y + right.y * 22, ent.r + 2)) {
+          dx = right.x;
+          dy = right.y;
+        } else {
+          ent.aiTimer = 0;
+        }
+      }
     }
     moveEntity(ent, dx, dy, dt);
   }

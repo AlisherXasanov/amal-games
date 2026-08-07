@@ -27,14 +27,15 @@
 
       <div class="panel menu" id="menu">
         <h1>Укрытие</h1>
-        <p class="sub">Красивый дом с кучей вещей. Стань вазой или камином и стой тихо — искатели обыскивают комнаты и не знают, где ты.</p>
+        <p class="sub">Прятки в доме. Сначала спрячься вещью и стой тихо. Потом искатель ищет хозяина по комнатам.</p>
         <div class="roles">
           <button type="button" class="btn seeker" id="btnSeeker" data-role="seeker">Искатель</button>
           <button type="button" class="btn hider" id="btnHider" data-role="hider">Хозяин (прячется)</button>
         </div>
         <p class="hints">
-          WASD — ходить · E — стать вещью / проверить<br>
-          Двигаться вещью опасно. Дальше радиуса — темно.
+          <b>Хозяин:</b> E у вещи → стань вазой/камином → стой на месте до конца времени.<br>
+          <b>Искатель:</b> ходи по дому, подойди вплотную и нажми E — проверить.<br>
+          WASD — ходить. Двигаться вещью нельзя — выдаст.
         </p>
       </div>
 
@@ -42,6 +43,6 @@
     </div>
   </div>
 
-  <script src="./game.js?v=6"></script>
+  <script src="./game.js?v=7"></script>
 </body>
 </html>
