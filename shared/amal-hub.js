@@ -456,11 +456,14 @@
 
   // Игроки с других устройств (пока хозяин онлайн)
   const livePlayers = {};
+  const hostConnections = new Set();
   let presencePeer = null;
   let presenceConn = null;
   let presenceReady = false;
   let presenceStatus = "off";
   let lastPlayersPaint = 0;
+  let hubToast = "";
+  let hubToastTimer = null;
 
   const PRESENCE_HOST_ID = "amalhub" + simpleHash(GRANT_SECRET + "|presence-host-v1");
 
@@ -485,12 +488,58 @@
     maybeRepaintPlayers();
   }
 
+  function showHubToast(text) {
+    hubToast = String(text || "").slice(0, 160);
+    paint();
+    if (hubToastTimer) clearTimeout(hubToastTimer);
+    hubToastTimer = setTimeout(() => {
+      hubToast = "";
+      paint();
+    }, 4200);
+  }
+
   function maybeRepaintPlayers() {
     if (!open || adminPage !== "players") return;
     const now = Date.now();
     if (now - lastPlayersPaint < 800) return;
     lastPlayersPaint = now;
     paint();
+  }
+
+  function broadcastToPlayers(text) {
+    const body = String(text || "").trim().slice(0, 240);
+    if (!body) return { ok: false, error: "Напиши текст" };
+    let n = 0;
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn.open) {
+          conn.send({ type: "admin-msg", text: body, at: Date.now() });
+          n += 1;
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+    addNote(body, { fromAdmin: true, toNick: "*всем*", game: gameIdFromPath() });
+    return { ok: true, count: n };
+  }
+
+  function clearIncomingNotes() {
+    const kept = loadNotes().filter((n) => n.fromAdmin);
+    saveNotes(kept);
+  }
+
+  function clearPresenceList() {
+    Object.keys(livePlayers).forEach((k) => delete livePlayers[k]);
+    storeSet(KEYS.presence, {});
+  }
+
+  function quickGrantThisGame(nick) {
+    const game = gameIdFromPath();
+    if (!game || game === "portal") {
+      return issueGrants(nick, ["blockbust"]);
+    }
+    return issueGrants(nick, [game]);
   }
 
   function bumpPresence() {
@@ -619,10 +668,16 @@
   }
 
   function onHostConnection(conn) {
+    hostConnections.add(conn);
     conn.on("data", (data) => {
       if (!data) return;
-      if (data.type === "presence" || data.nick) upsertLivePlayer(data);
+      if (data.type === "presence" || data.nick) {
+        const wasNew = !livePlayers[data.nick];
+        upsertLivePlayer(data);
+        if (wasNew && data.nick) showHubToast("Вошёл: " + data.nick + " · " + gameTitle(data.game || "portal"));
+      }
     });
+    conn.on("close", () => hostConnections.delete(conn));
     conn.on("open", () => {
       try {
         conn.send({ type: "hello", role: "host" });
@@ -658,6 +713,11 @@
       presenceConn.on("open", () => {
         presenceStatus = "linked";
         bumpPresence();
+      });
+      presenceConn.on("data", (data) => {
+        if (data && data.type === "admin-msg" && data.text) {
+          showHubToast("👑 Амаль: " + data.text);
+        }
       });
       presenceConn.on("close", () => {
         presenceStatus = "retry";
@@ -733,7 +793,19 @@
 .amal-hub-games label{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:750;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
 .amal-hub-linkbox{margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,.35);font-size:11px;word-break:break-all;line-height:1.4}
 .amal-hub-hero{display:flex;gap:12px;align-items:center;margin-bottom:4px}
-.amal-hub-hero .badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(160deg,#fbbf24,#b45309);font-size:22px;flex:0 0 auto}
+.amal-hub-hero .badge{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(160deg,#fbbf24,#b45309);font-size:24px;flex:0 0 auto;box-shadow:0 8px 20px rgba(245,158,11,.35)}
+.amal-hub-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.amal-hub-stat{padding:12px 10px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);text-align:center}
+.amal-hub-stat .n{font-size:20px;font-weight:900;color:#fde68a}
+.amal-hub-stat .l{font-size:10px;opacity:.65;font-weight:800;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.amal-hub-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.amal-hub-grid2 button{min-height:76px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:4px;padding:12px;text-align:left;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.1)}
+.amal-hub-grid2 button .ico{font-size:18px}
+.amal-hub-grid2 button b{font-size:13px}
+.amal-hub-grid2 button span{font-size:10px;opacity:.65;font-weight:650}
+.amal-hub-toast{pointer-events:none;position:fixed;left:50%;top:72px;transform:translateX(-50%);z-index:2147483010;background:rgba(15,23,42,.95);border:1px solid rgba(251,191,36,.45);color:#fde68a;padding:10px 14px;border-radius:14px;font-size:13px;font-weight:800;max-width:90vw;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.amal-hub-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#86efac;font-size:11px;font-weight:800}
+.amal-hub-pill.off{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.35);color:#fca5a5}
 `;
     document.head.appendChild(css);
   }
@@ -809,6 +881,10 @@
       html += `<button type="button" class="amal-hub-chip" data-amal="open">${escapeHtml(
         nick,
       )} · ${escapeHtml(gameTitle(gid))}${gameAdmin ? " · админ" : ""}</button>`;
+    }
+
+    if (hubToast) {
+      html += `<div class="amal-hub-toast">${escapeHtml(hubToast)}</div>`;
     }
 
     // Быстрые действия во время игры (только главному)
@@ -930,115 +1006,139 @@
     const players = recentPlayers();
     const notes = loadNotes().slice().reverse().slice(0, 40);
     const incoming = notes.filter((n) => !n.fromAdmin);
+    const unread = incoming.filter((n) => n.status !== "done");
     const fullOwner = canGrantAdmin();
-    const tabs = `
-      <div class="amal-hub-tabs">
-        <button type="button" class="on" data-amal="tab-admin">Моё меню</button>
-        <button type="button" data-amal="tab-note">Как игрок</button>
-        <button type="button" data-amal="tab-updates">Что нового</button>
-      </div>`;
+    const liveCount = recentPlayers(1000 * 60 * 3).filter((p) => p.live || Date.now() - p.at < 120000).length;
+    const onlinePill =
+      presenceStatus === "online" || presenceStatus === "online-alt" || presenceStatus === "linked"
+        ? `<span class="amal-hub-pill">● связь ок</span>`
+        : `<span class="amal-hub-pill off">● нет связи</span>`;
+    const back = `<div class="amal-hub-row"><button type="button" data-amal="admin-menu" style="flex:1">← Меню</button><button type="button" data-amal="close">Закрыть</button></div>`;
 
     if (adminPage === "players") {
-      const liveCount = recentPlayers(1000 * 60 * 3).filter((p) => p.live || Date.now() - p.at < 120000).length;
       return `
-        <h2>👥 Кто играет</h2>
-        <p class="sub">Игроки с других телефонов видны, пока у тебя открыт сайт как хозяин</p>
-        ${tabs}
-        <div class="amal-hub-help">Статус связи: <b>${
-          presenceStatus === "online" || presenceStatus === "online-alt"
-            ? "онлайн — жду игроков"
-            : presenceStatus === "linked"
-              ? "подключён"
-              : presenceStatus === "hosting" || presenceStatus === "connecting"
-                ? "подключаюсь…"
-                : presenceStatus === "error"
-                  ? "сеть недоступна, пробуй обновить"
-                  : presenceStatus
-        }</b>. Сейчас свежих: ${liveCount}</div>
+        <div class="amal-hub-hero"><div class="badge">👥</div><div>
+          <h2>Кто играет</h2>
+          <p class="sub">Жми на игрока — написать или дать админку</p>
+        </div></div>
+        <div style="margin-top:10px">${onlinePill} · свежих: <b>${liveCount}</b></div>
         <ul class="amal-hub-list">${
           players.length
             ? players
                 .map(
                   (p) =>
                     `<li><div class="meta">${fmtTime(p.at)}${
-                      p.live || Date.now() - p.at < 120000 ? " · сейчас онлайн" : ""
-                    }</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px">Игра: ${escapeHtml(
+                      p.live || Date.now() - p.at < 120000 ? " · онлайн" : ""
+                    }</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px;opacity:.75">Игра: ${escapeHtml(
                       p.gameTitle || p.game,
-                    )}</div>${
-                      fullOwner
-                        ? `<div class="amal-hub-row" style="margin-top:6px"><button type="button" class="primary" data-amal="grant-pick" data-nick="${escapeHtml(
-                            p.nick,
-                          )}">Выдать админку</button></div>`
-                        : ""
-                    }</li>`,
-                )
-                .join("")
-            : `<li class="meta">Пока никого нет. Пусть гость откроет игру, напишет ник — и оставь эту вкладку хозяина открытой.</li>`
-        }</ul>
-        <div class="amal-hub-row">
-          <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
-          <button type="button" data-amal="close">Закрыть</button>
-        </div>`;
-    }
-
-    if (adminPage === "inbox") {
-      return `
-        <h2>2. Сообщения тебе</h2>
-        <p class="sub">Что написали игроки</p>
-        ${tabs}
-        <div class="amal-hub-help">«Ответить» подставит ник. «Прочитано» — отметить.</div>
-        <ul class="amal-hub-list">${
-          incoming.length
-            ? incoming
-                .map(
-                  (n) =>
-                    `<li><div class="meta">От: <b>${escapeHtml(n.nick)}</b> · ${escapeHtml(
-                      gameTitle(n.game),
-                    )} · ${fmtTime(n.at)}${n.status === "done" ? " · прочитано" : ""}</div>${escapeHtml(n.text)}
-                    <div class="amal-hub-row" style="margin-top:6px">
-                      <button type="button" class="primary" data-amal="reply" data-to="${escapeHtml(n.nick)}">Ответить</button>
-                      <button type="button" data-amal="mark" data-id="${escapeHtml(n.id)}">Прочитано</button>
+                    )}</div>
+                    <div class="amal-hub-row" style="margin-top:8px">
+                      <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️ Написать</button>
                       ${
                         fullOwner
-                          ? `<button type="button" data-amal="grant-pick" data-nick="${escapeHtml(n.nick)}">Дать админку</button>`
+                          ? `<button type="button" class="primary" data-amal="quick-grant-nick" data-nick="${escapeHtml(
+                              p.nick,
+                            )}">⚡ В эту игру</button><button type="button" data-amal="grant-pick" data-nick="${escapeHtml(
+                              p.nick,
+                            )}">Игры</button>`
                           : ""
                       }
                     </div></li>`,
                 )
                 .join("")
-            : `<li class="meta">Сообщений пока нет.</li>`
+            : `<li class="meta">Пока пусто. Оставь вкладку хозяина открытой — гости появятся сами.</li>`
         }</ul>
-        <div class="amal-hub-row">
-          <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
-          <button type="button" data-amal="close">Закрыть</button>
-        </div>`;
+        <div class="amal-hub-row" style="margin-top:10px">
+          <button type="button" data-amal="admin-clear-presence">Очистить список</button>
+        </div>
+        ${back}`;
+    }
+
+    if (adminPage === "inbox") {
+      return `
+        <div class="amal-hub-hero"><div class="badge">📩</div><div>
+          <h2>Входящие</h2>
+          <p class="sub">Непрочитанных: ${unread.length}</p>
+        </div></div>
+        <ul class="amal-hub-list">${
+          incoming.length
+            ? incoming
+                .map(
+                  (n) =>
+                    `<li><div class="meta">От <b>${escapeHtml(n.nick)}</b> · ${escapeHtml(
+                      gameTitle(n.game),
+                    )} · ${fmtTime(n.at)}${n.status === "done" ? " · ✓" : " · новое"}</div>${escapeHtml(n.text)}
+                    <div class="amal-hub-row" style="margin-top:8px">
+                      <button type="button" class="primary" data-amal="reply" data-to="${escapeHtml(n.nick)}">Ответить</button>
+                      <button type="button" data-amal="mark" data-id="${escapeHtml(n.id)}">Прочитано</button>
+                      ${
+                        fullOwner
+                          ? `<button type="button" data-amal="quick-grant-nick" data-nick="${escapeHtml(n.nick)}">⚡</button>`
+                          : ""
+                      }
+                    </div></li>`,
+                )
+                .join("")
+            : `<li class="meta">Сообщений нет</li>`
+        }</ul>
+        <div class="amal-hub-row"><button type="button" data-amal="admin-clear-notes">Очистить входящие</button></div>
+        ${back}`;
     }
 
     if (adminPage === "write") {
       return `
-        <h2>3. Написать игроку</h2>
-        <p class="sub">Ответ для ника</p>
-        ${tabs}
-        <div class="amal-hub-help">Сначала ник, потом текст, потом «Отправить».</div>
-        <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник игрока" value="${escapeHtml(
-          replyTo || "",
-        )}" />
-        <textarea id="amal-admin-note" maxlength="500" placeholder="Напиши ответ..."></textarea>
+        <div class="amal-hub-hero"><div class="badge">✉️</div><div>
+          <h2>Написать</h2>
+          <p class="sub">Одному игроку по нику</p>
+        </div></div>
+        <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник" value="${escapeHtml(replyTo || "")}" />
+        <textarea id="amal-admin-note" maxlength="500" placeholder="Текст сообщения..."></textarea>
         ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
         <div class="amal-hub-row">
           <button type="button" class="primary" data-amal="admin-send" style="flex:1">Отправить</button>
-          <button type="button" data-amal="admin-menu">← Меню</button>
-        </div>`;
+        </div>
+        ${back}`;
+    }
+
+    if (adminPage === "broadcast" && fullOwner) {
+      return `
+        <div class="amal-hub-hero"><div class="badge">📢</div><div>
+          <h2>Всем онлайн</h2>
+          <p class="sub">Увидят гости, которые сейчас в сети</p>
+        </div></div>
+        <textarea id="amal-broadcast" maxlength="240" placeholder="Например: Через 5 минут новая игра!"></textarea>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row">
+          <button type="button" class="primary" data-amal="admin-broadcast" style="flex:1">Отправить всем</button>
+        </div>
+        ${back}`;
+    }
+
+    if (adminPage === "games" && fullOwner) {
+      return `
+        <div class="amal-hub-hero"><div class="badge">🎮</div><div>
+          <h2>Быстрый переход</h2>
+          <p class="sub">Открыть игру</p>
+        </div></div>
+        <div class="amal-hub-games">${GRANTABLE_GAMES.map((g) => {
+          const href =
+            (gameIdFromPath() === "portal" ? "./" : "../") + g.id + "/?owner=AmalOwner2026";
+          return `<a href="${href}" style="text-decoration:none;color:inherit"><label style="cursor:pointer">▶ ${escapeHtml(
+            g.name,
+          )}</label></a>`;
+        }).join("")}</div>
+        ${back}`;
     }
 
     if (adminPage === "grant" && fullOwner) {
       const grants = activeIssuedGrants().slice(0, 20);
       return `
-        <h2>5. Выдать админку</h2>
-        <p class="sub">Игрок получит силы в выбранных играх, но НЕ сможет выдавать админку другим</p>
-        ${tabs}
-        <div class="amal-hub-help">1) Ник → 2) галочки игр → 3) «Выдать». Потом скопируй ссылку игроку. Отмена — кнопка «Забрать».</div>
+        <div class="amal-hub-hero"><div class="badge">⚡</div><div>
+          <h2>Админка игроку</h2>
+          <p class="sub">Он не сможет выдавать дальше</p>
+        </div></div>
         <input id="amal-grant-nick" maxlength="${NICK_MAX}" placeholder="Ник игрока" value="${escapeHtml(
           replyTo || "",
         )}" />
@@ -1050,20 +1150,19 @@
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
         <div class="amal-hub-row">
           <button type="button" class="primary" data-amal="grant-issue" style="flex:1">Выдать</button>
-          <button type="button" data-amal="admin-menu">← Меню</button>
         </div>
         ${
           lastGrantLinks.length
-            ? `<h3 style="margin:14px 0 0;font-size:13px">Ссылки для игрока</h3>${lastGrantLinks
+            ? lastGrantLinks
                 .map(
                   (l) =>
                     `<div class="amal-hub-step"><h3>${escapeHtml(l.name)}</h3><div class="amal-hub-linkbox">${escapeHtml(
                       l.link,
                     )}</div><button type="button" data-amal="copy-link" data-link="${escapeHtml(
                       l.link,
-                    )}" style="margin-top:6px;width:100%">Скопировать ссылку</button></div>`,
+                    )}" style="margin-top:6px;width:100%">Скопировать</button></div>`,
                 )
-                .join("")}`
+                .join("")
             : ""
         }
         <h3 style="margin:14px 0 0;font-size:13px">Уже выдано</h3>
@@ -1072,54 +1171,53 @@
             ? grants
                 .map(
                   (g) =>
-                    `<li><div class="meta">${escapeHtml(g.nick)} · ${escapeHtml(gameTitle(g.game))} · ${fmtTime(
-                      g.at,
-                    )}</div>
+                    `<li><div class="meta">${escapeHtml(g.nick)} · ${escapeHtml(gameTitle(g.game))}</div>
                     <div class="amal-hub-row" style="margin-top:6px">
-                      <button type="button" data-amal="grant-revoke" data-id="${escapeHtml(g.id)}">Забрать админку</button>
+                      <button type="button" data-amal="grant-revoke" data-id="${escapeHtml(g.id)}">Забрать</button>
                       <button type="button" data-amal="copy-link" data-link="${escapeHtml(g.link || "")}">Ссылка</button>
                     </div></li>`,
                 )
                 .join("")
-            : `<li class="meta">Пока никому не выдавал</li>`
-        }</ul>`;
+            : `<li class="meta">Пока пусто</li>`
+        }</ul>
+        ${back}`;
     }
 
     if (!fullOwner && isGameAdmin()) {
       const games = myAdminGames();
       return `
-        <h2>⚡ Ты админ в игре</h2>
-        <p class="sub">Амаль выдал тебе силы. Выдавать админку другим нельзя.</p>
-        ${tabs}
-        <div class="amal-hub-help">Твои игры с админкой: ${
-          games.length ? games.map((g) => gameTitle(g)).join(", ") : "нет"
-        }</div>
+        <div class="amal-hub-hero"><div class="badge">⚡</div><div>
+          <h2>Твоя админка</h2>
+          <p class="sub">Выдана Амалем</p>
+        </div></div>
+        <div class="amal-hub-help">Игры: ${games.length ? games.map((g) => gameTitle(g)).join(", ") : "нет"}</div>
         <div class="amal-hub-row" style="margin-top:12px">
-          <button type="button" data-amal="close" style="flex:1">Понятно, закрыть</button>
+          <button type="button" data-amal="close" style="flex:1">Закрыть</button>
         </div>`;
     }
 
     return `
       <div class="amal-hub-hero"><div class="badge">👑</div><div>
-        <h2>Меню хозяина</h2>
-        <p class="sub">Ты не в списке игроков. Здесь можно писать людям и выдавать админку по играм.</p>
+        <h2>Панель хозяина</h2>
+        <p class="sub">Крупные кнопки · тебя нет в списке игроков</p>
       </div></div>
-      ${tabs}
-      <div class="amal-hub-help">Во время игры внизу есть быстрые кнопки: дать админку в эту игру, кто здесь, написать.</div>
-      <div class="amal-hub-big">
-        <button type="button" data-amal="admin-players"><b>👥 Кто играет</b><span>Только гости — тебя там нет</span></button>
-        <button type="button" data-amal="admin-inbox"><b>📩 Сообщения мне</b><span>${
-          incoming.filter((n) => n.status !== "done").length
-            ? "Новых: " + incoming.filter((n) => n.status !== "done").length
-            : "Пока пусто"
+      <div style="margin-top:10px">${onlinePill}</div>
+      <div class="amal-hub-stats">
+        <div class="amal-hub-stat"><div class="n">${liveCount}</div><div class="l">онлайн</div></div>
+        <div class="amal-hub-stat"><div class="n">${players.length}</div><div class="l">в списке</div></div>
+        <div class="amal-hub-stat"><div class="n">${unread.length}</div><div class="l">писем</div></div>
+      </div>
+      <div class="amal-hub-grid2">
+        <button type="button" data-amal="admin-players"><span class="ico">👥</span><b>Кто играет</b><span>Ники и игры</span></button>
+        <button type="button" data-amal="admin-inbox"><span class="ico">📩</span><b>Входящие</b><span>${
+          unread.length ? unread.length + " новых" : "пусто"
         }</span></button>
-        <button type="button" data-amal="admin-write"><b>✉️ Написать игроку</b><span>Ответ на ник</span></button>
-        ${
-          fullOwner
-            ? `<button type="button" data-amal="admin-grant"><b>⚡ Выдать / забрать админку</b><span>Выбери ник и одну или несколько игр</span></button>`
-            : ""
-        }
-        <button type="button" data-amal="export"><b>📋 Скопировать всё</b><span>Список игроков и заметок</span></button>
+        <button type="button" data-amal="admin-write"><span class="ico">✉️</span><b>Написать</b><span>Одному нику</span></button>
+        <button type="button" data-amal="admin-broadcast"><span class="ico">📢</span><b>Всем онлайн</b><span>Рассылка</span></button>
+        <button type="button" data-amal="admin-grant"><span class="ico">⚡</span><b>Админка</b><span>Выдать / забрать</span></button>
+        <button type="button" data-amal="admin-games"><span class="ico">🎮</span><b>Игры</b><span>Быстрый переход</span></button>
+        <button type="button" data-amal="export"><span class="ico">📋</span><b>Копировать</b><span>Весь список</span></button>
+        <button type="button" data-amal="tab-updates"><span class="ico">✨</span><b>Обновления</b><span>Что нового</span></button>
       </div>
       ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
       <div class="amal-hub-row" style="margin-top:12px">
@@ -1171,6 +1269,74 @@
           adminPage = "grant";
           open = true;
           view = "admin";
+          paint();
+        }
+        if (act === "admin-broadcast") {
+          if (!canGrantAdmin()) return;
+          // If on broadcast page and button is submit - check textarea
+          const area = root.querySelector("#amal-broadcast");
+          if (area) {
+            const res = broadcastToPlayers(area.value);
+            if (!res.ok) {
+              err = res.error;
+              msg = "";
+              paint();
+              return;
+            }
+            err = "";
+            msg = res.count
+              ? "Отправлено онлайн: " + res.count
+              : "Сохранено. Сейчас никто не подключён — увидят, когда зайдут в заметках.";
+            showHubToast("📢 Рассылка отправлена");
+            paint();
+            return;
+          }
+          adminPage = "broadcast";
+          open = true;
+          view = "admin";
+          paint();
+        }
+        if (act === "admin-games") {
+          if (!canGrantAdmin()) return;
+          adminPage = "games";
+          open = true;
+          view = "admin";
+          paint();
+        }
+        if (act === "admin-clear-notes") {
+          if (!canGrantAdmin()) return;
+          clearIncomingNotes();
+          msg = "Входящие очищены";
+          paint();
+        }
+        if (act === "admin-clear-presence") {
+          if (!canGrantAdmin()) return;
+          clearPresenceList();
+          msg = "Список игроков очищен";
+          paint();
+        }
+        if (act === "quick-grant-nick") {
+          if (!canGrantAdmin()) return;
+          const nick = el.getAttribute("data-nick") || "";
+          const res = quickGrantThisGame(nick);
+          if (!res.ok) {
+            err = res.error;
+            msg = "";
+            adminPage = "grant";
+            replyTo = nick;
+            open = true;
+            view = "admin";
+            paint();
+            return;
+          }
+          err = "";
+          lastGrantLinks = res.links || [];
+          replyTo = nick;
+          adminPage = "grant";
+          open = true;
+          view = "admin";
+          msg = "Админка в этой игре для «" + nick + "». Скопируй ссылку.";
+          showHubToast("⚡ Админка выдана: " + nick);
           paint();
         }
         if (act === "quick-grant") {
