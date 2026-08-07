@@ -454,6 +454,45 @@
     return map && typeof map === "object" ? map : {};
   }
 
+  // Игроки с других устройств (пока хозяин онлайн)
+  const livePlayers = {};
+  let presencePeer = null;
+  let presenceConn = null;
+  let presenceReady = false;
+  let presenceStatus = "off";
+  let lastPlayersPaint = 0;
+
+  const PRESENCE_HOST_ID = "amalhub" + simpleHash(GRANT_SECRET + "|presence-host-v1");
+
+  function upsertLivePlayer(data) {
+    if (!data || !data.nick) return;
+    if (isOwner() && String(data.nick).toLowerCase() === (getNick() || "").toLowerCase()) return;
+    const nick = String(data.nick).trim().slice(0, NICK_MAX);
+    if (nick.length < NICK_MIN) return;
+    livePlayers[nick] = {
+      nick,
+      game: data.game || "portal",
+      gameTitle: gameTitle(data.game || "portal"),
+      at: data.at || Date.now(),
+      live: true,
+    };
+    // Дублируем в localStorage хозяина, чтобы список не пустел сразу
+    if (isOwner()) {
+      const map = loadPresence();
+      map[nick] = { ...livePlayers[nick], live: true };
+      storeSet(KEYS.presence, map);
+    }
+    maybeRepaintPlayers();
+  }
+
+  function maybeRepaintPlayers() {
+    if (!open || adminPage !== "players") return;
+    const now = Date.now();
+    if (now - lastPlayersPaint < 800) return;
+    lastPlayersPaint = now;
+    paint();
+  }
+
   function bumpPresence() {
     // Главного админа в список игроков НЕ пишем
     if (isOwner()) {
@@ -462,14 +501,22 @@
     }
     const nick = getNick();
     if (!nick) return;
-    const map = loadPresence();
-    map[nick] = {
+    const payload = {
       nick,
       game: gameIdFromPath(),
       gameTitle: gameTitle(gameIdFromPath()),
       at: Date.now(),
+      live: true,
     };
+    const map = loadPresence();
+    map[nick] = payload;
     storeSet(KEYS.presence, map);
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    sendPresenceToHost(payload);
   }
 
   function removeSelfFromPresence() {
@@ -480,25 +527,161 @@
       delete map[nick];
       changed = true;
     }
-    // На всякий случай убрать типичные админ-ники
-    ["AmalNova", "Amal", "AmalX", "AmalOwner"].forEach((n) => {
-      if (map[n]) {
-        delete map[n];
-        changed = true;
-      }
-    });
     if (changed) storeSet(KEYS.presence, map);
   }
 
   function recentPlayers(maxAgeMs) {
-    const age = maxAgeMs || 1000 * 60 * 60 * 24 * 7;
+    const age = maxAgeMs || 1000 * 60 * 30;
     const now = Date.now();
     const myNick = (getNick() || "").toLowerCase();
-    return Object.values(loadPresence())
+    const merged = {};
+    Object.values(loadPresence()).forEach((p) => {
+      if (!p || !p.nick) return;
+      merged[p.nick] = p;
+    });
+    Object.values(livePlayers).forEach((p) => {
+      if (!p || !p.nick) return;
+      const prev = merged[p.nick];
+      if (!prev || (p.at || 0) >= (prev.at || 0)) merged[p.nick] = p;
+    });
+    return Object.values(merged)
       .filter((p) => p && p.at && now - p.at < age)
       .filter((p) => String(p.nick || "").toLowerCase() !== myNick)
-      .filter((p) => !p.isOwner)
       .sort((a, b) => b.at - a.at);
+  }
+
+  function loadPeerScript(cb) {
+    if (global.Peer) {
+      cb();
+      return;
+    }
+    const existing = document.querySelector("script[data-amal-peer]");
+    if (existing) {
+      existing.addEventListener("load", () => cb());
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js";
+    s.async = true;
+    s.dataset.amalPeer = "1";
+    s.onload = () => cb();
+    s.onerror = () => {
+      presenceStatus = "error";
+    };
+    document.head.appendChild(s);
+  }
+
+  function startPresenceNet() {
+    try {
+      if (!global.__amalPresenceBc) {
+        global.__amalPresenceBc = new BroadcastChannel("amal-hub-presence");
+        global.__amalPresenceBc.onmessage = (ev) => {
+          if (isOwner() && ev.data) upsertLivePlayer(ev.data);
+        };
+      }
+    } catch {
+      /* ignore */
+    }
+
+    loadPeerScript(() => {
+      try {
+        if (!global.Peer) return;
+        if (presencePeer) return;
+        if (isOwner()) startPresenceHost();
+        else startPresenceClient();
+      } catch {
+        presenceStatus = "error";
+      }
+    });
+  }
+
+  function startPresenceHost() {
+    presenceStatus = "hosting";
+    presencePeer = new global.Peer(PRESENCE_HOST_ID, { debug: 0 });
+    presencePeer.on("open", () => {
+      presenceReady = true;
+      presenceStatus = "online";
+      maybeRepaintPlayers();
+    });
+    presencePeer.on("error", (err) => {
+      // Если id занят — слушаем как клиент к себе не нужно; пробуем случайный + label
+      if (String(err && err.type) === "unavailable-id") {
+        presencePeer = new global.Peer(undefined, { debug: 0 });
+        presencePeer.on("open", () => {
+          presenceStatus = "online-alt";
+        });
+        presencePeer.on("connection", onHostConnection);
+      } else {
+        presenceStatus = "error";
+      }
+    });
+    presencePeer.on("connection", onHostConnection);
+  }
+
+  function onHostConnection(conn) {
+    conn.on("data", (data) => {
+      if (!data) return;
+      if (data.type === "presence" || data.nick) upsertLivePlayer(data);
+    });
+    conn.on("open", () => {
+      try {
+        conn.send({ type: "hello", role: "host" });
+      } catch {
+        /* ignore */
+      }
+    });
+  }
+
+  function startPresenceClient() {
+    presenceStatus = "connecting";
+    presencePeer = new global.Peer(undefined, { debug: 0 });
+    presencePeer.on("open", () => {
+      presenceReady = true;
+      connectToHost();
+    });
+    presencePeer.on("error", () => {
+      presenceStatus = "error";
+    });
+  }
+
+  function connectToHost() {
+    if (!presencePeer || isOwner()) return;
+    try {
+      if (presenceConn) {
+        try {
+          presenceConn.close();
+        } catch {
+          /* ignore */
+        }
+      }
+      presenceConn = presencePeer.connect(PRESENCE_HOST_ID, { reliable: true });
+      presenceConn.on("open", () => {
+        presenceStatus = "linked";
+        bumpPresence();
+      });
+      presenceConn.on("close", () => {
+        presenceStatus = "retry";
+        setTimeout(connectToHost, 4000);
+      });
+      presenceConn.on("error", () => {
+        presenceStatus = "retry";
+        setTimeout(connectToHost, 5000);
+      });
+    } catch {
+      presenceStatus = "retry";
+      setTimeout(connectToHost, 5000);
+    }
+  }
+
+  function sendPresenceToHost(payload) {
+    if (isOwner()) return;
+    try {
+      if (presenceConn && presenceConn.open) {
+        presenceConn.send({ type: "presence", ...payload });
+      }
+    } catch {
+      /* ignore */
+    }
   }
 
   function ensureStyles() {
@@ -756,17 +939,30 @@
       </div>`;
 
     if (adminPage === "players") {
+      const liveCount = recentPlayers(1000 * 60 * 3).filter((p) => p.live || Date.now() - p.at < 120000).length;
       return `
-        <h2>1. Кто играет</h2>
-        <p class="sub">Ники людей с этого браузера</p>
+        <h2>👥 Кто играет</h2>
+        <p class="sub">Игроки с других телефонов видны, пока у тебя открыт сайт как хозяин</p>
         ${tabs}
-        <div class="amal-hub-help">Нажми ник, чтобы выдать ему админку (если ты главный).</div>
+        <div class="amal-hub-help">Статус связи: <b>${
+          presenceStatus === "online" || presenceStatus === "online-alt"
+            ? "онлайн — жду игроков"
+            : presenceStatus === "linked"
+              ? "подключён"
+              : presenceStatus === "hosting" || presenceStatus === "connecting"
+                ? "подключаюсь…"
+                : presenceStatus === "error"
+                  ? "сеть недоступна, пробуй обновить"
+                  : presenceStatus
+        }</b>. Сейчас свежих: ${liveCount}</div>
         <ul class="amal-hub-list">${
           players.length
             ? players
                 .map(
                   (p) =>
-                    `<li><div class="meta">${fmtTime(p.at)}</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px">Играет в: ${escapeHtml(
+                    `<li><div class="meta">${fmtTime(p.at)}${
+                      p.live || Date.now() - p.at < 120000 ? " · сейчас онлайн" : ""
+                    }</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px">Игра: ${escapeHtml(
                       p.gameTitle || p.game,
                     )}</div>${
                       fullOwner
@@ -777,7 +973,7 @@
                     }</li>`,
                 )
                 .join("")
-            : `<li class="meta">Пока никто не заходил.</li>`
+            : `<li class="meta">Пока никого нет. Пусть гость откроет игру, напишет ник — и оставь эту вкладку хозяина открытой.</li>`
         }</ul>
         <div class="amal-hub-row">
           <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
@@ -1192,6 +1388,7 @@
     }
     const redeemed = redeemGrantFromUrl();
     bumpPresence();
+    startPresenceNet();
     paint();
     if (!getNick()) {
       gateMode = true;
@@ -1213,8 +1410,20 @@
         paint();
       }
     }
-    setInterval(bumpPresence, 30000);
-    global.addEventListener("amal-owner-changed", () => paint());
+    setInterval(bumpPresence, 8000);
+    global.addEventListener("amal-owner-changed", () => {
+      try {
+        if (presencePeer) {
+          presencePeer.destroy();
+          presencePeer = null;
+          presenceConn = null;
+        }
+      } catch {
+        /* ignore */
+      }
+      startPresenceNet();
+      paint();
+    });
   }
 
   global.AmalHub = {
