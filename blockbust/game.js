@@ -190,7 +190,78 @@
         `linear-gradient(135deg, #fff9 0%, ${hex}66 40%, ${hex}99 100%)`,
       shadow: "inset 0 0 0 1px #fff6, 0 0 8px #fff3",
     },
-    // TEMP exclusive: только владелец + гости ивента (не ставим при старте)
+    // Аниме-скины (бесплатные)
+    {
+      id: "sakura",
+      name: "Сакура",
+      icon: "🌸",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `radial-gradient(circle at 22% 18%, #fff 0 14%, transparent 15%), radial-gradient(circle at 72% 28%, #ffd6e7 0 10%, transparent 11%), linear-gradient(160deg, #fff5f8 0%, ${hex} 42%, #fb7185 100%)`,
+      shadow: "inset 0 2px 0 #fff9, 0 0 12px #fda4af88, 0 2px 6px #0004",
+    },
+    {
+      id: "manga",
+      name: "Манга",
+      icon: "📰",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `radial-gradient(circle at 30% 25%, #fff 0 8%, transparent 9%), repeating-radial-gradient(circle at 50% 50%, ${hex} 0 1.5px, transparent 1.5px 4px), linear-gradient(180deg, #fff 0%, ${hex} 100%)`,
+      shadow: "inset 0 0 0 2px #111, inset 0 0 0 3px #fff, 0 2px 4px #0006",
+    },
+    {
+      id: "cel",
+      name: "Сел-шейд",
+      icon: "🎬",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `linear-gradient(135deg, #fff 0 18%, ${hex} 18% 48%, ${hex}cc 48% 72%, #1118 72% 100%)`,
+      shadow: "inset 0 0 0 1.5px #1a1a1a, 0 3px 0 #0004",
+    },
+    {
+      id: "sparkle",
+      name: "Махо-сияние",
+      icon: "✨",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `radial-gradient(circle at 25% 20%, #fff 0 6%, transparent 7%), radial-gradient(circle at 70% 35%, #fff8 0 4%, transparent 5%), radial-gradient(circle at 45% 70%, #fde68a 0 5%, transparent 6%), conic-gradient(from 200deg, ${hex}, #f9a8d4, #a5b4fc, ${hex})`,
+      shadow: "0 0 14px #f9a8d4aa, inset 0 1px 0 #fff9",
+    },
+    {
+      id: "mecha",
+      name: "Меха",
+      icon: "🤖",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `linear-gradient(90deg, #0f172a 0 12%, ${hex} 12% 55%, #e2e8f0 55% 62%, ${hex}99 62% 88%, #0f172a 88%), linear-gradient(180deg, #fff4 0%, transparent 35%, #0005 100%)`,
+      shadow: "inset 0 0 0 1px #94a3b8, inset 2px 0 0 #38bdf866, 0 2px 6px #0007",
+    },
+    {
+      id: "kawaii",
+      name: "Каваи",
+      icon: "💗",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `radial-gradient(circle at 32% 28%, #fff 0 22%, transparent 23%), radial-gradient(ellipse at 50% 100%, #fff6 0 28%, transparent 40%), linear-gradient(180deg, #ffe4f1 0%, ${hex} 55%, ${hex}dd 100%)`,
+      shadow: "inset 0 3px 6px #fff9, 0 0 10px #fb718555, 0 2px 5px #0003",
+    },
+    {
+      id: "nightcity",
+      name: "Ночной город",
+      icon: "🌃",
+      free: true,
+      anime: true,
+      paint: (hex) =>
+        `linear-gradient(180deg, #0b1026 0%, #1e1b4b 40%, ${hex} 100%), repeating-linear-gradient(90deg, transparent 0 6px, #f0abfc55 6px 7px), repeating-linear-gradient(0deg, transparent 0 5px, #22d3ee44 5px 6px)`,
+      shadow: "0 0 12px #c084fc88, inset 0 -3px 8px #22d3ee44",
+    },
+    // Эксклюзив: владелец + кто успел забрать ивент
     {
       id: "starfire",
       name: "Звёздный огонь",
@@ -1186,7 +1257,7 @@
       }
       ${
         state.modal === "skins"
-          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>Кубики</h2><p class="sub">Скин на сами блоки · фон отдельно ниже</p></div><button data-act="close">✕</button></div>
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>Кубики</h2><p class="sub">Обычные + аниме-скины · фон ниже</p></div><button data-act="close">✕</button></div>
             <div class="grid-cards three" style="margin-top:12px">${CUBE_SKINS.map((c) => {
               const have = ownsCube(c.id);
               const locked = !have;
@@ -1204,7 +1275,9 @@
                     ? "Выбран"
                     : c.exclusive
                       ? "Твой эксклюзив"
-                      : "Открыт"
+                      : c.anime
+                        ? "Аниме · открыт"
+                        : "Открыт"
               }</div></button>`;
             }).join("")}</div>
             <h3 style="margin:16px 0 0;font-size:14px">Фон стола</h3>
