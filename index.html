@@ -178,6 +178,9 @@
     <h1>Amal's Games</h1>
     <p>Все игры открыты для всех — выбирай и играй в браузере</p>
     <p class="games-count" id="games-count">Игр в каталоге: <strong>—</strong></p>
+    <p style="margin-top:0.85rem;max-width:36rem;margin-left:auto;margin-right:auto;color:#a1a1aa;font-size:0.9rem">
+      Сначала напиши <strong style="color:#e4e4e7">ник</strong> (кнопка 📝). Можно отправить <strong style="color:#e4e4e7">заметку Амалю</strong> из любой игры.
+    </p>
     <p style="margin-top:0.75rem">
       <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру — меню</a>
       ·
@@ -280,9 +283,9 @@
     <a class="card featured" href="blockbust/">
       <div class="card-img blockbust">🧩</div>
       <div class="card-body">
-        <span class="badge new">В каталоге</span>
+        <span class="badge update">Обновлено</span>
         <h2>Blockbust</h2>
-        <p>Головоломка с блоками: ставь фигуры, очищай линии, открывай скины и приключения.</p>
+        <p>Аниме-скины, админ-фон «Кинозал», удобный drag на телефоне, ник и заметки.</p>
         <span class="play-btn blockbust">Играть</span>
       </div>
     </a>
@@ -318,6 +321,24 @@
     </a>
   </div>
 
+  <p class="section-title">Обновления</p>
+  <div class="grid" style="margin-bottom:2rem">
+    <div class="card" style="cursor:default">
+      <div class="card-body">
+        <span class="badge update">Новое</span>
+        <h2>Ник + заметки</h2>
+        <p>В любой игре: ник при входе, заметка Амалю, админ видит кто во что играл (👑).</p>
+      </div>
+    </div>
+    <div class="card" style="cursor:default">
+      <div class="card-body">
+        <span class="badge update">Blockbust</span>
+        <h2>Аниме и Кинозал</h2>
+        <p>Аниме-кубики для всех, фон «Кинозал» для админа, легче двигать фигуры на телефоне.</p>
+      </div>
+    </div>
+  </div>
+
   <footer>&copy; 2026 Amal's Games · все игры доступны всем</footer>
   <script>
     (() => {
@@ -327,5 +348,6 @@
     })();
   </script>
   <script src="./owner-cheats.js"></script>
+  <script src="./shared/amal-hub.js?v=1"></script>
 </body>
 </html>
