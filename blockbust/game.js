@@ -243,9 +243,9 @@
   const INF = 999999999;
   const BUG_INF_FLOOR = 1_000_000;
 
-  // TEMP: сюрприз для гостей. Убрать, когда Амаль скажет «убери сюрприз».
-  const TEMP_VISITOR_SURPRISE = true;
-  const TEMP_VISIT_EXCLUSIVE = true;
+  // Раздача гостям ВЫКЛЮЧЕНА. У кого уже записано в localStorage — остаётся.
+  const TEMP_VISITOR_SURPRISE = false;
+  const TEMP_VISIT_EXCLUSIVE = false;
   const SURPRISE_COINS = 99;
 
   const store = {
@@ -295,13 +295,19 @@
     return Array.isArray(list) ? list : [];
   }
 
-  function unlockFullCatalog() {
+  function migrateKeptRewards() {
+    // Старые владельцы hour3 сохраняют новый эксклюзив
     const owned = new Set(loadOwnedCubes());
-    FREE_CUBE_IDS.forEach((id) => owned.add(id));
-    // migrate old hour3 owners to keep something special
-    if (owned.has("hour3")) owned.add(EXCLUSIVE_CUBE_ID);
-    store.set(KEYS.ownedCubes, [...owned]);
-    store.set(KEYS.catalogGift, true);
+    let changed = false;
+    if (owned.has("hour3") && !owned.has(EXCLUSIVE_CUBE_ID)) {
+      owned.add(EXCLUSIVE_CUBE_ID);
+      changed = true;
+    }
+    if (store.get(KEYS.visitClaim, false) && !owned.has(EXCLUSIVE_CUBE_ID)) {
+      owned.add(EXCLUSIVE_CUBE_ID);
+      changed = true;
+    }
+    if (changed) store.set(KEYS.ownedCubes, [...owned]);
     return [...owned];
   }
 
@@ -318,20 +324,21 @@
   }
 
   function canClaimVisitExclusive() {
-    if (!TEMP_VISIT_EXCLUSIVE) return false;
-    if (isOwner()) return false;
-    return !store.get(KEYS.visitClaim, false);
+    // Новым больше не выдаём
+    return false;
   }
 
   function grantVisitExclusive(opts = {}) {
-    const owned = new Set(unlockFullCatalog());
+    // Оставлено для совместимости; новые выдачи отключены
+    if (!TEMP_VISIT_EXCLUSIVE && !isOwner()) return;
+    const owned = new Set(loadOwnedCubes());
+    FREE_CUBE_IDS.forEach((id) => owned.add(id));
     owned.add(EXCLUSIVE_CUBE_ID);
     store.set(KEYS.ownedCubes, [...owned]);
     store.set(KEYS.ownedSpeed, true);
     store.set(KEYS.visitClaim, true);
     state.ownedCubes = [...owned];
     state.ownedSpeed = true;
-    // Не ставим эксклюзив стартовым скином — только в каталог
     if (opts.equip) {
       state.cubeId = EXCLUSIVE_CUBE_ID;
       store.set(KEYS.cube, EXCLUSIVE_CUBE_ID);
@@ -339,31 +346,11 @@
   }
 
   function surprisePending() {
-    if (!TEMP_VISITOR_SURPRISE || isOwner()) return false;
-    return !store.get(KEYS.surprise, false);
+    return false;
   }
 
   function claimSurprise() {
-    if (!surprisePending()) {
-      state.modal = null;
-      render();
-      return;
-    }
-    state.coins += SURPRISE_COINS;
-    store.set(KEYS.coins, state.coins);
-    store.set(KEYS.surprise, true);
-    unlockFullCatalog();
-    state.ownedCubes = loadOwnedCubes();
-    if (canClaimVisitExclusive() || TEMP_VISIT_EXCLUSIVE) {
-      grantVisitExclusive({ equip: false });
-    }
-    // Стартовый скин — обычный глянец, не эксклюзив
-    if (!ownsCube(state.cubeId) || state.cubeId === "hour3" || state.cubeId === EXCLUSIVE_CUBE_ID) {
-      state.cubeId = "gloss";
-      store.set(KEYS.cube, "gloss");
-    }
     state.modal = null;
-    toast(`Сюрприз! +${SURPRISE_COINS} · весь каталог кубиков · 🌟 эксклюзив в коллекции`);
     render();
   }
 
@@ -373,7 +360,8 @@
     state.coins = INF;
     store.set(KEYS.best, INF);
     store.set(KEYS.coins, INF);
-    const owned = new Set(unlockFullCatalog());
+    const owned = new Set(loadOwnedCubes());
+    FREE_CUBE_IDS.forEach((id) => owned.add(id));
     owned.add(EXCLUSIVE_CUBE_ID);
     store.set(KEYS.ownedCubes, [...owned]);
     store.set(KEYS.ownedSpeed, true);
@@ -542,14 +530,11 @@
     cell: 40,
   };
 
-  state.ownedCubes = unlockFullCatalog();
+  state.ownedCubes = migrateKeptRewards();
+  state.ownedSpeed = hasOwnedSpeed();
   if (isOwner()) applyOwnerRewards();
-  // Стартовый скин — обычный, не эксклюзив
-  if (
-    !ownsCube(state.cubeId) ||
-    state.cubeId === "hour3" ||
-    state.cubeId === EXCLUSIVE_CUBE_ID
-  ) {
+  // Если эксклюзив не заработан — не держим его выбранным
+  if (!ownsCube(state.cubeId)) {
     state.cubeId = "gloss";
     store.set(KEYS.cube, "gloss");
   }
@@ -1100,11 +1085,7 @@
             )}%;background:${sk.accent}"></span></div></div></div>`
           : ""
       }
-      ${
-        TEMP_VISIT_EXCLUSIVE
-          ? `<div class="event-banner">🌟 Гостям: весь каталог кубиков + эксклюзив «Звёздный огонь»</div>`
-          : ""
-      }
+      ${""}
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
       <div class="hand">
@@ -1114,7 +1095,7 @@
             : state.selected != null
               ? `Выбрана фигура ${state.selected + 1} — наведи на поле и кликни`
               : "Клавиши 1 · 2 · 3 · или тяни мышкой"
-        }</div>
+        }${state.ownedSpeed && !isOwner() ? " · ⚡ Скорость III твоя" : ""}</div>
         <div class="pick-row">
           ${[0, 1, 2]
             .map((i) => {
@@ -1166,9 +1147,7 @@
               } ${c.name}</div><div style="font-size:10px;opacity:.7">${
                 locked
                   ? c.exclusive
-                    ? TEMP_VISIT_EXCLUSIVE
-                      ? "Из сюрприза гостя"
-                      : "Больше не выдаётся"
+                    ? "Больше не выдаётся"
                     : "Закрыто"
                   : c.id === state.cubeId
                     ? "Выбран"
@@ -1184,11 +1163,6 @@
                   s.id === state.bgId ? "Выбран" : "Сменить"
                 }</div></button>`,
             ).join("")}</div>
-            ${
-              TEMP_VISIT_EXCLUSIVE && canClaimVisitExclusive()
-                ? `<button class="primary" data-act="claim-visit" style="width:100%;margin-top:14px;background:${sk.accent}">🌟 Забрать эксклюзив гостя</button>`
-                : ""
-            }
           </div></div>`
           : ""
       }
@@ -1441,13 +1415,6 @@
 
   measure();
   startClassic();
-  if (surprisePending()) {
-    state.modal = "surprise";
-    render();
-  } else if (canClaimVisitExclusive()) {
-    state.modal = "surprise";
-    render();
-  }
 
   window.addEventListener("amal-owner-changed", (e) => {
     if (e.detail) {
