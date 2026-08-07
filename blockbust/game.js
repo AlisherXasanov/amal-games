@@ -82,7 +82,7 @@
     },
   ];
 
-  // Скины САМИХ кубиков
+  // Скины САМИХ кубиков — обычные открыты всем с первого входа
   const CUBE_SKINS = [
     {
       id: "gloss",
@@ -137,18 +137,74 @@
         `linear-gradient(90deg, ${hex} 50%, ${hex}bb 50%), linear-gradient(0deg, ${hex} 50%, ${hex}99 50%)`,
       shadow: "inset 0 0 0 1px #0004",
     },
-    // TEMP exclusive — claim only while TEMP_HOUR3_EVENT; keep forever if owned
     {
-      id: "hour3",
-      name: "Третий час",
-      icon: "⏳",
-      exclusive: true,
-      eventId: "hour3",
+      id: "wood",
+      name: "Дерево",
+      icon: "🪵",
+      free: true,
       paint: (hex) =>
-        `conic-gradient(from 40deg, #fde047, ${hex}, #f97316, #a855f7, #22d3ee, #fde047), radial-gradient(circle at 30% 25%, #fff9, transparent 45%)`,
-      shadow: "0 0 14px #facc15aa, inset 0 1px 0 #fff8, 0 3px 10px #0007",
+        `repeating-linear-gradient(90deg, ${hex} 0 4px, ${hex}dd 4px 8px), linear-gradient(180deg, #fff3, transparent 40%, #0003)`,
+      shadow: "inset 0 1px 0 #fff4, 0 2px 5px #0005",
+    },
+    {
+      id: "ice",
+      name: "Лёд",
+      icon: "🧊",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(160deg, #fff 0%, ${hex}cc 45%, #7dd3fc 100%), linear-gradient(40deg, transparent 30%, #fff8 50%, transparent 70%)`,
+      shadow: "inset 0 0 0 1px #fff8, 0 0 10px #7dd3fc66",
+    },
+    {
+      id: "lava",
+      name: "Лава",
+      icon: "🌋",
+      free: true,
+      paint: (hex) =>
+        `radial-gradient(circle at 30% 30%, #fde047, ${hex} 45%, #7c2d12 100%)`,
+      shadow: "0 0 12px #f9731688, inset 0 1px 0 #fff5",
+    },
+    {
+      id: "soft",
+      name: "Пастель",
+      icon: "🎀",
+      free: true,
+      paint: (hex) => `linear-gradient(180deg, #fff 0%, ${hex}aa 55%, ${hex} 100%)`,
+      shadow: "inset 0 2px 4px #fff8, 0 2px 6px #0003",
+    },
+    {
+      id: "stripe",
+      name: "Полоски",
+      icon: "🦓",
+      free: true,
+      paint: (hex) =>
+        `repeating-linear-gradient(45deg, ${hex} 0 5px, #1118 5px 10px)`,
+      shadow: "inset 0 0 0 1px #fff3, 0 2px 5px #0005",
+    },
+    {
+      id: "glass",
+      name: "Стекло",
+      icon: "🪟",
+      free: true,
+      paint: (hex) =>
+        `linear-gradient(135deg, #fff9 0%, ${hex}66 40%, ${hex}99 100%)`,
+      shadow: "inset 0 0 0 1px #fff6, 0 0 8px #fff3",
+    },
+    // TEMP exclusive: только владелец + гости ивента (не ставим при старте)
+    {
+      id: "starfire",
+      name: "Звёздный огонь",
+      icon: "🌟",
+      exclusive: true,
+      eventId: "visit",
+      paint: (hex) =>
+        `conic-gradient(from 20deg, #fff, #fde047, ${hex}, #f472b6, #38bdf8, #fff), radial-gradient(circle at 35% 30%, #fff9, transparent 50%)`,
+      shadow: "0 0 16px #fde047aa, inset 0 1px 0 #fff8, 0 3px 10px #0007",
     },
   ];
+
+  const FREE_CUBE_IDS = CUBE_SKINS.filter((c) => c.free).map((c) => c.id);
+  const EXCLUSIVE_CUBE_ID = "starfire";
 
   const LEVELS = [
     { id: 1, title: "Первый шаг", desc: "Набери 40 очков", kind: "score", target: 40 },
@@ -167,7 +223,7 @@
     { id: "zen", name: "Дзен", icon: "🧘", desc: "Без проигрыша — только счёт" },
     { id: "color", name: "Цветолов", icon: "🎯", desc: "Очищай линии с целевым цветом" },
     { id: "tiny", name: "Мини-поле", icon: "🔳", desc: "Поле 6×6 — теснее и злее" },
-    { id: "speed3", name: "Скорость III", icon: "⚡", desc: "Эксклюзив «Третий час»", exclusive: true },
+    { id: "speed3", name: "Скорость III", icon: "⚡", desc: "Эксклюзив гостя и владельца", exclusive: true },
   ];
 
   const KEYS = {
@@ -176,19 +232,20 @@
     skin: "bb-web-skin",
     cube: "bb-web-cube",
     adventure: "bb-web-adv",
-    surprise: "bb-web-temp-surprise-v1",
+    surprise: "bb-web-temp-surprise-v2",
     ownedCubes: "bb-web-owned-cubes-v1",
     ownedSpeed: "bb-web-owned-speed-v1",
-    hour3Claim: "bb-web-hour3-claimed-v1",
+    visitClaim: "bb-web-visit-exclusive-v1",
+    catalogGift: "bb-web-catalog-gift-v1",
     miniBest: "bb-web-mini-best-v1",
   };
 
   const INF = 999999999;
   const BUG_INF_FLOOR = 1_000_000;
 
-  // TEMP: сюрприз + ивент «Третий час». Убрать, когда Амаль скажет «убери сюрприз».
+  // TEMP: сюрприз для гостей. Убрать, когда Амаль скажет «убери сюрприз».
   const TEMP_VISITOR_SURPRISE = true;
-  const TEMP_HOUR3_EVENT = true;
+  const TEMP_VISIT_EXCLUSIVE = true;
   const SURPRISE_COINS = 99;
 
   const store = {
@@ -238,6 +295,16 @@
     return Array.isArray(list) ? list : [];
   }
 
+  function unlockFullCatalog() {
+    const owned = new Set(loadOwnedCubes());
+    FREE_CUBE_IDS.forEach((id) => owned.add(id));
+    // migrate old hour3 owners to keep something special
+    if (owned.has("hour3")) owned.add(EXCLUSIVE_CUBE_ID);
+    store.set(KEYS.ownedCubes, [...owned]);
+    store.set(KEYS.catalogGift, true);
+    return [...owned];
+  }
+
   function hasOwnedSpeed() {
     return !!store.get(KEYS.ownedSpeed, false) || isOwner();
   }
@@ -250,21 +317,25 @@
     return loadOwnedCubes().includes(id);
   }
 
-  function canClaimHour3() {
-    if (!TEMP_HOUR3_EVENT || isOwner()) return false;
-    return !store.get(KEYS.hour3Claim, false);
+  function canClaimVisitExclusive() {
+    if (!TEMP_VISIT_EXCLUSIVE) return false;
+    if (isOwner()) return false;
+    return !store.get(KEYS.visitClaim, false);
   }
 
-  function claimHour3Exclusives() {
-    const owned = new Set(loadOwnedCubes());
-    owned.add("hour3");
+  function grantVisitExclusive(opts = {}) {
+    const owned = new Set(unlockFullCatalog());
+    owned.add(EXCLUSIVE_CUBE_ID);
     store.set(KEYS.ownedCubes, [...owned]);
     store.set(KEYS.ownedSpeed, true);
-    store.set(KEYS.hour3Claim, true);
+    store.set(KEYS.visitClaim, true);
     state.ownedCubes = [...owned];
     state.ownedSpeed = true;
-    state.cubeId = "hour3";
-    store.set(KEYS.cube, "hour3");
+    // Не ставим эксклюзив стартовым скином — только в каталог
+    if (opts.equip) {
+      state.cubeId = EXCLUSIVE_CUBE_ID;
+      store.set(KEYS.cube, EXCLUSIVE_CUBE_ID);
+    }
   }
 
   function surprisePending() {
@@ -281,15 +352,18 @@
     state.coins += SURPRISE_COINS;
     store.set(KEYS.coins, state.coins);
     store.set(KEYS.surprise, true);
-    state.bgId = "rainbow";
-    store.set(KEYS.skin, "rainbow");
-    if (canClaimHour3()) claimHour3Exclusives();
+    unlockFullCatalog();
+    state.ownedCubes = loadOwnedCubes();
+    if (canClaimVisitExclusive() || TEMP_VISIT_EXCLUSIVE) {
+      grantVisitExclusive({ equip: false });
+    }
+    // Стартовый скин — обычный глянец, не эксклюзив
+    if (!ownsCube(state.cubeId) || state.cubeId === "hour3" || state.cubeId === EXCLUSIVE_CUBE_ID) {
+      state.cubeId = "gloss";
+      store.set(KEYS.cube, "gloss");
+    }
     state.modal = null;
-    toast(
-      hasOwnedSpeed()
-        ? `Сюрприз! +${SURPRISE_COINS} · кубики «Третий час» · Скорость III`
-        : `Сюрприз! +${SURPRISE_COINS} монет`,
-    );
+    toast(`Сюрприз! +${SURPRISE_COINS} · весь каталог кубиков · 🌟 эксклюзив в коллекции`);
     render();
   }
 
@@ -299,8 +373,8 @@
     state.coins = INF;
     store.set(KEYS.best, INF);
     store.set(KEYS.coins, INF);
-    const owned = new Set(loadOwnedCubes());
-    owned.add("hour3");
+    const owned = new Set(unlockFullCatalog());
+    owned.add(EXCLUSIVE_CUBE_ID);
     store.set(KEYS.ownedCubes, [...owned]);
     store.set(KEYS.ownedSpeed, true);
     state.ownedCubes = [...owned];
@@ -468,7 +542,17 @@
     cell: 40,
   };
 
-  if (!ownsCube(state.cubeId)) state.cubeId = "gloss";
+  state.ownedCubes = unlockFullCatalog();
+  if (isOwner()) applyOwnerRewards();
+  // Стартовый скин — обычный, не эксклюзив
+  if (
+    !ownsCube(state.cubeId) ||
+    state.cubeId === "hour3" ||
+    state.cubeId === EXCLUSIVE_CUBE_ID
+  ) {
+    state.cubeId = "gloss";
+    store.set(KEYS.cube, "gloss");
+  }
   state.best = loadBest();
   state.coins = loadCoins();
   if (isOwner()) applyOwnerRewards();
@@ -826,8 +910,8 @@
     state.drag.row = hover.row;
     state.drag.col = hover.col;
     state.drag.valid = hover.valid;
-    app.querySelectorAll("[data-hand]").forEach((el) => {
-      el.classList.toggle("selected", Number(el.getAttribute("data-hand")) === idx);
+    app.querySelectorAll("[data-pick]").forEach((el) => {
+      el.classList.toggle("selected", Number(el.getAttribute("data-pick")) === idx);
     });
     syncDragDom();
   }
@@ -854,13 +938,15 @@
     state.drag = null;
     document.body.classList.remove("dragging");
     clearDragGhost();
-    if (moved && hover.valid) {
+    if (hover.valid) {
       place(index, hover.row, hover.col);
       return;
     }
-    // Tap on piece = select for tap-to-place (mobile friendly)
+    // Короткий тап: на телефоне оставляем выбранным и ждём тап по полю;
+    // если палец уже над полем но invalid — просто отмена
     if (!moved) {
       state.selected = index;
+      state.aim = null;
       render();
       return;
     }
@@ -1015,17 +1101,19 @@
           : ""
       }
       ${
-        TEMP_HOUR3_EVENT
-          ? `<div class="event-banner">⏳ «Третий час»: забери эксклюзив в сюрпризе</div>`
+        TEMP_VISIT_EXCLUSIVE
+          ? `<div class="event-banner">🌟 Гостям: весь каталог кубиков + эксклюзив «Звёздный огонь»</div>`
           : ""
       }
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
       <div class="hand">
         <div class="hint">${
-          state.selected != null
-            ? `Выбрана фигура ${state.selected + 1} — наведи на поле и нажми`
-            : "Клавиши 1 · 2 · 3 выбирают фигуру (мышь на фигуру не нужна)"
+          isCoarsePointer()
+            ? "Тяни фигуру пальцем на поле · или кнопки 1–2–3"
+            : state.selected != null
+              ? `Выбрана фигура ${state.selected + 1} — наведи на поле и кликни`
+              : "Клавиши 1 · 2 · 3 · или тяни мышкой"
         }</div>
         <div class="pick-row">
           ${[0, 1, 2]
@@ -1044,7 +1132,7 @@
       </div>
       ${
         state.modal === "surprise"
-          ? `<div class="overlay surprise-overlay"><div class="modal surprise-modal" style="text-align:center" data-stop="1"><div class="surprise-burst" aria-hidden="true">✨🎁⏳</div><h2>Сюрприз!</h2><p class="sub">Добро пожаловать в Blockbust.<br/>Гостю — подарок и ивент «Третий час».</p><p class="surprise-gift">+${SURPRISE_COINS} монет<br/>⏳ эксклюзивные кубики<br/>⚡ Скорость III навсегда</p><button class="primary" data-act="claim-surprise" style="width:100%;margin-top:14px;background:${sk.accent}">Забрать подарок</button></div></div>`
+          ? `<div class="overlay surprise-overlay"><div class="modal surprise-modal" style="text-align:center" data-stop="1"><div class="surprise-burst" aria-hidden="true">✨🎁🌟</div><h2>Сюрприз!</h2><p class="sub">Добро пожаловать в Blockbust.</p><p class="surprise-gift">+${SURPRISE_COINS} монет<br/>весь каталог кубиков открыт<br/>🌟 «Звёздный огонь» + ⚡ Скорость III<br/><span style="opacity:.75;font-size:12px">Эксклюзив в коллекции — не на старте</span></p><button class="primary" data-act="claim-surprise" style="width:100%;margin-top:14px;background:${sk.accent}">Забрать подарок</button></div></div>`
           : ""
       }
       ${
@@ -1078,8 +1166,8 @@
               } ${c.name}</div><div style="font-size:10px;opacity:.7">${
                 locked
                   ? c.exclusive
-                    ? TEMP_HOUR3_EVENT
-                      ? "Только из сюрприза"
+                    ? TEMP_VISIT_EXCLUSIVE
+                      ? "Из сюрприза гостя"
                       : "Больше не выдаётся"
                     : "Закрыто"
                   : c.id === state.cubeId
@@ -1097,8 +1185,8 @@
                 }</div></button>`,
             ).join("")}</div>
             ${
-              TEMP_HOUR3_EVENT && canClaimHour3()
-                ? `<button class="primary" data-act="claim-hour3" style="width:100%;margin-top:14px;background:${sk.accent}">⏳ Забрать эксклюзив «Третий час»</button>`
+              TEMP_VISIT_EXCLUSIVE && canClaimVisitExclusive()
+                ? `<button class="primary" data-act="claim-visit" style="width:100%;margin-top:14px;background:${sk.accent}">🌟 Забрать эксклюзив гостя</button>`
                 : ""
             }
           </div></div>`
@@ -1184,10 +1272,10 @@
           render();
         }
         if (act === "claim-surprise") claimSurprise();
-        if (act === "claim-hour3") {
-          if (canClaimHour3()) {
-            claimHour3Exclusives();
-            toast("⏳ Кубики «Третий час» и Скорость III — твои навсегда");
+        if (act === "claim-visit") {
+          if (canClaimVisitExclusive()) {
+            grantVisitExclusive({ equip: false });
+            toast("🌟 «Звёздный огонь» и Скорость III — в коллекции");
             render();
           }
         }
@@ -1252,10 +1340,23 @@
     }
 
     app.querySelectorAll("[data-pick]").forEach((btn) => {
+      const idx = Number(btn.getAttribute("data-pick"));
+      btn.addEventListener(
+        "pointerdown",
+        (e) => {
+          const piece = state.hand[idx];
+          if (!piece || state.gameOver || state.levelWon) return;
+          if (e.button != null && e.button !== 0) return;
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+          // На телефоне сразу тянем; на ПК тоже можно тянуть с кнопки
+          beginDrag(idx, e.clientX, e.clientY, e.pointerId);
+        },
+        { passive: false },
+      );
       btn.addEventListener("click", (e) => {
+        // Клик без драга уже обработан endDrag; для клавиатуры/доступности
         e.preventDefault();
-        e.stopPropagation();
-        selectHand(Number(btn.getAttribute("data-pick")));
       });
     });
 
@@ -1343,7 +1444,7 @@
   if (surprisePending()) {
     state.modal = "surprise";
     render();
-  } else if (canClaimHour3()) {
+  } else if (canClaimVisitExclusive()) {
     state.modal = "surprise";
     render();
   }
