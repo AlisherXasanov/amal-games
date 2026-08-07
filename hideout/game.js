@@ -7,56 +7,16 @@
   const MERGE_R = 42;
   const HIDE_SPOT_R = 36;
 
-  const app = document.getElementById("app");
-  const screen = document.createElement("div");
-  screen.className = "screen";
-  app.appendChild(screen);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  screen.appendChild(canvas);
+  const screen = document.getElementById("screen");
+  const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
-
-  const hud = document.createElement("div");
-  hud.className = "hud";
-  hud.hidden = true;
-  screen.appendChild(hud);
-
-  const toastEl = document.createElement("div");
-  toastEl.className = "toast";
-  screen.appendChild(toastEl);
-
-  const touch = document.createElement("div");
-  touch.className = "touch";
-  touch.innerHTML = `
-    <div class="pad left" id="stick"></div>
-    <div class="pad right" id="actBtn">E<br>действие</div>
-  `;
-  touch.hidden = true;
-  screen.appendChild(touch);
-
-  const menu = document.createElement("div");
-  menu.className = "panel";
-  menu.innerHTML = `
-    <h1>Укрытие</h1>
-    <p class="sub">Искатели ищут предметы и прячущихся. Прячущиеся прячутся в укрытиях и сливаются с командой и ботами, чтобы раствориться в толпе.</p>
-    <div class="roles">
-      <button type="button" class="btn seeker" data-role="seeker">Искатель</button>
-      <button type="button" class="btn hider" data-role="hider">Прячущийся</button>
-    </div>
-    <p class="hints">
-      WASD / стрелки — ходьба · E — поймать / слиться / спрятаться<br>
-      Искатели: собери ${ITEMS_NEEDED} предметов или поймай всех.<br>
-      Прячущиеся: дождись таймера или слейся с командой.
-    </p>
-  `;
-  screen.appendChild(menu);
-
-  const endPanel = document.createElement("div");
-  endPanel.className = "panel";
-  endPanel.hidden = true;
-  screen.appendChild(endPanel);
+  const hud = document.getElementById("hud");
+  const toastEl = document.getElementById("toast");
+  const touch = document.getElementById("touch");
+  const menu = document.getElementById("menu");
+  const endPanel = document.getElementById("endPanel");
+  const stickEl = document.getElementById("stick");
+  const actBtn = document.getElementById("actBtn");
 
   let toastTimer = 0;
   function toast(msg, ms = 2200) {
@@ -172,8 +132,6 @@
     keys[e.code] = false;
   });
 
-  const stickEl = touch.querySelector("#stick");
-  const actBtn = touch.querySelector("#actBtn");
   let stickId = null;
 
   stickEl.addEventListener("pointerdown", (e) => {
@@ -661,8 +619,8 @@
       <p class="sub">${g.msg}</p>
       <p class="sub">Предметы: ${g.itemsGot}/${ITEMS_NEEDED} · Поймано: ${g.caughtCount}</p>
       <div class="roles">
-        <button class="btn again" id="again">Ещё раз</button>
-        <button class="btn ghost" id="tomenu">В меню</button>
+        <button type="button" class="btn again" id="again">Ещё раз</button>
+        <button type="button" class="btn ghost" id="tomenu">В меню</button>
       </div>
     `;
     endPanel.querySelector("#again").onclick = () => startGame(g.playerRole);
