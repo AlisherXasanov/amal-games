@@ -564,6 +564,13 @@
 
   function boot() {
     ensureStyles();
+    try {
+      const params = new URLSearchParams(location.search);
+      const qNick = params.get("nick");
+      if (qNick) setNick(qNick);
+    } catch {
+      /* ignore */
+    }
     bumpPresence();
     paint();
     if (!getNick()) {

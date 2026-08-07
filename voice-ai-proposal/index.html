@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>СкажиИгру — предложение</title>
+  <meta name="description" content="Нейросеть, которая слышит голос, отвечает по-русски и создаёт игры." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <nav class="topbar" aria-label="Навигация по слайдам">
+    <span class="brand">СкажиИгру</span>
+    <div class="progress" aria-hidden="true"><i id="progress-bar"></i></div>
+    <label class="lang-wrap pitch-lang">
+      <span class="lang-label">Lang</span>
+      <select id="pitch-lang" aria-label="Language">
+        <option value="ru">RU</option>
+        <option value="en">EN</option>
+        <option value="kk">KK</option>
+        <option value="es">ES</option>
+        <option value="tr">TR</option>
+      </select>
+    </label>
+    <span class="slide-count"><span id="current">1</span> / <span id="total">8</span></span>
+  </nav>
+
+  <main class="deck" id="deck" tabindex="0">
+    <!-- 1. Hero -->
+    <section class="slide is-active" data-title="Идея">
+      <div class="slide-inner hero">
+        <p class="eyebrow">Проектное предложение</p>
+        <h1>СкажиИгру</h1>
+        <p class="lede">Нейросеть, которая слышит тебя через микрофон, отвечает по-русски и сама создаёт игры.</p>
+        <p class="free-banner" role="note" id="free-hero">
+          <span class="free-art" aria-hidden="true">
+            <span class="free-badge">
+              <span class="free-badge-ribbon"></span>
+              <span class="free-badge-core">
+                <span class="free-badge-word">FREE</span>
+                <span class="free-badge-sub">0 ¤</span>
+              </span>
+              <span class="free-badge-leaf l1"></span>
+              <span class="free-badge-leaf l2"></span>
+              <span class="free-badge-star st1"></span>
+              <span class="free-badge-star st2"></span>
+            </span>
+          </span>
+          <span class="free-orbit" aria-hidden="true">
+            <span class="free-smile">☺</span>
+            <span class="free-spark s1"></span>
+            <span class="free-spark s2"></span>
+            <span class="free-spark s3"></span>
+          </span>
+          <span class="free-copy">
+            <span class="free-kicker" data-free-decor>играй · твори · делись</span>
+            <span class="free-text" data-free-html>Создавай игры <strong>бесплатно</strong> — сайт открыт для всех. Это правда круто!</span>
+          </span>
+        </p>
+        <p class="season-line"><span class="season-pill" id="season-badge">Лето</span></p>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="mic">
+            <span class="mic-body"></span>
+            <span class="mic-stand"></span>
+            <span class="mic-base"></span>
+            <span class="ring r1"></span>
+            <span class="ring r2"></span>
+            <span class="ring r3"></span>
+          </div>
+          <div class="speech-bubbles">
+            <div class="bubble in">«Сделай игру про зомби»</div>
+            <div class="bubble out">«Хорошо, создаю…»</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Problem -->
+    <section class="slide" data-title="Проблема">
+      <div class="slide-inner">
+        <p class="eyebrow">Зачем это нужно</p>
+        <h2>Создавать игры сложно</h2>
+        <p class="lede">Чтобы сделать игру, обычно нужны код, дизайн и много времени. Не каждый может это осилить — особенно дети и новички.</p>
+        <ul class="points">
+          <li>
+            <strong>Высокий порог входа</strong>
+            <span>Нужно учить языки программирования и инструменты.</span>
+          </li>
+          <li>
+            <strong>Медленный цикл</strong>
+            <span>От идеи до рабочей игры проходят дни и недели.</span>
+          </li>
+          <li>
+            <strong>Языковой барьер</strong>
+            <span>Многие ИИ-инструменты плохо говорят и понимают русский.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. Solution -->
+    <section class="slide" data-title="Решение">
+      <div class="slide-inner">
+        <p class="eyebrow">Наше решение</p>
+        <h2>Говори — и игра появляется</h2>
+        <p class="lede">Человек говорит в микрофон. Нейросеть понимает запрос, создаёт игру и отвечает голосом на русском.</p>
+        <div class="pillars">
+          <article>
+            <span class="num">01</span>
+            <h3>Слушает</h3>
+            <p>Микрофон + распознавание речи (русский язык).</p>
+          </article>
+          <article>
+            <span class="num">02</span>
+            <h3>Думает</h3>
+            <p>Нейросеть превращает слова в правила, уровни и код игры.</p>
+          </article>
+          <article>
+            <span class="num">03</span>
+            <h3>Говорит и делает</h3>
+            <p>Отвечает голосом и сразу запускает готовую игру.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. How it works -->
+    <section class="slide" data-title="Как работает">
+      <div class="slide-inner">
+        <p class="eyebrow">Схема</p>
+        <h2>Как это устроено</h2>
+        <ol class="flow">
+          <li>
+            <span class="flow-icon">1</span>
+            <div>
+              <strong>Микрофон</strong>
+              <p>Человек говорит: «Сделай гонку на багги»</p>
+            </div>
+          </li>
+          <li>
+            <span class="flow-icon">2</span>
+            <div>
+              <strong>Речь → текст</strong>
+              <p>Система распознаёт русскую речь</p>
+            </div>
+          </li>
+          <li>
+            <span class="flow-icon">3</span>
+            <div>
+              <strong>Нейросеть</strong>
+              <p>Планирует игру и пишет код / ассеты</p>
+            </div>
+          </li>
+          <li>
+            <span class="flow-icon">4</span>
+            <div>
+              <strong>Голос + игра</strong>
+              <p>«Готово! Управление на стрелки» — и игра открывается</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 5. Example -->
+    <section class="slide" data-title="Пример">
+      <div class="slide-inner">
+        <p class="eyebrow">Сценарий</p>
+        <h2>Пример диалога</h2>
+        <div class="dialogue">
+          <div class="line you">
+            <span class="who">Ты</span>
+            <p>«Сделай игру, где растения защищаются от зомби. Добавь магазин улучшений.»</p>
+          </div>
+          <div class="line ai">
+            <span class="who">СкажиИгру</span>
+            <p>«Понял. Делаю поле 5×9, волны зомби и магазин за монеты. Уже почти готово…»</p>
+          </div>
+          <div class="line you">
+            <span class="who">Ты</span>
+            <p>«Сделай босса на десятой волне и скажи, как играть.»</p>
+          </div>
+          <div class="line ai">
+            <span class="who">СкажиИгру</span>
+            <p>«Босс добавлен. Кликай по клеткам, чтобы сажать растения. Удачи!»</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Features -->
+    <section class="slide" data-title="Возможности">
+      <div class="slide-inner">
+        <p class="eyebrow">Что умеет</p>
+        <h2>Возможности системы</h2>
+        <div class="feature-grid">
+          <article>
+            <h3>Голосовой ввод</h3>
+            <p>Микрофон в браузере или приложении. Говоришь — система слышит.</p>
+          </article>
+          <article>
+            <h3>Русский голос</h3>
+            <p>Ответы синтезом речи на русском: объясняет, уточняет, помогает.</p>
+          </article>
+          <article>
+            <h3>Генерация игр</h3>
+            <p>Аркады, раннеры, шутеры, головоломки — по твоему описанию.</p>
+          </article>
+          <article>
+            <h3>Правки на лету</h3>
+            <p>«Сделай быстрее», «добавь врагов» — игра меняется без кода руками.</p>
+          </article>
+          <article>
+            <h3>Каталог Amal’s Games</h3>
+            <p>Новые игры можно сохранять рядом с Kick Buddy, X-Buggy и другими.</p>
+          </article>
+          <article>
+            <h3>«Делает всё»</h3>
+            <p>От идеи до запуска: дизайн уровней, правила, управление, звук.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Tech -->
+    <section class="slide" data-title="Технологии">
+      <div class="slide-inner">
+        <p class="eyebrow">Технологии</p>
+        <h2>Из чего собрать</h2>
+        <div class="tech">
+          <div class="tech-col">
+            <h3>Слух</h3>
+            <ul>
+              <li>Web Speech API / Whisper</li>
+              <li>Микрофон в браузере</li>
+            </ul>
+          </div>
+          <div class="tech-col">
+            <h3>Мозг</h3>
+            <ul>
+              <li>Большая языковая модель</li>
+              <li>Генерация HTML / JS игр</li>
+            </ul>
+          </div>
+          <div class="tech-col">
+            <h3>Голос</h3>
+            <ul>
+              <li>Синтез речи (русский TTS)</li>
+              <li>Диалог в реальном времени</li>
+            </ul>
+          </div>
+          <div class="tech-col">
+            <h3>Игры</h3>
+            <ul>
+              <li>Canvas / WebGL</li>
+              <li>Портал Amal’s Games</li>
+            </ul>
+          </div>
+        </div>
+        <p class="note">Первый прототип можно сделать прямо в браузере: микрофон → нейросеть → готовая мини-игра.</p>
+      </div>
+    </section>
+
+    <!-- 8. Close -->
+    <section class="slide" data-title="Итог">
+      <div class="slide-inner close">
+        <p class="eyebrow">Итог</p>
+        <h2>Одна фраза — и игра готова</h2>
+        <p class="lede">СкажиИгру — нейросеть с микрофоном: слышит по-русски, отвечает голосом и создаёт игры за тебя.</p>
+        <ul class="close-list">
+          <li>Говоришь идею в микрофон</li>
+          <li>Нейросеть всё делает сама</li>
+          <li>Отвечает и объясняет по-русски</li>
+          <li>Игра запускается сразу</li>
+        </ul>
+        <p class="tagline">Скажи. Услышь ответ. Играй.</p>
+        <p class="free-banner" role="note" style="margin-top:1rem" id="free-end">
+          <span class="free-orbit" aria-hidden="true">
+            <span class="free-smile">☺</span>
+          </span>
+          <span class="free-copy">
+            <span class="free-kicker" data-free-decor>играй · твори · делись</span>
+            <span class="free-text" data-free-html>И помни: всё это <strong>бесплатно</strong> — создавай сколько хочешь, платить не надо. Класс!</span>
+          </span>
+        </p>
+        <p style="margin-top:1.25rem">
+          <a class="nav-btn primary" href="studio.html" style="display:inline-block;text-decoration:none">Перейти в студию →</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="controls">
+    <button type="button" class="nav-btn" id="prev" aria-label="Предыдущий слайд">← Назад</button>
+    <div class="dots" id="dots" role="tablist" aria-label="Слайды"></div>
+    <button type="button" class="nav-btn primary" id="next" aria-label="Следующий слайд">Далее →</button>
+  </footer>
+
+  <script src="i18n.js"></script>
+  <script src="season.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
