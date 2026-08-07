@@ -414,7 +414,8 @@
     if (nick.length < NICK_MIN) return { ok: false, error: "Минимум " + NICK_MIN + " символа" };
     if (/[<>]/.test(nick)) return { ok: false, error: "Без < >" };
     storeSet(KEYS.nick, nick);
-    bumpPresence();
+    if (!isOwner()) bumpPresence();
+    else removeSelfFromPresence();
     return { ok: true, nick };
   }
 
@@ -444,7 +445,7 @@
     const list = loadNotes();
     list.push(note);
     saveNotes(list);
-    bumpPresence();
+    if (!isOwner()) bumpPresence();
     return { ok: true, note };
   }
 
@@ -454,6 +455,11 @@
   }
 
   function bumpPresence() {
+    // Главного админа в список игроков НЕ пишем
+    if (isOwner()) {
+      removeSelfFromPresence();
+      return;
+    }
     const nick = getNick();
     if (!nick) return;
     const map = loadPresence();
@@ -466,53 +472,83 @@
     storeSet(KEYS.presence, map);
   }
 
+  function removeSelfFromPresence() {
+    const nick = getNick();
+    const map = loadPresence();
+    let changed = false;
+    if (nick && map[nick]) {
+      delete map[nick];
+      changed = true;
+    }
+    // На всякий случай убрать типичные админ-ники
+    ["AmalNova", "Amal", "AmalX", "AmalOwner"].forEach((n) => {
+      if (map[n]) {
+        delete map[n];
+        changed = true;
+      }
+    });
+    if (changed) storeSet(KEYS.presence, map);
+  }
+
   function recentPlayers(maxAgeMs) {
     const age = maxAgeMs || 1000 * 60 * 60 * 24 * 7;
     const now = Date.now();
+    const myNick = (getNick() || "").toLowerCase();
     return Object.values(loadPresence())
       .filter((p) => p && p.at && now - p.at < age)
+      .filter((p) => String(p.nick || "").toLowerCase() !== myNick)
+      .filter((p) => !p.isOwner)
       .sort((a, b) => b.at - a.at);
   }
 
   function ensureStyles() {
-    if (document.getElementById("amal-hub-css")) return;
+    if (document.getElementById("amal-hub-css")) {
+      document.getElementById("amal-hub-css").remove();
+    }
     const css = document.createElement("style");
     css.id = "amal-hub-css";
     css.textContent = `
-#amal-hub-root{position:fixed;z-index:2147483000;inset:0;pointer-events:none;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+#amal-hub-root{position:fixed;z-index:2147483000;inset:0;pointer-events:none;font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
 #amal-hub-root *{box-sizing:border-box}
-.amal-hub-fab{pointer-events:auto;position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:48px;height:48px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(15,15,25,.92);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.45)}
-.amal-hub-fab.admin{border-color:rgba(251,191,36,.55);background:rgba(60,40,10,.95)}
-.amal-hub-overlay{pointer-events:auto;position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px}
-.amal-hub-modal{width:min(100%,420px);max-height:min(88dvh,640px);overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.14);background:#12131cf5;color:#f4f4f5;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.amal-hub-modal h2{margin:0;font-size:1.15rem}
-.amal-hub-modal .sub{margin:4px 0 0;font-size:12px;opacity:.65}
-.amal-hub-row{display:flex;gap:8px;margin-top:12px}
-.amal-hub-modal input,.amal-hub-modal textarea{width:100%;margin-top:10px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;padding:10px 12px;font:inherit}
-.amal-hub-modal textarea{min-height:90px;resize:vertical}
-.amal-hub-modal button{border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;padding:10px 12px;font-weight:700;cursor:pointer}
-.amal-hub-modal button.primary{background:#eab308;color:#111;border:none}
+.amal-hub-fab{pointer-events:auto;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:54px;height:54px;border-radius:18px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(160deg,#1e1b4b,#0f172a);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.45)}
+.amal-hub-fab.admin{border-color:rgba(251,191,36,.65);background:linear-gradient(160deg,#78350f,#422006);box-shadow:0 12px 28px rgba(245,158,11,.25)}
+.amal-hub-dock{pointer-events:auto;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;padding:8px;border-radius:18px;border:1px solid rgba(251,191,36,.4);background:rgba(12,10,6,.88);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.45);max-width:calc(100vw - 88px);overflow:auto}
+.amal-hub-dock button{border:0;border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.08);color:#fff7ed;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.amal-hub-dock button.primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111}
+.amal-hub-overlay{pointer-events:auto;position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(8px)}
+@media(min-width:720px){.amal-hub-overlay{align-items:center}}
+.amal-hub-modal{width:min(100%,440px);max-height:min(90dvh,680px);overflow:auto;border-radius:24px 24px 18px 18px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#171526f5,#0b1020f7);color:#f8fafc;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.amal-hub-modal h2{margin:0;font-size:1.25rem;letter-spacing:-.02em}
+.amal-hub-modal .sub{margin:6px 0 0;font-size:13px;opacity:.7;line-height:1.4}
+.amal-hub-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.amal-hub-modal input,.amal-hub-modal textarea{width:100%;margin-top:10px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;padding:12px 14px;font:inherit}
+.amal-hub-modal textarea{min-height:96px;resize:vertical}
+.amal-hub-modal button{border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:11px 14px;font-weight:800;cursor:pointer}
+.amal-hub-modal button.primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111;border:none}
 .amal-hub-modal button:disabled{opacity:.45}
-.amal-hub-tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-.amal-hub-tabs button{flex:1;min-width:90px;font-size:12px}
-.amal-hub-tabs button.on{outline:2px solid #eab308}
+.amal-hub-tabs{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.amal-hub-tabs button{flex:1;min-width:88px;font-size:12px}
+.amal-hub-tabs button.on{background:rgba(251,191,36,.18);outline:2px solid #fbbf24;color:#fde68a}
 .amal-hub-list{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
-.amal-hub-list li{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.04);font-size:12px}
-.amal-hub-list .meta{opacity:.6;font-size:10px;margin-bottom:4px;font-weight:700}
-.amal-hub-chip{position:fixed;left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));pointer-events:auto;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.7);color:#fde68a;font-size:11px;font-weight:800;max-width:55vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.amal-hub-err{color:#fca5a5;font-size:12px;margin-top:8px;font-weight:700}
-.amal-hub-ok{color:#86efac;font-size:12px;margin-top:8px;font-weight:700}
-.amal-hub-help{margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#fde68a;font-size:12px;font-weight:700;line-height:1.45}
-.amal-hub-step{margin-top:12px;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.amal-hub-list li{border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px;background:rgba(255,255,255,.04);font-size:13px}
+.amal-hub-list .meta{opacity:.65;font-size:11px;margin-bottom:6px;font-weight:800}
+.amal-hub-chip{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));pointer-events:auto;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.82);color:#e2e8f0;font-size:11px;font-weight:800;max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px)}
+.amal-hub-chip.owner{border-color:rgba(251,191,36,.45);color:#fde68a;background:rgba(69,26,3,.85)}
+.amal-hub-err{color:#fca5a5;font-size:12px;margin-top:8px;font-weight:800}
+.amal-hub-ok{color:#86efac;font-size:12px;margin-top:8px;font-weight:800}
+.amal-hub-help{margin-top:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(125,211,252,.28);background:rgba(14,165,233,.12);color:#e0f2fe;font-size:13px;font-weight:700;line-height:1.45}
+.amal-hub-step{margin-top:12px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
 .amal-hub-step h3{margin:0 0 6px;font-size:14px}
 .amal-hub-step p{margin:0;font-size:12px;opacity:.75;line-height:1.4}
 .amal-hub-big{display:grid;gap:8px;margin-top:12px}
-.amal-hub-big button{width:100%;text-align:left;padding:12px 14px;font-size:14px}
+.amal-hub-big button{width:100%;text-align:left;padding:14px;font-size:14px;background:rgba(255,255,255,.05)}
 .amal-hub-big button b{display:block;font-size:15px}
-.amal-hub-big button span{display:block;font-size:11px;opacity:.7;font-weight:600;margin-top:2px}
-.amal-hub-games{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
-.amal-hub-games label{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
-.amal-hub-linkbox{margin-top:10px;padding:8px;border-radius:10px;background:rgba(0,0,0,.35);font-size:10px;word-break:break-all;line-height:1.35}
+.amal-hub-big button span{display:block;font-size:12px;opacity:.72;font-weight:650;margin-top:3px}
+.amal-hub-games{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.amal-hub-games label{display:flex;gap:8px;align-items:center;font-size:12px;font-weight:750;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.amal-hub-linkbox{margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,.35);font-size:11px;word-break:break-all;line-height:1.4}
+.amal-hub-hero{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+.amal-hub-hero .badge{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(160deg,#fbbf24,#b45309);font-size:22px;flex:0 0 auto}
 `;
     document.head.appendChild(css);
   }
@@ -573,17 +609,31 @@
     const nick = getNick();
     const owner = isOwner();
     const gameAdmin = isGameAdmin();
+    const gid = gameIdFromPath();
+    const inGame = gid && gid !== "portal";
     let html = "";
-    if (nick) {
+    if (owner) {
+      html += `<button type="button" class="amal-hub-chip owner" data-amal="open">👑 Хозяин · не в списке игроков</button>`;
+    } else if (nick) {
       html += `<button type="button" class="amal-hub-chip" data-amal="open">${escapeHtml(
         nick,
-      )} · ${escapeHtml(gameTitle(gameIdFromPath()))}${
-        owner ? " · главный" : gameAdmin ? " · админ" : ""
-      }</button>`;
+      )} · ${escapeHtml(gameTitle(gid))}${gameAdmin ? " · админ" : ""}</button>`;
     }
-    html += `<button type="button" class="amal-hub-fab ${owner || gameAdmin ? "admin" : ""}" data-amal="open" title="${
-      owner ? "Моё админ-меню" : gameAdmin ? "Твоя админка" : "Ник и заметки"
-    }">${owner || gameAdmin ? "👑" : "📝"}</button>`;
+
+    // Быстрые действия во время игры (только главному)
+    if (owner && inGame && !open && !gateMode) {
+      const players = recentPlayers();
+      html += `<div class="amal-hub-dock">
+        <button type="button" class="primary" data-amal="quick-grant">⚡ Дать админку в эту игру</button>
+        <button type="button" data-amal="admin-players">👥 Кто здесь (${players.length})</button>
+        <button type="button" data-amal="admin-write">✉️ Написать</button>
+        <button type="button" data-amal="admin-inbox">📩 Входящие</button>
+      </div>`;
+    } else {
+      html += `<button type="button" class="amal-hub-fab ${owner || gameAdmin ? "admin" : ""}" data-amal="open" title="${
+        owner ? "Меню хозяина" : gameAdmin ? "Твоя админка" : "Ник и заметки"
+      }">${owner || gameAdmin ? "👑" : "📝"}</button>`;
+    }
 
     if (open || gateMode) {
       html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal" data-amal="modal">`;
@@ -787,10 +837,10 @@
         <input id="amal-grant-nick" maxlength="${NICK_MAX}" placeholder="Ник игрока" value="${escapeHtml(
           replyTo || "",
         )}" />
-        <div class="amal-hub-games">${GRANTABLE_GAMES.map(
-          (g) =>
-            `<label><input type="checkbox" data-grant-game="${g.id}" /> ${escapeHtml(g.name)}</label>`,
-        ).join("")}</div>
+        <div class="amal-hub-games">${GRANTABLE_GAMES.map((g) => {
+          const checked = g.id === gameIdFromPath() ? " checked" : "";
+          return `<label><input type="checkbox" data-grant-game="${g.id}"${checked} /> ${escapeHtml(g.name)}</label>`;
+        }).join("")}</div>
         ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
         <div class="amal-hub-row">
@@ -845,22 +895,26 @@
     }
 
     return `
-      <h2>👑 Привет, Амаль!</h2>
-      <p class="sub">Простое меню главного админа</p>
+      <div class="amal-hub-hero"><div class="badge">👑</div><div>
+        <h2>Меню хозяина</h2>
+        <p class="sub">Ты не в списке игроков. Здесь можно писать людям и выдавать админку по играм.</p>
+      </div></div>
       ${tabs}
-      <div class="amal-hub-help">Выдать админку можно не во все игры сразу — отметь только нужные.</div>
+      <div class="amal-hub-help">Во время игры внизу есть быстрые кнопки: дать админку в эту игру, кто здесь, написать.</div>
       <div class="amal-hub-big">
-        <button type="button" data-amal="admin-players"><b>1. Кто играет</b><span>Ники и игры</span></button>
-        <button type="button" data-amal="admin-inbox"><b>2. Сообщения мне</b><span>Заметки от игроков${
-          incoming.length ? " · новых: " + incoming.filter((n) => n.status !== "done").length : ""
+        <button type="button" data-amal="admin-players"><b>👥 Кто играет</b><span>Только гости — тебя там нет</span></button>
+        <button type="button" data-amal="admin-inbox"><b>📩 Сообщения мне</b><span>${
+          incoming.filter((n) => n.status !== "done").length
+            ? "Новых: " + incoming.filter((n) => n.status !== "done").length
+            : "Пока пусто"
         }</span></button>
-        <button type="button" data-amal="admin-write"><b>3. Написать игроку</b><span>Ответ на ник</span></button>
-        <button type="button" data-amal="export"><b>4. Скопировать всё</b><span>Список себе в буфер</span></button>
+        <button type="button" data-amal="admin-write"><b>✉️ Написать игроку</b><span>Ответ на ник</span></button>
         ${
           fullOwner
-            ? `<button type="button" data-amal="admin-grant"><b>5. Выдать / забрать админку</b><span>Выбери ник и игры</span></button>`
+            ? `<button type="button" data-amal="admin-grant"><b>⚡ Выдать / забрать админку</b><span>Выбери ник и одну или несколько игр</span></button>`
             : ""
         }
+        <button type="button" data-amal="export"><b>📋 Скопировать всё</b><span>Список игроков и заметок</span></button>
       </div>
       ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
       <div class="amal-hub-row" style="margin-top:12px">
@@ -907,21 +961,39 @@
           lastGrantLinks = [];
           paint();
         }
+        if (act === "admin-grant") {
+          if (!canGrantAdmin()) return;
+          adminPage = "grant";
+          open = true;
+          view = "admin";
+          paint();
+        }
+        if (act === "quick-grant") {
+          if (!canGrantAdmin()) return;
+          replyTo = "";
+          adminPage = "grant";
+          open = true;
+          view = "admin";
+          msg = "Сейчас игра: " + gameTitle(gameIdFromPath()) + " — она уже отмечена галочкой";
+          err = "";
+          paint();
+        }
         if (act === "admin-players") {
           adminPage = "players";
+          open = true;
+          view = "admin";
           paint();
         }
         if (act === "admin-inbox") {
           adminPage = "inbox";
+          open = true;
+          view = "admin";
           paint();
         }
         if (act === "admin-write") {
           adminPage = "write";
-          paint();
-        }
-        if (act === "admin-grant") {
-          if (!canGrantAdmin()) return;
-          adminPage = "grant";
+          open = true;
+          view = "admin";
           paint();
         }
         if (act === "grant-pick") {
