@@ -18,6 +18,31 @@
   const stickEl = document.getElementById("stick");
   const actBtn = document.getElementById("actBtn");
 
+  function showEl(el) {
+    if (!el) return;
+    el.hidden = false;
+    el.removeAttribute("aria-hidden");
+    if (el === touch) {
+      // на ПК прячет CSS, на телефоне показывает
+      el.style.removeProperty("display");
+    } else {
+      el.style.setProperty("display", "flex", "important");
+    }
+  }
+
+  function hideEl(el) {
+    if (!el) return;
+    el.hidden = true;
+    el.style.setProperty("display", "none", "important");
+    el.setAttribute("aria-hidden", "true");
+  }
+
+  // Пустая endPanel раньше перекрывала кнопки — сразу прячем
+  hideEl(endPanel);
+  hideEl(hud);
+  hideEl(touch);
+  showEl(menu);
+
   let toastTimer = 0;
   function toast(msg, ms = 2200) {
     toastEl.textContent = msg;
@@ -260,10 +285,10 @@
       nextMerge: 1,
     };
 
-    menu.hidden = true;
-    endPanel.hidden = true;
-    hud.hidden = false;
-    touch.hidden = false;
+    hideEl(menu);
+    hideEl(endPanel);
+    showEl(hud);
+    showEl(touch);
     state = "play";
     toast(playerRole === "seeker"
       ? "Найди предметы и поймай прячущихся!"
@@ -608,12 +633,12 @@
 
   function finish() {
     state = "end";
-    hud.hidden = true;
-    touch.hidden = true;
+    hideEl(hud);
+    hideEl(touch);
     const youWin =
       (g.playerRole === "seeker" && g.win === "seeker") ||
       (g.playerRole === "hider" && g.win === "hider");
-    endPanel.hidden = false;
+    showEl(endPanel);
     endPanel.innerHTML = `
       <h1>${youWin ? "Победа!" : "Поражение"}</h1>
       <p class="sub">${g.msg}</p>
@@ -625,8 +650,8 @@
     `;
     endPanel.querySelector("#again").onclick = () => startGame(g.playerRole);
     endPanel.querySelector("#tomenu").onclick = () => {
-      endPanel.hidden = true;
-      menu.hidden = false;
+      hideEl(endPanel);
+      showEl(menu);
       state = "menu";
     };
   }
