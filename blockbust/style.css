@@ -14,6 +14,15 @@ body {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+}
+
+body.dragging,
+body.dragging #app {
+  touch-action: none;
+  overflow: hidden;
 }
 
 .portal-back {
@@ -176,6 +185,7 @@ button.primary {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  touch-action: none;
 }
 
 .cell {
@@ -228,10 +238,14 @@ button.primary {
   display: grid;
   place-items: center;
   touch-action: none;
+  -webkit-user-drag: none;
+  cursor: grab;
 }
 
 .slot.selected {
   transform: scale(1.03);
+  outline: 2px solid rgba(250, 204, 21, 0.85);
+  outline-offset: 1px;
 }
 
 .slot.empty {
@@ -245,10 +259,11 @@ button.primary {
 
 .ghost {
   position: fixed;
-  z-index: 50;
+  z-index: 80;
   pointer-events: none;
   filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.45));
-  transform: translate(-50%, -50%) scale(1.05);
+  transform: translate(-50%, -50%) scale(1.08);
+  touch-action: none;
 }
 
 .overlay {

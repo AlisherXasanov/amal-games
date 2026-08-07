@@ -705,7 +705,7 @@
         }
         if (preview?.[r]?.[c] === "ok") cls += " ok";
         if (preview?.[r]?.[c] === "bad") cls += " bad";
-        html += `<div class="${cls}" style="${style}"></div>`;
+        html += `<div class="${cls}" data-r="${r}" data-c="${c}" style="${style}"></div>`;
       }
     }
     html += "</div>";
@@ -731,13 +731,25 @@
     return mask;
   }
 
+  function isCoarsePointer() {
+    try {
+      return window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  function dragLift() {
+    return state.cell * (isCoarsePointer() ? 2.4 : 1.2);
+  }
+
   function pointerToCell(clientX, clientY, piece) {
     const board = document.getElementById("board");
     if (!board) return { row: null, col: null, valid: false };
     const rect = board.getBoundingClientRect();
     const gap = 4;
     const step = state.cell + gap;
-    const lift = state.cell * 1.2;
+    const lift = dragLift();
     const localX = clientX - rect.left;
     const localY = clientY - rect.top - lift;
     const { h, w } = pieceSize(piece.cells);
@@ -750,6 +762,127 @@
     };
   }
 
+  function syncDragDom() {
+    if (!state.drag) return;
+    const lift = dragLift();
+    let ghost = document.getElementById("drag-ghost");
+    if (!ghost) {
+      ghost = document.createElement("div");
+      ghost.id = "drag-ghost";
+      ghost.className = "ghost";
+      ghost.innerHTML = pieceHtml(state.drag.piece, Math.floor(state.cell * 0.92));
+      document.body.appendChild(ghost);
+    }
+    ghost.style.left = `${state.drag.x}px`;
+    ghost.style.top = `${state.drag.y - lift}px`;
+
+    const preview = previewMask();
+    const n = boardSize();
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const el = app.querySelector(`#board .cell[data-r="${r}"][data-c="${c}"]`);
+        if (!el) continue;
+        el.classList.toggle("ok", preview[r][c] === "ok");
+        el.classList.toggle("bad", preview[r][c] === "bad");
+      }
+    }
+  }
+
+  function clearDragGhost() {
+    document.getElementById("drag-ghost")?.remove();
+  }
+
+  function beginDrag(idx, clientX, clientY, pointerId) {
+    const piece = state.hand[idx];
+    if (!piece || state.gameOver || state.levelWon) return;
+    state.selected = idx;
+    state.drag = {
+      index: idx,
+      piece,
+      pointerId,
+      x: clientX,
+      y: clientY,
+      row: null,
+      col: null,
+      valid: false,
+      moved: false,
+    };
+    document.body.classList.add("dragging");
+    const hover = pointerToCell(clientX, clientY, piece);
+    state.drag.row = hover.row;
+    state.drag.col = hover.col;
+    state.drag.valid = hover.valid;
+    app.querySelectorAll("[data-hand]").forEach((el) => {
+      el.classList.toggle("selected", Number(el.getAttribute("data-hand")) === idx);
+    });
+    syncDragDom();
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!state.drag) return;
+    const dx = clientX - state.drag.x;
+    const dy = clientY - state.drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 8) state.drag.moved = true;
+    const hover = pointerToCell(clientX, clientY, state.drag.piece);
+    state.drag.x = clientX;
+    state.drag.y = clientY;
+    state.drag.row = hover.row;
+    state.drag.col = hover.col;
+    state.drag.valid = hover.valid;
+    syncDragDom();
+  }
+
+  function endDrag(clientX, clientY) {
+    if (!state.drag) return;
+    const index = state.drag.index;
+    const moved = state.drag.moved;
+    const hover = pointerToCell(clientX, clientY, state.drag.piece);
+    state.drag = null;
+    document.body.classList.remove("dragging");
+    clearDragGhost();
+    if (moved && hover.valid) {
+      place(index, hover.row, hover.col);
+      return;
+    }
+    // Tap on piece = select for tap-to-place (mobile friendly)
+    if (!moved) {
+      state.selected = index;
+      render();
+      return;
+    }
+    render();
+  }
+
+  function tryTapPlaceOnBoard(clientX, clientY) {
+    if (state.selected == null || state.drag || state.gameOver || state.levelWon) return false;
+    const piece = state.hand[state.selected];
+    if (!piece) return false;
+    const board = document.getElementById("board");
+    if (!board) return false;
+    const rect = board.getBoundingClientRect();
+    if (
+      clientX < rect.left ||
+      clientX > rect.right ||
+      clientY < rect.top ||
+      clientY > rect.bottom
+    ) {
+      return false;
+    }
+    const gap = 4;
+    const step = state.cell + gap;
+    const { h, w } = pieceSize(piece.cells);
+    const localX = clientX - rect.left;
+    const localY = clientY - rect.top;
+    const col = Math.round(localX / step - w / 2);
+    const row = Math.round(localY / step - h / 2);
+    if (!canPlace(state.board, piece.cells, row, col)) {
+      toast("Сюда нельзя");
+      return true;
+    }
+    place(state.selected, row, col);
+    return true;
+  }
+
   function modeTitle() {
     if (state.mode === "adventure" && state.activeLevel) {
       return `Приключение · Ур. ${state.activeLevel.id}: ${state.activeLevel.title}`;
@@ -759,6 +892,7 @@
   }
 
   function render() {
+    clearDragGhost();
     const sk = bgSkin();
     const cube = cubeSkin();
     document.body.style.background = sk.bg;
@@ -824,9 +958,13 @@
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
       <div class="hand">
-        <div class="hint">Перетащи фигуру · кубики: ${cube.name}${
-          state.ownedSpeed ? " · ⚡ Скорость III твоя" : ""
-        }</div>
+        <div class="hint">${
+          isCoarsePointer()
+            ? state.selected != null
+              ? "Ткни на поле, куда поставить · или тяни фигуру"
+              : "Ткни фигуру и тяни на поле · или ткни фигуру, потом поле"
+            : "Перетащи фигуру · кубики: " + cube.name
+        }${state.ownedSpeed ? " · ⚡ Скорость III твоя" : ""}</div>
         <div class="slots">
           ${state.hand
             .map((piece, i) => {
@@ -841,14 +979,7 @@
             .join("")}
         </div>
       </div>
-      ${
-        state.drag
-          ? `<div class="ghost" style="left:${state.drag.x}px;top:${state.drag.y - state.cell * 1.2}px">${pieceHtml(
-              state.drag.piece,
-              Math.floor(state.cell * 0.92),
-            )}</div>`
-          : ""
-      }
+      ${""}
       ${
         state.modal === "surprise"
           ? `<div class="overlay surprise-overlay"><div class="modal surprise-modal" style="text-align:center" data-stop="1"><div class="surprise-burst" aria-hidden="true">✨🎁⏳</div><h2>Сюрприз!</h2><p class="sub">Добро пожаловать в Blockbust.<br/>Гостю — подарок и ивент «Третий час».</p><p class="surprise-gift">+${SURPRISE_COINS} монет<br/>⏳ эксклюзивные кубики<br/>⚡ Скорость III навсегда</p><button class="primary" data-act="claim-surprise" style="width:100%;margin-top:14px;background:${sk.accent}">Забрать подарок</button></div></div>`
@@ -1053,49 +1184,66 @@
 
     app.querySelectorAll("[data-hand]").forEach((slot) => {
       const idx = Number(slot.getAttribute("data-hand"));
-      slot.onpointerdown = (e) => {
+      const start = (e) => {
         const piece = state.hand[idx];
         if (!piece || state.gameOver || state.levelWon) return;
-        e.preventDefault();
-        slot.setPointerCapture(e.pointerId);
-        state.selected = idx;
-        state.drag = {
-          index: idx,
-          piece,
-          pointerId: e.pointerId,
-          x: e.clientX,
-          y: e.clientY,
-          row: null,
-          col: null,
-          valid: false,
-        };
-        render();
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        beginDrag(idx, e.clientX, e.clientY, e.pointerId);
+        try {
+          document.body.setPointerCapture?.(e.pointerId);
+        } catch {
+          /* ignore */
+        }
       };
+      slot.addEventListener("pointerdown", start, { passive: false });
     });
+
+    const board = document.getElementById("board");
+    if (board) {
+      board.addEventListener(
+        "pointerdown",
+        (e) => {
+          if (state.drag) return;
+          if (tryTapPlaceOnBoard(e.clientX, e.clientY)) {
+            if (e.cancelable) e.preventDefault();
+          }
+        },
+        { passive: false },
+      );
+    }
   }
 
-  window.addEventListener("pointermove", (e) => {
-    if (!state.drag || e.pointerId !== state.drag.pointerId) return;
-    const hover = pointerToCell(e.clientX, e.clientY, state.drag.piece);
-    state.drag = {
-      ...state.drag,
-      x: e.clientX,
-      y: e.clientY,
-      row: hover.row,
-      col: hover.col,
-      valid: hover.valid,
-    };
-    render();
-  });
+  window.addEventListener(
+    "pointermove",
+    (e) => {
+      if (!state.drag || e.pointerId !== state.drag.pointerId) return;
+      if (e.cancelable) e.preventDefault();
+      moveDrag(e.clientX, e.clientY);
+    },
+    { passive: false },
+  );
 
-  window.addEventListener("pointerup", (e) => {
+  function onPointerEnd(e) {
     if (!state.drag || e.pointerId !== state.drag.pointerId) return;
-    const hover = pointerToCell(e.clientX, e.clientY, state.drag.piece);
-    const index = state.drag.index;
-    state.drag = null;
-    if (hover.valid) place(index, hover.row, hover.col);
-    else render();
-  });
+    if (e.cancelable) e.preventDefault();
+    endDrag(e.clientX, e.clientY);
+  }
+
+  window.addEventListener("pointerup", onPointerEnd, { passive: false });
+  window.addEventListener("pointercancel", onPointerEnd, { passive: false });
+
+  // Fallback for older mobile browsers
+  window.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!state.drag) return;
+      if (e.cancelable) e.preventDefault();
+      const t = e.touches[0];
+      if (t) moveDrag(t.clientX, t.clientY);
+    },
+    { passive: false },
+  );
 
   function measure() {
     const n = boardSize();
