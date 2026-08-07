@@ -3855,4 +3855,32 @@
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      buddy.hp = buddy.maxHp;
+      buddy.dead = false;
+      buddy.burnT = 0;
+      buddy.poisonT = 0;
+      syncHud();
+      setDeadUI(false);
+    }
+    if (t === "god" || t === "max") {
+      save.godMode = true;
+      grantAdminLoot();
+      persist();
+      syncHud();
+    }
+    if (t === "coins" || t === "max") {
+      save.infCoins = true;
+      save.coins = Math.max(save.coins, 999999);
+      persist();
+      syncHud();
+    }
+    if (t === "dmg" || t === "max") {
+      save.infDmg = true;
+      persist();
+    }
+  });
 })();

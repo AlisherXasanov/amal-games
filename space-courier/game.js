@@ -1011,4 +1011,18 @@
   initStars();
   renderMenu();
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      state.fuel = 100;
+      state.shieldT = Math.max(state.shieldT || 0, 8);
+      state.dead = false;
+      if (typeof flash === "function") flash("💚 Хилл · топливо и щит");
+      if (typeof updateHud === "function") updateHud();
+    }
+    if (t === "speed" || t === "max") {
+      if (state.ship) state.ship.boost = Math.max(state.ship.boost || 0, 4);
+    }
+  });
 })();

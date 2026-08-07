@@ -1167,4 +1167,20 @@
 
   renderMenu();
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      state.crashed = 0;
+      state.dead = false;
+      state.timeLeft = Math.max(state.timeLeft, 60);
+      state.speed = Math.max(state.speed, 40);
+      showMsg("💚 Хилл · полный бак времени", 1.5);
+    }
+    if (t === "speed" || t === "max") {
+      state.maxSpeed = Math.max(state.maxSpeed || 0, 220);
+      state.speed = Math.max(state.speed, 120);
+      showMsg("⚡ Турбо", 1);
+    }
+  });
 })();

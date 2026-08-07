@@ -1902,6 +1902,26 @@ async function main() {
     renderer.render(scene, camera);
   }
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (!player) return;
+    if (t === "heal" || t === "max") {
+      player.hp = player.maxHp;
+      player.food = player.maxFood;
+      player.dead = false;
+      player.hurtCd = 0;
+    }
+    if (t === "god" || t === "max") {
+      player.creative = true;
+      player.admin = true;
+      player.flying = true;
+      player.noclip = true;
+    }
+    if (t === "speed" || t === "max") {
+      player.flying = true;
+    }
+  });
   // Меню без тяжёлой генерации — мир создаётся при «Играть»
 }
 

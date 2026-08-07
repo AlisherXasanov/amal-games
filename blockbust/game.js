@@ -1745,4 +1745,13 @@
     }
     render();
   });
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max" || t === "coins" || t === "unlock") {
+      applyOwnerRewards();
+      if (typeof toast === "function") toast(t === "heal" ? "💚 Хилл · ∞ монеты" : "⚡ Силы хозяина");
+      render();
+    }
+  });
 })();

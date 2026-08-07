@@ -12031,4 +12031,22 @@
 
   syncMuteButtons();
   showScreen("menu");
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      state.resource = 999999;
+      if (Array.isArray(state.plants)) {
+        state.plants.forEach((p) => {
+          p.hp = p.maxHp || p.hp;
+          if (p.armorHp != null && p.armorMax != null) p.armorHp = p.armorMax;
+        });
+      }
+      if (typeof toast === "function") toast("💚 Хилл · ∞ солнце");
+      if (typeof updateHud === "function") updateHud();
+    }
+    if (t === "coins" || t === "unlock" || t === "max") {
+      state.resource = 999999;
+    }
+  });
 })();

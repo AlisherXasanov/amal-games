@@ -1435,4 +1435,20 @@
       requestAnimationFrame(loop);
     }
   }
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (!g || !g.player) return;
+    if (t === "heal" || t === "max") {
+      g.player.caught = false;
+      if (g.player.role === "seeker" && g.phase === "seek") {
+        g.seekLeft = Math.max(g.seekLeft, 60);
+      }
+      if (typeof toast === "function") toast("💚 Хилл хозяина");
+    }
+    if (t === "speed" || t === "max") {
+      g.player.speed = Math.max(g.player.speed, 240);
+      if (typeof toast === "function") toast("⚡ Супер-скорость");
+    }
+  });
 })();

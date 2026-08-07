@@ -1797,4 +1797,20 @@
   refreshSkinBtn();
   setTool("grab");
   update();
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      for (const meta of entityMeta.values()) {
+        if (meta.kind === "melon" || meta.kind === "pear") {
+          meta.hp = meta.maxHp || meta.hp;
+          meta.onFire = 0;
+        }
+      }
+      if (typeof updateStats === "function") updateStats();
+    }
+    if (t === "dmg" || t === "max") {
+      window.__AMAL_DMG__ = true;
+    }
+  });
 })();

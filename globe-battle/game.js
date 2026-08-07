@@ -1188,4 +1188,28 @@
   });
 
   showLobby();
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    const p = players && players[0];
+    if (!p) return;
+    if (t === "heal" || t === "max") {
+      p.stunT = 0;
+      p.flipT = 0;
+      p.cutMarked = false;
+      p.dead = false;
+      p.alive = true;
+      if (p.body) {
+        Body.setPosition(p.body, { x: cx, y: cy });
+        Body.setVelocity(p.body, { x: 0, y: 0 });
+      } else if (typeof respawnFallen === "function") {
+        try { respawnFallen(p); } catch (_) {}
+      }
+      if (typeof showToast === "function") showToast("💚 Хилл хозяина");
+      if (typeof updateScores === "function") updateScores();
+    }
+    if (t === "god" || t === "max") {
+      p.shieldCharges = Math.max(p.shieldCharges || 0, 3);
+    }
+  });
 })();

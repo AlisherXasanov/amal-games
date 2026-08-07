@@ -974,4 +974,16 @@
 
   render();
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if ((t === "heal" || t === "max") && state.player) {
+      state.player.hp = 3;
+      state.player.invuln = 2;
+      state.dead = false;
+      state.message = "💚 Хилл хозяина";
+      state.messageCd = 1.5;
+    }
+    if (t === "unlock" || t === "max") unlock = LEVELS.length;
+  });
 })();

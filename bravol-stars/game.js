@@ -5359,4 +5359,28 @@
   }
 
   renderMenu();
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    const local = game && game.fighters ? game.fighters.find((f) => f.isLocal) : null;
+    if ((t === "heal" || t === "max") && local) {
+      local.hp = local.maxHp;
+      local.alive = true;
+      local.stun = 0;
+    }
+    if (t === "god" || t === "max") {
+      refreshOwnerCheats();
+      CHEATS.invincible = true;
+    }
+    if (t === "dmg" || t === "max") CHEATS.infiniteDamage = true;
+    if (t === "coins" || t === "max") {
+      coins = 999999;
+      store.set("bravol-coins", coins);
+    }
+    if (t === "unlock" || t === "max") {
+      BRAWLERS.forEach((b) => unlocked.add(b.id));
+      saveUnlocksSafe();
+    }
+    if (t === "speed" || t === "max") CHEATS.superSpeed = true;
+  });
 })();

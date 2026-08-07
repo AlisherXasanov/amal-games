@@ -826,4 +826,26 @@
 
   renderMenu();
   requestAnimationFrame(frame);
+
+  window.addEventListener("amal-power", (e) => {
+    const t = e.detail && e.detail.type;
+    if (t === "heal" || t === "max") {
+      if (state.player) {
+        state.player.hp = state.player.maxHp;
+        state.invuln = 2;
+        if (el && el.hp) el.hp.textContent = String(Math.ceil(state.player.hp));
+      }
+      state.dead = false;
+      if (state.screen === "dead") state.screen = "play";
+    }
+    if (t === "coins" || t === "max" || t === "unlock") {
+      save.coins = 999999999;
+      save.owned = WEAPONS.map((w) => w.id);
+      persist();
+      if (el && el.coins) el.coins.textContent = String(save.coins);
+    }
+    if (t === "speed" || t === "max") {
+      if (state.player) state.player.speed = Math.max(state.player.speed || 0, 320);
+    }
+  });
 })();
