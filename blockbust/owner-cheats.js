@@ -1,19 +1,19 @@
 /**
- * Личный режим владельца Amal Games.
- * Включается ТОЛЬКО на твоём устройстве секретным кодом — гости сайта его не получают.
+ * Личный режим владельца Amal Games — ТОЛЬКО для тебя.
+ * Гости сайта читы не получают.
  *
  * Включить:
- *   1) В консоли: AmalOwner.unlock("AmalOwner2026")
- *   2) Или в адресной строке: ?owner=AmalOwner2026
- *   3) Или нажми O-W-N-E-R подряд на меню
+ *   AmalOwner.unlock("AmalOwner2026")
+ *   или в адресе: ?owner=AmalOwner2026
  * Выключить: AmalOwner.lock()
+ *
+ * Клавиши OWNER больше не работают (слишком легко подсмотреть).
  */
 (function (global) {
   "use strict";
 
   const STORAGE_KEY = "amal-owner-v1";
   const SECRET = "AmalOwner2026";
-  let buffer = "";
 
   function isOwner() {
     try {
@@ -58,29 +58,12 @@
     }
   }
 
-  function onKey(e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) return;
-    const key = String(e.key || "").toLowerCase();
-    if (key.length !== 1) return;
-    buffer = (buffer + key).slice(-5);
-    if (buffer === "owner") {
-      buffer = "";
-      if (isOwner()) {
-        lock();
-        alert("Режим владельца выключен");
-      } else if (unlock(SECRET)) {
-        alert("Режим владельца включён: бесконечные ресурсы и читы");
-      }
-    }
-  }
-
   tryUrlUnlock();
-  global.addEventListener("keydown", onKey);
 
   global.AmalOwner = {
     isOwner,
     unlock,
     lock,
-    SECRET_HINT: "Введи OWNER на клавиатуре или AmalOwner.unlock('…')",
+    SECRET_HINT: "AmalOwner.unlock('AmalOwner2026') или ?owner=AmalOwner2026",
   };
 })(typeof window !== "undefined" ? window : globalThis);

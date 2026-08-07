@@ -95,6 +95,7 @@
   };
 
   const INF = 999999999;
+  const BUG_INF_FLOOR = 1_000_000; // старый баг писал INF всем — чистим у гостей
 
   const store = {
     get(k, fallback) {
@@ -113,6 +114,38 @@
       }
     },
   };
+
+  function isOwner() {
+    return typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
+  }
+
+  function loadBest() {
+    const v = Number(store.get(KEYS.best, 0)) || 0;
+    if (isOwner()) return INF;
+    if (v >= BUG_INF_FLOOR) {
+      store.set(KEYS.best, 0);
+      return 0;
+    }
+    return Math.max(0, Math.floor(v));
+  }
+
+  function loadCoins() {
+    const v = Number(store.get(KEYS.coins, 0)) || 0;
+    if (isOwner()) return INF;
+    if (v >= BUG_INF_FLOOR) {
+      store.set(KEYS.coins, 0);
+      return 0;
+    }
+    return Math.max(0, Math.floor(v));
+  }
+
+  function applyOwnerRewards() {
+    if (!isOwner()) return;
+    state.best = INF;
+    state.coins = INF;
+    store.set(KEYS.best, INF);
+    store.set(KEYS.coins, INF);
+  }
 
   let uid = 0;
   const nextUid = () => `p-${Date.now()}-${++uid}`;
@@ -143,11 +176,9 @@
   }
 
   function canPlace(board, cells, row, col) {
-    const owner =
-      typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
     const { h, w } = pieceSize(cells);
     if (row < 0 || col < 0 || row + h > SIZE || col + w > SIZE) return false;
-    if (owner) return true;
+    if (isOwner()) return true;
     for (let r = 0; r < cells.length; r++) {
       for (let c = 0; c < cells[r].length; c++) {
         if (cells[r][c] && board[row + r][col + c]) return false;
@@ -232,8 +263,8 @@
     bestCombo: 0,
     gameOver: false,
     levelWon: false,
-    best: INF,
-    coins: INF,
+    best: 0,
+    coins: 0,
     skinId: store.get(KEYS.skin, "sun"),
     adventure: store.get(KEYS.adventure, { maxUnlocked: 1, completed: [] }),
     activeLevel: null,
@@ -245,9 +276,9 @@
     cell: 40,
   };
 
-  // infinite rewards as requested earlier
-  store.set(KEYS.best, INF);
-  store.set(KEYS.coins, INF);
+  state.best = loadBest();
+  state.coins = loadCoins();
+  if (isOwner()) applyOwnerRewards();
 
   const app = document.getElementById("app");
 
@@ -329,8 +360,15 @@
     state.selected = null;
 
     if (state.mode === "classic") {
-      state.best = Math.max(state.best, state.score, INF);
+      if (isOwner()) {
+        state.best = INF;
+        state.coins = INF;
+      } else {
+        state.best = Math.max(state.best, state.score);
+        if (clear.lines > 0) state.coins += clear.lines * 2 + (combo > 1 ? combo : 0);
+      }
       store.set(KEYS.best, state.best);
+      store.set(KEYS.coins, state.coins);
     }
 
     if (state.mode === "adventure" && state.activeLevel) {
@@ -347,7 +385,7 @@
 
     const remaining = hand.filter(Boolean);
     if (
-      !(typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) &&
+      !isOwner() &&
       !state.levelWon &&
       remaining.length &&
       remaining.every((p) => !hasAny(nextBoard, p.cells))
@@ -674,4 +712,18 @@
 
   measure();
   startClassic();
+
+  window.addEventListener("amal-owner-changed", (e) => {
+    if (e.detail) {
+      applyOwnerRewards();
+      toast("Режим владельца: ∞ монеты и рекорд");
+    } else {
+      store.set(KEYS.best, 0);
+      store.set(KEYS.coins, 0);
+      state.best = 0;
+      state.coins = 0;
+      toast("Обычный режим: читы выключены");
+    }
+    render();
+  });
 })();
