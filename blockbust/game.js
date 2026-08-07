@@ -1282,7 +1282,7 @@
       </header>
       ${
         isOwner()
-          ? `<div class="admin-chip">👑 Ты админ · нажми 👑 сверху для меню</div>`
+          ? `<div class="admin-chip">👑 Админ · панель сверху · фигуры внизу</div>`
           : ""
       }
       <div class="stats">

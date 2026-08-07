@@ -510,10 +510,10 @@
     css.textContent = `
 #amal-hub-root{position:fixed;z-index:2147483000;inset:0;pointer-events:none;font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
 #amal-hub-root *{box-sizing:border-box}
-.amal-hub-fab{pointer-events:auto;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:54px;height:54px;border-radius:18px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(160deg,#1e1b4b,#0f172a);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.45)}
+.amal-hub-fab{pointer-events:auto;position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:54px;height:54px;border-radius:18px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(160deg,#1e1b4b,#0f172a);color:#fff;font-size:22px;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:2147483001}
 .amal-hub-fab.admin{border-color:rgba(251,191,36,.65);background:linear-gradient(160deg,#78350f,#422006);box-shadow:0 12px 28px rgba(245,158,11,.25)}
-.amal-hub-dock{pointer-events:auto;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;padding:8px;border-radius:18px;border:1px solid rgba(251,191,36,.4);background:rgba(12,10,6,.88);backdrop-filter:blur(10px);box-shadow:0 14px 40px rgba(0,0,0,.45);max-width:calc(100vw - 88px);overflow:auto}
-.amal-hub-dock button{border:0;border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.08);color:#fff7ed;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.amal-hub-dock{pointer-events:auto;position:fixed;left:50%;transform:translateX(-50%);top:calc(52px + env(safe-area-inset-top,0px));bottom:auto;display:flex;gap:6px;padding:6px;border-radius:16px;border:1px solid rgba(251,191,36,.4);background:rgba(12,10,6,.92);backdrop-filter:blur(10px);box-shadow:0 10px 28px rgba(0,0,0,.4);max-width:calc(100vw - 24px);overflow:auto;z-index:2147483001}
+.amal-hub-dock button{border:0;border-radius:12px;padding:8px 10px;background:rgba(255,255,255,.08);color:#fff7ed;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .amal-hub-dock button.primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111}
 .amal-hub-overlay{pointer-events:auto;position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(8px)}
 @media(min-width:720px){.amal-hub-overlay{align-items:center}}
@@ -632,10 +632,11 @@
     if (owner && inGame && !open && !gateMode) {
       const players = recentPlayers();
       html += `<div class="amal-hub-dock">
-        <button type="button" class="primary" data-amal="quick-grant">⚡ Дать админку в эту игру</button>
-        <button type="button" data-amal="admin-players">👥 Кто здесь (${players.length})</button>
-        <button type="button" data-amal="admin-write">✉️ Написать</button>
-        <button type="button" data-amal="admin-inbox">📩 Входящие</button>
+        <button type="button" class="primary" data-amal="quick-grant">⚡ Админка</button>
+        <button type="button" data-amal="admin-players">👥 Кто (${players.length})</button>
+        <button type="button" data-amal="admin-write">✉️</button>
+        <button type="button" data-amal="admin-inbox">📩</button>
+        <button type="button" data-amal="open">☰</button>
       </div>`;
     } else {
       html += `<button type="button" class="amal-hub-fab ${owner || gameAdmin ? "admin" : ""}" data-amal="open" title="${
