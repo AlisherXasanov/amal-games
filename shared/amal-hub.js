@@ -11,14 +11,40 @@
     presence: "amal-hub-presence-v1",
     adminNotes: "amal-hub-admin-notes-v1",
     changelogSeen: "amal-hub-changelog-seen-v1",
+    issuedGrants: "amal-hub-issued-grants-v1",
+    myPowers: "amal-hub-my-powers-v1",
+    revokedGrants: "amal-hub-revoked-grants-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
+  const GRANT_SECRET = "AmalGrant2026";
   const MAX_NOTES = 200;
   const NICK_MIN = 2;
   const NICK_MAX = 16;
 
+  const GRANTABLE_GAMES = [
+    { id: "blockbust", name: "Blockbust" },
+    { id: "kick-buddy", name: "Kick Buddy" },
+    { id: "hideout", name: "Укрытие" },
+    { id: "minecraft", name: "CraftWorld" },
+    { id: "coin-arsenal", name: "Coin Arsenal" },
+    { id: "x-buggy", name: "X-Buggy" },
+    { id: "melon-playground", name: "Melon Playground" },
+    { id: "space-courier", name: "Космический курьер" },
+    { id: "bravol-stars", name: "Brawl Stars" },
+    { id: "snake-game", name: "Snake" },
+    { id: "ladder-climb", name: "Ступеньки вверх" },
+    { id: "terraverse", name: "Пиксель-Террариум" },
+    { id: "zombie-vs-plants", name: "Зомби vs растения" },
+    { id: "globe-battle", name: "Globe Battle" },
+  ];
+
   const CHANGELOG = [
+    {
+      id: "2026-08-07-grants",
+      title: "Админка по играм",
+      body: "Амаль может выдать админку выбранному нику в одной или нескольких играх и потом отменить.",
+    },
     {
       id: "2026-08-07-hub",
       title: "Ник и заметки во всех играх",
@@ -77,6 +103,270 @@
     } catch {
       return false;
     }
+  }
+
+  function canGrantAdmin() {
+    return isOwner();
+  }
+
+  function simpleHash(str) {
+    let h = 5381;
+    const s = String(str);
+    for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
+    return (h >>> 0).toString(36);
+  }
+
+  function loadIssuedGrants() {
+    const list = storeGet(KEYS.issuedGrants, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveIssuedGrants(list) {
+    storeSet(KEYS.issuedGrants, list.slice(-100));
+  }
+
+  function loadRevoked() {
+    const list = storeGet(KEYS.revokedGrants, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function isGrantRevoked(id) {
+    return loadRevoked().includes(id);
+  }
+
+  function loadMyPowers() {
+    const map = storeGet(KEYS.myPowers, {});
+    return map && typeof map === "object" ? map : {};
+  }
+
+  function saveMyPowers(map) {
+    storeSet(KEYS.myPowers, map);
+  }
+
+  function pruneMyPowers() {
+    const map = loadMyPowers();
+    let changed = false;
+    Object.keys(map).forEach((game) => {
+      const g = map[game];
+      if (!g) return;
+      if (g.exp && g.exp < Date.now()) {
+        delete map[game];
+        changed = true;
+        return;
+      }
+      if (g.id && isGrantRevoked(g.id)) {
+        delete map[game];
+        changed = true;
+      }
+    });
+    if (changed) saveMyPowers(map);
+    return map;
+  }
+
+  function isGameAdmin(gameId) {
+    const id = gameId || gameIdFromPath();
+    if (isOwner()) return true;
+    const map = pruneMyPowers();
+    return !!(map[id] && map[id].on);
+  }
+
+  function myAdminGames() {
+    const map = pruneMyPowers();
+    return Object.keys(map).filter((k) => map[k] && map[k].on);
+  }
+
+  function encodeGrantPayload(obj) {
+    try {
+      return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+    } catch {
+      return "";
+    }
+  }
+
+  function decodeGrantPayload(raw) {
+    try {
+      return JSON.parse(decodeURIComponent(escape(atob(raw))));
+    } catch {
+      try {
+        return JSON.parse(atob(raw));
+      } catch {
+        return null;
+      }
+    }
+  }
+
+  function signGrant(raw) {
+    return simpleHash(raw + "|" + GRANT_SECRET);
+  }
+
+  function issueGrants(nickRaw, gameIds) {
+    if (!canGrantAdmin()) return { ok: false, error: "Только главный админ может выдавать" };
+    const nick = String(nickRaw || "").trim();
+    if (nick.length < NICK_MIN) return { ok: false, error: "Укажи ник игрока" };
+    const games = (gameIds || []).filter((id) => GRANTABLE_GAMES.some((g) => g.id === id));
+    if (!games.length) return { ok: false, error: "Выбери хотя бы одну игру" };
+
+    const issued = loadIssuedGrants();
+    const links = [];
+    const now = Date.now();
+    const exp = now + 1000 * 60 * 60 * 24 * 30;
+
+    games.forEach((game) => {
+      const id = "g-" + now + "-" + game + "-" + Math.random().toString(36).slice(2, 6);
+      const payload = { v: 1, id, nick: nick.toLowerCase(), game, exp };
+      const raw = encodeGrantPayload(payload);
+      const sig = signGrant(raw);
+      const pathBase = location.href.split("?")[0].replace(/\/[^/]*$/, "/");
+      // Prefer game folder link when granting for a game
+      const origin = location.origin;
+      let baseUrl = origin + location.pathname;
+      try {
+        const parts = location.pathname.split("/").filter(Boolean);
+        const ag = parts.indexOf("amal-games");
+        if (ag >= 0) {
+          baseUrl = origin + "/" + parts.slice(0, ag + 1).join("/") + "/" + game + "/";
+        } else if (parts[0] === "games") {
+          baseUrl = origin + "/games/" + game + "/";
+        } else {
+          baseUrl = origin + "/" + game + "/";
+        }
+      } catch {
+        /* keep */
+      }
+      const link =
+        baseUrl +
+        "?nick=" +
+        encodeURIComponent(nick) +
+        "&grant=" +
+        encodeURIComponent(raw) +
+        "&gsig=" +
+        encodeURIComponent(sig);
+      issued.push({
+        id,
+        nick,
+        game,
+        at: now,
+        exp,
+        active: true,
+        link,
+      });
+      links.push({ id, game, name: gameTitle(game), link });
+
+      // If the nick is already on this device, apply immediately
+      if (getNick().toLowerCase() === nick.toLowerCase()) {
+        applyPower(game, id, exp);
+      }
+    });
+
+    saveIssuedGrants(issued);
+    return { ok: true, nick, links };
+  }
+
+  function applyPower(game, id, exp) {
+    const map = loadMyPowers();
+    map[game] = { on: true, id, exp: exp || null, at: Date.now() };
+    saveMyPowers(map);
+  }
+
+  function redeemGrantFromUrl() {
+    try {
+      const params = new URLSearchParams(location.search);
+      const raw = params.get("grant");
+      const sig = params.get("gsig");
+      const revokeId = params.get("revokegrant");
+      const rsig = params.get("rsig");
+
+      if (revokeId && rsig) {
+        if (signGrant(revokeId) === rsig) {
+          const revoked = loadRevoked();
+          if (!revoked.includes(revokeId)) {
+            revoked.push(revokeId);
+            storeSet(KEYS.revokedGrants, revoked);
+          }
+          const map = loadMyPowers();
+          Object.keys(map).forEach((game) => {
+            if (map[game] && map[game].id === revokeId) delete map[game];
+          });
+          saveMyPowers(map);
+          return { ok: true, kind: "revoke", message: "Админка в этой выдаче снята" };
+        }
+        return { ok: false, kind: "revoke", message: "Код отмены неверный" };
+      }
+
+      if (!raw || !sig) return null;
+      if (signGrant(raw) !== sig) return { ok: false, message: "Ссылка на админку повреждена" };
+      const payload = decodeGrantPayload(raw);
+      if (!payload || !payload.nick || !payload.game || !payload.id) {
+        return { ok: false, message: "Ссылка на админку неверная" };
+      }
+      if (payload.exp && payload.exp < Date.now()) {
+        return { ok: false, message: "Срок ссылки истёк — попроси новую" };
+      }
+      if (isGrantRevoked(payload.id)) {
+        return { ok: false, message: "Эту админку уже отменили" };
+      }
+      const nick = getNick();
+      if (!nick) {
+        setNick(payload.nick);
+      } else if (nick.toLowerCase() !== String(payload.nick).toLowerCase()) {
+        return {
+          ok: false,
+          message: "Ссылка для ника «" + payload.nick + "», а у тебя «" + nick + "». Смени ник.",
+        };
+      }
+      applyPower(payload.game, payload.id, payload.exp);
+      return {
+        ok: true,
+        message: "Админка включена в игре: " + gameTitle(payload.game),
+        game: payload.game,
+      };
+    } catch {
+      return { ok: false, message: "Не удалось применить ссылку" };
+    }
+  }
+
+  function revokeGrant(id) {
+    if (!canGrantAdmin()) return { ok: false, error: "Нельзя" };
+    const revoked = loadRevoked();
+    if (!revoked.includes(id)) {
+      revoked.push(id);
+      storeSet(KEYS.revokedGrants, revoked);
+    }
+    const issued = loadIssuedGrants().map((g) => (g.id === id ? { ...g, active: false } : g));
+    saveIssuedGrants(issued);
+    // clear on this device too
+    const map = loadMyPowers();
+    Object.keys(map).forEach((game) => {
+      if (map[game] && map[game].id === id) delete map[game];
+    });
+    saveMyPowers(map);
+    const grant = issued.find((g) => g.id === id);
+    let revokeLink = "";
+    if (grant) {
+      try {
+        const origin = location.origin;
+        const parts = location.pathname.split("/").filter(Boolean);
+        const ag = parts.indexOf("amal-games");
+        let baseUrl = origin + "/";
+        if (ag >= 0) baseUrl = origin + "/" + parts.slice(0, ag + 1).join("/") + "/" + grant.game + "/";
+        revokeLink =
+          baseUrl +
+          "?revokegrant=" +
+          encodeURIComponent(id) +
+          "&rsig=" +
+          encodeURIComponent(signGrant(id));
+      } catch {
+        /* ignore */
+      }
+    }
+    return { ok: true, revokeLink, grant };
+  }
+
+  function activeIssuedGrants() {
+    return loadIssuedGrants()
+      .filter((g) => g.active !== false && !isGrantRevoked(g.id))
+      .slice()
+      .reverse();
   }
 
   function gameIdFromPath() {
@@ -220,6 +510,9 @@
 .amal-hub-big button{width:100%;text-align:left;padding:12px 14px;font-size:14px}
 .amal-hub-big button b{display:block;font-size:15px}
 .amal-hub-big button span{display:block;font-size:11px;opacity:.7;font-weight:600;margin-top:2px}
+.amal-hub-games{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.amal-hub-games label{display:flex;gap:6px;align-items:center;font-size:12px;font-weight:700;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+.amal-hub-linkbox{margin-top:10px;padding:8px;border-radius:10px;background:rgba(0,0,0,.35);font-size:10px;word-break:break-all;line-height:1.35}
 `;
     document.head.appendChild(css);
   }
@@ -257,9 +550,10 @@
 
   function openUi(mode) {
     open = true;
-    view = mode || (isOwner() ? "admin" : "note");
+    view = mode || (isOwner() || isGameAdmin() ? "admin" : "note");
     adminPage = "menu";
     replyTo = "";
+    lastGrantLinks = [];
     if (!getNick()) {
       gateMode = true;
       view = "nick";
@@ -278,15 +572,18 @@
     }
     const nick = getNick();
     const owner = isOwner();
+    const gameAdmin = isGameAdmin();
     let html = "";
     if (nick) {
       html += `<button type="button" class="amal-hub-chip" data-amal="open">${escapeHtml(
         nick,
-      )} · ${escapeHtml(gameTitle(gameIdFromPath()))}</button>`;
+      )} · ${escapeHtml(gameTitle(gameIdFromPath()))}${
+        owner ? " · главный" : gameAdmin ? " · админ" : ""
+      }</button>`;
     }
-    html += `<button type="button" class="amal-hub-fab ${owner ? "admin" : ""}" data-amal="open" title="${
-      owner ? "Моё админ-меню" : "Ник и заметки"
-    }">${owner ? "👑" : "📝"}</button>`;
+    html += `<button type="button" class="amal-hub-fab ${owner || gameAdmin ? "admin" : ""}" data-amal="open" title="${
+      owner ? "Моё админ-меню" : gameAdmin ? "Твоя админка" : "Ник и заметки"
+    }">${owner || gameAdmin ? "👑" : "📝"}</button>`;
 
     if (open || gateMode) {
       html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal" data-amal="modal">`;
@@ -294,7 +591,7 @@
         html += nickFormHtml(nick);
       } else if (view === "updates") {
         html += updatesHtml();
-      } else if (view === "admin" && owner) {
+      } else if (view === "admin" && (owner || gameAdmin)) {
         html += adminHtml();
       } else {
         html += noteFormHtml(nick);
@@ -385,10 +682,13 @@
     `;
   }
 
+  let lastGrantLinks = [];
+
   function adminHtml() {
     const players = recentPlayers();
     const notes = loadNotes().slice().reverse().slice(0, 40);
     const incoming = notes.filter((n) => !n.fromAdmin);
+    const fullOwner = canGrantAdmin();
     const tabs = `
       <div class="amal-hub-tabs">
         <button type="button" class="on" data-amal="tab-admin">Моё меню</button>
@@ -399,9 +699,9 @@
     if (adminPage === "players") {
       return `
         <h2>1. Кто играет</h2>
-        <p class="sub">Здесь ники людей, которые заходили с этого браузера</p>
+        <p class="sub">Ники людей с этого браузера</p>
         ${tabs}
-        <div class="amal-hub-help">Читай так: <b>ник</b> — в какую игру зашёл — когда</div>
+        <div class="amal-hub-help">Нажми ник, чтобы выдать ему админку (если ты главный).</div>
         <ul class="amal-hub-list">${
           players.length
             ? players
@@ -409,10 +709,16 @@
                   (p) =>
                     `<li><div class="meta">${fmtTime(p.at)}</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px">Играет в: ${escapeHtml(
                       p.gameTitle || p.game,
-                    )}</div></li>`,
+                    )}</div>${
+                      fullOwner
+                        ? `<div class="amal-hub-row" style="margin-top:6px"><button type="button" class="primary" data-amal="grant-pick" data-nick="${escapeHtml(
+                            p.nick,
+                          )}">Выдать админку</button></div>`
+                        : ""
+                    }</li>`,
                 )
                 .join("")
-            : `<li class="meta">Пока никто не заходил. Когда напишут ник — появятся здесь.</li>`
+            : `<li class="meta">Пока никто не заходил.</li>`
         }</ul>
         <div class="amal-hub-row">
           <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
@@ -425,7 +731,7 @@
         <h2>2. Сообщения тебе</h2>
         <p class="sub">Что написали игроки</p>
         ${tabs}
-        <div class="amal-hub-help">Жёлтая кнопка «Ответить» подставит ник. «Прочитано» — убрать из важных.</div>
+        <div class="amal-hub-help">«Ответить» подставит ник. «Прочитано» — отметить.</div>
         <ul class="amal-hub-list">${
           incoming.length
             ? incoming
@@ -437,10 +743,15 @@
                     <div class="amal-hub-row" style="margin-top:6px">
                       <button type="button" class="primary" data-amal="reply" data-to="${escapeHtml(n.nick)}">Ответить</button>
                       <button type="button" data-amal="mark" data-id="${escapeHtml(n.id)}">Прочитано</button>
+                      ${
+                        fullOwner
+                          ? `<button type="button" data-amal="grant-pick" data-nick="${escapeHtml(n.nick)}">Дать админку</button>`
+                          : ""
+                      }
                     </div></li>`,
                 )
                 .join("")
-            : `<li class="meta">Сообщений пока нет. Игрок жмёт 📝 и пишет тебе.</li>`
+            : `<li class="meta">Сообщений пока нет.</li>`
         }</ul>
         <div class="amal-hub-row">
           <button type="button" data-amal="admin-menu" style="flex:1">← Назад в меню</button>
@@ -451,10 +762,10 @@
     if (adminPage === "write") {
       return `
         <h2>3. Написать игроку</h2>
-        <p class="sub">Твой ответ сохранится у него в заметках (на этом же браузере)</p>
+        <p class="sub">Ответ для ника</p>
         ${tabs}
-        <div class="amal-hub-help">Сначала ник игрока, потом текст, потом «Отправить».</div>
-        <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник игрока, например AmalNova" value="${escapeHtml(
+        <div class="amal-hub-help">Сначала ник, потом текст, потом «Отправить».</div>
+        <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник игрока" value="${escapeHtml(
           replyTo || "",
         )}" />
         <textarea id="amal-admin-note" maxlength="500" placeholder="Напиши ответ..."></textarea>
@@ -466,18 +777,90 @@
         </div>`;
     }
 
+    if (adminPage === "grant" && fullOwner) {
+      const grants = activeIssuedGrants().slice(0, 20);
+      return `
+        <h2>5. Выдать админку</h2>
+        <p class="sub">Игрок получит силы в выбранных играх, но НЕ сможет выдавать админку другим</p>
+        ${tabs}
+        <div class="amal-hub-help">1) Ник → 2) галочки игр → 3) «Выдать». Потом скопируй ссылку игроку. Отмена — кнопка «Забрать».</div>
+        <input id="amal-grant-nick" maxlength="${NICK_MAX}" placeholder="Ник игрока" value="${escapeHtml(
+          replyTo || "",
+        )}" />
+        <div class="amal-hub-games">${GRANTABLE_GAMES.map(
+          (g) =>
+            `<label><input type="checkbox" data-grant-game="${g.id}" /> ${escapeHtml(g.name)}</label>`,
+        ).join("")}</div>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row">
+          <button type="button" class="primary" data-amal="grant-issue" style="flex:1">Выдать</button>
+          <button type="button" data-amal="admin-menu">← Меню</button>
+        </div>
+        ${
+          lastGrantLinks.length
+            ? `<h3 style="margin:14px 0 0;font-size:13px">Ссылки для игрока</h3>${lastGrantLinks
+                .map(
+                  (l) =>
+                    `<div class="amal-hub-step"><h3>${escapeHtml(l.name)}</h3><div class="amal-hub-linkbox">${escapeHtml(
+                      l.link,
+                    )}</div><button type="button" data-amal="copy-link" data-link="${escapeHtml(
+                      l.link,
+                    )}" style="margin-top:6px;width:100%">Скопировать ссылку</button></div>`,
+                )
+                .join("")}`
+            : ""
+        }
+        <h3 style="margin:14px 0 0;font-size:13px">Уже выдано</h3>
+        <ul class="amal-hub-list">${
+          grants.length
+            ? grants
+                .map(
+                  (g) =>
+                    `<li><div class="meta">${escapeHtml(g.nick)} · ${escapeHtml(gameTitle(g.game))} · ${fmtTime(
+                      g.at,
+                    )}</div>
+                    <div class="amal-hub-row" style="margin-top:6px">
+                      <button type="button" data-amal="grant-revoke" data-id="${escapeHtml(g.id)}">Забрать админку</button>
+                      <button type="button" data-amal="copy-link" data-link="${escapeHtml(g.link || "")}">Ссылка</button>
+                    </div></li>`,
+                )
+                .join("")
+            : `<li class="meta">Пока никому не выдавал</li>`
+        }</ul>`;
+    }
+
+    if (!fullOwner && isGameAdmin()) {
+      const games = myAdminGames();
+      return `
+        <h2>⚡ Ты админ в игре</h2>
+        <p class="sub">Амаль выдал тебе силы. Выдавать админку другим нельзя.</p>
+        ${tabs}
+        <div class="amal-hub-help">Твои игры с админкой: ${
+          games.length ? games.map((g) => gameTitle(g)).join(", ") : "нет"
+        }</div>
+        <div class="amal-hub-row" style="margin-top:12px">
+          <button type="button" data-amal="close" style="flex:1">Понятно, закрыть</button>
+        </div>`;
+    }
+
     return `
       <h2>👑 Привет, Амаль!</h2>
-      <p class="sub">Это твоё простое админ-меню. Выбери, что сделать:</p>
+      <p class="sub">Простое меню главного админа</p>
       ${tabs}
-      <div class="amal-hub-help">Коротко: смотри кто играет → читай сообщения → отвечай. Кнопка 👑 всегда внизу справа.</div>
+      <div class="amal-hub-help">Выдать админку можно не во все игры сразу — отметь только нужные.</div>
       <div class="amal-hub-big">
-        <button type="button" data-amal="admin-players"><b>1. Кто играет</b><span>Список ников и в какую игру зашли</span></button>
+        <button type="button" data-amal="admin-players"><b>1. Кто играет</b><span>Ники и игры</span></button>
         <button type="button" data-amal="admin-inbox"><b>2. Сообщения мне</b><span>Заметки от игроков${
           incoming.length ? " · новых: " + incoming.filter((n) => n.status !== "done").length : ""
         }</span></button>
-        <button type="button" data-amal="admin-write"><b>3. Написать игроку</b><span>Ответить на ник</span></button>
-        <button type="button" data-amal="export"><b>4. Скопировать всё</b><span>Если хочешь сохранить список себе</span></button>
+        <button type="button" data-amal="admin-write"><b>3. Написать игроку</b><span>Ответ на ник</span></button>
+        <button type="button" data-amal="export"><b>4. Скопировать всё</b><span>Список себе в буфер</span></button>
+        ${
+          fullOwner
+            ? `<button type="button" data-amal="admin-grant"><b>5. Выдать / забрать админку</b><span>Выбери ник и игры</span></button>`
+            : ""
+        }
       </div>
       ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
       <div class="amal-hub-row" style="margin-top:12px">
@@ -498,7 +881,7 @@
           return;
         }
         e.stopPropagation();
-        if (act === "open") openUi(isOwner() ? "admin" : "note");
+        if (act === "open") openUi(isOwner() || isGameAdmin() ? "admin" : "note");
         if (act === "close") closeUi();
         if (act === "tab-note") {
           view = "note";
@@ -514,13 +897,14 @@
           paint();
         }
         if (act === "tab-admin") {
-          if (!isOwner()) return;
+          if (!isOwner() && !isGameAdmin()) return;
           view = "admin";
           adminPage = "menu";
           paint();
         }
         if (act === "admin-menu") {
           adminPage = "menu";
+          lastGrantLinks = [];
           paint();
         }
         if (act === "admin-players") {
@@ -534,6 +918,89 @@
         if (act === "admin-write") {
           adminPage = "write";
           paint();
+        }
+        if (act === "admin-grant") {
+          if (!canGrantAdmin()) return;
+          adminPage = "grant";
+          paint();
+        }
+        if (act === "grant-pick") {
+          if (!canGrantAdmin()) return;
+          replyTo = el.getAttribute("data-nick") || "";
+          adminPage = "grant";
+          view = "admin";
+          msg = "Ник выбран — отметь игры";
+          err = "";
+          paint();
+        }
+        if (act === "grant-issue") {
+          if (!canGrantAdmin()) return;
+          const nickEl = root.querySelector("#amal-grant-nick");
+          const games = [];
+          root.querySelectorAll("[data-grant-game]").forEach((box) => {
+            if (box.checked) games.push(box.getAttribute("data-grant-game"));
+          });
+          const res = issueGrants(nickEl && nickEl.value, games);
+          if (!res.ok) {
+            err = res.error;
+            msg = "";
+            paint();
+            return;
+          }
+          err = "";
+          lastGrantLinks = res.links || [];
+          msg =
+            "Готово для «" +
+            res.nick +
+            "». Скопируй ссылку и отправь игроку. Он откроет — и админка в выбранных играх включится.";
+          paint();
+        }
+        if (act === "grant-revoke") {
+          if (!canGrantAdmin()) return;
+          const id = el.getAttribute("data-id");
+          const res = revokeGrant(id);
+          if (!res.ok) {
+            err = res.error || "Не вышло";
+            msg = "";
+            paint();
+            return;
+          }
+          err = "";
+          msg = "Админка забрана на этом устройстве.";
+          if (res.revokeLink) {
+            lastGrantLinks = [
+              {
+                id: id,
+                name: "Ссылка отмены для игрока",
+                link: res.revokeLink,
+                game: (res.grant && res.grant.game) || "",
+              },
+            ];
+            msg += " Если игрок на другом телефоне — отправь ему ссылку отмены (кнопка ниже).";
+          }
+          adminPage = "grant";
+          paint();
+        }
+        if (act === "copy-link") {
+          const link = el.getAttribute("data-link") || "";
+          if (!link) return;
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(link).then(
+                () => {
+                  msg = "Ссылка скопирована";
+                  paint();
+                },
+                () => {
+                  msg = "Не удалось скопировать";
+                  paint();
+                },
+              );
+            }
+          } catch {
+            msg = "Не удалось скопировать";
+            paint();
+          }
         }
         if (act === "save-nick") {
           const input = root.querySelector("#amal-nick-input");
@@ -642,12 +1109,20 @@
     } catch {
       /* ignore */
     }
+    const redeemed = redeemGrantFromUrl();
     bumpPresence();
     paint();
     if (!getNick()) {
       gateMode = true;
       open = true;
       view = "nick";
+      paint();
+    } else if (redeemed) {
+      open = true;
+      view = isOwner() || isGameAdmin() ? "admin" : "note";
+      adminPage = "menu";
+      msg = redeemed.message || "";
+      err = redeemed.ok ? "" : redeemed.message || "";
       paint();
     } else {
       const seen = storeGet(KEYS.changelogSeen, "");
@@ -666,6 +1141,11 @@
     setNick,
     addNote,
     isOwner,
+    canGrantAdmin,
+    isGameAdmin,
+    myAdminGames,
+    issueGrants,
+    revokeGrant,
     open: openUi,
     gameId: gameIdFromPath,
     CHANGELOG,

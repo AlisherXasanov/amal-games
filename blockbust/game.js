@@ -377,7 +377,34 @@
       /* ignore */
     }
     try {
-      return localStorage.getItem("amal-owner-v1") === "1";
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+    } catch {
+      /* ignore */
+    }
+    // Админка, выданная Амалем только для Blockbust (без права выдавать другим)
+    try {
+      if (typeof AmalHub !== "undefined" && AmalHub.isGameAdmin && AmalHub.isGameAdmin("blockbust")) {
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    return false;
+  }
+
+  function isFullOwner() {
+    try {
+      if (typeof AmalHub !== "undefined" && AmalHub.canGrantAdmin && AmalHub.canGrantAdmin()) return true;
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) return true;
+    } catch {
+      /* ignore */
+    }
+    try {
+      return localStorage.getItem("amal-owner-v1") === "1" || window.__AMAL_OWNER__ === true;
     } catch {
       return false;
     }
@@ -1385,7 +1412,11 @@
         state.modal === "admin" && isOwner()
           ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Моё меню Blockbust</h2><p class="sub">Простыми словами: что умеет админ</p></div><button data-act="close">✕</button></div>
             <div style="margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#fde68a;font-size:12px;font-weight:700;line-height:1.45">
-              Жёлтая кнопка 👑 сверху — это это меню. Ниже справа 👑 — заметки и кто играет на всём сайте.
+              ${
+                isFullOwner()
+                  ? "Ты главный админ. Выдать админку другому: кнопка 👑 внизу справа → пункт 5."
+                  : "Тебе выдали админку в Blockbust. Выдавать её другим нельзя."
+              }
             </div>
             <ul class="admin-list">${adminAbilities()
               .map(
