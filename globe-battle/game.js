@@ -1193,7 +1193,7 @@
     const t = e.detail && e.detail.type;
     const p = players && players[0];
     if (!p) return;
-    if (t === "heal" || t === "max") {
+    if (t === "heal" || t === "gb-center" || t === "gb-stun" || t === "max") {
       p.stunT = 0;
       p.flipT = 0;
       p.cutMarked = false;
@@ -1202,14 +1202,18 @@
       if (p.body) {
         Body.setPosition(p.body, { x: cx, y: cy });
         Body.setVelocity(p.body, { x: 0, y: 0 });
-      } else if (typeof respawnFallen === "function") {
-        try { respawnFallen(p); } catch (_) {}
       }
       if (typeof showToast === "function") showToast("💚 Хилл хозяина");
       if (typeof updateScores === "function") updateScores();
     }
-    if (t === "god" || t === "max") {
-      p.shieldCharges = Math.max(p.shieldCharges || 0, 3);
+    if (t === "god" || t === "gb-shield" || t === "max") {
+      p.shieldCharges = Math.max(p.shieldCharges || 0, 5);
+    }
+    if (t === "gb-cards" || t === "max") {
+      if (!p.cards) p.cards = [];
+      const death = { kind: "death", name: "Смерть", special: true, uid: "owner-death-" + Date.now() };
+      p.cards.push(death);
+      if (typeof showToast === "function") showToast("🃏 Карта смерти");
     }
   });
 })();

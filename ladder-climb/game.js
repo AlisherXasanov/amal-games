@@ -985,5 +985,24 @@
       state.messageCd = 1.5;
     }
     if (t === "unlock" || t === "max") unlock = LEVELS.length;
+    if (t === "lc-skip") {
+      state.won = true;
+      state.dead = false;
+      state.message = "⏭ Уровень пройден";
+      const id = (LEVELS[state.levelIndex] && LEVELS[state.levelIndex].id) || state.levelIndex + 1;
+      unlock = Math.max(unlock, Math.min(LEVELS.length, id + 1));
+      store.set(KEY.unlock, unlock);
+    }
+    if ((t === "lc-top" || t === "max") && state.player && state.world) {
+      const tf = state.world.topFloor;
+      state.player.x = tf.x + tf.w * 0.4;
+      state.player.y = tf.y;
+      state.player.vy = 0;
+      state.player.vx = 0;
+    }
+    if (t === "god" || t === "max") window.__AMAL_GOD__ = true;
+    if ((t === "speed" || t === "max") && state.player) {
+      state.player.jumpBoost = true;
+    }
   });
 })();

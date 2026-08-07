@@ -1170,17 +1170,34 @@
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
-    if (t === "heal" || t === "max") {
+    if (t === "heal" || t === "xb-fix" || t === "max") {
       state.crashed = 0;
       state.dead = false;
       state.timeLeft = Math.max(state.timeLeft, 60);
       state.speed = Math.max(state.speed, 40);
-      showMsg("💚 Хилл · полный бак времени", 1.5);
+      showMsg("💚 Хилл · багги цел", 1.5);
     }
-    if (t === "speed" || t === "max") {
-      state.maxSpeed = Math.max(state.maxSpeed || 0, 220);
-      state.speed = Math.max(state.speed, 120);
-      showMsg("⚡ Турбо", 1);
+    if (t === "xb-turbo" || t === "speed" || t === "max") {
+      state.maxSpeed = Math.max(state.maxSpeed || 0, 280);
+      state.speed = Math.max(state.speed, 180);
+      state.gear = 2;
+      showMsg("🚀 ТУРБО", 1);
+    }
+    if (t === "xb-time" || t === "max") {
+      state.timeLeft = (state.timeLeft || 0) + 99;
+      showMsg("⏱ +99 сек", 1);
+    }
+    if (t === "xb-finish") {
+      state.finished = true;
+      state.dead = false;
+      state.crashed = 0;
+      state.score += Math.floor((state.timeLeft || 0) * 50);
+      showMsg("🏁 ФИНИШ!", 1.5);
+      setTimeout(() => renderResult(true), 500);
+    }
+    if (t === "god" || t === "max") {
+      state.crashed = 0;
+      window.__AMAL_GOD__ = true;
     }
   });
 })();

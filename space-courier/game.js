@@ -1021,8 +1021,23 @@
       if (typeof flash === "function") flash("💚 Хилл · топливо и щит");
       if (typeof updateHud === "function") updateHud();
     }
+    if (t === "sc-clear" || t === "max") {
+      while (state.asteroids && state.asteroids.length) destroyAsteroid(0, 20);
+      if (typeof flash === "function") flash("☄ Астероиды сбиты");
+    }
+    if (t === "sc-bombs" || t === "max") {
+      state.bombs = Infinity;
+    }
+    if (t === "sc-score" || t === "max") {
+      state.score = (state.score || 0) + 5000;
+      if (typeof updateHud === "function") updateHud();
+    }
     if (t === "speed" || t === "max") {
-      if (state.ship) state.ship.boost = Math.max(state.ship.boost || 0, 4);
+      if (state.ship) state.ship.boost = Math.max(state.ship.boost || 0, 6);
+    }
+    if (t === "god" || t === "max") {
+      window.__AMAL_GOD__ = true;
+      state.fuel = 100;
     }
   });
 })();

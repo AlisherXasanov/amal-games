@@ -12045,8 +12045,38 @@
       if (typeof toast === "function") toast("💚 Хилл · ∞ солнце");
       if (typeof updateHud === "function") updateHud();
     }
-    if (t === "coins" || t === "unlock" || t === "max") {
+    if (t === "zvp-sun" || t === "coins" || t === "max") {
       state.resource = 999999;
+      if (typeof updateHud === "function") updateHud();
+    }
+    if (t === "zvp-kill" || t === "max") {
+      if (Array.isArray(state.zombies)) {
+        for (let i = state.zombies.length - 1; i >= 0; i--) {
+          const z = state.zombies[i];
+          if (z.charmed) continue;
+          z.hp = 0;
+          state.zombies.splice(i, 1);
+        }
+      }
+      if (typeof toast === "function") toast("☠ Зомби уничтожены");
+    }
+    if (t === "unlock" || t === "max") {
+      window.__AMAL_GOD__ = true;
+      if (typeof buildUnitBar === "function") buildUnitBar();
+    }
+    if (t === "zvp-win") {
+      if (typeof endGame === "function") endGame(true);
+      else {
+        state.won = true;
+        state.lost = false;
+        state.running = false;
+        if (typeof showScreen === "function") showScreen("result");
+      }
+    }
+    if (t === "zvp-boss" || t === "max") {
+      window.__AMAL_GOD__ = true;
+      if (typeof buildUnitBar === "function") buildUnitBar();
+      if (typeof toast === "function") toast("👑 Боссы открыты");
     }
   });
 })();

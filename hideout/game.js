@@ -589,7 +589,13 @@
       if (amalGod() && a.isPlayer) continue; // хозяин-прячущийся неуловим
       const d = dist(seeker, a);
       // вещь — только вплотную, чтобы не ловить «пустое» место
-      const need = godSeeker ? (a.prop ? 80 : 120) : a.prop ? 15 : CATCH_R;
+      const need = godSeeker || window.__AMAL_CATCH__
+        ? a.prop
+          ? 80
+          : 120
+        : a.prop
+          ? 15
+          : CATCH_R;
       const bonus = a.prop && a.moving ? 6 : 0;
       if (d < need + bonus && d < bd) {
         bd = d;
@@ -1447,8 +1453,29 @@
       if (typeof toast === "function") toast("💚 Хилл хозяина");
     }
     if (t === "speed" || t === "max") {
-      g.player.speed = Math.max(g.player.speed, 240);
+      g.player.speed = Math.max(g.player.speed, 260);
       if (typeof toast === "function") toast("⚡ Супер-скорость");
     }
+    if (t === "ho-catch" || t === "max") {
+      window.__AMAL_CATCH__ = true;
+      if (typeof toast === "function") toast("👁 Супер-ловля");
+    }
+    if (t === "ho-time" || t === "max") {
+      if (g.phase === "seek") g.seekLeft += 60;
+      else g.hideLeft += 30;
+    }
+    if (t === "ho-seeker") {
+      g.player.role = "seeker";
+      g.playerRole = "seeker";
+      g.player.prop = null;
+      g.player.r = 15;
+      g.player.speed = Math.max(g.player.speed, 200);
+    }
+    if (t === "ho-hider") {
+      g.player.role = "hider";
+      g.playerRole = "hider";
+      g.player.r = 13;
+    }
+    if (t === "god" || t === "max") window.__AMAL_GOD__ = true;
   });
 })();

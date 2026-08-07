@@ -3858,7 +3858,7 @@
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
-    if (t === "heal" || t === "max") {
+    if (t === "heal" || t === "max" || t === "kb-revive") {
       buddy.hp = buddy.maxHp;
       buddy.dead = false;
       buddy.burnT = 0;
@@ -3866,8 +3866,15 @@
       syncHud();
       setDeadUI(false);
     }
-    if (t === "god" || t === "max") {
+    if (t === "kb-oneshot") {
+      buddy.hp = 0;
+      if (typeof killBuddy === "function") killBuddy(effectiveWeapon());
+      syncHud();
+    }
+    if (t === "god" || t === "max" || t === "kb-loot" || t === "kb-vip") {
       save.godMode = true;
+      save.vip = true;
+      save.vipPlus = true;
       grantAdminLoot();
       persist();
       syncHud();

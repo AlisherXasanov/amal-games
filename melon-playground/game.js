@@ -1809,8 +1809,23 @@
       }
       if (typeof updateStats === "function") updateStats();
     }
-    if (t === "dmg" || t === "max") {
+    if (t === "mp-smash" || t === "dmg" || t === "max") {
       window.__AMAL_DMG__ = true;
+      for (const [id, meta] of [...entityMeta.entries()]) {
+        if (meta.kind === "platform" || meta.kind === "melon") continue;
+        meta.hp = 0;
+        if (typeof removeEntity === "function") removeEntity(id);
+      }
+    }
+    if (t === "mp-spawn" || t === "max") {
+      if (typeof makeMelon === "function") makeMelon(0, -100);
+    }
+    if (t === "mp-clear") {
+      for (const id of [...entityMeta.keys()]) {
+        const meta = entityMeta.get(id);
+        if (meta && meta.kind !== "platform" && typeof removeEntity === "function") removeEntity(id);
+      }
+      if (typeof updateStats === "function") updateStats();
     }
   });
 })();

@@ -835,8 +835,22 @@
         state.invuln = 2;
         if (el && el.hp) el.hp.textContent = String(Math.ceil(state.player.hp));
       }
-      state.dead = false;
       if (state.screen === "dead") state.screen = "play";
+    }
+    if (t === "ca-clear" || t === "max") {
+      state.enemies = [];
+      state.toSpawn = 0;
+      showMsg("☠ ВОЛНА ЧИСТА", 1.2);
+    }
+    if (t === "ca-doomsday" || t === "unlock" || t === "max") {
+      save.equipped = "doomsday";
+      save.owned = WEAPONS.map((w) => w.id);
+      if (state.player) state.player.weaponId = "doomsday";
+      if (el && el.weapon) el.weapon.textContent = weaponById("doomsday").name;
+      persist();
+    }
+    if (t === "ca-wave" || t === "max") {
+      if (typeof beginWave === "function") beginWave((state.wave || 1) + 5);
     }
     if (t === "coins" || t === "max" || t === "unlock") {
       save.coins = 999999999;
@@ -845,7 +859,8 @@
       if (el && el.coins) el.coins.textContent = String(save.coins);
     }
     if (t === "speed" || t === "max") {
-      if (state.player) state.player.speed = Math.max(state.player.speed || 0, 320);
+      if (state.player) state.player.speed = Math.max(state.player.speed || 0, 360);
     }
+    if (t === "god" || t === "max") state.invuln = 999;
   });
 })();

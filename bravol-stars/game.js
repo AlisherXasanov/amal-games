@@ -5373,6 +5373,13 @@
       CHEATS.invincible = true;
     }
     if (t === "dmg" || t === "max") CHEATS.infiniteDamage = true;
+    if (t === "bs-fly" || t === "max") {
+      CHEATS.fly = true;
+      CHEATS.noclip = true;
+    }
+    if (t === "bs-kill" && game && typeof killEveryone === "function") {
+      killEveryone(game);
+    }
     if (t === "coins" || t === "max") {
       coins = 999999;
       store.set("bravol-coins", coins);

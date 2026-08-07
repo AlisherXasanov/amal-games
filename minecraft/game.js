@@ -1906,20 +1906,21 @@ async function main() {
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
     if (!player) return;
-    if (t === "heal" || t === "max") {
+    if (t === "heal" || t === "mc-food" || t === "max") {
       player.hp = player.maxHp;
       player.food = player.maxFood;
       player.dead = false;
       player.hurtCd = 0;
     }
-    if (t === "god" || t === "max") {
+    if (t === "god" || t === "mc-creative" || t === "max") {
       player.creative = true;
       player.admin = true;
       player.flying = true;
       player.noclip = true;
     }
-    if (t === "speed" || t === "max") {
+    if (t === "mc-fly" || t === "speed" || t === "max") {
       player.flying = true;
+      player.noclip = true;
     }
   });
   // Меню без тяжёлой генерации — мир создаётся при «Играть»

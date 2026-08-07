@@ -1748,10 +1748,41 @@
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
-    if (t === "heal" || t === "max" || t === "coins" || t === "unlock") {
+    const n = state.board && state.board.length ? state.board.length : 8;
+    if (t === "heal" || t === "max" || t === "coins" || t === "unlock" || t === "bb-cubes" || t === "bb-adv") {
       applyOwnerRewards();
-      if (typeof toast === "function") toast(t === "heal" ? "💚 Хилл · ∞ монеты" : "⚡ Силы хозяина");
-      render();
     }
+    if (t === "bb-clear" || t === "max") {
+      state.board = Array.from({ length: n }, () => Array(n).fill(null));
+      if (typeof toast === "function") toast("🧹 Поле очищено");
+    }
+    if (t === "bb-refill" || t === "max") {
+      if (typeof makeHand === "function") state.hand = makeHand(state.board);
+      if (typeof toast === "function") toast("🧩 Новые фигуры");
+    }
+    if (t === "bb-score" || t === "max") {
+      state.score = (state.score || 0) + 10000;
+      state.coins = INF;
+      if (typeof toast === "function") toast("🏆 +10000");
+    }
+    if (t === "bb-combo" || t === "max") {
+      state.combo = Math.max(state.combo || 0, 20);
+      state.bestCombo = Math.max(state.bestCombo || 0, 20);
+    }
+    if (t === "bb-revive" || t === "max") {
+      state.gameOver = false;
+      state.levelWon = false;
+      if (typeof makeHand === "function" && (!state.hand || state.hand.every((p) => !p))) {
+        state.hand = makeHand(state.board);
+      }
+    }
+    if (t === "bb-cinema" || t === "max") {
+      state.bgId = ADMIN_BG_ID;
+      store.set(KEYS.skin, ADMIN_BG_ID);
+    }
+    if (typeof toast === "function" && t && String(t).startsWith("bb-")) {
+      /* toasts above */
+    }
+    render();
   });
 })();
