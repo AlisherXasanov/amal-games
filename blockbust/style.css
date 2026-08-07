@@ -229,9 +229,22 @@ button.primary {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  touch-action: manipulation;
+  touch-action: none;
   cursor: pointer;
   padding: 8px 6px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media (pointer: coarse) {
+  .pick-btn {
+    min-height: 124px;
+    padding: 12px 8px;
+  }
+
+  .pick-row {
+    gap: 12px;
+  }
 }
 
 .pick-btn.selected {
@@ -320,6 +333,12 @@ button.primary {
   filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.45));
   transform: translate(-50%, -50%) scale(1.08);
   touch-action: none;
+  will-change: left, top;
+}
+
+.ghost.ghost-touch {
+  transform: translate(-50%, -50%) scale(1.2);
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.55));
 }
 
 .overlay {

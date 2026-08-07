@@ -823,7 +823,37 @@
   }
 
   function dragLift() {
-    return state.cell * (isCoarsePointer() ? 2.4 : 1.2);
+    // На телефоне поднимаем призрак выше пальца, чтобы его было видно
+    if (isCoarsePointer()) return Math.max(96, Math.min(168, state.cell * 3.8));
+    return state.cell * 1.2;
+  }
+
+  function snapHover(piece, row, col, radius = 2) {
+    if (row == null || col == null) return { row: null, col: null, valid: false };
+    if (canPlace(state.board, piece.cells, row, col)) {
+      return { row, col, valid: true };
+    }
+    const n = boardSize();
+    const { h, w } = pieceSize(piece.cells);
+    const maxR = n - h;
+    const maxC = n - w;
+    let best = null;
+    let bestD = Infinity;
+    for (let dr = -radius; dr <= radius; dr++) {
+      for (let dc = -radius; dc <= radius; dc++) {
+        if (!dr && !dc) continue;
+        const r = row + dr;
+        const c = col + dc;
+        if (r < 0 || c < 0 || r > maxR || c > maxC) continue;
+        if (!canPlace(state.board, piece.cells, r, c)) continue;
+        const d = dr * dr + dc * dc;
+        if (d < bestD) {
+          bestD = d;
+          best = { row: r, col: c, valid: true };
+        }
+      }
+    }
+    return best || { row, col, valid: false };
   }
 
   function pointerToCell(clientX, clientY, piece) {
@@ -835,14 +865,24 @@
     const lift = dragLift();
     const localX = clientX - rect.left;
     const localY = clientY - rect.top - lift;
+    // Чуть шире зона «над полем», чтобы легче попадать с края пальца
+    const pad = isCoarsePointer() ? step * 1.25 : 8;
+    if (
+      localX < -pad ||
+      localY < -pad ||
+      localX > rect.width + pad ||
+      localY > rect.height + pad
+    ) {
+      return { row: null, col: null, valid: false };
+    }
     const { h, w } = pieceSize(piece.cells);
-    const col = Math.round(localX / step - w / 2);
-    const row = Math.round(localY / step - h / 2);
-    return {
-      row,
-      col,
-      valid: canPlace(state.board, piece.cells, row, col),
-    };
+    let col = Math.round(localX / step - w / 2);
+    let row = Math.round(localY / step - h / 2);
+    const maxR = boardSize() - h;
+    const maxC = boardSize() - w;
+    col = Math.max(0, Math.min(maxC, col));
+    row = Math.max(0, Math.min(maxR, row));
+    return snapHover(piece, row, col, isCoarsePointer() ? 2 : 1);
   }
 
   function syncDragDom() {
@@ -852,8 +892,9 @@
     if (!ghost) {
       ghost = document.createElement("div");
       ghost.id = "drag-ghost";
-      ghost.className = "ghost";
-      ghost.innerHTML = pieceHtml(state.drag.piece, Math.floor(state.cell * 0.92));
+      ghost.className = "ghost" + (isCoarsePointer() ? " ghost-touch" : "");
+      const ghostCell = Math.floor(state.cell * (isCoarsePointer() ? 1.05 : 0.92));
+      ghost.innerHTML = pieceHtml(state.drag.piece, ghostCell);
       document.body.appendChild(ghost);
     }
     ghost.style.left = `${state.drag.x}px`;
@@ -875,10 +916,11 @@
     document.getElementById("drag-ghost")?.remove();
   }
 
-  function beginDrag(idx, clientX, clientY, pointerId) {
+  function beginDrag(idx, clientX, clientY, pointerId, target) {
     const piece = state.hand[idx];
     if (!piece || state.gameOver || state.levelWon) return;
     state.selected = idx;
+    state.aim = null;
     state.drag = {
       index: idx,
       piece,
@@ -891,6 +933,13 @@
       moved: false,
     };
     document.body.classList.add("dragging");
+    try {
+      if (target && pointerId != null && target.setPointerCapture) {
+        target.setPointerCapture(pointerId);
+      }
+    } catch {
+      /* ignore */
+    }
     const hover = pointerToCell(clientX, clientY, piece);
     state.drag.row = hover.row;
     state.drag.col = hover.col;
@@ -905,7 +954,9 @@
     if (!state.drag) return;
     const dx = clientX - state.drag.x;
     const dy = clientY - state.drag.y;
-    if (Math.abs(dx) + Math.abs(dy) > 8) state.drag.moved = true;
+    // На телефоне считаем «движением» раньше — меньше ложных тапов
+    const thresh = isCoarsePointer() ? 4 : 8;
+    if (Math.abs(dx) + Math.abs(dy) > thresh) state.drag.moved = true;
     const hover = pointerToCell(clientX, clientY, state.drag.piece);
     state.drag.x = clientX;
     state.drag.y = clientY;
@@ -1091,7 +1142,7 @@
       <div class="hand">
         <div class="hint">${
           isCoarsePointer()
-            ? "Тяни фигуру пальцем на поле · или кнопки 1–2–3"
+            ? "Зажми и веди фигуру выше пальца на поле"
             : state.selected != null
               ? `Выбрана фигура ${state.selected + 1} — наведи на поле и кликни`
               : "Клавиши 1 · 2 · 3 · или тяни мышкой"
@@ -1324,7 +1375,7 @@
           if (e.cancelable) e.preventDefault();
           e.stopPropagation();
           // На телефоне сразу тянем; на ПК тоже можно тянуть с кнопки
-          beginDrag(idx, e.clientX, e.clientY, e.pointerId);
+          beginDrag(idx, e.clientX, e.clientY, e.pointerId, e.currentTarget);
         },
         { passive: false },
       );
