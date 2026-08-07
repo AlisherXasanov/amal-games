@@ -86,6 +86,7 @@
       name: "Кинозал",
       icon: "🎬",
       exclusive: true,
+      preview: "linear-gradient(90deg,#7f1d1d 0%,#1c1917 18%,#0a0a0a 50%,#1c1917 82%,#7f1d1d 100%)",
       bg:
         "radial-gradient(ellipse 70% 45% at 50% 38%, #f8fafc22 0%, transparent 55%)," +
         "linear-gradient(90deg, #450a0a 0%, #7f1d1d 8%, #1c1917 14%, #0a0a0a 50%, #1c1917 86%, #7f1d1d 92%, #450a0a 100%)," +
@@ -355,7 +356,31 @@
   };
 
   function isOwner() {
-    return typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get("owner") === "AmalOwner2026") {
+        try {
+          localStorage.setItem("amal-owner-v1", "1");
+        } catch {
+          /* ignore */
+        }
+        window.__AMAL_OWNER__ = true;
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    if (window.__AMAL_OWNER__ === true) return true;
+    try {
+      if (typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) return true;
+    } catch {
+      /* ignore */
+    }
+    try {
+      return localStorage.getItem("amal-owner-v1") === "1";
+    } catch {
+      return false;
+    }
   }
 
   function loadBest() {
@@ -450,6 +475,7 @@
     store.set(KEYS.coins, INF);
     const owned = new Set(loadOwnedCubes());
     FREE_CUBE_IDS.forEach((id) => owned.add(id));
+    CUBE_SKINS.filter((c) => c.exclusive).forEach((c) => owned.add(c.id));
     owned.add(EXCLUSIVE_CUBE_ID);
     store.set(KEYS.ownedCubes, [...owned]);
     store.set(KEYS.ownedSpeed, true);
@@ -457,13 +483,31 @@
     state.ownedSpeed = true;
     state.bgId = ADMIN_BG_ID;
     store.set(KEYS.skin, ADMIN_BG_ID);
+    // Все уровни приключений
+    const adv = { ...(state.adventure || { maxUnlocked: 1, completed: [] }) };
+    adv.maxUnlocked = LEVELS.length;
+    state.adventure = adv;
+    store.set(KEYS.adventure, adv);
   }
 
   function ownsBg(id) {
     const def = BG_SKINS.find((s) => s.id === id);
     if (!def) return false;
-    if (def.exclusive) return isOwner();
-    return true;
+    if (!def.exclusive) return true;
+    return isOwner();
+  }
+
+  function adminAbilities() {
+    return [
+      { icon: "∞", title: "Бесконечные монеты и рекорд" },
+      { icon: "🎬", title: "Фон «Кинозал»" },
+      { icon: "🌟", title: "Все кубики + «Звёздный огонь»" },
+      { icon: "⚡", title: "Мини-игра «Скорость III»" },
+      { icon: "👻", title: "Ставить фигуры поверх других" },
+      { icon: "🛡️", title: "Без проигрыша (не конец игры)" },
+      { icon: "🗺️", title: "Все уровни приключений" },
+      { icon: "🧹", title: "Очистить поле одной кнопкой" },
+    ];
   }
 
   let uid = 0;
@@ -1202,12 +1246,24 @@
           <p class="mode-line">${modeTitle()}</p>
         </div>
         <div class="actions">
+          ${
+            isOwner()
+              ? `<button type="button" class="admin-btn" data-act="admin" title="Админ">👑</button>`
+              : ""
+          }
           <button type="button" data-act="minis">🎮</button>
           <button type="button" data-act="adventure">🗺️</button>
           <button type="button" data-act="skins">${cube.icon === "neon" ? "⚡" : cube.icon}</button>
           <button type="button" class="primary" data-act="new" style="background:${sk.accent}">↺</button>
         </div>
       </header>
+      ${
+        isOwner()
+          ? `<div class="admin-chip">👑 Админ · фон ${sk.name}${
+              state.bgId === ADMIN_BG_ID ? " ✓" : ""
+            }</div>`
+          : ""
+      }
       <div class="stats">
         <div class="stat"><div class="label">Счёт</div><div class="value" style="color:${sk.accent}">${state.score}</div></div>
         <div class="stat"><div class="label">${
@@ -1315,7 +1371,8 @@
             <div class="grid-cards three">${BG_SKINS.map((s) => {
               const have = ownsBg(s.id);
               const locked = !have;
-              return `<button class="card ${locked ? "locked" : ""}" data-bg="${s.id}" style="background:${s.bg}" ${
+              const thumb = s.preview || s.bg;
+              return `<button class="card ${locked ? "locked" : ""}" data-bg="${s.id}" style="background:${thumb}" ${
                 locked ? "disabled" : ""
               }><div style="font-size:18px">${s.icon}</div><div style="margin-top:6px;font-size:11px;font-weight:900">${s.name}</div><div style="font-size:10px;opacity:.7">${
                 locked
@@ -1327,6 +1384,22 @@
                       : "Сменить"
               }</div></button>`;
             }).join("")}</div>
+          </div></div>`
+          : ""
+      }
+      ${
+        state.modal === "admin" && isOwner()
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Админ</h2><p class="sub">Твои способности в Blockbust</p></div><button data-act="close">✕</button></div>
+            <ul class="admin-list">${adminAbilities()
+              .map(
+                (a) =>
+                  `<li><span class="admin-ico">${a.icon}</span><span>${a.title}</span></li>`,
+              )
+              .join("")}</ul>
+            <button class="primary" data-act="admin-cinema" style="width:100%;margin-top:12px;background:${sk.accent}">🎬 Включить «Кинозал»</button>
+            <button data-act="admin-clear" style="width:100%;margin-top:8px">🧹 Очистить поле</button>
+            <button data-act="admin-starfire" style="width:100%;margin-top:8px">🌟 Кубики «Звёздный огонь»</button>
+            <p class="sub" style="margin-top:12px">Если чип «Админ» не виден — открой ссылку с ?owner=AmalOwner2026</p>
           </div></div>`
           : ""
       }
@@ -1395,6 +1468,40 @@
         }
         if (act === "skins") {
           state.modal = "skins";
+          render();
+        }
+        if (act === "admin") {
+          if (!isOwner()) {
+            toast("Нужен режим владельца");
+            return;
+          }
+          state.modal = "admin";
+          render();
+        }
+        if (act === "admin-cinema") {
+          if (!isOwner()) return;
+          applyOwnerRewards();
+          state.bgId = ADMIN_BG_ID;
+          store.set(KEYS.skin, ADMIN_BG_ID);
+          state.modal = null;
+          toast("Фон «Кинозал» включён");
+          render();
+        }
+        if (act === "admin-clear") {
+          if (!isOwner()) return;
+          state.board = emptyBoard();
+          state.gameOver = false;
+          state.modal = null;
+          toast("Поле очищено");
+          render();
+        }
+        if (act === "admin-starfire") {
+          if (!isOwner()) return;
+          applyOwnerRewards();
+          state.cubeId = EXCLUSIVE_CUBE_ID;
+          store.set(KEYS.cube, EXCLUSIVE_CUBE_ID);
+          state.modal = null;
+          toast("Кубики: Звёздный огонь");
           render();
         }
         if (act === "minis") {
