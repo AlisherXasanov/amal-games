@@ -1036,7 +1036,7 @@
                 piece ? "" : "empty"
               }" data-pick="${i}" ${!piece || state.gameOver || state.levelWon ? "disabled" : ""}>
               <span class="pick-num">${i + 1}</span>
-              <span class="pick-piece">${pieceHtml(piece, Math.max(16, Math.min(28, Math.floor(state.cell * 0.55)))}</span>
+              <span class="pick-piece">${pieceHtml(piece, Math.max(16, Math.min(28, Math.floor(state.cell * 0.55))))}</span>
             </button>`;
             })
             .join("")}
