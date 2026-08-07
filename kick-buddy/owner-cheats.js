@@ -13,7 +13,7 @@
 
   const STORAGE_KEY = "amal-owner-v3";
   // bump: force Pages refresh for easy codes
-  const SECRETS = ["amal", "1234", "buddy"];
+  const SECRETS = ["amal", "1234", "buddy", "amalowner2026"];
   const OLD_KEYS = ["kick-buddy-admin"];
 
   function wipeOldTeamFlags() {

@@ -9,6 +9,20 @@
   const TOP = 30;
 
   /* ========== ЗВУК (Web Audio API) ========== */
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   function readMuted() {
     try {
       return localStorage.getItem("zvp-muted") === "1";
@@ -2742,7 +2756,7 @@
   }
 
   function unlockedPlants() {
-    if (state.labMode) {
+    if (state.labMode || amalGod()) {
       return Object.values(PLANT_TYPES).filter(
         (p) => !p.titanArmor && p.id !== "giftbox"
       );
@@ -3082,8 +3096,10 @@
     const types =
       state.side === "plants"
         ? unlockedPlants()
-        : Object.values(ZOMBIE_TYPES).filter(
-            (z) => !z.knight && !z.zomboni && !z.boss
+        : Object.values(ZOMBIE_TYPES).filter((z) =>
+            amalGod() || state.labMode
+              ? true
+              : !z.knight && !z.zomboni && !z.boss
           );
     types.forEach((unit) => {
       const btn = document.createElement("button");
@@ -3388,6 +3404,7 @@
       state.side === "zombies"
         ? level.zombieStartResource ?? level.startResource
         : 2000;
+    if (amalGod()) state.resource = 999999;
     state.selectedUnit = null;
     state.running = true;
     state.paused = false;
@@ -3454,11 +3471,11 @@
     if (state.craters.some((c) => c.col === col && c.row === row && c.timer > 0))
       return false;
     if (state.plants.some((p) => p.col === col && p.row === row)) return false;
-    if (!free && !state.labMode && state.resource < type.cost) return false;
+    if (!free && !state.labMode && !amalGod() && state.resource < type.cost) return false;
 
     if (!free) {
-      if (!state.labMode) state.resource -= type.cost;
-      if (type.recharge && !state.labMode) {
+      if (!state.labMode && !amalGod()) state.resource -= type.cost;
+      if (type.recharge && !state.labMode && !amalGod()) {
         state.unitReadyAt[typeId] = state.time + type.recharge;
       }
     }
@@ -3761,8 +3778,8 @@
     if (!type) return false;
     if (row < rowOffset() || row >= rowOffset() + activeRows()) return false;
     if (fromPlayer) {
-      if (state.resource < type.cost) return false;
-      state.resource -= type.cost;
+      if (!amalGod() && state.resource < type.cost) return false;
+      if (!amalGod()) state.resource -= type.cost;
     }
 
     const y = cellCenter(COLS - 1, row).y;
@@ -6820,6 +6837,7 @@
             if (plantType?.damageCapFlat) {
               bite = Math.min(bite, plantType.damageCapFlat);
             }
+            if (amalGod()) bite = Math.min(bite, 1);
             plant.hp -= bite;
             if (plantType?.thorns || plantType?.flameNut) {
               zombie.hp -= plantType.thornDamage || 25;

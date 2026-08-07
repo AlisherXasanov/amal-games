@@ -32,6 +32,20 @@
     { id: "doomsday", name: "Судный день", dmg: 110, rate: 2.4, range: 650, speed: 700, melee: false, spread: 0.08, pellets: 3, cost: 1600, desc: "Ломает баланс — как и обещали" },
   ];
 
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   const save = store.get(STORAGE, {
     coins: 0,
     owned: ["pipe"],
@@ -41,6 +55,11 @@
   });
   if (!save.owned.includes("pipe")) save.owned.push("pipe");
   if (!WEAPONS.find((w) => w.id === save.equipped)) save.equipped = "pipe";
+  if (amalGod()) {
+    save.coins = 999999999;
+    save.owned = WEAPONS.map((w) => w.id);
+    save.equipped = "doomsday";
+  }
 
   function persist() {
     store.set(STORAGE, {
@@ -192,8 +211,9 @@
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-buy");
         const w = weaponById(id);
-        if (save.owned.includes(id) || save.coins < w.cost) return;
-        save.coins -= w.cost;
+        if (save.owned.includes(id)) return;
+        if (!amalGod() && save.coins < w.cost) return;
+        if (!amalGod()) save.coins -= w.cost;
         save.owned.push(id);
         save.equipped = id;
         persist();
@@ -441,6 +461,7 @@
 
   function hurtPlayer(dmg) {
     if (state.invuln > 0 || state.screen !== "play") return;
+    if (amalGod()) return;
     state.player.hp -= dmg;
     state.invuln = 0.55;
     burst(state.player.x, state.player.y, "#ff4d6d", 10);

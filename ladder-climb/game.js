@@ -368,7 +368,22 @@
     };
   }
 
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   let unlock = store.get(KEY.unlock, 1);
+  if (amalGod()) unlock = 99;
   let best = store.get(KEY.best, {});
 
   const keys = Object.create(null);
@@ -477,6 +492,7 @@
 
   function hurt(p, msg) {
     if (p.invuln > 0) return;
+    if (amalGod()) return;
     p.hp -= 1;
     p.invuln = 0.9;
     p.vy = -280;

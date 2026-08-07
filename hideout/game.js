@@ -13,6 +13,20 @@
   const PROP_R = 38;
   const VISION_HIDER = 155;
   const VISION_SEEKER = 175;
+
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
   const HIDER_COUNT = 10;
   const SEEKER_COUNT = 2;
 
@@ -335,6 +349,7 @@
   });
 
   function makeActor(role, isPlayer, x, y, floor, name) {
+    const base = role === "seeker" ? 155 : 148;
     return {
       role,
       isPlayer,
@@ -343,7 +358,7 @@
       y,
       floor,
       r: role === "seeker" ? 15 : 13,
-      speed: role === "seeker" ? 155 : 148,
+      speed: isPlayer && amalGod() ? base * 1.55 : base,
       caught: false,
       prop: null,
       propLocked: false,
@@ -567,12 +582,14 @@
     }
     let best = null;
     let bd = 99;
+    const godSeeker = amalGod() && seeker.isPlayer;
     for (const a of g.actors) {
       if (a === seeker) continue;
       if (a.role !== "hider" || a.floor !== seeker.floor) continue;
+      if (amalGod() && a.isPlayer) continue; // хозяин-прячущийся неуловим
       const d = dist(seeker, a);
       // вещь — только вплотную, чтобы не ловить «пустое» место
-      const need = a.prop ? 15 : CATCH_R;
+      const need = godSeeker ? (a.prop ? 80 : 120) : a.prop ? 15 : CATCH_R;
       const bonus = a.prop && a.moving ? 6 : 0;
       if (d < need + bonus && d < bd) {
         bd = d;

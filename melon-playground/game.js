@@ -7,6 +7,20 @@
 
   const { Engine, World, Bodies, Body, Composite, Constraint, Mouse, MouseConstraint, Events, Query, Vector } = Matter;
 
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   const SKINS = [
     {
       id: "classic",
@@ -669,11 +683,13 @@
   function damageEntity(id, amount, point) {
     const meta = entityMeta.get(id);
     if (!meta || meta.kind === "platform") return;
-    meta.hp -= amount;
+    if (amalGod() && meta.kind === "melon") return;
+    const dmg = amalGod() ? amount * 8 : amount;
+    meta.hp -= dmg;
     if (point) {
       const juiceColor = meta.kind === "pear";
       if (juiceColor) {
-        for (let i = 0; i < Math.ceil(amount / 3); i++) {
+        for (let i = 0; i < Math.ceil(dmg / 3); i++) {
           const a = Math.random() * Math.PI * 2;
           particles.push({
             x: point.x,
@@ -685,10 +701,10 @@
             color: Math.random() > 0.4 ? "#f4d03f" : "#58d68d",
           });
         }
-        juiceSpilled += Math.ceil(amount / 4);
+        juiceSpilled += Math.ceil(dmg / 4);
         updateStats();
       } else {
-        spawnJuice(point.x, point.y, Math.ceil(amount / 4), 3 + amount / 8);
+        spawnJuice(point.x, point.y, Math.ceil(dmg / 4), 3 + dmg / 8);
       }
     }
     if (meta.kind === "barrel" && meta.hp <= 0) {

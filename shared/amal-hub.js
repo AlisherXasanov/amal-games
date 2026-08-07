@@ -411,6 +411,13 @@
     return typeof n === "string" ? n.trim() : "";
   }
 
+  function ensureOwnerNick() {
+    if (!isOwner()) return getNick();
+    if (getNick()) return getNick();
+    const res = setNick("Amal");
+    return res.ok ? res.nick : "Amal";
+  }
+
   function setNick(raw) {
     const nick = String(raw || "")
       .trim()
@@ -860,6 +867,7 @@
     adminPage = "menu";
     replyTo = "";
     lastGrantLinks = [];
+    if (isOwner()) ensureOwnerNick();
     if (!getNick()) {
       gateMode = true;
       view = "nick";
@@ -1606,11 +1614,12 @@
     } catch {
       /* ignore */
     }
+    if (isOwner()) ensureOwnerNick();
     const redeemed = redeemGrantFromUrl();
     bumpPresence();
     startPresenceNet();
     paint();
-    if (!getNick()) {
+    if (!getNick() && !isOwner()) {
       gateMode = true;
       open = true;
       view = "nick";
@@ -1652,6 +1661,7 @@
       } catch {
         /* ignore */
       }
+      if (isOwner()) ensureOwnerNick();
       startPresenceNet();
       paint();
     });

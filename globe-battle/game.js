@@ -16,6 +16,24 @@
   const WORLD_ITEMS = 50;
   const CARDS_EACH = 10;
 
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function isGodP(p) {
+    return amalGod() && p && p.i === 0;
+  }
+
   // Пластилиновые «леденцы» как Gang Beasts / Human Fall Flat
   const CHARACTERS = [
     { id: "lime", name: "Лайм", emoji: "🟢", color: "#7CFC00", shade: "#4cae00", blush: "#c8ff7a" },
@@ -629,9 +647,10 @@
     if (!p.alive || p.dead || p.stunT > 0 || p.flipT > 0 || p.stunCd > 0) return;
     const pos = p.body.position;
     let hit = null;
-    let bestD = GRAB_RANGE + 10;
+    let bestD = (isGodP(p) ? GRAB_RANGE * 2.2 : GRAB_RANGE) + 10;
     for (const other of players) {
       if (other === p || !other.alive || other.dead || other.flipT > 0) continue;
+      if (isGodP(other)) continue;
       const d = dist(pos, other.body.position);
       if (d < bestD) {
         bestD = d;
@@ -653,9 +672,10 @@
     if (!p.alive || p.dead || p.cutCd > 0) return;
     const pos = p.body.position;
     let hit = null;
-    let bestD = GRAB_RANGE + 6;
+    let bestD = (isGodP(p) ? GRAB_RANGE * 2.2 : GRAB_RANGE) + 6;
     for (const other of players) {
       if (other === p || !other.alive || other.dead) continue;
+      if (isGodP(other)) continue;
       const d = dist(pos, other.body.position);
       if (d < bestD) {
         bestD = d;
@@ -710,6 +730,12 @@
 
   function killPlayer(victim, killer) {
     if (victim.dead) return;
+    if (isGodP(victim)) {
+      victim.cutMarked = false;
+      victim.flipT = 0;
+      showToast(`${victim.char.name} бессмертен (хозяин)!`);
+      return;
+    }
     victim.dead = true;
     victim.alive = false;
     victim.cutMarked = false;
@@ -759,6 +785,12 @@
     if (!p.alive || p.dead) return;
     const d = dist(p.body.position, { x: cx, y: cy });
     if (d <= DROP_EDGE) return;
+    if (isGodP(p)) {
+      Body.setPosition(p.body, { x: cx, y: cy });
+      Body.setVelocity(p.body, { x: 0, y: 0 });
+      showToast("Хозяин вернулся на арену!");
+      return;
+    }
     p.alive = false;
     releaseGrab(p);
     if (p.cards.length) {

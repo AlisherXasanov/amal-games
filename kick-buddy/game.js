@@ -569,6 +569,13 @@
     try {
       // Практика: сначала обычный Бади, пока не введён верный личный код
       if (practiceGate) return false;
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
       if (window.AmalOwner && window.AmalOwner.isOwner && window.AmalOwner.isOwner()) return true;
       const host = String(location.hostname || "");
       if (host === "127.0.0.1" || host === "localhost" || host === "::1") return true;
@@ -687,6 +694,7 @@
     save.weapon = "admin";
     save.infDmg = true;
     save.infCoins = true;
+    save.godMode = true;
     save.vip = true;
     save.vipPlus = true;
     save.boughtAdmin = true;
@@ -852,7 +860,7 @@
     smile: 1,
     phrase: "",
     phraseT: 0,
-    jumpCd: 1.5 + Math.random() * 2,
+    jumpCd: 0.35 + Math.random() * 0.7,
     sayCd: 0.8,
     walkCd: 0.5,
     walkDir: 1,
@@ -1360,65 +1368,422 @@
     }
   }
 
-  function drawMuzzle() {
-    const wpn = effectiveWeapon();
-    if (!isRanged(wpn)) return;
-    const m = muzzlePos(aim.x, aim.y);
-    const ang = Math.atan2(aim.y - m.y, aim.x - m.x);
+  /** Draws weapon art facing +X around origin. Works with any canvas 2d context. */
+  function paintWeaponArt(g, wpn, scale = 1) {
+    if (!wpn || wpn.id === "hand") return;
+    g.save();
+    g.scale(scale, scale);
+    const c = wpn.color || "#888";
+    const id = wpn.id;
+    const rr = (x, y, w, h, r) => {
+      const rad = Math.min(r, w / 2, h / 2);
+      g.beginPath();
+      g.moveTo(x + rad, y);
+      g.arcTo(x + w, y, x + w, y + h, rad);
+      g.arcTo(x + w, y + h, x, y + h, rad);
+      g.arcTo(x, y + h, x, y, rad);
+      g.arcTo(x, y, x + w, y, rad);
+      g.closePath();
+    };
 
-    // aim laser / dotted line
-    ctx.save();
-    ctx.strokeStyle = "rgba(224, 80, 48, 0.35)";
-    ctx.setLineDash([6, 8]);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(m.x, m.y);
-    ctx.lineTo(aim.x, aim.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(224, 80, 48, 0.55)";
-    ctx.beginPath();
-    ctx.arc(aim.x, aim.y, 7, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#fff8f0";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.restore();
-
-    // gun body
-    ctx.save();
-    ctx.translate(m.x, m.y);
-    ctx.rotate(ang);
-    ctx.fillStyle = wpn.color;
-    if (wpn.proj === "rocket") {
-      roundRectPath(-8, -10, 42, 20, 4);
-      ctx.fill();
-      ctx.fillStyle = "#2a2a28";
-      roundRectPath(28, -4, 18, 8, 2);
-      ctx.fill();
-    } else if (wpn.auto) {
-      roundRectPath(-6, -7, 36, 14, 3);
-      ctx.fill();
-      ctx.fillStyle = "#1a1a1a";
-      roundRectPath(20, -3, 22, 6, 1);
-      ctx.fill();
+    if (id === "slap") {
+      g.fillStyle = c;
+      g.beginPath();
+      g.ellipse(8, 0, 16, 12, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#e8c090";
+      for (let i = 0; i < 4; i++) {
+        g.beginPath();
+        g.ellipse(18 + i * 3, -8 + i * 5, 4, 7, 0.2, 0, Math.PI * 2);
+        g.fill();
+      }
+    } else if (id === "bat" || id.includes("tractor")) {
+      g.fillStyle = "#5a3a18";
+      rr(-18, -4, 22, 8, 2);
+      g.fill();
+      g.fillStyle = c;
+      rr(2, -7, 38, 14, 6);
+      g.fill();
+      g.fillStyle = "rgba(255,255,255,0.2)";
+      rr(8, -5, 18, 4, 2);
+      g.fill();
+    } else if (id === "sling" || id === "minsk_potato") {
+      g.strokeStyle = "#5a3a18";
+      g.lineWidth = 4;
+      g.beginPath();
+      g.moveTo(-6, 10);
+      g.quadraticCurveTo(-2, -16, 14, -12);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(-6, 10);
+      g.quadraticCurveTo(-2, 16, 14, 12);
+      g.stroke();
+      g.strokeStyle = "#c4a060";
+      g.lineWidth = 2;
+      g.beginPath();
+      g.moveTo(14, -12);
+      g.lineTo(14, 12);
+      g.stroke();
+      g.fillStyle = id === "minsk_potato" ? "#c4a050" : "#6a5630";
+      g.beginPath();
+      g.arc(22, 0, id === "minsk_potato" ? 8 : 5, 0, Math.PI * 2);
+      g.fill();
+    } else if (id === "lasso") {
+      g.strokeStyle = c;
+      g.lineWidth = 4;
+      g.beginPath();
+      g.arc(10, 0, 16, 0, Math.PI * 1.7);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(-10, 8);
+      g.quadraticCurveTo(0, 18, 10, 16);
+      g.stroke();
+    } else if (wpn.element === "fire" && !wpn.ranged) {
+      g.fillStyle = c;
+      g.beginPath();
+      g.moveTo(0, 14);
+      g.quadraticCurveTo(-14, -4, 0, -18);
+      g.quadraticCurveTo(14, -4, 0, 14);
+      g.fill();
+      g.fillStyle = "#ffe08a";
+      g.beginPath();
+      g.moveTo(0, 8);
+      g.quadraticCurveTo(-6, -2, 0, -10);
+      g.quadraticCurveTo(6, -2, 0, 8);
+      g.fill();
+    } else if (wpn.element === "ice" && !wpn.ranged) {
+      g.strokeStyle = c;
+      g.lineWidth = 3;
+      g.beginPath();
+      g.moveTo(0, -18);
+      g.lineTo(0, 18);
+      g.moveTo(-12, -6);
+      g.lineTo(12, 6);
+      g.moveTo(12, -6);
+      g.lineTo(-12, 6);
+      g.stroke();
+      g.fillStyle = "rgba(94,200,232,0.45)";
+      g.beginPath();
+      g.arc(0, 0, 10, 0, Math.PI * 2);
+      g.fill();
+    } else if (wpn.element === "poison" && !wpn.ranged) {
+      g.fillStyle = c;
+      g.beginPath();
+      g.arc(0, 2, 12, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#9ccc5a";
+      g.beginPath();
+      g.ellipse(0, -10, 6, 10, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#fff";
+      g.beginPath();
+      g.arc(-4, 0, 2, 0, Math.PI * 2);
+      g.arc(4, 4, 2, 0, Math.PI * 2);
+      g.fill();
+    } else if ((wpn.element === "shock" || wpn.element === "wind") && !wpn.ranged && !id.includes("saber") && !id.includes("chaos") && id !== "admin") {
+      g.strokeStyle = c;
+      g.lineWidth = 3;
+      g.beginPath();
+      g.moveTo(-4, -18);
+      g.lineTo(6, -4);
+      g.lineTo(-2, -2);
+      g.lineTo(8, 18);
+      g.lineTo(-2, 4);
+      g.lineTo(4, 2);
+      g.closePath();
+      g.stroke();
+      g.fillStyle = c;
+      g.globalAlpha = 0.35;
+      g.fill();
+      g.globalAlpha = 1;
+    } else if (id.includes("saber") || id === "rare_dragon" || id === "rare_glacier") {
+      g.fillStyle = "#888";
+      rr(-8, -3, 14, 6, 1);
+      g.fill();
+      g.fillStyle = c;
+      g.beginPath();
+      g.moveTo(4, -5);
+      g.lineTo(42, 0);
+      g.lineTo(4, 5);
+      g.closePath();
+      g.fill();
+      g.fillStyle = "#ffe08a";
+      g.fillRect(-2, -8, 4, 16);
+    } else if (id === "admin" || id.includes("chaos") || id.includes("hammer")) {
+      g.fillStyle = "#5a4a3a";
+      rr(-6, -4, 28, 8, 2);
+      g.fill();
+      g.fillStyle = c;
+      rr(18, -14, 22, 28, 3);
+      g.fill();
+      g.fillStyle = "rgba(255,255,255,0.25)";
+      rr(22, -10, 8, 8, 2);
+      g.fill();
+    } else if (wpn.element === "bomb" || wpn.element === "nuke" || id === "bomb" || id === "nuke" || id === "meteor") {
+      g.fillStyle = c;
+      g.beginPath();
+      g.arc(6, 4, id === "nuke" ? 16 : 13, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#2a2a28";
+      rr(0, -10, 10, 8, 2);
+      g.fill();
+      g.strokeStyle = "#ffcc40";
+      g.lineWidth = 2;
+      g.beginPath();
+      g.moveTo(5, -10);
+      g.quadraticCurveTo(14, -22, 18, -14);
+      g.stroke();
+      if (id === "meteor") {
+        g.fillStyle = "#e05030";
+        g.beginPath();
+        g.moveTo(-10, -8);
+        g.lineTo(0, 0);
+        g.lineTo(-6, 6);
+        g.closePath();
+        g.fill();
+      }
+    } else if (wpn.proj === "rocket" || id.includes("bazooka") || id.includes("rpg") || id.includes("comet") || id.includes("voidcannon")) {
+      g.fillStyle = c;
+      rr(-10, -11, 46, 22, 5);
+      g.fill();
+      g.fillStyle = "#2a2a28";
+      rr(28, -5, 22, 10, 2);
+      g.fill();
+      g.fillStyle = "#ff6a3a";
+      g.beginPath();
+      g.moveTo(-10, -8);
+      g.lineTo(-22, 0);
+      g.lineTo(-10, 8);
+      g.closePath();
+      g.fill();
+      if (wpn.minsk) {
+        g.fillStyle = "#fff";
+        g.font = "bold 9px sans-serif";
+        g.textAlign = "center";
+        g.fillText("BY", 12, 3);
+      }
+    } else if (wpn.proj === "flame" || id.includes("flamethrower") || id.includes("phoenix")) {
+      g.fillStyle = "#4a4a50";
+      rr(-16, -8, 28, 16, 4);
+      g.fill();
+      g.fillStyle = c;
+      rr(8, -5, 30, 10, 3);
+      g.fill();
+      g.fillStyle = "#ffcc40";
+      g.beginPath();
+      g.moveTo(36, 0);
+      g.lineTo(52, -10);
+      g.lineTo(48, 0);
+      g.lineTo(52, 10);
+      g.closePath();
+      g.fill();
+      g.fillStyle = "#e05030";
+      g.beginPath();
+      g.arc(-8, 0, 7, 0, Math.PI * 2);
+      g.fill();
+    } else if (wpn.proj === "laser" || id.includes("rail") || id.includes("pulse") || id.includes("starfall") || id.includes("thunder")) {
+      g.fillStyle = "#2a2a35";
+      rr(-8, -8, 24, 16, 3);
+      g.fill();
+      g.fillStyle = c;
+      rr(12, -3, 36, 6, 2);
+      g.fill();
+      g.fillStyle = "#fff";
+      g.globalAlpha = 0.7;
+      g.beginPath();
+      g.arc(10, 0, 5, 0, Math.PI * 2);
+      g.fill();
+      g.globalAlpha = 1;
+      g.strokeStyle = c;
+      g.lineWidth = 2;
+      g.shadowColor = c;
+      g.shadowBlur = 8;
+      g.beginPath();
+      g.moveTo(48, 0);
+      g.lineTo(58, 0);
+      g.stroke();
+      g.shadowBlur = 0;
+    } else if (id.includes("sniper")) {
+      g.fillStyle = c;
+      rr(-6, -5, 22, 10, 2);
+      g.fill();
+      g.fillStyle = "#1a1a1a";
+      rr(12, -2, 40, 4, 1);
+      g.fill();
+      g.fillStyle = "#3a3a40";
+      rr(4, -12, 14, 6, 1);
+      g.fill();
+      g.fillStyle = "#6a8aff";
+      g.beginPath();
+      g.arc(11, -9, 3, 0, Math.PI * 2);
+      g.fill();
+    } else if (id.includes("shotgun")) {
+      g.fillStyle = c;
+      rr(-8, -8, 30, 16, 3);
+      g.fill();
+      g.fillStyle = "#2a2a28";
+      rr(18, -6, 28, 5, 1);
+      g.fill();
+      rr(18, 1, 28, 5, 1);
+      g.fill();
+      g.fillStyle = "#5a4030";
+      rr(-4, 6, 14, 10, 2);
+      g.fill();
+    } else if (wpn.auto || id.includes("minigun") || id.includes("machine") || id.includes("uzi") || id.includes("_mg")) {
+      g.fillStyle = c;
+      rr(-10, -9, 40, 18, 3);
+      g.fill();
+      g.fillStyle = "#1a1a1a";
+      rr(22, -4, 28, 8, 1);
+      g.fill();
+      g.fillStyle = "#333";
+      rr(0, 6, 16, 12, 2);
+      g.fill();
+      if (id.includes("minigun")) {
+        g.fillStyle = "#555";
+        for (let i = 0; i < 3; i++) {
+          rr(26, -7 + i * 5, 20, 3, 1);
+          g.fill();
+        }
+      }
+      if (wpn.minsk) {
+        g.fillStyle = "#fce300";
+        g.fillRect(-6, -6, 10, 4);
+      }
+    } else if (id.includes("revolver")) {
+      g.fillStyle = c;
+      rr(-4, -6, 26, 12, 3);
+      g.fill();
+      g.fillStyle = "#2a2a28";
+      rr(18, -3, 18, 6, 1);
+      g.fill();
+      g.fillStyle = "#3a3a40";
+      g.beginPath();
+      g.arc(6, 10, 8, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#5a5a60";
+      rr(-2, 4, 10, 14, 2);
+      g.fill();
     } else {
-      roundRectPath(-4, -5, 28, 10, 3);
-      ctx.fill();
-      ctx.fillStyle = "#1a1a1a";
-      roundRectPath(18, -2, 16, 4, 1);
-      ctx.fill();
+      // generic gun / melee stick
+      g.fillStyle = c;
+      rr(-6, -7, 34, 14, 3);
+      g.fill();
+      g.fillStyle = "#1a1a1a";
+      rr(20, -3, 20, 6, 1);
+      g.fill();
+      g.fillStyle = "#444";
+      rr(-2, 4, 10, 12, 2);
+      g.fill();
     }
-    if (muzzleFlash > 0) {
-      ctx.fillStyle = "#ffe08a";
+    g.restore();
+  }
+
+  const weaponPreviewCache = Object.create(null);
+  function weaponPreviewImg(wpn) {
+    if (!wpn || wpn.id === "hand") {
+      return `<div class="wpn-art hand" title="Рука">✋</div>`;
+    }
+    let url = weaponPreviewCache[wpn.id];
+    if (!url) {
+      const c = document.createElement("canvas");
+      c.width = 112;
+      c.height = 64;
+      const g = c.getContext("2d");
+      g.clearRect(0, 0, 112, 64);
+      g.fillStyle = "rgba(0,0,0,0.12)";
+      g.beginPath();
+      g.moveTo(14, 4);
+      g.arcTo(108, 4, 108, 60, 10);
+      g.arcTo(108, 60, 4, 60, 10);
+      g.arcTo(4, 60, 4, 4, 10);
+      g.arcTo(4, 4, 108, 4, 10);
+      g.closePath();
+      g.fill();
+      g.translate(36, 32);
+      paintWeaponArt(g, wpn, 0.95);
+      url = c.toDataURL("image/png");
+      weaponPreviewCache[wpn.id] = url;
+    }
+    return `<img class="wpn-art" src="${url}" alt="${wpn.name}" width="112" height="64" />`;
+  }
+
+  function drawEquippedWeapon() {
+    const wpn = effectiveWeapon();
+    if (!wpn || wpn.id === "hand") return;
+
+    if (isRanged(wpn)) {
+      const m = muzzlePos(aim.x, aim.y);
+      const ang = Math.atan2(aim.y - m.y, aim.x - m.x);
+      const faceLeft = Math.cos(ang) < 0;
+
+      // aim laser / dotted line
+      ctx.save();
+      ctx.strokeStyle = "rgba(224, 80, 48, 0.35)";
+      ctx.setLineDash([6, 8]);
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(38, 0);
-      ctx.lineTo(52, -8);
-      ctx.lineTo(48, 0);
-      ctx.lineTo(52, 8);
-      ctx.closePath();
+      ctx.moveTo(m.x, m.y);
+      ctx.lineTo(aim.x, aim.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(224, 80, 48, 0.55)";
+      ctx.beginPath();
+      ctx.arc(aim.x, aim.y, 7, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = "#fff8f0";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+
+      // full weapon picture at bottom — visible before shooting
+      ctx.save();
+      ctx.translate(m.x, m.y);
+      ctx.rotate(ang);
+      if (faceLeft) ctx.scale(1, -1);
+      paintWeaponArt(ctx, wpn, 1.35);
+      if (muzzleFlash > 0) {
+        ctx.fillStyle = "#ffe08a";
+        ctx.beginPath();
+        ctx.moveTo(48, 0);
+        ctx.lineTo(68, -12);
+        ctx.lineTo(60, 0);
+        ctx.lineTo(68, 12);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    } else {
+      // melee: show weapon near cursor so you see it before the hit
+      const ang = Math.atan2(buddy.y - 40 - aim.y, buddy.x - aim.x);
+      ctx.save();
+      ctx.translate(aim.x, aim.y);
+      ctx.rotate(ang);
+      if (Math.cos(ang) < 0) ctx.scale(1, -1);
+      ctx.globalAlpha = 0.95;
+      paintWeaponArt(ctx, wpn, 1.25);
+      ctx.restore();
     }
+
+    // corner preview card — always shows how current weapon looks
+    ctx.save();
+    const bx = W - 128;
+    const by = H - 98;
+    ctx.fillStyle = "rgba(30, 22, 14, 0.72)";
+    roundRectPath(bx, by, 116, 86, 12);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 215, 106, 0.55)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.save();
+    ctx.translate(bx + 58, by + 40);
+    paintWeaponArt(ctx, wpn, 0.9);
+    ctx.restore();
+    ctx.fillStyle = "#fff8e8";
+    ctx.font = "800 11px Nunito, system-ui";
+    ctx.textAlign = "center";
+    const label = wpn.name.length > 16 ? wpn.name.slice(0, 15) + "…" : wpn.name;
+    ctx.fillText(label, bx + 58, by + 76);
     ctx.restore();
   }
 
@@ -1573,6 +1938,7 @@
         : `<span class="dmg">без урона</span>`;
       return `
         <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}${w.minsk ? " minsk" : ""}${w.adminOnly ? " admin-only" : ""}${w.vipOnly ? " vip-item" : ""}${locked ? " locked" : ""}">
+          ${weaponPreviewImg(w)}
           <h4>${w.adminOnly ? "🔒 " : w.vipOnly ? "💎 " : w.minsk ? "🇧🇾 " : w.exclusive ? "★ " : ""}${w.name}</h4>
           <p>${power}<br>${w.desc}</p>
           ${action}
@@ -2043,6 +2409,7 @@
         else action = `<button class="btn" data-mkt-wbuy="${w.id}" ${can(w.cost) ? "" : "disabled"}>${w.cost.toLocaleString("ru-RU")} ◎</button>`;
         return `
           <div class="shop-card exclusive rare-card admin-only${owned ? " owned" : ""}${equipped ? " equipped" : ""}">
+            ${weaponPreviewImg(w)}
             <h4>👑 ${w.name}</h4>
             <p><span class="dmg">${w.dmg >= 10000 ? Math.round(w.dmg / 1000) + "k" : w.dmg} урона · ×${w.coinMul}${w.ranged ? " · стрельба" : ""}</span><br>${w.desc}</p>
             ${action}
@@ -2673,16 +3040,16 @@
       if (buddy.onGround && canWalk) {
         if (buddy.walkCd <= 0) {
           buddy.walkDir = Math.random() < 0.5 ? -1 : 1;
-          buddy.walkCd = 1.2 + Math.random() * 2.5;
+          buddy.walkCd = 0.45 + Math.random() * 1.1;
         }
-        const targetSpeed = buddy.walkDir * (70 + Math.random() * 40);
-        buddy.vx += (targetSpeed - buddy.vx) * Math.min(1, 4 * dt);
+        const targetSpeed = buddy.walkDir * (95 + Math.random() * 55);
+        buddy.vx += (targetSpeed - buddy.vx) * Math.min(1, 5.5 * dt);
         buddy.facing = buddy.vx >= 0 ? 1 : -1;
 
         if (buddy.jumpCd <= 0) {
-          const big = Math.random() < 0.35;
+          const big = Math.random() < 0.42;
           jump(big ? 520 + Math.random() * 160 : 280 + Math.random() * 100, { quiet: !big });
-          buddy.jumpCd = big ? 2.2 + Math.random() * 2.5 : 0.7 + Math.random() * 1.1;
+          buddy.jumpCd = big ? 0.85 + Math.random() * 1.1 : 0.28 + Math.random() * 0.55;
         }
       } else if (buddy.frozenT > 0) {
         buddy.vx *= 0.9;
@@ -3415,7 +3782,7 @@
     drawBackground();
     drawBuddy();
     drawProjectiles();
-    drawMuzzle();
+    drawEquippedWeapon();
 
     // метки на стене с аурой — чем сильнее выстрел, тем больше кольцо
     for (const m of wallMarks) {

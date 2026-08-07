@@ -349,6 +349,22 @@ canvas#game {
   color: #4c1d95;
   vertical-align: middle;
 }
+.shop-card .wpn-art {
+  display: block;
+  width: 100%;
+  max-width: 112px;
+  height: 64px;
+  object-fit: contain;
+  margin: 0 auto 0.35rem;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.shop-card .wpn-art.hand {
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  line-height: 1;
+}
 .shop-card h4 { font-size: 0.95rem; margin-bottom: 0.15rem; color: #fff; }
 .shop-card p { font-size: 0.72rem; color: #c8b890; line-height: 1.35; margin-bottom: 0.4rem; }
 .shop-card .dmg { color: #ff8a6a; font-weight: 900; }

@@ -39,8 +39,21 @@
     { id: 15, name: "Сердце астероида", hint: "Последняя миссия курьера", deliveries: 12, asteroidRate: 2.5, asteroidSpeed: 340, fuelDrain: 10, shields: 5 },
   ];
 
-  // Режим неуязвимости всегда включён (без переключателя)
-  const GOD = true;
+  // Режим неуязвимости — только у хозяина Amal
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+  const GOD = amalGod();
   const MAX_SCORE = 999999;
 
   const app = document.getElementById("app");

@@ -370,7 +370,12 @@
     } catch {
       /* ignore */
     }
-    if (window.__AMAL_OWNER__ === true) return true;
+    if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+    try {
+      if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+    } catch {
+      /* ignore */
+    }
     try {
       if (typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) return true;
     } catch {
@@ -378,6 +383,8 @@
     }
     try {
       if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
     } catch {
       /* ignore */
     }

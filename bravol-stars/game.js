@@ -1238,7 +1238,17 @@
   }
 
   function isOwnerNow() {
-    return typeof AmalOwner !== "undefined" && AmalOwner.isOwner();
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (typeof AmalOwner !== "undefined" && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
   }
 
   function refreshOwnerCheats() {

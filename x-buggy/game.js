@@ -8,6 +8,20 @@
   const CAM_H = 1000;
   const CAM_DEPTH = 0.84;
 
+  function amalGod() {
+    try {
+      if (window.__AMAL_GOD__ || window.__AMAL_OWNER__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (new URLSearchParams(location.search).get("owner")) return true;
+      if (window.AmalPowers && AmalPowers.god && AmalPowers.god()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    return false;
+  }
+
   const store = {
     get(k, f) {
       try {
@@ -421,6 +435,7 @@
     touch.classList.add("on");
     updateFlagHud();
     showMsg(course.name.toUpperCase(), 1.5);
+    if (amalGod()) setTimeout(() => showMsg("⚡ БЕССМЕРТИЕ ХОЗЯИНА", 2), 1600);
   }
 
   function updateFlagHud() {
@@ -856,6 +871,7 @@
   }
 
   function crash(severity = 1) {
+    if (amalGod()) return;
     if (state.crashed > 0 || state.airborne > 0.15) return;
     state.crashed = 0.9 * severity;
     state.speed *= 0.25;
@@ -1035,6 +1051,7 @@
     state.score += Math.floor(state.speed * dt * 0.02);
 
     state.timeLeft -= dt;
+    if (amalGod()) state.timeLeft = Math.max(state.timeLeft, 45);
     if (state.timeLeft <= 0 && !state.finished) {
       state.timeLeft = 0;
       state.dead = true;
