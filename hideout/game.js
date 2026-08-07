@@ -1,18 +1,21 @@
 (() => {
   const VW = 960;
   const VH = 640;
-  const MW = 1800;
-  const MH = 1200;
+  // Один этаж — одинаковый на всех 5 этажах
+  const MW = 1400;
+  const MH = 900;
+  const FLOORS = 5;
 
-  const HIDE_SEC = 30;
-  const SEEK_SEC = 100;
+  const HIDE_SEC = 35;
+  const SEEK_SEC = 120;
   const CATCH_R = 26;
   const PROP_CATCH_R = 18;
   const PROP_R = 38;
   const VISION_HIDER = 155;
   const VISION_SEEKER = 175;
+  const HIDER_COUNT = 10;
+  const SEEKER_COUNT = 2;
 
-  // Много красивых вещей дома
   const PROP_TYPES = [
     { id: "vase", name: "Ваза" },
     { id: "fireplace", name: "Камин" },
@@ -38,6 +41,17 @@
     { id: "teapot", name: "Чайник" },
     { id: "radio", name: "Радио" },
     { id: "umbrella", name: "Зонт" },
+    // новые
+    { id: "guitar", name: "Гитара" },
+    { id: "computer", name: "Компьютер" },
+    { id: "microscope", name: "Микроскоп" },
+    { id: "trophy", name: "Кубок" },
+    { id: "fishbowl", name: "Аквариум" },
+    { id: "bike", name: "Велосипед" },
+    { id: "safe", name: "Сейф" },
+    { id: "cactus", name: "Кактус" },
+    { id: "globe", name: "Глобус" },
+    { id: "fan", name: "Вентилятор" },
   ];
 
   const canvas = document.getElementById("gameCanvas");
@@ -77,71 +91,54 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
   }
 
+  // Одинаковая планировка этажа
   const walls = [
-    { x: 0, y: 0, w: MW, h: 32 },
-    { x: 0, y: MH - 32, w: MW, h: 32 },
-    { x: 0, y: 0, w: 32, h: MH },
-    { x: MW - 32, y: 0, w: 32, h: MH },
-    { x: 420, y: 32, w: 22, h: 340 },
-    { x: 420, y: 450, w: 22, h: 320 },
-    { x: 860, y: 32, w: 22, h: 280 },
-    { x: 860, y: 400, w: 22, h: 380 },
-    { x: 32, y: 440, w: 250, h: 22 },
-    { x: 360, y: 440, w: 300, h: 22 },
-    { x: 760, y: 560, w: 420, h: 22 },
-    { x: 1240, y: 32, w: 22, h: 420 },
-    { x: 1240, y: 560, w: 22, h: 300 },
-    { x: 1360, y: 320, w: 300, h: 22 },
-    { x: 560, y: 780, w: 22, h: 280 },
-    { x: 1100, y: 780, w: 280, h: 22 },
+    { x: 0, y: 0, w: MW, h: 28 },
+    { x: 0, y: MH - 28, w: MW, h: 28 },
+    { x: 0, y: 0, w: 28, h: MH },
+    { x: MW - 28, y: 0, w: 28, h: MH },
+    { x: 360, y: 28, w: 20, h: 280 },
+    { x: 360, y: 380, w: 20, h: 300 },
+    { x: 720, y: 28, w: 20, h: 250 },
+    { x: 720, y: 360, w: 20, h: 340 },
+    { x: 28, y: 380, w: 200, h: 20 },
+    { x: 300, y: 380, w: 280, h: 20 },
+    { x: 640, y: 480, w: 360, h: 20 },
+    { x: 1040, y: 28, w: 20, h: 360 },
+    { x: 1040, y: 480, w: 20, h: 250 },
+    { x: 1120, y: 280, w: 220, h: 20 },
   ];
 
-  // Комнаты для патруля искателей (не читерят к хозяину)
   const ROOMS = [
-    { name: "Гостиная", x: 60, y: 60, w: 340, h: 360 },
-    { name: "Кухня", x: 460, y: 60, w: 380, h: 360 },
-    { name: "Спальня", x: 900, y: 60, w: 320, h: 340 },
-    { name: "Ванная", x: 1280, y: 60, w: 480, h: 240 },
-    { name: "Коридор", x: 60, y: 480, w: 340, h: 280 },
-    { name: "Кабинет", x: 460, y: 480, w: 380, h: 260 },
-    { name: "Кладовая", x: 900, y: 600, w: 320, h: 280 },
-    { name: "Чердак", x: 1280, y: 360, w: 480, h: 380 },
-    { name: "Подвал", x: 60, y: 820, w: 480, h: 320 },
-    { name: "Гараж", x: 600, y: 820, w: 460, h: 320 },
+    { name: "Гостиная", x: 40, y: 40, w: 300, h: 320 },
+    { name: "Кухня", x: 400, y: 40, w: 300, h: 320 },
+    { name: "Спальня", x: 760, y: 40, w: 260, h: 300 },
+    { name: "Кабинет", x: 1080, y: 40, w: 280, h: 220 },
+    { name: "Коридор", x: 40, y: 420, w: 300, h: 240 },
+    { name: "Зал", x: 400, y: 420, w: 300, h: 220 },
+    { name: "Кладовая", x: 760, y: 520, w: 260, h: 220 },
+    { name: "Балкон", x: 1080, y: 320, w: 280, h: 320 },
   ];
 
-  function makeProps() {
-    const spots = [
-      // гостиная
-      [120, 140], [200, 120], [280, 160], [150, 260], [260, 300], [180, 360],
-      [320, 220], [100, 200],
-      // кухня
-      [500, 120], [580, 140], [680, 110], [760, 180], [520, 260], [640, 300],
-      [720, 250], [560, 360], [780, 340],
-      // спальня
-      [940, 130], [1040, 150], [1140, 120], [980, 240], [1100, 280], [1000, 340],
-      [1180, 220],
-      // ванная
-      [1340, 120], [1480, 140], [1600, 130], [1400, 220], [1550, 240],
-      // коридор
-      [120, 520], [220, 560], [300, 620], [160, 680],
-      // кабинет
-      [500, 520], [600, 540], [720, 510], [550, 620], [680, 660], [780, 600],
-      // кладовая
-      [940, 650], [1040, 680], [1140, 640], [980, 760], [1100, 800],
-      // чердак
-      [1340, 420], [1480, 460], [1620, 440], [1380, 560], [1550, 600], [1680, 540],
-      [1450, 700],
-      // подвал
-      [120, 900], [240, 940], [360, 880], [180, 1040], [320, 1000], [450, 960],
-      // гараж
-      [680, 900], [800, 940], [920, 880], [700, 1040], [860, 1000], [980, 960],
-    ];
-    return spots.map((p, i) => {
-      const t = PROP_TYPES[i % PROP_TYPES.length];
-      return { x: p[0], y: p[1], type: t, taken: false, drift: Math.random() * 6 };
-    });
-  }
+  // Лестницы: вверх и вниз на каждом этаже
+  const STAIRS = [
+    { x: 180, y: 820, w: 70, h: 50, dir: "up", label: "↑ вверх" },
+    { x: 280, y: 820, w: 70, h: 50, dir: "down", label: "↓ вниз" },
+    { x: 1180, y: 820, w: 70, h: 50, dir: "up", label: "↑ вверх" },
+    { x: 1280, y: 820, w: 70, h: 50, dir: "down", label: "↓ вниз" },
+  ];
+
+  const PROP_SPOTS = [
+    [100, 120], [180, 100], [260, 150], [120, 240], [220, 280], [300, 200],
+    [450, 110], [540, 140], [640, 100], [480, 240], [580, 280], [660, 220],
+    [800, 120], [900, 150], [980, 110], [840, 240], [940, 280],
+    [1140, 100], [1240, 140], [1320, 120], [1180, 200],
+    [100, 500], [200, 540], [280, 600], [140, 640],
+    [450, 500], [550, 540], [650, 500], [500, 600], [600, 640],
+    [800, 580], [900, 620], [980, 560], [860, 700],
+    [1140, 400], [1240, 460], [1320, 520], [1180, 600], [1280, 680],
+    [160, 360], [500, 360], [880, 340], [1200, 260],
+  ];
 
   function dist(a, b) {
     return Math.hypot(a.x - b.x, a.y - b.y);
@@ -163,19 +160,16 @@
       if (Math.abs(dx) / px > Math.abs(dy) / py) ent.x = cx + Math.sign(dx || 1) * px;
       else ent.y = cy + Math.sign(dy || 1) * py;
     }
-    ent.x = Math.max(r + 34, Math.min(MW - r - 34, ent.x));
-    ent.y = Math.max(r + 34, Math.min(MH - r - 34, ent.y));
+    ent.x = Math.max(r + 30, Math.min(MW - r - 30, ent.x));
+    ent.y = Math.max(r + 30, Math.min(MH - r - 30, ent.y));
   }
   function rand(a, b) {
     return a + Math.random() * (b - a);
   }
   function isBlocked(x, y, r = 16) {
-    for (const w of walls) {
-      if (circleRectHit(x, y, r, w)) return true;
-    }
+    for (const w of walls) if (circleRectHit(x, y, r, w)) return true;
     return x < 40 || y < 40 || x > MW - 40 || y > MH - 40;
   }
-
   function pickInRoom(room) {
     for (let i = 0; i < 25; i++) {
       const p = {
@@ -186,13 +180,17 @@
     }
     return { x: room.x + room.w / 2, y: room.y + room.h / 2 };
   }
-  function pickFree() {
-    for (let i = 0; i < 30; i++) {
-      const room = ROOMS[(Math.random() * ROOMS.length) | 0];
-      const p = pickInRoom(room);
-      if (!isBlocked(p.x, p.y, 18)) return p;
-    }
-    return { x: 200, y: 200 };
+  function pickFree(floor) {
+    const room = ROOMS[(Math.random() * ROOMS.length) | 0];
+    const p = pickInRoom(room);
+    return { x: p.x, y: p.y, floor: floor == null ? ((Math.random() * FLOORS) | 0) : floor };
+  }
+
+  function makePropsForFloor(floor) {
+    return PROP_SPOTS.map((p, i) => {
+      const t = PROP_TYPES[(i + floor * 3) % PROP_TYPES.length];
+      return { x: p[0], y: p[1], floor, type: t, taken: false };
+    });
   }
 
   const keys = Object.create(null);
@@ -253,20 +251,21 @@
     btn.addEventListener("click", () => startGame(btn.dataset.role));
   });
 
-  function makeActor(role, isPlayer, x, y, name) {
+  function makeActor(role, isPlayer, x, y, floor, name) {
     return {
       role,
       isPlayer,
       name,
       x,
       y,
+      floor,
       r: role === "seeker" ? 15 : 13,
       speed: role === "seeker" ? 155 : 148,
       caught: false,
       prop: null,
       propLocked: false,
       moving: false,
-      aiTimer: rand(0.6, 1.5),
+      aiTimer: rand(0.5, 1.4),
       aiTx: x,
       aiTy: y,
       patrolRoom: (Math.random() * ROOMS.length) | 0,
@@ -276,22 +275,31 @@
       stuckTime: 0,
       lastX: x,
       lastY: y,
+      stairCd: 0,
     };
   }
 
   function startGame(playerRole) {
-    const props = makeProps();
+    const props = [];
+    for (let f = 0; f < FLOORS; f++) props.push(...makePropsForFloor(f));
+
     const actors = [];
-    const spawn = pickFree();
-    const player = makeActor(playerRole, true, spawn.x, spawn.y, "Ты");
+    const pSpawn = pickFree(0);
+    const player = makeActor(playerRole, true, pSpawn.x, pSpawn.y, pSpawn.floor, "Ты");
     actors.push(player);
 
-    if (playerRole === "seeker") {
-      const h = pickFree();
-      actors.push(makeActor("hider", false, h.x, h.y, "Хозяин"));
-    } else {
-      const s = { x: 70, y: MH / 2 };
-      actors.push(makeActor("seeker", false, s.x, s.y, "Искатель"));
+    let hiders = playerRole === "hider" ? 1 : 0;
+    let seekers = playerRole === "seeker" ? 1 : 0;
+
+    while (hiders < HIDER_COUNT) {
+      const s = pickFree();
+      actors.push(makeActor("hider", false, s.x, s.y, s.floor, "Прячущийся " + (hiders + 1)));
+      hiders++;
+    }
+    while (seekers < SEEKER_COUNT) {
+      const s = pickFree(0);
+      actors.push(makeActor("seeker", false, 80 + seekers * 40, MH / 2, 0, "Искатель " + seekers));
+      seekers++;
     }
 
     g = {
@@ -313,7 +321,7 @@
     showEl(hud);
     showEl(touch);
     state = "play";
-    toast("Прячься! Стань вещью (E) и стой тихо");
+    toast("5 этажей! Лестница = смена этажа. Прячься!");
     last = performance.now();
     requestAnimationFrame(loop);
   }
@@ -336,10 +344,14 @@
     return { x, y };
   }
 
+  function propsOnFloor(floor) {
+    return g.props.filter((p) => p.floor === floor);
+  }
+
   function nearestProp(ent) {
     let best = null;
     let bd = PROP_R;
-    for (const p of g.props) {
+    for (const p of propsOnFloor(ent.floor)) {
       if (p.taken && (!ent.prop || ent.prop !== p)) continue;
       const d = dist(ent, p);
       if (d < bd) {
@@ -350,18 +362,57 @@
     return best;
   }
 
+  function stairAt(ent) {
+    for (const s of STAIRS) {
+      if (
+        ent.x > s.x &&
+        ent.x < s.x + s.w &&
+        ent.y > s.y &&
+        ent.y < s.y + s.h
+      ) {
+        return s;
+      }
+    }
+    return null;
+  }
+
+  function useStairs(ent, stair) {
+    if (ent.stairCd > 0) return false;
+    let next = ent.floor;
+    if (stair.dir === "up") next = Math.min(FLOORS - 1, ent.floor + 1);
+    else next = Math.max(0, ent.floor - 1);
+    if (next === ent.floor) {
+      if (ent.isPlayer) toast(stair.dir === "up" ? "Уже самый верхний этаж" : "Уже первый этаж");
+      return false;
+    }
+    if (ent.prop) {
+      ent.prop.floor = next;
+      ent.prop.x = stair.x + stair.w / 2 + (stair.dir === "up" ? 50 : -50);
+      ent.prop.y = stair.y - 40;
+      ent.x = ent.prop.x;
+      ent.y = ent.prop.y;
+    } else {
+      ent.x = stair.x + stair.w / 2;
+      ent.y = stair.y - 40;
+    }
+    ent.floor = next;
+    ent.stairCd = 1.1;
+    if (ent.isPlayer) toast("Этаж " + (next + 1) + " / " + FLOORS);
+    return true;
+  }
+
   function becomeProp(ent) {
     if (ent.role !== "hider" || ent.caught) return;
     if (ent.prop) {
       ent.prop.taken = false;
       ent.prop = null;
       ent.propLocked = false;
-      if (ent.isPlayer) toast("Снова человек — осторожно!");
+      if (ent.isPlayer) toast("Снова человек");
       return;
     }
     const p = nearestProp(ent);
     if (!p) {
-      if (ent.isPlayer) toast("Подойди ближе к вещи");
+      if (ent.isPlayer) toast("Подойди к вещи");
       return;
     }
     p.taken = true;
@@ -369,8 +420,7 @@
     ent.x = p.x;
     ent.y = p.y;
     ent.propLocked = true;
-    ent.stillTime = 0;
-    if (ent.isPlayer) toast(`Ты: ${p.type.name}. Стой тихо!`);
+    if (ent.isPlayer) toast("Ты: " + p.type.name + ". Стой тихо!");
   }
 
   function tryCatch(seeker) {
@@ -381,10 +431,9 @@
     let best = null;
     let bd = 99;
     for (const a of g.actors) {
-      if (a.role !== "hider" || a.caught) continue;
+      if (a.role !== "hider" || a.caught || a.floor !== seeker.floor) continue;
       const d = dist(seeker, a);
       const need = a.prop ? PROP_CATCH_R : CATCH_R;
-      // движущаяся вещь легче поймать
       const bonus = a.prop && a.moving ? 8 : 0;
       if (d < need + bonus && d < bd) {
         bd = d;
@@ -392,7 +441,7 @@
       }
     }
     if (!best) {
-      if (seeker.isPlayer) toast("Пусто… осмотрись ещё");
+      if (seeker.isPlayer) toast("Пусто на этом месте");
       return;
     }
     best.caught = true;
@@ -400,18 +449,25 @@
       best.prop.taken = false;
       best.prop = null;
     }
-    toast(best.isPlayer ? "Тебя нашли!" : "Хозяин пойман!");
+    const left = g.actors.filter((a) => a.role === "hider" && !a.caught).length;
+    toast(best.isPlayer ? "Тебя нашли!" : "Пойман! Осталось прячущихся: " + left);
   }
 
   function playerAction() {
     const p = g.player;
     if (p.caught) return;
+    const st = stairAt(p);
+    if (st) {
+      useStairs(p, st);
+      return;
+    }
     if (p.role === "hider") becomeProp(p);
     else tryCatch(p);
   }
 
   function moveEntity(ent, dx, dy, dt) {
     if (ent.caught) return;
+    if (ent.stairCd > 0) ent.stairCd -= dt;
     const moving = !!(dx || dy);
 
     if (ent.prop && ent.propLocked && !moving) {
@@ -421,9 +477,7 @@
       ent.stillTime += dt;
       return;
     }
-    if (ent.prop && ent.propLocked && moving) {
-      ent.propLocked = false;
-    }
+    if (ent.prop && ent.propLocked && moving) ent.propLocked = false;
     if (g.phase === "hide" && ent.role === "seeker") return;
 
     const sp = ent.speed * (ent.prop ? 0.4 : 1);
@@ -437,20 +491,27 @@
       if (ent.prop) {
         ent.prop.x = ent.x;
         ent.prop.y = ent.y;
+        ent.prop.floor = ent.floor;
       }
     } else {
       ent.moving = false;
       ent.stillTime += dt;
     }
+
+    // авто-лестница при наступании
+    if (ent.stairCd <= 0) {
+      const st = stairAt(ent);
+      if (st && (ent.isPlayer ? false : Math.random() < 0.02 || !ent.isPlayer)) {
+        // player uses E; bots auto sometimes
+        if (!ent.isPlayer && Math.random() < 0.015) useStairs(ent, st);
+      }
+    }
   }
 
-  // Искатель НЕ знает, где хозяин-вещь. Патрулирует комнаты.
-  // Гонится только если видит человека (не вещь) в радиусе обзора.
   function updateAI(ent, dt) {
     if (ent.isPlayer || ent.caught) return;
     if (g.phase === "hide" && ent.role === "seeker") return;
 
-    // если упёрся в стену — сразу новая цель
     const moved = Math.hypot(ent.x - ent.lastX, ent.y - ent.lastY);
     if (ent.moving && moved < 2 * dt * ent.speed * 0.15) ent.stuckTime += dt;
     else ent.stuckTime = 0;
@@ -459,21 +520,31 @@
     if (ent.stuckTime > 0.55) {
       ent.stuckTime = 0;
       ent.aiTimer = 0;
-      ent.patrolRoom = (Math.random() * ROOMS.length) | 0;
-      const spot = pickInRoom(ROOMS[ent.patrolRoom]);
+      const spot = pickInRoom(ROOMS[(Math.random() * ROOMS.length) | 0]);
       ent.aiTx = spot.x;
       ent.aiTy = spot.y;
+    }
+
+    // боты иногда меняют этаж
+    if (ent.stairCd <= 0 && Math.random() < 0.004) {
+      const st = STAIRS[(Math.random() * STAIRS.length) | 0];
+      ent.aiTx = st.x + st.w / 2;
+      ent.aiTy = st.y + st.h / 2;
+      ent.aiTimer = 2;
+    }
+    const stNear = stairAt(ent);
+    if (stNear && !ent.isPlayer && ent.stairCd <= 0 && Math.random() < 0.04) {
+      useStairs(ent, stNear);
     }
 
     ent.aiTimer -= dt;
     if (ent.aiTimer <= 0) {
       ent.aiTimer = rand(1.0, 2.2);
-
       if (ent.role === "hider") {
         if (!ent.prop) {
           let best = null;
           let bd = 1e9;
-          for (const p of g.props) {
+          for (const p of propsOnFloor(ent.floor)) {
             if (p.taken) continue;
             const d = dist(ent, p);
             if (d < bd) {
@@ -491,26 +562,22 @@
           ent.propLocked = true;
         }
       } else {
-        const hider = g.actors.find((a) => a.role === "hider" && !a.caught);
-        let chase = false;
-        if (hider && !hider.prop) {
-          if (dist(ent, hider) < VISION_SEEKER * 0.95) chase = true;
-        } else if (hider && hider.prop && hider.moving) {
-          if (dist(ent, hider) < 90 && Math.random() < 0.35) chase = true;
-        }
-
-        if (chase && hider) {
-          ent.aiTx = hider.x + rand(-20, 20);
-          ent.aiTy = hider.y + rand(-20, 20);
+        const visibleHider = g.actors.find(
+          (a) =>
+            a.role === "hider" &&
+            !a.caught &&
+            a.floor === ent.floor &&
+            ((!a.prop && dist(ent, a) < VISION_SEEKER * 0.95) ||
+              (a.prop && a.moving && dist(ent, a) < 90 && Math.random() < 0.35))
+        );
+        if (visibleHider) {
+          ent.aiTx = visibleHider.x + rand(-20, 20);
+          ent.aiTy = visibleHider.y + rand(-20, 20);
           ent.aiTimer = rand(0.35, 0.7);
         } else {
-          if (Math.random() < 0.5) {
-            ent.patrolRoom = (ent.patrolRoom + 1) % ROOMS.length;
-          } else if (Math.random() < 0.3) {
-            ent.patrolRoom = (Math.random() * ROOMS.length) | 0;
-          }
-          const room = ROOMS[ent.patrolRoom];
-          const spot = pickInRoom(room);
+          if (Math.random() < 0.5) ent.patrolRoom = (ent.patrolRoom + 1) % ROOMS.length;
+          else if (Math.random() < 0.25) ent.patrolRoom = (Math.random() * ROOMS.length) | 0;
+          const spot = pickInRoom(ROOMS[ent.patrolRoom]);
           ent.aiTx = spot.x;
           ent.aiTy = spot.y;
         }
@@ -524,19 +591,16 @@
       dx = 0;
       dy = 0;
       if (ent.role === "hider" && !ent.prop && g.phase === "hide") becomeProp(ent);
-      // подошёл близко — проверить (не врезаясь бесконечно)
       if (ent.role === "seeker" && g.phase === "seek") {
         tryCatch(ent);
-        ent.aiTimer = 0.2;
-        const room = ROOMS[(Math.random() * ROOMS.length) | 0];
-        const spot = pickInRoom(room);
+        ent.aiTimer = 0.25;
+        const spot = pickInRoom(ROOMS[(Math.random() * ROOMS.length) | 0]);
         ent.aiTx = spot.x;
         ent.aiTy = spot.y;
       }
     } else {
       dx /= len;
       dy /= len;
-      // обход стены: если прямо заблокировано, шаг в сторону
       const lookX = ent.x + dx * 22;
       const lookY = ent.y + dy * 22;
       if (isBlocked(lookX, lookY, ent.r + 2)) {
@@ -548,24 +612,29 @@
         } else if (!isBlocked(ent.x + right.x * 22, ent.y + right.y * 22, ent.r + 2)) {
           dx = right.x;
           dy = right.y;
-        } else {
-          ent.aiTimer = 0;
-        }
+        } else ent.aiTimer = 0;
       }
     }
     moveEntity(ent, dx, dy, dt);
   }
 
   function checkEnd() {
-    const hider = g.actors.find((a) => a.role === "hider");
-    if (hider && hider.caught) {
+    const hiders = g.actors.filter((a) => a.role === "hider");
+    const alive = hiders.filter((a) => !a.caught);
+    if (alive.length === 0) {
       g.win = "seeker";
-      g.msg = "Искатели нашли хозяина дома!";
+      g.msg = "Все прячущиеся найдены!";
+      return true;
+    }
+    if (g.player.role === "hider" && g.player.caught) {
+      // игрок выбыл, но раунд может идти — закончим для простоты
+      g.win = "seeker";
+      g.msg = "Тебя нашли!";
       return true;
     }
     if (g.phase === "seek" && g.seekLeft <= 0) {
       g.win = "hider";
-      g.msg = "Время вышло — хозяин не найден!";
+      g.msg = "Время вышло! Спрятались: " + alive.length;
       return true;
     }
     return false;
@@ -601,12 +670,14 @@
       g.hideLeft = Math.max(0, g.hideLeft - dt);
       if (g.hideLeft <= 0) {
         g.phase = "seek";
-        toast("Поиск! Искатели осматривают дом");
+        toast("Поиск по всем 5 этажам!");
+        let i = 0;
         for (const a of g.actors) {
           if (a.role === "seeker") {
-            a.x = 70;
+            a.floor = 0;
+            a.x = 80 + i * 50;
             a.y = MH / 2;
-            a.patrolRoom = 0;
+            i++;
           }
         }
       }
@@ -643,14 +714,16 @@
   }
 
   function updateHud() {
-    const role = g.playerRole === "seeker" ? "Искатель" : "Хозяин";
+    const role = g.playerRole === "seeker" ? "Искатель" : "Прячущийся";
     const phaseTxt = g.phase === "hide" ? "ПРЯТКИ" : "ПОИСК";
     const timeTxt = Math.ceil(g.phase === "hide" ? g.hideLeft : g.seekLeft) + "с";
-    const prop = g.player.prop ? g.player.prop.type.name : "человек";
+    const floor = g.player.floor + 1;
+    const left = g.actors.filter((a) => a.role === "hider" && !a.caught).length;
     hud.innerHTML = `
       <span class="pill">${role}</span>
+      <span class="pill">Этаж ${floor}/${FLOORS}</span>
       <span class="pill">${phaseTxt} · ${timeTxt}</span>
-      <span class="pill">${g.playerRole === "hider" ? prop : "Обыщи дом"}</span>
+      <span class="pill">Прячутся: ${left}</span>
     `;
   }
 
@@ -684,29 +757,14 @@
       ctx.bezierCurveTo(8, -14, 12, 0, 9, 14);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "#5a1840";
-      ctx.stroke();
-      ctx.fillStyle = "#7ec87a";
-      ctx.beginPath();
-      ctx.ellipse(0, -20, 6, 4, 0, 0, Math.PI * 2);
-      ctx.fill();
     } else if (id === "fireplace") {
       ctx.fillStyle = "#5c3a28";
       roundRect(-28, -22, 56, 44, 4);
       ctx.fill();
-      ctx.fillStyle = "#3a2418";
-      roundRect(-18, -6, 36, 22, 3);
-      ctx.fill();
       ctx.fillStyle = "#ff6a20";
       ctx.beginPath();
       ctx.moveTo(-10, 12);
-      ctx.quadraticCurveTo(-4, -8, 0, 10);
-      ctx.quadraticCurveTo(4, -6, 10, 12);
-      ctx.fill();
-      ctx.fillStyle = "#ffd060";
-      ctx.beginPath();
-      ctx.moveTo(-4, 12);
-      ctx.quadraticCurveTo(0, 0, 4, 12);
+      ctx.quadraticCurveTo(0, -10, 10, 12);
       ctx.fill();
     } else if (id === "chair") {
       ctx.fillStyle = "#8b5a2b";
@@ -716,9 +774,6 @@
       roundRect(-14, -20, 6, 18, 2);
       ctx.fill();
       roundRect(8, -20, 6, 18, 2);
-      ctx.fill();
-      ctx.fillStyle = "#c4a06a";
-      roundRect(-12, -6, 24, 8, 2);
       ctx.fill();
     } else if (id === "lamp") {
       ctx.fillStyle = "#4a4038";
@@ -731,72 +786,45 @@
       ctx.lineTo(-8, -20);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "#c9a84a";
-      ctx.stroke();
-    } else if (id === "plant") {
+    } else if (id === "plant" || id === "cactus") {
       ctx.fillStyle = "#c47a4a";
       roundRect(-10, 4, 20, 14, 3);
       ctx.fill();
-      ctx.fillStyle = "#2f8f4e";
-      ctx.beginPath();
-      ctx.ellipse(-6, -8, 9, 12, -0.4, 0, Math.PI * 2);
-      ctx.ellipse(6, -8, 9, 12, 0.4, 0, Math.PI * 2);
-      ctx.ellipse(0, -14, 8, 10, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#f0c0d0";
-      ctx.beginPath();
-      ctx.arc(0, -18, 3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = id === "cactus" ? "#3d9a5a" : "#2f8f4e";
+      if (id === "cactus") {
+        roundRect(-6, -18, 12, 24, 4);
+        ctx.fill();
+        roundRect(-14, -8, 10, 8, 3);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(0, -10, 12, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
     } else if (id === "sofa") {
       ctx.fillStyle = "#4a6fa5";
       roundRect(-34, -10, 68, 28, 8);
-      ctx.fill();
-      ctx.fillStyle = "#3a5a8a";
-      roundRect(-34, -22, 14, 20, 4);
-      ctx.fill();
-      roundRect(20, -22, 14, 20, 4);
-      ctx.fill();
-      ctx.fillStyle = "#6a8fc0";
-      roundRect(-18, -14, 36, 12, 4);
       ctx.fill();
     } else if (id === "table") {
       ctx.fillStyle = "#a07040";
       roundRect(-26, -8, 52, 18, 3);
       ctx.fill();
-      ctx.fillStyle = "#704828";
-      ctx.fillRect(-22, 8, 5, 12);
-      ctx.fillRect(17, 8, 5, 12);
-    } else if (id === "clock") {
-      ctx.fillStyle = "#e8dcc0";
+    } else if (id === "clock" || id === "globe") {
+      ctx.fillStyle = id === "globe" ? "#3a7ec0" : "#e8dcc0";
       ctx.beginPath();
       ctx.arc(0, 0, 14, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = "#8a7040";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      ctx.strokeStyle = "#333";
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, -9);
-      ctx.moveTo(0, 0);
-      ctx.lineTo(7, 2);
       ctx.stroke();
-    } else if (id === "box" || id === "wardrobe") {
-      ctx.fillStyle = id === "wardrobe" ? "#6b4e32" : "#c49a5a";
+    } else if (id === "box" || id === "wardrobe" || id === "safe") {
+      ctx.fillStyle = id === "safe" ? "#555" : id === "wardrobe" ? "#6b4e32" : "#c49a5a";
       roundRect(-18, -24, 36, 48, 3);
       ctx.fill();
-      ctx.strokeStyle = "#4a3220";
-      ctx.stroke();
-      if (id === "wardrobe") {
+      if (id === "safe") {
+        ctx.fillStyle = "#222";
         ctx.beginPath();
-        ctx.moveTo(0, -22);
-        ctx.lineTo(0, 22);
-        ctx.stroke();
-        ctx.fillStyle = "#d4b060";
-        ctx.beginPath();
-        ctx.arc(-6, 0, 2, 0, Math.PI * 2);
-        ctx.arc(6, 0, 2, 0, Math.PI * 2);
+        ctx.arc(0, 0, 6, 0, Math.PI * 2);
         ctx.fill();
       }
     } else if (id === "mirror") {
@@ -806,31 +834,24 @@
       ctx.strokeStyle = "#c0a050";
       ctx.lineWidth = 3;
       ctx.stroke();
-    } else if (id === "tv") {
+    } else if (id === "tv" || id === "computer") {
       ctx.fillStyle = "#1a1a22";
       roundRect(-24, -16, 48, 32, 4);
       ctx.fill();
-      ctx.fillStyle = "#3a80c0";
+      ctx.fillStyle = id === "computer" ? "#40c070" : "#3a80c0";
       roundRect(-20, -12, 40, 22, 2);
       ctx.fill();
     } else if (id === "book") {
       ctx.fillStyle = "#b03030";
       roundRect(-10, -14, 20, 28, 2);
       ctx.fill();
-      ctx.fillStyle = "#f0e8d0";
-      ctx.fillRect(-7, -10, 14, 20);
     } else if (id === "piano") {
       ctx.fillStyle = "#1a1a1a";
       roundRect(-30, -14, 60, 28, 3);
       ctx.fill();
-      ctx.fillStyle = "#f5f5f0";
-      for (let i = 0; i < 8; i++) ctx.fillRect(-26 + i * 7, -8, 5, 14);
     } else if (id === "bed") {
       ctx.fillStyle = "#8a6a4a";
       roundRect(-32, -12, 64, 30, 4);
-      ctx.fill();
-      ctx.fillStyle = "#e8e0f0";
-      roundRect(-28, -18, 28, 16, 4);
       ctx.fill();
       ctx.fillStyle = "#6a90c0";
       roundRect(-28, -2, 56, 14, 3);
@@ -839,47 +860,16 @@
       ctx.fillStyle = "#d0d8e0";
       roundRect(-16, -28, 32, 56, 4);
       ctx.fill();
-      ctx.strokeStyle = "#8890a0";
-      ctx.beginPath();
-      ctx.moveTo(-14, 0);
-      ctx.lineTo(14, 0);
-      ctx.stroke();
-      ctx.fillStyle = "#a0a8b0";
-      ctx.fillRect(10, -12, 3, 10);
-    } else if (id === "sink") {
-      ctx.fillStyle = "#c0c8d0";
-      roundRect(-18, -8, 36, 20, 6);
-      ctx.fill();
-      ctx.fillStyle = "#8a9098";
-      ctx.fillRect(-2, -16, 4, 10);
-    } else if (id === "toilet") {
-      ctx.fillStyle = "#f0f4f8";
-      roundRect(-12, -4, 24, 20, 8);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.ellipse(0, -14, 10, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (id === "bathtub") {
+    } else if (id === "sink" || id === "toilet" || id === "bathtub") {
       ctx.fillStyle = "#e8eef5";
-      roundRect(-28, -12, 56, 28, 12);
+      roundRect(-20, -12, 40, 24, 8);
       ctx.fill();
-      ctx.strokeStyle = "#a0a8b8";
-      ctx.stroke();
     } else if (id === "painting") {
       ctx.fillStyle = "#5a3a20";
       roundRect(-18, -16, 36, 32, 2);
       ctx.fill();
       ctx.fillStyle = "#6a9ad0";
       roundRect(-14, -12, 28, 24, 1);
-      ctx.fill();
-      ctx.fillStyle = "#3d8a50";
-      ctx.beginPath();
-      ctx.moveTo(-14, 8);
-      ctx.lineTo(-2, -2);
-      ctx.lineTo(8, 6);
-      ctx.lineTo(14, 0);
-      ctx.lineTo(14, 12);
-      ctx.lineTo(-14, 12);
       ctx.fill();
     } else if (id === "candle") {
       ctx.fillStyle = "#f5e6c0";
@@ -893,25 +883,12 @@
       ctx.beginPath();
       ctx.ellipse(0, 2, 14, 12, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillRect(-3, -14, 6, 8);
-      ctx.beginPath();
-      ctx.arc(14, 0, 6, -1, 1);
-      ctx.strokeStyle = "#d06050";
-      ctx.lineWidth = 3;
-      ctx.stroke();
     } else if (id === "radio") {
       ctx.fillStyle = "#c08040";
       roundRect(-18, -10, 36, 22, 3);
       ctx.fill();
-      ctx.fillStyle = "#222";
-      ctx.beginPath();
-      ctx.arc(-8, 0, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#eee";
-      ctx.fillRect(2, -4, 12, 8);
     } else if (id === "umbrella") {
       ctx.strokeStyle = "#333";
-      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, -16);
       ctx.lineTo(0, 16);
@@ -920,75 +897,100 @@
       ctx.beginPath();
       ctx.arc(0, -8, 16, Math.PI, 0);
       ctx.fill();
+    } else if (id === "guitar") {
+      ctx.fillStyle = "#c48a40";
+      ctx.beginPath();
+      ctx.ellipse(0, 6, 12, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(-3, -22, 6, 20);
+    } else if (id === "microscope") {
+      ctx.fillStyle = "#666";
+      ctx.fillRect(-4, -8, 8, 20);
+      ctx.beginPath();
+      ctx.arc(0, -14, 8, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (id === "trophy") {
+      ctx.fillStyle = "#e8c040";
+      ctx.beginPath();
+      ctx.moveTo(-10, -8);
+      ctx.lineTo(10, -8);
+      ctx.lineTo(6, 8);
+      ctx.lineTo(-6, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillRect(-4, 8, 8, 8);
+    } else if (id === "fishbowl") {
+      ctx.fillStyle = "rgba(120,200,230,0.7)";
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ff8040";
+      ctx.beginPath();
+      ctx.ellipse(2, 2, 5, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (id === "bike") {
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-12, 8, 10, 0, Math.PI * 2);
+      ctx.arc(12, 8, 10, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-12, 8);
+      ctx.lineTo(0, -8);
+      ctx.lineTo(12, 8);
+      ctx.stroke();
+    } else if (id === "fan") {
+      ctx.fillStyle = "#888";
+      ctx.beginPath();
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ccc";
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 12, 4, (i * Math.PI) / 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
     } else {
       ctx.fillStyle = "#a08060";
       roundRect(-14, -14, 28, 28, 4);
       ctx.fill();
     }
-
     ctx.restore();
   }
 
   function drawSeeker(a) {
     const y = a.y + Math.sin(a.bob) * 1.5;
-    // тень
     ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.beginPath();
     ctx.ellipse(a.x, a.y + 14, 12, 5, 0, 0, Math.PI * 2);
     ctx.fill();
-
-    // плащ
-    const coat = ctx.createLinearGradient(a.x - 14, y - 10, a.x + 14, y + 18);
-    coat.addColorStop(0, "#2a3548");
-    coat.addColorStop(1, "#121820");
-    ctx.fillStyle = coat;
+    ctx.fillStyle = "#1a2030";
     roundRect(a.x - 13, y - 6, 26, 24, 6);
     ctx.fill();
-
-    // голова
     ctx.fillStyle = "#e8c4a0";
     ctx.beginPath();
     ctx.arc(a.x, y - 12, 9, 0, Math.PI * 2);
     ctx.fill();
-
-    // шляпа
-    ctx.fillStyle = "#1a2030";
+    ctx.fillStyle = "#121820";
     ctx.beginPath();
     ctx.ellipse(a.x, y - 18, 12, 4, 0, 0, Math.PI * 2);
     ctx.fill();
     roundRect(a.x - 7, y - 28, 14, 12, 3);
     ctx.fill();
-
-    // фонарик
-    ctx.save();
-    ctx.translate(a.x + a.face * 10, y + 2);
-    ctx.fillStyle = "#c0a050";
-    roundRect(0, -3, 14, 6, 2);
-    ctx.fill();
-    ctx.fillStyle = "#fff3a0";
-    ctx.beginPath();
-    ctx.arc(14, 0, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // луч фонаря (только в фазе поиска)
     if (g.phase === "seek") {
-      ctx.save();
-      const ang = a.face >= 0 ? 0 : Math.PI;
       const grd = ctx.createRadialGradient(a.x, y, 8, a.x + a.face * 70, y, 90);
-      grd.addColorStop(0, "rgba(255,230,140,0.22)");
+      grd.addColorStop(0, "rgba(255,230,140,0.2)");
       grd.addColorStop(1, "rgba(255,230,140,0)");
       ctx.fillStyle = grd;
       ctx.beginPath();
       ctx.moveTo(a.x, y);
-      ctx.arc(a.x, y, 95, ang - 0.45, ang + 0.45);
+      ctx.arc(a.x, y, 90, (a.face >= 0 ? 0 : Math.PI) - 0.4, (a.face >= 0 ? 0 : Math.PI) + 0.4);
       ctx.closePath();
       ctx.fill();
-      ctx.restore();
     }
-
     if (a.isPlayer) {
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.strokeStyle = "#fff";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(a.x, y - 12, 11, 0, Math.PI * 2);
@@ -998,10 +1000,6 @@
 
   function drawHiderPerson(a) {
     const y = a.y + Math.sin(a.bob) * 2;
-    ctx.fillStyle = "rgba(0,0,0,0.15)";
-    ctx.beginPath();
-    ctx.ellipse(a.x, a.y + 12, 10, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
     ctx.fillStyle = "#2a9a78";
     roundRect(a.x - 10, y - 4, 20, 20, 5);
     ctx.fill();
@@ -1019,11 +1017,10 @@
   }
 
   function drawActor(a) {
-    if (a.caught) return;
+    if (a.caught || a.floor !== g.player.floor) return;
     if (a.prop) {
-      // Своя метка — еле заметная, только себе
       if (a.isPlayer) {
-        ctx.fillStyle = "rgba(255, 210, 80, 0.35)";
+        ctx.fillStyle = "rgba(255,210,80,0.4)";
         ctx.beginPath();
         ctx.arc(a.x, a.y + 22, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -1034,47 +1031,57 @@
     else drawHiderPerson(a);
   }
 
-  function drawHouse() {
-    // базовый пол
-    ctx.fillStyle = "#c4a574";
-    ctx.fillRect(0, 0, MW, MH);
-
-    // комнаты с разным полом / обоями
-    const floors = [
-      ["#d4b896", ROOMS[0]],
-      ["#c8b090", ROOMS[1]],
-      ["#d0c0a8", ROOMS[2]],
-      ["#b8c8d0", ROOMS[3]],
-      ["#c0b098", ROOMS[4]],
-      ["#cdb890", ROOMS[5]],
-      ["#b8a080", ROOMS[6]],
-      ["#a89070", ROOMS[7]],
-      ["#8a7860", ROOMS[8]],
-      ["#908070", ROOMS[9]],
-    ];
-    for (const [col, r] of floors) {
-      ctx.fillStyle = col;
-      ctx.fillRect(r.x, r.y, r.w, r.h);
-      // паркет
-      ctx.strokeStyle = "rgba(80,50,20,0.07)";
-      ctx.lineWidth = 1;
-      for (let yy = r.y; yy < r.y + r.h; yy += 18) {
+  function drawStairs() {
+    for (const s of STAIRS) {
+      const can =
+        (s.dir === "up" && g.player.floor < FLOORS - 1) ||
+        (s.dir === "down" && g.player.floor > 0);
+      ctx.fillStyle = can ? "#c9a24a" : "#8a8070";
+      roundRect(s.x, s.y, s.w, s.h, 6);
+      ctx.fill();
+      ctx.strokeStyle = "#5a4018";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(s.x + 1, s.y + 1, s.w - 2, s.h - 2);
+      // ступеньки
+      ctx.strokeStyle = "rgba(60,40,10,0.35)";
+      for (let i = 1; i < 4; i++) {
         ctx.beginPath();
-        ctx.moveTo(r.x, yy);
-        ctx.lineTo(r.x + r.w, yy);
+        ctx.moveTo(s.x + 4, s.y + (s.h / 4) * i);
+        ctx.lineTo(s.x + s.w - 4, s.y + (s.h / 4) * i);
         ctx.stroke();
       }
+      ctx.fillStyle = "#2a1a08";
+      ctx.font = "800 12px Outfit, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(s.label, s.x + s.w / 2, s.y + s.h / 2 + 4);
+    }
+  }
+
+  function drawHouse() {
+    // одинаковый пол как на 1 этаже
+    ctx.fillStyle = "#d4b896";
+    ctx.fillRect(0, 0, MW, MH);
+    ctx.strokeStyle = "rgba(80,50,20,0.08)";
+    ctx.lineWidth = 1;
+    for (let y = 0; y < MH; y += 18) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(MW, y);
+      ctx.stroke();
+    }
+    for (let x = 0; x < MW; x += 48) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, MH);
+      ctx.stroke();
     }
 
     // ковры
-    ctx.fillStyle = "rgba(160,40,40,0.28)";
-    roundRect(100, 160, 200, 140, 8);
+    ctx.fillStyle = "rgba(160,40,40,0.22)";
+    roundRect(80, 120, 200, 140, 8);
     ctx.fill();
-    ctx.fillStyle = "rgba(40,70,140,0.22)";
-    roundRect(980, 160, 180, 120, 8);
-    ctx.fill();
-    ctx.fillStyle = "rgba(40,100,60,0.2)";
-    roundRect(520, 180, 220, 130, 8);
+    ctx.fillStyle = "rgba(40,70,140,0.18)";
+    roundRect(800, 120, 180, 120, 8);
     ctx.fill();
 
     // окна
@@ -1083,47 +1090,36 @@
       roundRect(x, y, 36, 44, 3);
       ctx.fill();
       ctx.strokeStyle = "#fff8e8";
-      ctx.lineWidth = 2;
       ctx.strokeRect(x + 2, y + 2, 32, 40);
-      ctx.beginPath();
-      ctx.moveTo(x + 18, y + 2);
-      ctx.lineTo(x + 18, y + 42);
-      ctx.moveTo(x + 2, y + 22);
-      ctx.lineTo(x + 34, y + 22);
-      ctx.stroke();
-      // свет от окна
-      const wg = ctx.createLinearGradient(x, y + 44, x, y + 100);
-      wg.addColorStop(0, "rgba(180,220,255,0.2)");
-      wg.addColorStop(1, "rgba(180,220,255,0)");
-      ctx.fillStyle = wg;
-      ctx.fillRect(x - 10, y + 44, 56, 60);
     }
-    windowAt(80, 70);
-    windowAt(300, 70);
-    windowAt(500, 70);
-    windowAt(700, 70);
-    windowAt(960, 70);
-    windowAt(1400, 70);
-    windowAt(1600, 70);
+    windowAt(70, 60);
+    windowAt(250, 60);
+    windowAt(450, 60);
+    windowAt(620, 60);
+    windowAt(820, 60);
+    windowAt(1160, 60);
+    windowAt(1300, 60);
 
-    // плинтуса / стены
     for (const w of walls) {
-      const g = ctx.createLinearGradient(w.x, w.y, w.x + w.w, w.y + w.h);
-      g.addColorStop(0, "#8a6a4e");
-      g.addColorStop(1, "#5c4432");
-      ctx.fillStyle = g;
+      const gr = ctx.createLinearGradient(w.x, w.y, w.x + w.w, w.y + w.h);
+      gr.addColorStop(0, "#8a6a4e");
+      gr.addColorStop(1, "#5c4432");
+      ctx.fillStyle = gr;
       ctx.fillRect(w.x, w.y, w.w, w.h);
-      ctx.fillStyle = "rgba(255,230,200,0.12)";
-      ctx.fillRect(w.x, w.y, w.w, 3);
     }
 
-    // подписи комнат (еле видно)
-    ctx.fillStyle = "rgba(60,40,20,0.25)";
+    ctx.fillStyle = "rgba(60,40,20,0.28)";
     ctx.font = "700 13px Outfit, sans-serif";
     ctx.textAlign = "left";
-    for (const r of ROOMS) {
-      ctx.fillText(r.name, r.x + 12, r.y + 22);
-    }
+    for (const r of ROOMS) ctx.fillText(r.name, r.x + 10, r.y + 20);
+
+    // номер этажа на полу
+    ctx.fillStyle = "rgba(80,50,20,0.15)";
+    ctx.font = "800 64px Outfit, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText((g.player.floor + 1) + " ЭТАЖ", MW / 2, MH / 2);
+
+    drawStairs();
   }
 
   function drawFog() {
@@ -1135,13 +1131,6 @@
     ctx.rect(cam.x - 4, cam.y - 4, VW + 8, VH + 8);
     ctx.arc(p.x, p.y, vision, 0, Math.PI * 2, true);
     ctx.fill("evenodd");
-    const grd = ctx.createRadialGradient(p.x, p.y, vision * 0.5, p.x, p.y, vision);
-    grd.addColorStop(0, "rgba(0,0,0,0)");
-    grd.addColorStop(1, "rgba(0,0,0,0.4)");
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, vision, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
   }
 
@@ -1149,12 +1138,14 @@
     const p = g.player;
     if (p.caught) return;
     let tip = "";
-    if (g.phase === "hide" && p.role === "seeker") tip = "Жди у входа…";
+    const st = stairAt(p);
+    if (st) tip = "E — " + st.label + " (этаж)";
+    else if (g.phase === "hide" && p.role === "seeker") tip = "Жди у входа…";
     else if (p.role === "hider") {
       if (p.prop) tip = p.moving ? "Стой! Движение выдаёт" : "E — выйти из вещи";
       else if (nearestProp(p)) tip = "E — стать вещью";
-      else tip = "Найди вещь в доме";
-    } else if (g.phase === "seek") tip = "E — проверить вблизи";
+      else tip = "Вещь или лестница";
+    } else if (g.phase === "seek") tip = "E — проверить";
     if (!tip) return;
     ctx.font = "700 13px Outfit, sans-serif";
     const tw = ctx.measureText(tip).width;
@@ -1172,7 +1163,7 @@
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
     drawHouse();
-    for (const p of g.props) drawProp(p);
+    for (const p of propsOnFloor(g.player.floor)) drawProp(p);
     for (const a of g.actors) drawActor(a);
     drawFog();
     drawPrompt();

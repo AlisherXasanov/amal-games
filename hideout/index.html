@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укрытие — Hideout</title>
-  <meta name="description" content="Прятки в доме: спрячься вазой или камином, потом искатели ищут хозяина дома." />
+  <meta name="description" content="Прятки в доме на 5 этажах: 10 прячущихся, 2 искателя, лестницы и много вещей." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
@@ -27,15 +27,15 @@
 
       <div class="panel menu" id="menu">
         <h1>Укрытие</h1>
-        <p class="sub">Прятки в доме. Сначала спрячься вещью и стой тихо. Потом искатель ищет хозяина по комнатам.</p>
+        <p class="sub">5 этажей с одинаковым полом. 10 прячущихся и 2 искателя. Лестница переносит на другой этаж.</p>
         <div class="roles">
           <button type="button" class="btn seeker" id="btnSeeker" data-role="seeker">Искатель</button>
-          <button type="button" class="btn hider" id="btnHider" data-role="hider">Хозяин (прячется)</button>
+          <button type="button" class="btn hider" id="btnHider" data-role="hider">Прячущийся</button>
         </div>
         <p class="hints">
-          <b>Хозяин:</b> E у вещи → стань вазой/камином → стой на месте до конца времени.<br>
-          <b>Искатель:</b> ходи по дому, подойди вплотную и нажми E — проверить.<br>
-          WASD — ходить. Двигаться вещью нельзя — выдаст.
+          <b>Прячущийся:</b> E у вещи → спрячься → стой тихо. На лестнице E — другой этаж.<br>
+          <b>Искатель:</b> обыщи все этажи, E — проверить вблизи.<br>
+          WASD — ходить.
         </p>
       </div>
 
@@ -43,6 +43,6 @@
     </div>
   </div>
 
-  <script src="./game.js?v=7"></script>
+  <script src="./game.js?v=8"></script>
 </body>
 </html>
