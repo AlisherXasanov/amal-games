@@ -464,6 +464,7 @@
     toast: null,
     selected: null,
     drag: null,
+    aim: null,
     cell: 40,
   };
 
@@ -484,12 +485,22 @@
   }
 
   function cubePaint(colorKey) {
-    const hex = COLORS[colorKey] || "#888";
+    const hex = COLORS[colorKey] || "#38bdf8";
     const sk = cubeSkin();
-    const bg = typeof sk.paint === "function" ? sk.paint(hex) : hex;
+    let bgImg = "";
+    try {
+      bgImg = typeof sk.paint === "function" ? sk.paint(hex) : "";
+    } catch {
+      bgImg = "";
+    }
     const sh =
-      typeof sk.shadow === "function" ? sk.shadow(hex) : sk.shadow || "inset 0 1px 0 #fff6";
-    return { background: bg, boxShadow: sh };
+      typeof sk.shadow === "function" ? sk.shadow(hex) : sk.shadow || "inset 0 1px 0 #fff6, 0 2px 4px #0005";
+    return {
+      color: hex,
+      background: bgImg ? `${bgImg}` : hex,
+      backgroundColor: hex,
+      boxShadow: sh,
+    };
   }
 
   function toast(msg) {
@@ -624,6 +635,7 @@
     if (clear.lines) state.stats.clears += 1;
     state.stats.bestCombo = Math.max(state.stats.bestCombo, combo);
     state.selected = null;
+    state.aim = null;
 
     if (state.mode !== "adventure") {
       if (isOwner()) {
@@ -682,7 +694,7 @@
           continue;
         }
         const paint = cubePaint(piece.color);
-        html += `<div class="cube" style="width:${cellSize}px;height:${cellSize}px;border-radius:22%;background:${paint.background};box-shadow:${paint.boxShadow}"></div>`;
+        html += `<div class="cube" style="width:${cellSize}px;height:${cellSize}px;border-radius:22%;background-color:${paint.backgroundColor};background:${paint.background};box-shadow:${paint.boxShadow}"></div>`;
       }
     }
     html += "</div>";
@@ -701,7 +713,7 @@
         if (color) {
           cls += " filled cube";
           const paint = cubePaint(color);
-          style = `width:${s}px;height:${s}px;background:${paint.background};box-shadow:${paint.boxShadow}`;
+          style = `width:${s}px;height:${s}px;background-color:${paint.backgroundColor};background:${paint.background};box-shadow:${paint.boxShadow}`;
         }
         if (preview?.[r]?.[c] === "ok") cls += " ok";
         if (preview?.[r]?.[c] === "bad") cls += " bad";
@@ -727,6 +739,8 @@
     };
     if (state.drag && state.drag.row != null) {
       paint(state.drag.piece, state.drag.row, state.drag.col, state.drag.valid);
+    } else if (state.selected != null && state.aim && state.hand[state.selected]) {
+      paint(state.hand[state.selected], state.aim.row, state.aim.col, state.aim.valid);
     }
     return mask;
   }
@@ -853,6 +867,61 @@
     render();
   }
 
+  function selectHand(idx) {
+    if (state.gameOver || state.levelWon || state.modal) return;
+    const piece = state.hand[idx];
+    if (!piece) {
+      toast(`Слот ${idx + 1} пуст`);
+      return;
+    }
+    state.selected = idx;
+    state.drag = null;
+    state.aim = null;
+    document.body.classList.remove("dragging");
+    clearDragGhost();
+    toast(`Фигура ${idx + 1}`);
+    render();
+  }
+
+  function updateAim(clientX, clientY) {
+    if (state.selected == null || state.drag || state.gameOver || state.levelWon) return;
+    const piece = state.hand[state.selected];
+    if (!piece) return;
+    const board = document.getElementById("board");
+    if (!board) return;
+    const rect = board.getBoundingClientRect();
+    const gap = 4;
+    const step = state.cell + gap;
+    const { h, w } = pieceSize(piece.cells);
+    const localX = clientX - rect.left;
+    const localY = clientY - rect.top;
+    if (localX < -20 || localY < -20 || localX > rect.width + 20 || localY > rect.height + 20) {
+      if (state.aim) {
+        state.aim = null;
+        syncAimDom();
+      }
+      return;
+    }
+    const col = Math.round(localX / step - w / 2);
+    const row = Math.round(localY / step - h / 2);
+    const valid = canPlace(state.board, piece.cells, row, col);
+    state.aim = { row, col, valid };
+    syncAimDom();
+  }
+
+  function syncAimDom() {
+    const preview = previewMask();
+    const n = boardSize();
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        const el = app.querySelector(`#board .cell[data-r="${r}"][data-c="${c}"]`);
+        if (!el) continue;
+        el.classList.toggle("ok", preview[r][c] === "ok");
+        el.classList.toggle("bad", preview[r][c] === "bad");
+      }
+    }
+  }
+
   function tryTapPlaceOnBoard(clientX, clientY) {
     if (state.selected == null || state.drag || state.gameOver || state.levelWon) return false;
     const piece = state.hand[state.selected];
@@ -861,25 +930,22 @@
     if (!board) return false;
     const rect = board.getBoundingClientRect();
     if (
-      clientX < rect.left ||
-      clientX > rect.right ||
-      clientY < rect.top ||
-      clientY > rect.bottom
+      clientX < rect.left - 4 ||
+      clientX > rect.right + 4 ||
+      clientY < rect.top - 4 ||
+      clientY > rect.bottom + 4
     ) {
       return false;
     }
-    const gap = 4;
-    const step = state.cell + gap;
-    const { h, w } = pieceSize(piece.cells);
-    const localX = clientX - rect.left;
-    const localY = clientY - rect.top;
-    const col = Math.round(localX / step - w / 2);
-    const row = Math.round(localY / step - h / 2);
-    if (!canPlace(state.board, piece.cells, row, col)) {
+    updateAim(clientX, clientY);
+    if (!state.aim || !state.aim.valid) {
       toast("Сюда нельзя");
       return true;
     }
-    place(state.selected, row, col);
+    const idx = state.selected;
+    const { row, col } = state.aim;
+    state.aim = null;
+    place(idx, row, col);
     return true;
   }
 
@@ -909,15 +975,13 @@
       <header class="hud">
         <div class="brand">
           <h1 style="text-shadow:0 2px 12px ${sk.accent}">Blockbust</h1>
-          <p>${modeTitle()}</p>
+          <p class="mode-line">${modeTitle()}</p>
         </div>
         <div class="actions">
-          <button data-act="minis">🎮 Мини-игры</button>
-          <button data-act="adventure">🗺️ Приключения</button>
-          <button data-act="skins">${cube.icon === "neon" ? "⚡" : cube.icon} Кубики</button>
-          <button class="primary" data-act="new" style="background:${sk.accent}">${
-            state.mode === "adventure" ? "Заново" : "Новая игра"
-          }</button>
+          <button type="button" data-act="minis">🎮</button>
+          <button type="button" data-act="adventure">🗺️</button>
+          <button type="button" data-act="skins">${cube.icon === "neon" ? "⚡" : cube.icon}</button>
+          <button type="button" class="primary" data-act="new" style="background:${sk.accent}">↺</button>
         </div>
       </header>
       <div class="stats">
@@ -952,34 +1016,32 @@
       }
       ${
         TEMP_HOUR3_EVENT
-          ? `<div class="event-banner">⏳ Ивент «Третий час»: эксклюзивные кубики и Скорость III — успей забрать. Потом новым уже нельзя, у тебя останется.</div>`
+          ? `<div class="event-banner">⏳ «Третий час»: забери эксклюзив в сюрпризе</div>`
           : ""
       }
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
       <div class="hand">
         <div class="hint">${
-          isCoarsePointer()
-            ? state.selected != null
-              ? "Ткни на поле, куда поставить · или тяни фигуру"
-              : "Ткни фигуру и тяни на поле · или ткни фигуру, потом поле"
-            : "Перетащи фигуру · кубики: " + cube.name
-        }${state.ownedSpeed ? " · ⚡ Скорость III твоя" : ""}</div>
-        <div class="slots">
-          ${state.hand
-            .map((piece, i) => {
+          state.selected != null
+            ? `Выбрана фигура ${state.selected + 1} — наведи на поле и нажми`
+            : "Клавиши 1 · 2 · 3 выбирают фигуру (мышь на фигуру не нужна)"
+        }</div>
+        <div class="pick-row">
+          ${[0, 1, 2]
+            .map((i) => {
+              const piece = state.hand[i];
               const selected = state.selected === i;
-              return `<button class="slot ${piece ? "" : "empty"} ${selected ? "selected" : ""}" data-hand="${i}" ${
-                !piece || state.gameOver || state.levelWon ? "disabled" : ""
-              } style="${selected ? `background:${sk.accent}40;border-color:#fff` : ""}">${pieceHtml(
-                piece,
-                Math.max(14, Math.floor(state.cell * 0.5)),
-              )}</button>`;
+              return `<button type="button" class="pick-btn ${selected ? "selected" : ""} ${
+                piece ? "" : "empty"
+              }" data-pick="${i}" ${!piece || state.gameOver || state.levelWon ? "disabled" : ""}>
+              <span class="pick-num">${i + 1}</span>
+              <span class="pick-piece">${pieceHtml(piece, Math.max(16, Math.min(28, Math.floor(state.cell * 0.55)))}</span>
+            </button>`;
             })
             .join("")}
         </div>
       </div>
-      ${""}
       ${
         state.modal === "surprise"
           ? `<div class="overlay surprise-overlay"><div class="modal surprise-modal" style="text-align:center" data-stop="1"><div class="surprise-burst" aria-hidden="true">✨🎁⏳</div><h2>Сюрприз!</h2><p class="sub">Добро пожаловать в Blockbust.<br/>Гостю — подарок и ивент «Третий час».</p><p class="surprise-gift">+${SURPRISE_COINS} монет<br/>⏳ эксклюзивные кубики<br/>⚡ Скорость III навсегда</p><button class="primary" data-act="claim-surprise" style="width:100%;margin-top:14px;background:${sk.accent}">Забрать подарок</button></div></div>`
@@ -1078,6 +1140,13 @@
     `;
 
     bind();
+    const before = state.cell;
+    measure();
+    if (!state._fitPass && Math.abs(before - state.cell) >= 2) {
+      state._fitPass = true;
+      render();
+      state._fitPass = false;
+    }
   }
 
   function cubePaintPreview(def) {
@@ -1182,29 +1251,32 @@
       overlay.querySelector("[data-stop]")?.addEventListener("click", (e) => e.stopPropagation());
     }
 
-    app.querySelectorAll("[data-hand]").forEach((slot) => {
-      const idx = Number(slot.getAttribute("data-hand"));
-      const start = (e) => {
-        const piece = state.hand[idx];
-        if (!piece || state.gameOver || state.levelWon) return;
-        if (e.cancelable) e.preventDefault();
+    app.querySelectorAll("[data-pick]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        beginDrag(idx, e.clientX, e.clientY, e.pointerId);
-        try {
-          document.body.setPointerCapture?.(e.pointerId);
-        } catch {
-          /* ignore */
-        }
-      };
-      slot.addEventListener("pointerdown", start, { passive: false });
+        selectHand(Number(btn.getAttribute("data-pick")));
+      });
     });
 
     const board = document.getElementById("board");
     if (board) {
       board.addEventListener(
+        "pointermove",
+        (e) => {
+          if (state.drag) return;
+          updateAim(e.clientX, e.clientY);
+        },
+        { passive: true },
+      );
+      board.addEventListener(
         "pointerdown",
         (e) => {
           if (state.drag) return;
+          if (state.selected == null) {
+            toast("Сначала нажми 1, 2 или 3");
+            return;
+          }
           if (tryTapPlaceOnBoard(e.clientX, e.clientY)) {
             if (e.cancelable) e.preventDefault();
           }
@@ -1213,6 +1285,25 @@
       );
     }
   }
+
+  window.addEventListener("keydown", (e) => {
+    if (state.modal) return;
+    if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+    if (e.key === "1") {
+      e.preventDefault();
+      selectHand(0);
+    } else if (e.key === "2") {
+      e.preventDefault();
+      selectHand(1);
+    } else if (e.key === "3") {
+      e.preventDefault();
+      selectHand(2);
+    } else if (e.key === "Escape") {
+      state.selected = null;
+      state.aim = null;
+      render();
+    }
+  });
 
   window.addEventListener(
     "pointermove",
@@ -1233,24 +1324,13 @@
   window.addEventListener("pointerup", onPointerEnd, { passive: false });
   window.addEventListener("pointercancel", onPointerEnd, { passive: false });
 
-  // Fallback for older mobile browsers
-  window.addEventListener(
-    "touchmove",
-    (e) => {
-      if (!state.drag) return;
-      if (e.cancelable) e.preventDefault();
-      const t = e.touches[0];
-      if (t) moveDrag(t.clientX, t.clientY);
-    },
-    { passive: false },
-  );
-
   function measure() {
     const n = boardSize();
-    const w = Math.min(window.innerWidth - 32, 480);
-    const h = window.innerHeight - 300;
-    const board = Math.min(w, h, 420);
-    state.cell = Math.max(26, Math.min(52, Math.floor((board - 4 * (n - 1)) / n)));
+    const wrap = document.querySelector(".board-wrap");
+    const availW = wrap ? wrap.clientWidth - 16 : Math.min(window.innerWidth - 24, 480);
+    const availH = wrap ? wrap.clientHeight - 16 : Math.max(160, window.innerHeight - 320);
+    const board = Math.min(Math.max(availW, 120), Math.max(availH, 120), 420);
+    state.cell = Math.max(22, Math.min(48, Math.floor((board - 4 * (n - 1)) / n)));
   }
 
   window.addEventListener("resize", () => {

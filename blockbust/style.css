@@ -45,38 +45,52 @@ body.dragging #app {
 
 #app {
   height: 100dvh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 
 .hud {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px 8px;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  padding-top: max(10px, env(safe-area-inset-top));
   position: relative;
   z-index: 2;
+  flex: 0 0 auto;
 }
 
 .brand h1 {
   margin: 0;
-  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-size: clamp(1.15rem, 4vw, 1.7rem);
   font-weight: 900;
 }
 
+.brand .mode-line,
 .brand p {
   margin: 2px 0 0;
-  font-size: 11px;
+  font-size: 10px;
   opacity: 0.7;
+  max-width: 55vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
+}
+
+.actions button {
+  min-width: 40px;
+  padding: 8px 10px;
 }
 
 button {
@@ -103,19 +117,20 @@ button.primary {
 .stats {
   display: flex;
   justify-content: center;
-  gap: 10px;
-  padding: 0 12px;
+  gap: 8px;
+  padding: 0 10px;
   position: relative;
   z-index: 2;
+  flex: 0 0 auto;
 }
 
 .stat {
-  min-width: 84px;
+  min-width: 72px;
   text-align: center;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.1);
-  padding: 8px 10px;
+  padding: 6px 8px;
   backdrop-filter: blur(8px);
 }
 
@@ -169,12 +184,97 @@ button.primary {
 }
 
 .board-wrap {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   place-items: center;
-  padding: 10px 12px;
+  padding: 6px 10px;
   position: relative;
   z-index: 2;
+  overflow: hidden;
+}
+
+.hand {
+  flex: 0 0 auto;
+  padding: 8px 10px max(14px, env(safe-area-inset-bottom));
+  position: relative;
+  z-index: 12;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.72));
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hint {
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.pick-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.pick-btn {
+  min-height: 108px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  touch-action: manipulation;
+  cursor: pointer;
+  padding: 8px 6px;
+}
+
+.pick-btn.selected {
+  outline: 2px solid #facc15;
+  outline-offset: 1px;
+  background: rgba(250, 204, 21, 0.18);
+}
+
+.pick-btn.empty {
+  opacity: 0.4;
+}
+
+.pick-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 14px;
+  background: #facc15;
+  color: #111;
+}
+
+.pick-piece {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+}
+
+.event-banner {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+  margin: 6px 10px 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.12);
+  color: #fde68a;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
 }
 
 .board {
@@ -206,50 +306,6 @@ button.primary {
 .cell.bad {
   outline: 2px solid rgba(248, 113, 113, 0.85);
   outline-offset: -1px;
-}
-
-.hand {
-  padding: 0 12px max(12px, env(safe-area-inset-bottom));
-  position: relative;
-  z-index: 2;
-}
-
-.hint {
-  text-align: center;
-  font-size: 11px;
-  opacity: 0.55;
-  margin-bottom: 8px;
-  font-weight: 700;
-}
-
-.slots {
-  display: flex;
-  gap: 12px;
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.slot {
-  flex: 1;
-  min-height: 96px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  display: grid;
-  place-items: center;
-  touch-action: none;
-  -webkit-user-drag: none;
-  cursor: grab;
-}
-
-.slot.selected {
-  transform: scale(1.03);
-  outline: 2px solid rgba(250, 204, 21, 0.85);
-  outline-offset: 1px;
-}
-
-.slot.empty {
-  opacity: 0.4;
 }
 
 .piece {
@@ -439,20 +495,6 @@ button.primary {
 .cell.cube,
 .cube {
   border-radius: 22%;
-}
-
-.event-banner {
-  position: relative;
-  z-index: 2;
-  margin: 8px 12px 0;
-  padding: 8px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(250, 204, 21, 0.35);
-  background: rgba(250, 204, 21, 0.12);
-  color: #fde68a;
-  font-size: 11px;
-  font-weight: 800;
-  text-align: center;
 }
 
 body[data-speed="1"] .board {
