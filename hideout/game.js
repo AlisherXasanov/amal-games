@@ -1,13 +1,33 @@
 (() => {
-  const W = 960;
-  const H = 640;
-  const ROUND_SEC = 90;
-  const ITEMS_NEEDED = 5;
-  const CATCH_R = 28;
-  const MERGE_R = 42;
-  const HIDE_SPOT_R = 36;
+  // Экран камеры (половина мира видно)
+  const VW = 960;
+  const VH = 640;
+  // Большой дом
+  const MW = 1600;
+  const MH = 1100;
 
-  const screen = document.getElementById("screen");
+  const HIDE_SEC = 25;
+  const SEEK_SEC = 90;
+  const CATCH_R = 32;
+  const PROP_R = 40;
+  const VISION_HIDER = 160;
+  const VISION_SEEKER = 200;
+
+  const PROP_TYPES = [
+    { id: "vase", name: "Ваза", color: "#c45a8a", w: 22, h: 34 },
+    { id: "fireplace", name: "Камин", color: "#8b4513", w: 48, h: 40 },
+    { id: "chair", name: "Стул", color: "#a67c52", w: 28, h: 30 },
+    { id: "lamp", name: "Лампа", color: "#f0d060", w: 18, h: 36 },
+    { id: "plant", name: "Цветок", color: "#3d9a5f", w: 26, h: 32 },
+    { id: "sofa", name: "Диван", color: "#5a6ea8", w: 56, h: 28 },
+    { id: "table", name: "Стол", color: "#6b4a2e", w: 44, h: 28 },
+    { id: "clock", name: "Часы", color: "#d4c4a0", w: 24, h: 24 },
+    { id: "box", name: "Ящик", color: "#b8894a", w: 30, h: 26 },
+    { id: "mirror", name: "Зеркало", color: "#9ec8e0", w: 22, h: 36 },
+    { id: "tv", name: "ТВ", color: "#2a2a32", w: 40, h: 28 },
+    { id: "book", name: "Книга", color: "#c04040", w: 20, h: 26 },
+  ];
+
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const hud = document.getElementById("hud");
@@ -22,14 +42,9 @@
     if (!el) return;
     el.hidden = false;
     el.removeAttribute("aria-hidden");
-    if (el === touch) {
-      // на ПК прячет CSS, на телефоне показывает
-      el.style.removeProperty("display");
-    } else {
-      el.style.setProperty("display", "flex", "important");
-    }
+    if (el === touch) el.style.removeProperty("display");
+    else el.style.setProperty("display", "flex", "important");
   }
-
   function hideEl(el) {
     if (!el) return;
     el.hidden = true;
@@ -37,65 +52,62 @@
     el.setAttribute("aria-hidden", "true");
   }
 
-  // Пустая endPanel раньше перекрывала кнопки — сразу прячем
   hideEl(endPanel);
   hideEl(hud);
   hideEl(touch);
   showEl(menu);
 
   let toastTimer = 0;
-  function toast(msg, ms = 2200) {
+  function toast(msg, ms = 2400) {
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
   }
 
-  // Map: walls as AABBs, hide spots as circles, items as points
+  // Стены дома + комнаты
   const walls = [
-    { x: 0, y: 0, w: W, h: 24 },
-    { x: 0, y: H - 24, w: W, h: 24 },
-    { x: 0, y: 0, w: 24, h: H },
-    { x: W - 24, y: 0, w: 24, h: H },
-    // rooms / crates
-    { x: 120, y: 100, w: 110, h: 70 },
-    { x: 320, y: 80, w: 60, h: 140 },
-    { x: 520, y: 120, w: 160, h: 50 },
-    { x: 700, y: 80, w: 90, h: 90 },
-    { x: 80, y: 280, w: 80, h: 160 },
-    { x: 220, y: 320, w: 140, h: 50 },
-    { x: 420, y: 260, w: 50, h: 180 },
-    { x: 520, y: 340, w: 120, h: 70 },
-    { x: 720, y: 280, w: 100, h: 140 },
-    { x: 160, y: 480, w: 200, h: 50 },
-    { x: 480, y: 500, w: 80, h: 70 },
-    { x: 640, y: 470, w: 160, h: 45 },
+    { x: 0, y: 0, w: MW, h: 28 },
+    { x: 0, y: MH - 28, w: MW, h: 28 },
+    { x: 0, y: 0, w: 28, h: MH },
+    { x: MW - 28, y: 0, w: 28, h: MH },
+    // перегородки
+    { x: 380, y: 28, w: 24, h: 320 },
+    { x: 380, y: 420, w: 24, h: 280 },
+    { x: 780, y: 28, w: 24, h: 260 },
+    { x: 780, y: 380, w: 24, h: 340 },
+    { x: 28, y: 400, w: 220, h: 24 },
+    { x: 320, y: 400, w: 280, h: 24 },
+    { x: 700, y: 520, w: 400, h: 24 },
+    { x: 1100, y: 28, w: 24, h: 400 },
+    { x: 1100, y: 520, w: 24, h: 280 },
+    { x: 1200, y: 300, w: 280, h: 24 },
   ];
 
-  const hideSpots = [
-    { x: 175, y: 200, r: HIDE_SPOT_R },
-    { x: 350, y: 260, r: HIDE_SPOT_R },
-    { x: 600, y: 210, r: HIDE_SPOT_R },
-    { x: 745, y: 210, r: HIDE_SPOT_R },
-    { x: 120, y: 470, r: HIDE_SPOT_R },
-    { x: 300, y: 420, r: HIDE_SPOT_R },
-    { x: 560, y: 450, r: HIDE_SPOT_R },
-    { x: 770, y: 450, r: HIDE_SPOT_R },
-    { x: 860, y: 320, r: HIDE_SPOT_R },
-    { x: 450, y: 150, r: HIDE_SPOT_R },
-  ];
-
-  const itemSpawns = [
-    [90, 60], [280, 60], [450, 60], [620, 70], [850, 60],
-    [60, 200], [400, 200], [680, 200], [880, 180],
-    [60, 400], [280, 400], [500, 400], [650, 380], [880, 400],
-    [100, 560], [350, 560], [550, 560], [800, 560], [880, 560],
-  ];
+  function makeProps() {
+    const spots = [
+      [120, 120], [220, 180], [300, 100], [160, 300],
+      [500, 120], [600, 200], [700, 140], [520, 320],
+      [900, 120], [1000, 200], [920, 320], [1050, 400],
+      [200, 520], [320, 600], [480, 560], [640, 640],
+      [880, 620], [1000, 700], [1200, 160], [1300, 240],
+      [1400, 180], [1250, 420], [1380, 480], [1280, 650],
+      [150, 750], [400, 780], [700, 800], [950, 850],
+      [1200, 820], [1400, 780], [550, 480], [850, 450],
+    ];
+    return spots.map((p, i) => {
+      const t = PROP_TYPES[i % PROP_TYPES.length];
+      return {
+        x: p[0],
+        y: p[1],
+        type: t,
+        taken: false,
+      };
+    });
+  }
 
   function dist(a, b) {
-    const dx = a.x - b.x;
-    const dy = a.y - b.y;
-    return Math.hypot(dx, dy);
+    return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
   function circleRectHit(cx, cy, r, rect) {
@@ -119,31 +131,31 @@
         ent.y = cy + Math.sign(dy || 1) * py;
       }
     }
-    ent.x = Math.max(r + 4, Math.min(W - r - 4, ent.x));
-    ent.y = Math.max(r + 4, Math.min(H - r - 4, ent.y));
+    ent.x = Math.max(r + 30, Math.min(MW - r - 30, ent.x));
+    ent.y = Math.max(r + 30, Math.min(MH - r - 30, ent.y));
   }
 
   function rand(a, b) {
     return a + Math.random() * (b - a);
   }
 
-  function pickFreeSpot(r = 16) {
-    for (let i = 0; i < 40; i++) {
-      const p = { x: rand(50, W - 50), y: rand(50, H - 50) };
+  function pickFree() {
+    for (let i = 0; i < 50; i++) {
+      const p = { x: rand(80, MW - 80), y: rand(80, MH - 80) };
       let ok = true;
       for (const w of walls) {
-        if (circleRectHit(p.x, p.y, r + 4, w)) {
+        if (circleRectHit(p.x, p.y, 20, w)) {
           ok = false;
           break;
         }
       }
       if (ok) return p;
     }
-    return { x: W / 2, y: H / 2 };
+    return { x: MW / 2, y: MH / 2 };
   }
 
   const keys = Object.create(null);
-  const stick = { x: 0, y: 0, active: false };
+  const stick = { x: 0, y: 0 };
   let actionPulse = false;
 
   window.addEventListener("keydown", (e) => {
@@ -158,7 +170,6 @@
   });
 
   let stickId = null;
-
   stickEl.addEventListener("pointerdown", (e) => {
     stickId = e.pointerId;
     stickEl.setPointerCapture(e.pointerId);
@@ -172,17 +183,13 @@
     stickId = null;
     stick.x = 0;
     stick.y = 0;
-    stick.active = false;
   }
   stickEl.addEventListener("pointerup", endStick);
   stickEl.addEventListener("pointercancel", endStick);
-
   function updateStick(e) {
     const rect = stickEl.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    let dx = (e.clientX - cx) / (rect.width / 2);
-    let dy = (e.clientY - cy) / (rect.height / 2);
+    let dx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    let dy = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
     const len = Math.hypot(dx, dy) || 1;
     if (len > 1) {
       dx /= len;
@@ -190,109 +197,79 @@
     }
     stick.x = dx;
     stick.y = dy;
-    stick.active = true;
   }
-
   actBtn.addEventListener("pointerdown", (e) => {
     e.preventDefault();
     actionPulse = true;
   });
 
-  let state = "menu"; // menu | play | end
+  let state = "menu";
   let g = null;
   let last = 0;
+  let cam = { x: 0, y: 0 };
 
   menu.querySelectorAll("[data-role]").forEach((btn) => {
     btn.addEventListener("click", () => startGame(btn.dataset.role));
   });
 
-  function makeActor(role, team, isPlayer, x, y, name) {
+  function makeActor(role, isPlayer, x, y, name) {
     return {
       role,
-      team,
       isPlayer,
       name,
       x,
       y,
-      vx: 0,
-      vy: 0,
-      r: role === "seeker" ? 15 : 14,
-      speed: role === "seeker" ? 175 : 155,
+      r: 14,
+      speed: role === "seeker" ? 170 : 150,
       caught: false,
-      hidden: false,
-      mergeId: null,
-      mergeLeader: false,
-      aiTimer: rand(0.4, 1.2),
+      prop: null,
+      propLocked: false,
+      aiTimer: rand(0.5, 1.4),
       aiTx: x,
       aiTy: y,
       face: 1,
-      bob: Math.random() * Math.PI * 2,
-      color: role === "seeker" ? "#e85a3a" : team === "A" ? "#3db8a0" : "#5a9fd4",
+      bob: Math.random() * 6,
     };
   }
 
   function startGame(playerRole) {
-    const items = [];
-    const used = new Set();
-    while (items.length < ITEMS_NEEDED + 3) {
-      const i = (Math.random() * itemSpawns.length) | 0;
-      if (used.has(i)) continue;
-      used.add(i);
-      const [x, y] = itemSpawns[i];
-      items.push({ x, y, taken: false, pulse: Math.random() * 6 });
-    }
-
+    const props = makeProps();
     const actors = [];
-    const pSpot = pickFreeSpot();
-    const player = makeActor(playerRole, playerRole === "hider" ? "A" : "S", true, pSpot.x, pSpot.y, "Ты");
+
+    const spawn = pickFree();
+    const player = makeActor(playerRole, true, spawn.x, spawn.y, "Ты");
     actors.push(player);
 
-    // 2 seekers total looking for items
-    const seekerCount = 2;
-    let seekersMade = playerRole === "seeker" ? 1 : 0;
-    while (seekersMade < seekerCount) {
-      const s = pickFreeSpot();
-      actors.push(makeActor("seeker", "S", false, s.x, s.y, "Искатель-бот"));
-      seekersMade++;
-    }
-
-    // Hider team A: player (if hider) + bots that can merge
-    const hidersA = playerRole === "hider" ? 3 : 4;
-    let madeA = playerRole === "hider" ? 1 : 0;
-    while (madeA < hidersA) {
-      const s = pickFreeSpot();
-      actors.push(makeActor("hider", "A", false, s.x, s.y, "Команда A"));
-      madeA++;
-    }
-
-    // Extra crowd bots (team B) — look alike, merge targets for camouflage
-    for (let i = 0; i < 5; i++) {
-      const s = pickFreeSpot();
-      actors.push(makeActor("hider", "B", false, s.x, s.y, "Толпа"));
+    // Мало людей: 1 искатель + 1 хозяин (игрок занимает одну роль)
+    if (playerRole === "seeker") {
+      const h = pickFree();
+      actors.push(makeActor("hider", false, h.x, h.y, "Хозяин"));
+    } else {
+      const s = pickFree();
+      actors.push(makeActor("seeker", false, s.x, s.y, "Искатель"));
     }
 
     g = {
       playerRole,
       player,
       actors,
-      items,
-      timeLeft: ROUND_SEC,
-      itemsGot: 0,
-      caughtCount: 0,
+      props,
+      phase: "hide", // hide | seek | end
+      hideLeft: HIDE_SEC,
+      seekLeft: SEEK_SEC,
       win: null,
       msg: "",
-      merges: new Map(), // id -> { leader, members[] }
-      nextMerge: 1,
     };
+
+    cam.x = player.x - VW / 2;
+    cam.y = player.y - VH / 2;
 
     hideEl(menu);
     hideEl(endPanel);
     showEl(hud);
     showEl(touch);
     state = "play";
-    toast(playerRole === "seeker"
-      ? "Найди предметы и поймай прячущихся!"
-      : "Прячься и сливайся с командой (E)!");
+    toast("Время прятаться! Стань вещью (E у вазы, камина…)");
     last = performance.now();
     requestAnimationFrame(loop);
   }
@@ -315,99 +292,55 @@
     return { x, y };
   }
 
-  function nearestSpot(ent) {
+  function nearestProp(ent) {
     let best = null;
-    let bd = 1e9;
-    for (const s of hideSpots) {
-      const d = dist(ent, s);
+    let bd = PROP_R;
+    for (const p of g.props) {
+      if (p.taken && (!ent.prop || ent.prop !== p)) continue;
+      const d = dist(ent, p);
       if (d < bd) {
         bd = d;
-        best = s;
+        best = p;
       }
     }
-    return { spot: best, d: bd };
+    return best;
   }
 
-  function teammatesNear(ent, radius) {
-    return g.actors.filter(
-      (a) =>
-        a !== ent &&
-        !a.caught &&
-        a.role === "hider" &&
-        (a.team === ent.team || a.team === "B" || ent.team === "B") &&
-        dist(a, ent) < radius
-    );
-  }
-
-  function getMergeGroup(ent) {
-    if (!ent.mergeId) return null;
-    return g.merges.get(ent.mergeId) || null;
-  }
-
-  function breakMerge(ent) {
-    const m = getMergeGroup(ent);
-    if (!m) return;
-    for (const mem of m.members) {
-      mem.mergeId = null;
-      mem.mergeLeader = false;
-    }
-    g.merges.delete(m.id);
-  }
-
-  function doMerge(leader) {
-    if (leader.role !== "hider" || leader.caught) return;
-    const near = teammatesNear(leader, MERGE_R);
-    if (!near.length) {
-      toast("Рядом нет команды для слияния");
+  function becomeProp(ent) {
+    if (ent.role !== "hider" || ent.caught) return;
+    if (ent.prop) {
+      ent.prop.taken = false;
+      ent.prop = null;
+      ent.propLocked = false;
+      toast("Снова человек");
       return;
     }
-    if (leader.mergeId) {
-      breakMerge(leader);
-      toast("Слияние разорвано");
+    const p = nearestProp(ent);
+    if (!p) {
+      toast("Подойди ближе к вещи");
       return;
     }
-    const members = [leader, ...near.filter((a) => !a.mergeId)].slice(0, 5);
-    if (members.length < 2) {
-      toast("Нужен хотя бы один рядом");
-      return;
-    }
-    const id = g.nextMerge++;
-    for (const m of members) {
-      m.mergeId = id;
-      m.mergeLeader = m === leader;
-      m.hidden = false;
-    }
-    g.merges.set(id, { id, leader, members });
-    toast("Слились с командой — искателям труднее заметить!");
-  }
-
-  function doHide(ent) {
-    const { spot, d } = nearestSpot(ent);
-    if (!spot || d > spot.r) {
-      toast("Подойди ближе к укрытию");
-      return;
-    }
-    if (ent.mergeId) breakMerge(ent);
-    ent.hidden = !ent.hidden;
-    if (ent.hidden) {
-      ent.x = spot.x;
-      ent.y = spot.y;
-      toast("Ты в укрытии");
-    } else {
-      toast("Вышел из укрытия");
-    }
+    p.taken = true;
+    ent.prop = p;
+    ent.x = p.x;
+    ent.y = p.y;
+    ent.propLocked = true;
+    toast(`Ты стал: ${p.type.name}!`);
   }
 
   function tryCatch(seeker) {
+    if (g.phase !== "seek") {
+      if (seeker.isPlayer) toast("Подожди — ещё время прятаться");
+      return;
+    }
     let best = null;
-    let bd = CATCH_R + 8;
+    let bd = CATCH_R;
     for (const a of g.actors) {
       if (a.role !== "hider" || a.caught) continue;
-      let effectiveR = CATCH_R;
-      if (a.hidden) effectiveR *= 0.55;
-      if (a.mergeId) effectiveR *= 0.62;
       const d = dist(seeker, a);
-      if (d < effectiveR && d < bd) {
+      // в виде вещи ловить чуть сложнее — нужно ближе
+      const need = a.prop ? CATCH_R * 0.75 : CATCH_R;
+      if (d < need && d < bd) {
         bd = d;
         best = a;
       }
@@ -416,148 +349,89 @@
       if (seeker.isPlayer) toast("Рядом никого нет");
       return;
     }
-    // Merged groups: must catch the whole cluster by hitting any member closely
-    if (best.mergeId) {
-      const m = g.merges.get(best.mergeId);
-      if (m) {
-        for (const mem of m.members) {
-          if (!mem.caught) {
-            mem.caught = true;
-            mem.hidden = false;
-            mem.mergeId = null;
-            g.caughtCount++;
-          }
-        }
-        g.merges.delete(m.id);
-        toast("Поймана вся слитая группа!");
-        return;
-      }
-    }
     best.caught = true;
-    best.hidden = false;
-    g.caughtCount++;
-    toast(best.isPlayer ? "Тебя поймали!" : `Пойман: ${best.name}`);
-  }
-
-  function tryPickup(seeker) {
-    for (const it of g.items) {
-      if (it.taken) continue;
-      if (dist(seeker, it) < 26) {
-        it.taken = true;
-        g.itemsGot++;
-        toast(`Предмет ${g.itemsGot}/${ITEMS_NEEDED}`);
-        return true;
-      }
+    if (best.prop) {
+      best.prop.taken = false;
+      best.prop = null;
     }
-    return false;
+    toast(best.isPlayer ? "Хозяина нашли!" : "Хозяин пойман!");
   }
 
   function playerAction() {
     const p = g.player;
     if (p.caught) return;
-    if (p.role === "seeker") {
-      if (!tryPickup(p)) tryCatch(p);
-    } else {
-      const nearTeam = teammatesNear(p, MERGE_R);
-      const { d } = nearestSpot(p);
-      if (nearTeam.length && d > HIDE_SPOT_R) doMerge(p);
-      else if (d <= HIDE_SPOT_R) doHide(p);
-      else if (nearTeam.length) doMerge(p);
-      else toast("Укрытие или команда рядом — тогда E");
-    }
+    if (p.role === "hider") becomeProp(p);
+    else tryCatch(p);
   }
 
   function moveEntity(ent, dx, dy, dt) {
     if (ent.caught) return;
-    if (ent.hidden && ent.role === "hider") {
-      ent.vx = 0;
-      ent.vy = 0;
-      return;
-    }
-    // Follow merge leader
-    if (ent.mergeId && !ent.mergeLeader) {
-      const m = getMergeGroup(ent);
-      if (m && m.leader && !m.leader.caught) {
-        const idx = m.members.indexOf(ent);
-        const ang = (idx / Math.max(1, m.members.length)) * Math.PI * 2;
-        const tx = m.leader.x + Math.cos(ang) * 18;
-        const ty = m.leader.y + Math.sin(ang) * 18;
-        dx = tx - ent.x;
-        dy = ty - ent.y;
-        const len = Math.hypot(dx, dy) || 1;
-        dx /= len;
-        dy /= len;
-        if (dist(ent, m.leader) < 10) {
-          dx = 0;
-          dy = 0;
-        }
+    if (ent.prop && ent.propLocked) {
+      // как вещь можно чуть шевелиться, но медленно — или стоять
+      if (ent.isPlayer && (dx || dy)) {
+        // выход из полной блокировки при движении — остаёмся вещью, но двигаемся медленно
+        ent.propLocked = false;
+      } else {
+        ent.x = ent.prop.x;
+        ent.y = ent.prop.y;
+        return;
       }
     }
-    const sp = ent.speed * (ent.mergeId && ent.mergeLeader ? 0.85 : 1);
-    ent.vx = dx * sp;
-    ent.vy = dy * sp;
-    ent.x += ent.vx * dt;
-    ent.y += ent.vy * dt;
+    if (g.phase === "hide" && ent.role === "seeker") {
+      // искатели ждут в углу во время пряток
+      return;
+    }
+    const sp = ent.speed * (ent.prop ? 0.55 : 1);
+    ent.x += dx * sp * dt;
+    ent.y += dy * sp * dt;
     if (Math.abs(dx) > 0.1) ent.face = dx > 0 ? 1 : -1;
     resolveWalls(ent, ent.r);
+    if (ent.prop && !ent.propLocked) {
+      ent.prop.x = ent.x;
+      ent.prop.y = ent.y;
+    }
   }
 
   function updateAI(ent, dt) {
     if (ent.isPlayer || ent.caught) return;
-    if (ent.mergeId && !ent.mergeLeader) return;
+
+    if (g.phase === "hide" && ent.role === "seeker") return;
 
     ent.aiTimer -= dt;
     if (ent.aiTimer <= 0) {
-      ent.aiTimer = rand(0.8, 2.2);
-      if (ent.role === "seeker") {
-        // Hunt items or nearest visible hider
-        let target = null;
-        let best = 1e9;
-        for (const it of g.items) {
-          if (it.taken) continue;
-          const d = dist(ent, it);
-          if (d < best) {
-            best = d;
-            target = it;
+      ent.aiTimer = rand(0.7, 1.8);
+      if (ent.role === "hider") {
+        if (!ent.prop) {
+          // идём к ближайшей вещи
+          let best = null;
+          let bd = 1e9;
+          for (const p of g.props) {
+            if (p.taken) continue;
+            const d = dist(ent, p);
+            if (d < bd) {
+              bd = d;
+              best = p;
+            }
           }
-        }
-        for (const a of g.actors) {
-          if (a.role !== "hider" || a.caught) continue;
-          let vis = true;
-          if (a.hidden && Math.random() > 0.15) vis = false;
-          if (a.mergeId && Math.random() > 0.35) vis = false;
-          if (!vis) continue;
-          const d = dist(ent, a);
-          if (d < best) {
-            best = d;
-            target = a;
+          if (best) {
+            ent.aiTx = best.x;
+            ent.aiTy = best.y;
           }
-        }
-        if (target) {
-          ent.aiTx = target.x + rand(-20, 20);
-          ent.aiTy = target.y + rand(-20, 20);
-        } else {
-          const p = pickFreeSpot();
+        } else if (g.phase === "seek" && Math.random() < 0.3) {
+          const p = pickFree();
           ent.aiTx = p.x;
           ent.aiTy = p.y;
         }
       } else {
-        // Hider: go to hide spot or wander near team
-        if (Math.random() < 0.45) {
-          const s = hideSpots[(Math.random() * hideSpots.length) | 0];
-          ent.aiTx = s.x + rand(-10, 10);
-          ent.aiTy = s.y + rand(-10, 10);
+        // искатель ищет хозяина или бродит
+        const hider = g.actors.find((a) => a.role === "hider" && !a.caught);
+        if (hider && Math.random() < 0.55) {
+          ent.aiTx = hider.x + rand(-80, 80);
+          ent.aiTy = hider.y + rand(-80, 80);
         } else {
-          const mates = g.actors.filter((a) => a.role === "hider" && a.team === ent.team && a !== ent);
-          if (mates.length) {
-            const m = mates[(Math.random() * mates.length) | 0];
-            ent.aiTx = m.x + rand(-40, 40);
-            ent.aiTy = m.y + rand(-40, 40);
-          } else {
-            const p = pickFreeSpot();
-            ent.aiTx = p.x;
-            ent.aiTy = p.y;
-          }
+          const p = pickFree();
+          ent.aiTx = p.x;
+          ent.aiTy = p.y;
         }
       }
     }
@@ -565,67 +439,32 @@
     let dx = ent.aiTx - ent.x;
     let dy = ent.aiTy - ent.y;
     const len = Math.hypot(dx, dy) || 1;
-    if (len < 12) {
+    if (len < 18) {
       dx = 0;
       dy = 0;
-      if (ent.role === "hider") {
-        const { spot, d } = nearestSpot(ent);
-        if (spot && d < spot.r && Math.random() < 0.02) {
-          ent.hidden = true;
-          ent.x = spot.x;
-          ent.y = spot.y;
-        }
-        // bots sometimes merge
-        if (!ent.mergeId && Math.random() < 0.008) {
-          const near = teammatesNear(ent, MERGE_R);
-          if (near.length >= 1) {
-            const leader = ent;
-            const members = [leader, ...near.filter((a) => !a.mergeId)].slice(0, 4);
-            if (members.length >= 2) {
-              const id = g.nextMerge++;
-              for (const m of members) {
-                m.mergeId = id;
-                m.mergeLeader = m === leader;
-                m.hidden = false;
-              }
-              g.merges.set(id, { id, leader, members });
-            }
-          }
-        }
-      } else {
-        tryPickup(ent);
-        if (Math.random() < 0.04) tryCatch(ent);
+      if (ent.role === "hider" && !ent.prop && g.phase === "hide") {
+        becomeProp(ent);
+      }
+      if (ent.role === "seeker" && g.phase === "seek" && Math.random() < 0.05) {
+        tryCatch(ent);
       }
     } else {
       dx /= len;
       dy /= len;
-      if (ent.hidden) ent.hidden = false;
     }
     moveEntity(ent, dx, dy, dt);
   }
 
   function checkEnd() {
-    const hiders = g.actors.filter((a) => a.role === "hider" && a.team === "A");
-    const alive = hiders.filter((a) => !a.caught);
-    if (g.itemsGot >= ITEMS_NEEDED) {
+    const hider = g.actors.find((a) => a.role === "hider");
+    if (hider && hider.caught) {
       g.win = "seeker";
-      g.msg = "Искатели собрали все предметы!";
+      g.msg = "Искатели нашли хозяина дома!";
       return true;
     }
-    if (alive.length === 0) {
-      g.win = "seeker";
-      g.msg = "Все прячущиеся из команды пойманы!";
-      return true;
-    }
-    if (g.timeLeft <= 0) {
+    if (g.phase === "seek" && g.seekLeft <= 0) {
       g.win = "hider";
-      g.msg = "Время вышло — прячущиеся победили!";
-      return true;
-    }
-    if (g.player.role === "hider" && g.player.caught) {
-      // player lost but round can continue briefly — end when caught
-      g.win = "seeker";
-      g.msg = "Тебя нашли! Искатели победили.";
+      g.msg = "Время вышло — хозяин не найден!";
       return true;
     }
     return false;
@@ -633,6 +472,7 @@
 
   function finish() {
     state = "end";
+    g.phase = "end";
     hideEl(hud);
     hideEl(touch);
     const youWin =
@@ -642,7 +482,6 @@
     endPanel.innerHTML = `
       <h1>${youWin ? "Победа!" : "Поражение"}</h1>
       <p class="sub">${g.msg}</p>
-      <p class="sub">Предметы: ${g.itemsGot}/${ITEMS_NEEDED} · Поймано: ${g.caughtCount}</p>
       <div class="roles">
         <button type="button" class="btn again" id="again">Ещё раз</button>
         <button type="button" class="btn ghost" id="tomenu">В меню</button>
@@ -657,7 +496,22 @@
   }
 
   function update(dt) {
-    g.timeLeft = Math.max(0, g.timeLeft - dt);
+    if (g.phase === "hide") {
+      g.hideLeft = Math.max(0, g.hideLeft - dt);
+      if (g.hideLeft <= 0) {
+        g.phase = "seek";
+        toast("Поиск начался! Искатели ищут хозяина");
+        // искателей ставим у входа
+        for (const a of g.actors) {
+          if (a.role === "seeker") {
+            a.x = 80;
+            a.y = MH / 2;
+          }
+        }
+      }
+    } else if (g.phase === "seek") {
+      g.seekLeft = Math.max(0, g.seekLeft - dt);
+    }
 
     if (actionPulse) {
       actionPulse = false;
@@ -666,8 +520,11 @@
 
     const dir = inputDir();
     if (!g.player.caught) {
-      if (g.player.hidden && (dir.x || dir.y)) g.player.hidden = false;
-      moveEntity(g.player, dir.x, dir.y, dt);
+      if (g.phase === "hide" && g.player.role === "seeker") {
+        // ждём
+      } else {
+        moveEntity(g.player, dir.x, dir.y, dt);
+      }
     }
 
     for (const a of g.actors) {
@@ -675,175 +532,233 @@
       updateAI(a, dt);
     }
 
-    // Seekers auto-pickup when walking over
-    for (const a of g.actors) {
-      if (a.role === "seeker" && !a.caught) tryPickup(a);
-    }
+    // камера следует за игроком
+    const tx = g.player.x - VW / 2;
+    const ty = g.player.y - VH / 2;
+    cam.x += (tx - cam.x) * Math.min(1, dt * 6);
+    cam.y += (ty - cam.y) * Math.min(1, dt * 6);
+    cam.x = Math.max(0, Math.min(MW - VW, cam.x));
+    cam.y = Math.max(0, Math.min(MH - VH, cam.y));
 
     if (checkEnd()) finish();
     updateHud();
   }
 
   function updateHud() {
-    const role = g.playerRole === "seeker" ? "Искатель" : "Прячущийся";
-    const t = Math.ceil(g.timeLeft);
+    const role = g.playerRole === "seeker" ? "Искатель" : "Хозяин";
+    let phaseTxt;
+    let timeTxt;
+    if (g.phase === "hide") {
+      phaseTxt = "ПРЯТКИ";
+      timeTxt = Math.ceil(g.hideLeft) + "с";
+    } else {
+      phaseTxt = "ПОИСК";
+      timeTxt = Math.ceil(g.seekLeft) + "с";
+    }
+    const prop = g.player.prop ? g.player.prop.type.name : "—";
     hud.innerHTML = `
       <span class="pill">${role}</span>
-      <span class="pill">⏱ ${t}с</span>
-      <span class="pill">◎ ${g.itemsGot}/${ITEMS_NEEDED}</span>
-      <span class="pill">Поймано ${g.caughtCount}</span>
+      <span class="pill">${phaseTxt} · ${timeTxt}</span>
+      <span class="pill">${g.playerRole === "hider" ? "Вещь: " + prop : "Найди хозяина"}</span>
     `;
   }
 
-  function drawMap() {
-    // floor — светлый, чтобы всё было видно
-    const grd = ctx.createLinearGradient(0, 0, W, H);
-    grd.addColorStop(0, "#d5ebdf");
-    grd.addColorStop(1, "#c3ddcf");
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, W, H);
+  function drawProp(p, asDecoy) {
+    const t = p.type;
+    const x = p.x;
+    const y = p.y;
+    ctx.fillStyle = t.color;
+    ctx.strokeStyle = "#1a1208";
+    ctx.lineWidth = 2;
 
-    // grid
-    ctx.strokeStyle = "rgba(30,70,50,0.08)";
-    ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 40) {
+    if (t.id === "vase") {
       ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, H);
-      ctx.stroke();
-    }
-    for (let y = 0; y < H; y += 40) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
-    }
-
-    // hide spots
-    for (const s of hideSpots) {
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(15,159,130,0.22)";
+      ctx.moveTo(x - 8, y + 14);
+      ctx.lineTo(x - 10, y - 6);
+      ctx.lineTo(x - 6, y - 16);
+      ctx.lineTo(x + 6, y - 16);
+      ctx.lineTo(x + 10, y - 6);
+      ctx.lineTo(x + 8, y + 14);
+      ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "rgba(15,159,130,0.75)";
-      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = "#0a5c4a";
-      ctx.font = "700 12px Outfit, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText("укрытие", s.x, s.y + 4);
-    }
-
-    // walls
-    for (const w of walls) {
-      ctx.fillStyle = "#5a7a68";
-      ctx.fillRect(w.x, w.y, w.w, w.h);
-      ctx.strokeStyle = "#3d5548";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1);
-    }
-
-    // items
-    for (const it of g.items) {
-      if (it.taken) continue;
-      it.pulse += 0.08;
-      const s = 8 + Math.sin(it.pulse) * 2;
+    } else if (t.id === "fireplace") {
+      ctx.fillRect(x - t.w / 2, y - t.h / 2, t.w, t.h);
+      ctx.strokeRect(x - t.w / 2, y - t.h / 2, t.w, t.h);
+      ctx.fillStyle = "#e85a20";
+      ctx.fillRect(x - 12, y - 4, 24, 16);
+    } else if (t.id === "lamp") {
+      ctx.fillRect(x - 3, y - 4, 6, 18);
       ctx.beginPath();
-      ctx.arc(it.x, it.y, s, 0, Math.PI * 2);
-      ctx.fillStyle = "#f0d060";
+      ctx.arc(x, y - 14, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffe08a";
       ctx.fill();
-      ctx.strokeStyle = "#fff3a8";
       ctx.stroke();
-      ctx.fillStyle = "#3a2a00";
+    } else if (t.id === "plant") {
+      ctx.fillStyle = "#6b4a2e";
+      ctx.fillRect(x - 8, y + 4, 16, 12);
+      ctx.fillStyle = "#3d9a5f";
+      ctx.beginPath();
+      ctx.arc(x, y - 8, 14, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (t.id === "clock") {
+      ctx.beginPath();
+      ctx.arc(x, y, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y - 8);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + 6, y);
+      ctx.stroke();
+    } else {
+      ctx.fillRect(x - t.w / 2, y - t.h / 2, t.w, t.h);
+      ctx.strokeRect(x - t.w / 2, y - t.h / 2, t.w, t.h);
+    }
+
+    if (!asDecoy) {
+      ctx.fillStyle = "rgba(20,30,20,0.7)";
       ctx.font = "700 10px Outfit, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("?", it.x, it.y + 3);
+      ctx.fillText(t.name, x, y + t.h / 2 + 12);
     }
   }
 
   function drawActor(a) {
-    if (a.caught) {
-      ctx.globalAlpha = 0.35;
-    } else if (a.hidden) {
-      // Seekers barely see hidden; hiders see own team better
-      if (g.playerRole === "seeker" && !a.isPlayer) ctx.globalAlpha = 0.28;
-      else ctx.globalAlpha = a.isPlayer || a.team === g.player.team ? 0.7 : 0.35;
-    } else if (a.mergeId && g.playerRole === "seeker" && a.role === "hider") {
-      ctx.globalAlpha = 0.72;
-    } else {
-      ctx.globalAlpha = 1;
+    if (a.caught) return;
+    if (a.prop) {
+      // рисуется как вещь через props; лёгкая метка только себе
+      if (a.isPlayer) {
+        ctx.strokeStyle = "rgba(255,220,80,0.9)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.strokeRect(a.x - 20, a.y - 22, 40, 44);
+        ctx.setLineDash([]);
+      }
+      return;
     }
 
-    const bounce = Math.sin(a.bob) * (a.hidden ? 0 : 2);
-    const x = a.x;
-    const y = a.y + bounce;
-
-    // merge ring
-    if (a.mergeId) {
-      ctx.beginPath();
-      ctx.arc(x, y, a.r + 8, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(126,200,255,0.7)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
-
-    // body
+    const bounce = Math.sin(a.bob) * 2;
     ctx.beginPath();
-    ctx.arc(x, y, a.r, 0, Math.PI * 2);
-    ctx.fillStyle = a.color;
+    ctx.arc(a.x, a.y + bounce, a.r, 0, Math.PI * 2);
+    ctx.fillStyle = a.role === "seeker" ? "#e23d1e" : "#0f9f82";
     ctx.fill();
     if (a.isPlayer) {
       ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 11px Outfit, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(a.role === "seeker" ? "И" : "Х", a.x, a.y + bounce + 4);
+  }
+
+  function drawWorld() {
+    // пол
+    ctx.fillStyle = "#e8d9c0";
+    ctx.fillRect(0, 0, MW, MH);
+
+    // плитка
+    ctx.strokeStyle = "rgba(80,50,20,0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < MW; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, MH);
+      ctx.stroke();
+    }
+    for (let y = 0; y < MH; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(MW, y);
       ctx.stroke();
     }
 
-    // face mark
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    // ковры комнат
+    ctx.fillStyle = "rgba(180,60,60,0.12)";
+    ctx.fillRect(40, 40, 320, 340);
+    ctx.fillStyle = "rgba(60,100,160,0.10)";
+    ctx.fillRect(420, 40, 340, 340);
+    ctx.fillStyle = "rgba(60,140,80,0.10)";
+    ctx.fillRect(820, 40, 260, 450);
+    ctx.fillStyle = "rgba(140,100,60,0.10)";
+    ctx.fillRect(1140, 40, 420, 240);
+
+    // стены
+    for (const w of walls) {
+      ctx.fillStyle = "#6a5340";
+      ctx.fillRect(w.x, w.y, w.w, w.h);
+      ctx.strokeStyle = "#3d2e22";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1);
+    }
+
+    // вещи (декор + занятые хозяевами)
+    for (const p of g.props) {
+      drawProp(p, false);
+    }
+
+    for (const a of g.actors) drawActor(a);
+  }
+
+  function drawFog() {
+    const p = g.player;
+    const vision = p.role === "hider" ? VISION_HIDER : VISION_SEEKER;
+    // тёмный слой с круглой «дыркой» обзора
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.82)";
     ctx.beginPath();
-    ctx.arc(x + a.face * 4, y - 2, 2.5, 0, Math.PI * 2);
+    ctx.rect(cam.x - 2, cam.y - 2, VW + 4, VH + 4);
+    ctx.arc(p.x, p.y, vision, 0, Math.PI * 2, true);
+    ctx.fill("evenodd");
+
+    // мягкий край
+    const grd = ctx.createRadialGradient(p.x, p.y, vision * 0.55, p.x, p.y, vision);
+    grd.addColorStop(0, "rgba(0,0,0,0)");
+    grd.addColorStop(1, "rgba(0,0,0,0.35)");
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, vision, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
+  }
 
-    // role badge
+  function drawPrompt() {
+    const p = g.player;
+    if (p.caught) return;
+    let tip = "";
+    if (g.phase === "hide" && p.role === "seeker") {
+      tip = "Жди… прячущиеся прячутся";
+    } else if (p.role === "hider") {
+      if (p.prop) tip = "E — снова стать человеком";
+      else if (nearestProp(p)) tip = "E — стать этой вещью";
+      else tip = "Подойди к вазе, камину…";
+    } else if (g.phase === "seek") {
+      tip = "E — поймать хозяина";
+    }
+    if (!tip) return;
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.font = "700 14px Outfit, sans-serif";
+    const tw = ctx.measureText(tip).width;
+    const x = p.x;
+    const y = p.y - 36;
+    ctx.fillRect(x - tw / 2 - 10, y - 16, tw + 20, 24);
     ctx.fillStyle = "#fff";
-    ctx.font = "700 9px Outfit, sans-serif";
     ctx.textAlign = "center";
-    const label = a.role === "seeker" ? "И" : a.mergeId ? "◎" : "П";
-    ctx.fillText(label, x, y + a.r + 11);
-
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = 1;
+    ctx.fillText(tip, x, y);
   }
 
   function draw() {
-    drawMap();
-    // draw non-players first
-    const sorted = [...g.actors].sort((a, b) => a.y - b.y);
-    for (const a of sorted) drawActor(a);
-
-    // prompt near player
-    const p = g.player;
-    if (!p.caught) {
-      let tip = "";
-      if (p.role === "seeker") {
-        const nearItem = g.items.some((it) => !it.taken && dist(p, it) < 30);
-        tip = nearItem ? "E — взять предмет" : "E — поймать";
-      } else {
-        const { d } = nearestSpot(p);
-        const near = teammatesNear(p, MERGE_R).length;
-        if (d <= HIDE_SPOT_R) tip = p.hidden ? "E — выйти" : "E — спрятаться";
-        else if (near) tip = p.mergeId ? "E — выйти из слияния" : "E — слиться с командой";
-      }
-      if (tip) {
-        ctx.fillStyle = "rgba(0,0,0,0.55)";
-        ctx.font = "600 13px Outfit, sans-serif";
-        const tw = ctx.measureText(tip).width;
-        ctx.fillRect(p.x - tw / 2 - 8, p.y - 42, tw + 16, 22);
-        ctx.fillStyle = "#fff";
-        ctx.textAlign = "center";
-        ctx.fillText(tip, p.x, p.y - 27);
-      }
-    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, VW, VH);
+    ctx.save();
+    ctx.translate(-cam.x, -cam.y);
+    drawWorld();
+    drawFog();
+    drawPrompt();
+    ctx.restore();
   }
 
   function loop(now) {

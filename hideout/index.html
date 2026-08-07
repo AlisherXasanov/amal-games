@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укрытие — Hideout</title>
-  <meta name="description" content="Прятки в укрытии: искатели ищут предметы, прячущиеся сливаются с командой и ботами." />
+  <meta name="description" content="Прятки в доме: спрячься вазой или камином, потом искатели ищут хозяина дома." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=4" />
+  <link rel="stylesheet" href="./style.css?v=5" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -27,14 +27,14 @@
 
       <div class="panel menu" id="menu">
         <h1>Укрытие</h1>
-        <p class="sub">Выбери, кем играть:</p>
+        <p class="sub">Дом хозяина. Сначала время прятаться — стань вазой, камином или другой вещью. Потом искатели ищут!</p>
         <div class="roles">
           <button type="button" class="btn seeker" id="btnSeeker" data-role="seeker">Искатель</button>
-          <button type="button" class="btn hider" id="btnHider" data-role="hider">Прячущийся</button>
+          <button type="button" class="btn hider" id="btnHider" data-role="hider">Хозяин (прячется)</button>
         </div>
         <p class="hints">
-          Ходи на WASD или стрелках.<br>
-          Клавиша E — поймать, спрятаться или слиться с командой.
+          WASD — ходить · E — стать вещью / поймать<br>
+          Видно только рядом с собой — дальше темно.
         </p>
       </div>
 
@@ -42,6 +42,6 @@
     </div>
   </div>
 
-  <script src="./game.js?v=4"></script>
+  <script src="./game.js?v=5"></script>
 </body>
 </html>
