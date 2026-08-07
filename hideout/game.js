@@ -188,13 +188,18 @@
     { name: "Балкон", x: 1080, y: 320, w: 280, h: 320 },
   ];
 
-  // Лестницы: вверх и вниз на каждом этаже
+  // Лестницы — большие зоны, легко наступить даже вещью
   const STAIRS = [
-    { x: 180, y: 820, w: 70, h: 50, dir: "up", label: "↑ вверх" },
-    { x: 280, y: 820, w: 70, h: 50, dir: "down", label: "↓ вниз" },
-    { x: 1180, y: 820, w: 70, h: 50, dir: "up", label: "↑ вверх" },
-    { x: 1280, y: 820, w: 70, h: 50, dir: "down", label: "↓ вниз" },
+    { x: 140, y: 780, w: 100, h: 70, dir: "up", label: "↑ вверх" },
+    { x: 260, y: 780, w: 100, h: 70, dir: "down", label: "↓ вниз" },
+    { x: 1120, y: 780, w: 100, h: 70, dir: "up", label: "↑ вверх" },
+    { x: 1240, y: 780, w: 100, h: 70, dir: "down", label: "↓ вниз" },
   ];
+
+  function floorName(n) {
+    if (n === 0) return "Подвал";
+    return n + " этаж";
+  }
 
   const PROP_SPOTS = [
     [100, 120], [180, 100], [260, 150], [120, 240], [220, 280], [300, 200],
@@ -354,6 +359,7 @@
       lastX: x,
       lastY: y,
       stairCd: 0,
+      stairWait: 0,
     };
   }
 
@@ -451,10 +457,10 @@
   function stairAt(ent) {
     for (const s of STAIRS) {
       if (
-        ent.x > s.x &&
-        ent.x < s.x + s.w &&
-        ent.y > s.y &&
-        ent.y < s.y + s.h
+        ent.x >= s.x - 8 &&
+        ent.x <= s.x + s.w + 8 &&
+        ent.y >= s.y - 8 &&
+        ent.y <= s.y + s.h + 8
       ) {
         return s;
       }
@@ -462,33 +468,70 @@
     return null;
   }
 
+  function stairNear(ent, pad = 70) {
+    let best = null;
+    let bd = pad;
+    for (const s of STAIRS) {
+      const cx = s.x + s.w / 2;
+      const cy = s.y + s.h / 2;
+      const d = Math.hypot(ent.x - cx, ent.y - cy);
+      if (d < bd) {
+        bd = d;
+        best = s;
+      }
+    }
+    return best;
+  }
+
   function useStairs(ent, stair) {
+    if (!g || g.floorMax <= 1) return false;
     if (ent.stairCd > 0) return false;
     let next = ent.floor;
     if (stair.dir === "up") next = Math.min(g.floorMax - 1, ent.floor + 1);
     else next = Math.max(0, ent.floor - 1);
     if (next === ent.floor) {
-      if (ent.isPlayer) toast(stair.dir === "up" ? "Уже самый верхний этаж" : "Уже первый этаж");
+      if (ent.isPlayer) {
+        toast(
+          stair.dir === "up"
+            ? "Уже самый верх"
+            : "Уже подвал — жми ↑ вверх"
+        );
+      }
       return false;
     }
+
+    // Приземление РЯДОМ с лестницей, не на ней (чтобы не дёргало)
+    const landX = stair.x + stair.w / 2 + (stair.dir === "up" ? 55 : -55);
+    const landY = stair.y - 55;
+
+    ent.floor = next;
+    ent.x = landX;
+    ent.y = landY;
+    ent.stairCd = 0.85;
+    ent.stairWait = 0;
+    ent.propLocked = false; // можно сразу идти дальше, оставаясь вещью
+
     if (ent.prop) {
       ent.prop.floor = next;
-      ent.prop.x = stair.x + stair.w / 2 + (stair.dir === "up" ? 50 : -50);
-      ent.prop.y = stair.y - 40;
-      ent.x = ent.prop.x;
-      ent.y = ent.prop.y;
-    } else {
-      ent.x = stair.x + stair.w / 2;
-      ent.y = stair.y - 40;
+      ent.prop.x = landX;
+      ent.prop.y = landY;
+      // остаёмся той же вещью на новом этаже
     }
-    ent.floor = next;
-    ent.stairCd = 1.1;
-    if (ent.isPlayer) toast("Этаж " + (next + 1) + " / " + g.floorMax);
+
+    if (ent.isPlayer) {
+      const asItem = ent.prop ? " (вещью)" : "";
+      toast(floorName(next) + " / " + g.floorMax + asItem);
+    }
     return true;
   }
 
   function becomeProp(ent) {
-    if (ent.role !== "hider" || ent.caught) return;
+    if (ent.role !== "hider") return;
+    // На лестнице E = этаж, не выход из вещи
+    if (g.floorMax > 1 && stairNear(ent, 75)) {
+      useStairs(ent, stairNear(ent, 75));
+      return;
+    }
     if (ent.prop) {
       ent.prop.taken = false;
       ent.prop = null;
@@ -506,7 +549,7 @@
     ent.x = p.x;
     ent.y = p.y;
     ent.propLocked = true;
-    if (ent.isPlayer) toast("Ты: " + p.type.name + ". Стой тихо!");
+    if (ent.isPlayer) toast("Ты: " + p.type.name + ". Лестница — тоже можно!");
   }
 
   function tryCatch(seeker) {
@@ -514,23 +557,32 @@
       if (seeker.isPlayer) toast("Ещё время прятаться");
       return;
     }
+    // На лестнице — смена этажа, не «проверка»
+    if (g.floorMax > 1) {
+      const st = stairNear(seeker, 75);
+      if (st) {
+        useStairs(seeker, st);
+        return;
+      }
+    }
     let best = null;
     let bd = 99;
     for (const a of g.actors) {
+      if (a === seeker) continue;
       if (a.role !== "hider" || a.floor !== seeker.floor) continue;
       const d = dist(seeker, a);
-      const need = a.prop ? PROP_CATCH_R : CATCH_R;
-      const bonus = a.prop && a.moving ? 8 : 0;
+      // вещь — только вплотную, чтобы не ловить «пустое» место
+      const need = a.prop ? 15 : CATCH_R;
+      const bonus = a.prop && a.moving ? 6 : 0;
       if (d < need + bonus && d < bd) {
         bd = d;
         best = a;
       }
     }
     if (!best) {
-      if (seeker.isPlayer) toast("Пусто на этом месте");
+      if (seeker.isPlayer) toast("Здесь никто не прячется");
       return;
     }
-    // Пойманный становится искателем
     if (best.prop) {
       best.prop.taken = false;
       best.prop = null;
@@ -542,19 +594,22 @@
     best.caught = false;
     if (best.isPlayer) {
       g.playerRole = "seeker";
-      toast("Тебя нашли! Теперь ты искатель — ищи остальных!");
+      toast("Тебя нашли! Теперь ты искатель");
     } else {
       const left = g.actors.filter((a) => a.role === "hider").length;
-      toast("Пойман → стал искателем! Прячущихся: " + left);
+      toast("Пойман → искатель! Прячущихся: " + left);
     }
   }
 
   function playerAction() {
     const p = g.player;
-    const st = stairAt(p);
-    if (st && g.floorMax > 1) {
-      useStairs(p, st);
-      return;
+    // Лестница всегда важнее вещи / поимки — даже внутри предмета
+    if (g.floorMax > 1) {
+      const st = stairAt(p) || stairNear(p, 70);
+      if (st) {
+        useStairs(p, st);
+        return;
+      }
     }
     if (p.role === "hider") becomeProp(p);
     else tryCatch(p);
@@ -593,13 +648,19 @@
       ent.stillTime += dt;
     }
 
-    // авто-лестница при наступании
-    if (ent.stairCd <= 0) {
+    // Стоишь на лестнице (даже вещью) → через мгновение перенос
+    if (g.floorMax > 1 && ent.stairCd <= 0) {
       const st = stairAt(ent);
-      if (st && (ent.isPlayer ? false : Math.random() < 0.02 || !ent.isPlayer)) {
-        // player uses E; bots auto sometimes
-        if (!ent.isPlayer && Math.random() < 0.015) useStairs(ent, st);
+      if (st) {
+        ent.stairWait = (ent.stairWait || 0) + dt;
+        if (ent.stairWait >= 0.35) {
+          useStairs(ent, st);
+        }
+      } else {
+        ent.stairWait = 0;
       }
+    } else if (ent.stairCd > 0) {
+      ent.stairWait = 0;
     }
   }
 
@@ -804,7 +865,9 @@
     const phaseTxt = g.phase === "hide" ? "ПРЯТКИ" : "ПОИСК";
     const timeTxt = Math.ceil(g.phase === "hide" ? g.hideLeft : g.seekLeft) + "с";
     const floor =
-      g.floorMax > 1 ? `Этаж ${g.player.floor + 1}/${g.floorMax}` : g.map.name;
+      g.floorMax > 1
+        ? floorName(g.player.floor) + " · " + g.floorMax
+        : g.map.name;
     const left = g.actors.filter((a) => a.role === "hider").length;
     const seekers = g.actors.filter((a) => a.role === "seeker").length;
     hudInfo.innerHTML = `
@@ -1206,9 +1269,7 @@
     ctx.font = "800 48px Outfit, sans-serif";
     ctx.textAlign = "center";
     const label =
-      g.floorMax > 1
-        ? g.player.floor + 1 + " ЭТАЖ"
-        : g.map.name.toUpperCase();
+      g.floorMax > 1 ? floorName(g.player.floor).toUpperCase() : g.map.name.toUpperCase();
     ctx.fillText(label, MW / 2, MH / 2);
 
     if (g.floorMax > 1) drawStairs();
@@ -1308,16 +1369,16 @@
 
   function drawPrompt() {
     const p = g.player;
-    if (p.caught) return;
     let tip = "";
-    const st = stairAt(p);
-    if (st) tip = "E — " + st.label + " (этаж)";
-    else if (g.phase === "hide" && p.role === "seeker") tip = "Жди у входа…";
+    const st = g.floorMax > 1 ? stairAt(p) || stairNear(p, 70) : null;
+    if (st) {
+      tip = "E или постой — " + st.label + (p.prop ? " (вещью)" : "");
+    } else if (g.phase === "hide" && p.role === "seeker") tip = "Жди…";
     else if (p.role === "hider") {
-      if (p.prop) tip = p.moving ? "Стой! Движение выдаёт" : "E — выйти из вещи";
+      if (p.prop) tip = "E — выйти · лестница ↓ меняет этаж";
       else if (nearestProp(p)) tip = "E — стать вещью";
       else tip = "Вещь или лестница";
-    } else if (g.phase === "seek") tip = "E — проверить";
+    } else if (g.phase === "seek") tip = "E — проверить / лестница";
     if (!tip) return;
     ctx.font = "700 13px Outfit, sans-serif";
     const tw = ctx.measureText(tip).width;
