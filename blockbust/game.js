@@ -310,12 +310,13 @@
   let uid = 0;
   const nextUid = () => `p-${Date.now()}-${++uid}`;
 
-  function boardSize() {
-    return state.mode === "tiny" ? 6 : SIZE;
+  function boardSize(mode) {
+    const m = mode != null ? mode : typeof state !== "undefined" && state ? state.mode : "classic";
+    return m === "tiny" ? 6 : SIZE;
   }
 
-  function emptyBoard() {
-    const n = boardSize();
+  function emptyBoard(mode) {
+    const n = boardSize(mode);
     return Array.from({ length: n }, () => Array(n).fill(null));
   }
 
@@ -439,7 +440,7 @@
 
   const state = {
     mode: "classic",
-    board: emptyBoard(),
+    board: emptyBoard("classic"),
     hand: [null, null, null],
     score: 0,
     combo: 0,
@@ -545,7 +546,7 @@
   }
 
   function resetRoundFields() {
-    state.board = emptyBoard();
+    state.board = emptyBoard(state.mode);
     state.hand = makeHand(state.board);
     state.score = 0;
     state.combo = 0;
