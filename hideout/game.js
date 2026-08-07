@@ -42,8 +42,8 @@
     <h1>Укрытие</h1>
     <p class="sub">Искатели ищут предметы и прячущихся. Прячущиеся прячутся в укрытиях и сливаются с командой и ботами, чтобы раствориться в толпе.</p>
     <div class="roles">
-      <button class="btn seeker" data-role="seeker">Искатель</button>
-      <button class="btn hider" data-role="hider">Прячущийся</button>
+      <button type="button" class="btn seeker" data-role="seeker">Искатель</button>
+      <button type="button" class="btn hider" data-role="hider">Прячущийся</button>
     </div>
     <p class="hints">
       WASD / стрелки — ходьба · E — поймать / слиться / спрятаться<br>
@@ -713,15 +713,15 @@
   }
 
   function drawMap() {
-    // floor
+    // floor — светлый, чтобы всё было видно
     const grd = ctx.createLinearGradient(0, 0, W, H);
-    grd.addColorStop(0, "#1a2c24");
-    grd.addColorStop(1, "#152018");
+    grd.addColorStop(0, "#d5ebdf");
+    grd.addColorStop(1, "#c3ddcf");
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, W, H);
 
     // grid
-    ctx.strokeStyle = "rgba(255,255,255,0.03)";
+    ctx.strokeStyle = "rgba(30,70,50,0.08)";
     ctx.lineWidth = 1;
     for (let x = 0; x < W; x += 40) {
       ctx.beginPath();
@@ -740,21 +740,23 @@
     for (const s of hideSpots) {
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(61,184,160,0.12)";
+      ctx.fillStyle = "rgba(15,159,130,0.22)";
       ctx.fill();
-      ctx.strokeStyle = "rgba(61,184,160,0.35)";
+      ctx.strokeStyle = "rgba(15,159,130,0.75)";
+      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = "rgba(200,255,230,0.35)";
-      ctx.font = "600 11px Outfit, sans-serif";
+      ctx.fillStyle = "#0a5c4a";
+      ctx.font = "700 12px Outfit, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("укрытие", s.x, s.y + 4);
     }
 
     // walls
     for (const w of walls) {
-      ctx.fillStyle = "#2a3d34";
+      ctx.fillStyle = "#5a7a68";
       ctx.fillRect(w.x, w.y, w.w, w.h);
       ctx.strokeStyle = "#3d5548";
+      ctx.lineWidth = 2;
       ctx.strokeRect(w.x + 0.5, w.y + 0.5, w.w - 1, w.h - 1);
     }
 
@@ -781,8 +783,8 @@
       ctx.globalAlpha = 0.35;
     } else if (a.hidden) {
       // Seekers barely see hidden; hiders see own team better
-      if (g.playerRole === "seeker" && !a.isPlayer) ctx.globalAlpha = 0.18;
-      else ctx.globalAlpha = a.isPlayer || a.team === g.player.team ? 0.55 : 0.2;
+      if (g.playerRole === "seeker" && !a.isPlayer) ctx.globalAlpha = 0.28;
+      else ctx.globalAlpha = a.isPlayer || a.team === g.player.team ? 0.7 : 0.35;
     } else if (a.mergeId && g.playerRole === "seeker" && a.role === "hider") {
       ctx.globalAlpha = 0.72;
     } else {
