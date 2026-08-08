@@ -435,7 +435,7 @@
     touch.classList.add("on");
     updateFlagHud();
     showMsg(course.name.toUpperCase(), 1.5);
-    if (amalGod()) setTimeout(() => showMsg("⚡ БЕССМЕРТИЕ ХОЗЯИНА", 2), 1600);
+    if (amalGod()) setTimeout(() => showMsg("⚡ ∞ ВРЕМЯ · БЕЗ АВАРИЙ", 2.2), 1600);
   }
 
   function updateFlagHud() {
@@ -1050,13 +1050,18 @@
     // score from speed
     state.score += Math.floor(state.speed * dt * 0.02);
 
-    state.timeLeft -= dt;
-    if (amalGod()) state.timeLeft = Math.max(state.timeLeft, 45);
-    if (state.timeLeft <= 0 && !state.finished) {
-      state.timeLeft = 0;
-      state.dead = true;
-      showMsg("ВРЕМЯ!", 1.2);
-      setTimeout(() => renderResult(false), 800);
+    if (amalGod()) {
+      state.crashed = 0;
+      state.dead = false;
+      state.timeLeft = 9999;
+    } else {
+      state.timeLeft -= dt;
+      if (state.timeLeft <= 0 && !state.finished) {
+        state.timeLeft = 0;
+        state.dead = true;
+        showMsg("ВРЕМЯ!", 1.2);
+        setTimeout(() => renderResult(false), 800);
+      }
     }
 
     if (state.msgT > 0) {
@@ -1085,7 +1090,7 @@
       });
     }
 
-    el.time.textContent = state.timeLeft.toFixed(1);
+    el.time.textContent = amalGod() ? "∞" : state.timeLeft.toFixed(1);
     el.score.textContent = String(Math.floor(state.score));
     el.speed.textContent = String(Math.floor(state.speed / 40));
     el.leg.textContent = state.finished
@@ -1170,22 +1175,24 @@
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
-    if (t === "heal" || t === "xb-fix" || t === "max") {
+    if (t === "heal" || t === "xb-fix" || t === "xb-goddrive" || t === "god" || t === "max") {
       state.crashed = 0;
       state.dead = false;
-      state.timeLeft = Math.max(state.timeLeft, 60);
+      window.__AMAL_GOD__ = true;
+      state.timeLeft = 9999;
       state.speed = Math.max(state.speed, 40);
-      showMsg("💚 Хилл · багги цел", 1.5);
+      showMsg("⚡ ∞ ВРЕМЯ · БЕЗ АВАРИЙ", 1.8);
     }
     if (t === "xb-turbo" || t === "speed" || t === "max") {
-      state.maxSpeed = Math.max(state.maxSpeed || 0, 280);
-      state.speed = Math.max(state.speed, 180);
+      state.maxSpeed = Math.max(state.maxSpeed || 0, 320);
+      state.speed = Math.max(state.speed, 200);
       state.gear = 2;
       showMsg("🚀 ТУРБО", 1);
     }
     if (t === "xb-time" || t === "max") {
-      state.timeLeft = (state.timeLeft || 0) + 99;
-      showMsg("⏱ +99 сек", 1);
+      window.__AMAL_GOD__ = true;
+      state.timeLeft = 9999;
+      showMsg("⏱ ∞ ВРЕМЯ", 1.2);
     }
     if (t === "xb-finish") {
       state.finished = true;
@@ -1194,10 +1201,6 @@
       state.score += Math.floor((state.timeLeft || 0) * 50);
       showMsg("🏁 ФИНИШ!", 1.5);
       setTimeout(() => renderResult(true), 500);
-    }
-    if (t === "god" || t === "max") {
-      state.crashed = 0;
-      window.__AMAL_GOD__ = true;
     }
     const amount = e.detail && Number(e.detail.amount);
     if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
@@ -1209,8 +1212,9 @@
       showMsg("💰 " + amount, 1);
     }
     if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
-      state.timeLeft = amount;
-      showMsg("⏱ " + amount + " сек", 1);
+      if (amalGod() || window.__AMAL_GOD__) state.timeLeft = 9999;
+      else state.timeLeft = amount;
+      showMsg(amalGod() ? "⏱ ∞" : "⏱ " + amount + " сек", 1);
     }
   });
 })();

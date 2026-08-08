@@ -533,11 +533,34 @@
 
   function adminAbilities() {
     return [
-      { icon: "✅", title: "Уже работает само", text: "Монеты и рекорд бесконечные. Не проигрываешь. Можно ставить фигуры поверх других. Все уровни открыты." },
+      { icon: "✅", title: "Уже работает само", text: "∞ монеты и рекорд. Нельзя проиграть. Фигуры ставятся поверх клеток. Вся кампания открыта." },
+      { icon: "🧩", title: "Любая фигура", text: "Панель: выбери слот 1–3 и любую фигуру из каталога." },
       { icon: "🎬", title: "Кинозал", text: "Твой особый фон. Кнопка ниже его включает." },
       { icon: "🌟", title: "Звёздный огонь", text: "Эксклюзивный скин кубиков только для тебя." },
       { icon: "🧹", title: "Очистить поле", text: "Если поле забито — одной кнопкой убрать всё." },
+      { icon: "🏆", title: "Мега-счёт / комбо", text: "Кнопки сил хозяина: +100000 очков и комбо ×99." },
     ];
+  }
+
+  function clonePiece(def) {
+    return {
+      id: def.id,
+      color: def.color,
+      w: def.w,
+      cells: def.cells.map((row) => row.slice()),
+      uid: nextUid(),
+    };
+  }
+
+  function openPiecePicker(slot) {
+    if (!isOwner()) {
+      toast("Нужен режим владельца");
+      return;
+    }
+    const s = Number.isFinite(slot) ? slot : state.selected != null ? state.selected : 0;
+    state.pickSlot = Math.max(0, Math.min(2, s));
+    state.modal = "pick-piece";
+    render();
   }
 
   let uid = 0;
@@ -696,6 +719,7 @@
     modal: null,
     toast: null,
     selected: null,
+    pickSlot: 0,
     drag: null,
     aim: null,
     cell: 40,
@@ -1332,7 +1356,9 @@
             : state.selected != null
               ? `Выбрана фигура ${state.selected + 1} — наведи на поле и кликни`
               : "Клавиши 1 · 2 · 3 · или тяни мышкой"
-        }${state.ownedSpeed && !isOwner() ? " · ⚡ Скорость III твоя" : ""}</div>
+        }${state.ownedSpeed && !isOwner() ? " · ⚡ Скорость III твоя" : ""}${
+          isOwner() ? " · 🧩 любая фигура" : ""
+        }</div>
         <div class="pick-row">
           ${[0, 1, 2]
             .map((i) => {
@@ -1347,6 +1373,15 @@
             })
             .join("")}
         </div>
+        ${
+          isOwner()
+            ? `<div class="owner-pick-bar">
+                <button type="button" class="primary" data-act="open-pick" style="background:${sk.accent}">🧩 Выбрать любую фигуру</button>
+                <button type="button" data-act="admin-refill">🎲 Три случайные</button>
+                <button type="button" data-act="admin-clear">🧹 Очистить поле</button>
+              </div>`
+            : ""
+        }
       </div>
       ${
         state.modal === "surprise"
@@ -1416,8 +1451,31 @@
           : ""
       }
       ${
+        state.modal === "pick-piece" && isOwner()
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>🧩 Любая фигура</h2><p class="sub">Слот ${
+              (state.pickSlot || 0) + 1
+            } · выбери фигуру</p></div><button data-act="close">✕</button></div>
+            <div class="pick-slot-row">${[0, 1, 2]
+              .map(
+                (i) =>
+                  `<button type="button" class="${state.pickSlot === i ? "primary" : ""}" data-act="pick-slot" data-slot="${i}" ${
+                    state.pickSlot === i ? `style="background:${sk.accent}"` : ""
+                  }>Слот ${i + 1}</button>`,
+              )
+              .join("")}</div>
+            <div class="piece-catalog">${PIECES.map((p) => {
+              const sample = { ...p, uid: "preview" };
+              return `<button type="button" class="card piece-card" data-piece-id="${p.id}" title="${p.id}">
+                <div class="piece-card-preview">${pieceHtml(sample, 14)}</div>
+                <div class="piece-card-name">${p.id}</div>
+              </button>`;
+            }).join("")}</div>
+          </div></div>`
+          : ""
+      }
+      ${
         state.modal === "admin" && isOwner()
-          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Моё меню Blockbust</h2><p class="sub">Простыми словами: что умеет админ</p></div><button data-act="close">✕</button></div>
+          ? `<div class="overlay" data-close="1"><div class="modal" data-stop="1"><div class="modal-head"><div><h2>👑 Моё меню Blockbust</h2><p class="sub">Супер-админ · любые фигуры</p></div><button data-act="close">✕</button></div>
             <div style="margin-top:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(251,191,36,.35);background:rgba(251,191,36,.12);color:#fde68a;font-size:12px;font-weight:700;line-height:1.45">
               ${
                 isFullOwner()
@@ -1432,9 +1490,13 @@
               )
               .join("")}</ul>
             <p style="margin:14px 0 6px;font-size:13px;font-weight:800">Нажми, если нужно:</p>
-            <button class="primary" data-act="admin-cinema" style="width:100%;background:${sk.accent}">1. Включить фон Кинозал</button>
-            <button data-act="admin-starfire" style="width:100%;margin-top:8px">2. Надеть Звёздный огонь</button>
-            <button data-act="admin-clear" style="width:100%;margin-top:8px">3. Очистить игровое поле</button>
+            <button class="primary" data-act="open-pick" style="width:100%;background:${sk.accent}">1. Выбрать любую фигуру</button>
+            <button data-act="admin-cinema" style="width:100%;margin-top:8px">2. Фон Кинозал</button>
+            <button data-act="admin-starfire" style="width:100%;margin-top:8px">3. Звёздный огонь</button>
+            <button data-act="admin-clear" style="width:100%;margin-top:8px">4. Очистить поле</button>
+            <button data-act="admin-refill" style="width:100%;margin-top:8px">5. Три новые фигуры</button>
+            <button data-act="admin-score" style="width:100%;margin-top:8px">6. +100000 очков</button>
+            <button data-act="admin-combo" style="width:100%;margin-top:8px">7. Комбо ×99</button>
             <button data-act="close" style="width:100%;margin-top:12px">Закрыть</button>
           </div></div>`
           : ""
@@ -1514,6 +1576,14 @@
           state.modal = "admin";
           render();
         }
+        if (act === "open-pick") {
+          openPiecePicker(state.pickSlot || 0);
+        }
+        if (act === "pick-slot") {
+          if (!isOwner()) return;
+          state.pickSlot = Number(btn.getAttribute("data-slot")) || 0;
+          render();
+        }
         if (act === "admin-cinema") {
           if (!isOwner()) return;
           applyOwnerRewards();
@@ -1529,6 +1599,32 @@
           state.gameOver = false;
           state.modal = null;
           toast("Поле очищено");
+          render();
+        }
+        if (act === "admin-refill") {
+          if (!isOwner()) return;
+          state.hand = makeHand(state.board);
+          state.gameOver = false;
+          state.modal = null;
+          toast("Три новые фигуры");
+          render();
+        }
+        if (act === "admin-score") {
+          if (!isOwner()) return;
+          state.score = (state.score || 0) + 100000;
+          state.best = INF;
+          state.coins = INF;
+          state.modal = null;
+          toast("🏆 +100000");
+          render();
+        }
+        if (act === "admin-combo") {
+          if (!isOwner()) return;
+          state.combo = 99;
+          state.bestCombo = Math.max(state.bestCombo || 0, 99);
+          state.stats.bestCombo = Math.max(state.stats.bestCombo || 0, 99);
+          state.modal = null;
+          toast("🔥 Комбо ×99");
           render();
         }
         if (act === "admin-starfire") {
@@ -1625,6 +1721,24 @@
       overlay.querySelector("[data-stop]")?.addEventListener("click", (e) => e.stopPropagation());
     }
 
+    app.querySelectorAll("[data-piece-id]").forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        if (!isOwner()) return;
+        const id = btn.getAttribute("data-piece-id");
+        const def = PIECES.find((p) => p.id === id);
+        if (!def) return;
+        const slot = Math.max(0, Math.min(2, state.pickSlot || 0));
+        if (!Array.isArray(state.hand)) state.hand = [null, null, null];
+        state.hand[slot] = clonePiece(def);
+        state.selected = slot;
+        state.gameOver = false;
+        state.modal = null;
+        toast(`Фигура «${id}» → слот ${slot + 1}`);
+        render();
+      };
+    });
+
     app.querySelectorAll("[data-pick]").forEach((btn) => {
       const idx = Number(btn.getAttribute("data-pick"));
       btn.addEventListener(
@@ -1644,6 +1758,13 @@
         // Клик без драга уже обработан endDrag; для клавиатуры/доступности
         e.preventDefault();
       });
+      if (isOwner()) {
+        btn.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openPiecePicker(idx);
+        });
+      }
     });
 
     const board = document.getElementById("board");
@@ -1753,6 +1874,10 @@
     if (t === "heal" || t === "max" || t === "coins" || t === "unlock" || t === "bb-cubes" || t === "bb-adv") {
       applyOwnerRewards();
     }
+    if (t === "bb-pick") {
+      openPiecePicker(state.selected != null ? state.selected : state.pickSlot || 0);
+      return;
+    }
     if (t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) {
       if (Number.isFinite(amount)) {
         state.coins = amount;
@@ -1777,20 +1902,25 @@
     }
     if (t === "bb-clear" || t === "max") {
       state.board = Array.from({ length: n }, () => Array(n).fill(null));
+      state.gameOver = false;
       if (typeof toast === "function") toast("🧹 Поле очищено");
     }
     if (t === "bb-refill" || t === "max") {
       if (typeof makeHand === "function") state.hand = makeHand(state.board);
+      state.gameOver = false;
       if (typeof toast === "function") toast("🧩 Новые фигуры");
     }
     if (t === "bb-score" || t === "max") {
-      state.score = (state.score || 0) + 10000;
+      state.score = (state.score || 0) + 100000;
+      state.best = INF;
       state.coins = INF;
-      if (typeof toast === "function") toast("🏆 +10000");
+      if (typeof toast === "function") toast("🏆 +100000");
     }
     if (t === "bb-combo" || t === "max") {
-      state.combo = Math.max(state.combo || 0, 20);
-      state.bestCombo = Math.max(state.bestCombo || 0, 20);
+      state.combo = 99;
+      state.bestCombo = Math.max(state.bestCombo || 0, 99);
+      state.stats.bestCombo = Math.max(state.stats.bestCombo || 0, 99);
+      if (typeof toast === "function") toast("🔥 Комбо ×99");
     }
     if (t === "bb-revive" || t === "max") {
       state.gameOver = false;
@@ -1798,6 +1928,7 @@
       if (typeof makeHand === "function" && (!state.hand || state.hand.every((p) => !p))) {
         state.hand = makeHand(state.board);
       }
+      if (typeof toast === "function") toast("♻️ Нельзя проиграть");
     }
     if (t === "bb-cinema" || t === "max") {
       state.bgId = ADMIN_BG_ID;
