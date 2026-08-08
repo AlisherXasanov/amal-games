@@ -862,5 +862,22 @@
       if (state.player) state.player.speed = Math.max(state.player.speed || 0, 360);
     }
     if (t === "god" || t === "max") state.invuln = 999;
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) && Number.isFinite(amount)) {
+      save.coins = amount;
+      persist();
+      if (el && el.coins) el.coins.textContent = String(save.coins);
+    }
+    if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
+      state.kills = amount;
+      save.bestKills = Math.max(save.bestKills || 0, amount);
+      persist();
+    }
+    if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
+      state.wave = amount;
+      save.bestWave = Math.max(save.bestWave || 0, amount);
+      if (el && el.wave) el.wave.textContent = String(state.wave);
+      persist();
+    }
   });
 })();

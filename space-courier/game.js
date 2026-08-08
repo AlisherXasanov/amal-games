@@ -1039,5 +1039,14 @@
       window.__AMAL_GOD__ = true;
       state.fuel = 100;
     }
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-score" || t === "set-coins" || (t === "set-amount" && (e.detail.kind === "score" || e.detail.kind === "coins"))) && Number.isFinite(amount)) {
+      state.score = amount;
+      if (typeof updateHud === "function") updateHud();
+    }
+    if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
+      state.fuel = Math.min(100, amount);
+      if (typeof updateHud === "function") updateHud();
+    }
   });
 })();

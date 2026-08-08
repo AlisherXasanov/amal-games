@@ -1199,5 +1199,18 @@
       state.crashed = 0;
       window.__AMAL_GOD__ = true;
     }
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
+      state.score = amount;
+      showMsg("🏆 Очки: " + amount, 1);
+    }
+    if ((t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) && Number.isFinite(amount)) {
+      state.score = amount;
+      showMsg("💰 " + amount, 1);
+    }
+    if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
+      state.timeLeft = amount;
+      showMsg("⏱ " + amount + " сек", 1);
+    }
   });
 })();

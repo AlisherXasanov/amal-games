@@ -1748,9 +1748,32 @@
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
+    const amount = e.detail && Number(e.detail.amount);
     const n = state.board && state.board.length ? state.board.length : 8;
     if (t === "heal" || t === "max" || t === "coins" || t === "unlock" || t === "bb-cubes" || t === "bb-adv") {
       applyOwnerRewards();
+    }
+    if (t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) {
+      if (Number.isFinite(amount)) {
+        state.coins = amount;
+        store.set(KEYS.coins, amount);
+        if (typeof toast === "function") toast("💰 Монеты: " + amount);
+      }
+    }
+    if (t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) {
+      if (Number.isFinite(amount)) {
+        state.score = amount;
+        state.best = Math.max(state.best || 0, amount);
+        store.set(KEYS.best, state.best);
+        if (typeof toast === "function") toast("🏆 Очки: " + amount);
+      }
+    }
+    if (t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) {
+      if (Number.isFinite(amount)) {
+        state.best = amount;
+        store.set(KEYS.best, amount);
+        if (typeof toast === "function") toast("🏅 Рекорд: " + amount);
+      }
     }
     if (t === "bb-clear" || t === "max") {
       state.board = Array.from({ length: n }, () => Array(n).fill(null));
@@ -1779,9 +1802,6 @@
     if (t === "bb-cinema" || t === "max") {
       state.bgId = ADMIN_BG_ID;
       store.set(KEYS.skin, ADMIN_BG_ID);
-    }
-    if (typeof toast === "function" && t && String(t).startsWith("bb-")) {
-      /* toasts above */
     }
     render();
   });

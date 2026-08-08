@@ -12078,5 +12078,15 @@
       if (typeof buildUnitBar === "function") buildUnitBar();
       if (typeof toast === "function") toast("👑 Боссы открыты");
     }
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-coins" || t === "set-cups" || (t === "set-amount" && (e.detail.kind === "coins" || e.detail.kind === "cups"))) && Number.isFinite(amount)) {
+      state.resource = amount;
+      if (typeof updateHud === "function") updateHud();
+      if (typeof toast === "function") toast("☀️ Ресурс: " + amount);
+    }
+    if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
+      state.resource = amount;
+      if (typeof updateHud === "function") updateHud();
+    }
   });
 })();

@@ -3956,5 +3956,24 @@
       save.infDmg = true;
       persist();
     }
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) && Number.isFinite(amount)) {
+      save.infCoins = false;
+      save.coins = amount;
+      persist();
+      syncHud();
+      say("Монеты: " + amount);
+    }
+    if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
+      save.coins = Math.max(save.coins, amount);
+      persist();
+      syncHud();
+    }
+    if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
+      save.coinBoost = Math.min(4, Math.max(1, Math.floor(amount / 100000) || 1));
+      persist();
+      syncHud();
+      say("Кубки/буст учтены");
+    }
   });
 })();

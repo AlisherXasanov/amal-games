@@ -5389,5 +5389,20 @@
       saveUnlocksSafe();
     }
     if (t === "speed" || t === "max") CHEATS.superSpeed = true;
+    const amount = e.detail && Number(e.detail.amount);
+    if ((t === "set-coins" || (t === "set-amount" && e.detail.kind === "coins")) && Number.isFinite(amount)) {
+      coins = amount;
+      store.set("bravol-coins", coins);
+      if (typeof renderMenu === "function") renderMenu();
+    }
+    if ((t === "set-score" || (t === "set-amount" && e.detail.kind === "score")) && Number.isFinite(amount)) {
+      best = Math.max(Number(best) || 0, amount);
+      store.set("bravol-best", best);
+    }
+    if ((t === "set-cups" || (t === "set-amount" && e.detail.kind === "cups")) && Number.isFinite(amount)) {
+      wins = amount;
+      store.set("bravol-wins", wins);
+      if (typeof renderMenu === "function") renderMenu();
+    }
   });
 })();

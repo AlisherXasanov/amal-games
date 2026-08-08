@@ -478,6 +478,29 @@
     if (fab) fab.textContent = "⚡ " + (pack.title || "Силы");
   }
 
+  function readGiveAmount() {
+    const input = document.getElementById("amal-powers-amount");
+    const raw = input ? String(input.value || "").trim() : "";
+    if (!raw) return null;
+    if (/^(inf|∞|max|макс)$/i.test(raw)) return 999999999;
+    const n = Number(String(raw).replace(/\s+/g, "").replace(/,/g, ""));
+    if (!Number.isFinite(n) || n < 0) return null;
+    return Math.floor(n);
+  }
+
+  function giveAmount(kind) {
+    if (!isOwner()) return;
+    const amount = readGiveAmount();
+    if (amount == null) {
+      toast("Напиши число или выбери готовую цифру");
+      return;
+    }
+    const labels = { coins: "монет", score: "очков", cups: "кубков" };
+    fire("set-" + kind, { amount: amount, kind: kind });
+    fire("set-amount", { amount: amount, kind: kind });
+    toast((kind === "coins" ? "💰 " : kind === "score" ? "🏆 " : "🏅 ") + amount.toLocaleString("ru-RU") + " " + (labels[kind] || kind));
+  }
+
   function ensureUi() {
     if (!isOwner()) return;
     if (gameId() === "portal") return;
@@ -504,6 +527,13 @@
 #amal-powers-quick button:nth-child(1){background:linear-gradient(135deg,#6ee7b7,#10b981)}
 #amal-powers-quick button:nth-child(2){background:linear-gradient(135deg,#93c5fd,#3b82f6);color:#eff6ff}
 #amal-powers-tag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:rgba(251,191,36,.2);color:#fde68a;font-size:10px}
+#amal-powers-give{grid-column:1/-1;margin:4px 0 8px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+#amal-powers-give .give-title{font-size:12px;margin-bottom:6px;opacity:.9}
+#amal-powers-give input{width:100%;box-sizing:border-box;border:0;border-radius:10px;padding:10px;font:800 14px/1 system-ui,sans-serif;background:#111;color:#fff7ed;margin-bottom:6px}
+#amal-powers-presets{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+#amal-powers-presets button{flex:0 0 auto;padding:7px 9px;border-radius:999px;background:rgba(251,191,36,.15);color:#fde68a;font:800 11px/1 system-ui,sans-serif}
+#amal-powers-give-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+#amal-powers-give-actions button{padding:9px 6px;text-align:center;background:rgba(52,211,153,.18);color:#bbf7d0}
 `;
       document.head.appendChild(css);
     }
@@ -521,10 +551,29 @@
       fab.onclick = () => panel.classList.toggle("open");
     }
 
+    const giveBlock = `
+      <div id="amal-powers-give">
+        <div class="give-title">Выдать себе число · монеты / очки / кубки</div>
+        <input id="amal-powers-amount" type="text" inputmode="numeric" placeholder="Напиши цифру, напр. 50000" value="100000" />
+        <div id="amal-powers-presets">
+          <button type="button" data-preset="1000">1 000</button>
+          <button type="button" data-preset="10000">10 000</button>
+          <button type="button" data-preset="100000">100 000</button>
+          <button type="button" data-preset="1000000">1 000 000</button>
+          <button type="button" data-preset="999999999">∞</button>
+        </div>
+        <div id="amal-powers-give-actions">
+          <button type="button" data-give="coins">💰 Монеты</button>
+          <button type="button" data-give="score">🏆 Очки</button>
+          <button type="button" data-give="cups">🏅 Кубки</button>
+        </div>
+      </div>`;
+
     panel.innerHTML =
       `<h3>⚡ ${pack.title} <span class="amal-powers-tag">эта игра</span></h3>` +
       `<div class="sub">${pack.subtitle}</div>` +
       `<div id="amal-powers-grid">` +
+      giveBlock +
       (pack.buttons || [])
         .map(
           (b) =>
@@ -552,6 +601,15 @@
         }
         runAbility(id);
       };
+    });
+    panel.querySelectorAll("[data-preset]").forEach((btn) => {
+      btn.onclick = () => {
+        const input = document.getElementById("amal-powers-amount");
+        if (input) input.value = btn.getAttribute("data-preset");
+      };
+    });
+    panel.querySelectorAll("[data-give]").forEach((btn) => {
+      btn.onclick = () => giveAmount(btn.getAttribute("data-give"));
     });
 
     let quick = document.getElementById("amal-powers-quick");
@@ -598,6 +656,7 @@
     gameId,
     god: () => !!(global.__AMAL_GOD__ || (isOwner() && flags.god)),
     runAbility,
+    giveAmount,
     packFor,
     flags,
   };
