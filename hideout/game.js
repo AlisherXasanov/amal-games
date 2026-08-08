@@ -624,8 +624,58 @@
     }
   }
 
+  function forceHidersHide() {
+    if (!g) return;
+    for (const a of g.actors) {
+      if (a.role !== "hider" || a.prop || a.isPlayer) continue;
+      let best = null;
+      let bd = 1e9;
+      for (const p of propsOnFloor(a.floor)) {
+        if (p.taken) continue;
+        const d = dist(a, p);
+        if (d < bd) {
+          bd = d;
+          best = p;
+        }
+      }
+      if (best) {
+        a.x = best.x;
+        a.y = best.y;
+        becomeProp(a);
+      }
+    }
+  }
+
+  function beginSeekPhase(skipped) {
+    if (!g || g.phase !== "hide") return;
+    forceHidersHide();
+    g.hideLeft = 0;
+    g.phase = "seek";
+    toast(skipped ? "Поиск! Ожидание пропущено" : "Поиск! Пойманный становится искателем");
+    let i = 0;
+    for (const a of g.actors) {
+      if (a.role === "seeker") {
+        a.floor = 0;
+        a.x = 80 + i * 50;
+        a.y = MH / 2;
+        i++;
+      }
+    }
+  }
+
+  function skipHideWait() {
+    if (!g || g.phase !== "hide") return false;
+    if (g.player.role !== "seeker" && !amalGod()) return false;
+    beginSeekPhase(true);
+    return true;
+  }
+
   function playerAction() {
     const p = g.player;
+    if (g.phase === "hide" && p.role === "seeker") {
+      skipHideWait();
+      return;
+    }
     // Лестница всегда важнее вещи / поимки — даже внутри предмета
     if (g.floorMax > 1) {
       const st = stairAt(p) || stairNear(p, 70);
@@ -837,19 +887,7 @@
   function update(dt) {
     if (g.phase === "hide") {
       g.hideLeft = Math.max(0, g.hideLeft - dt);
-      if (g.hideLeft <= 0) {
-        g.phase = "seek";
-        toast("Поиск! Пойманный становится искателем");
-        let i = 0;
-        for (const a of g.actors) {
-          if (a.role === "seeker") {
-            a.floor = 0;
-            a.x = 80 + i * 50;
-            a.y = MH / 2;
-            i++;
-          }
-        }
-      }
+      if (g.hideLeft <= 0) beginSeekPhase(false);
     } else if (g.phase === "seek") {
       g.seekLeft = Math.max(0, g.seekLeft - dt);
     }
@@ -898,7 +936,27 @@
       <span class="pill">${floor}</span>
       <span class="pill">${phaseTxt} · ${timeTxt}</span>
       <span class="pill">Пряч. ${left} · Иск. ${seekers}</span>
+      ${
+        g.phase === "hide" && g.player.role === "seeker"
+          ? `<button type="button" class="pill skip-wait" id="btnSkipHide">⏭ Пропустить</button>`
+          : ""
+      }
     `;
+    const skipBtn = document.getElementById("btnSkipHide");
+    if (skipBtn) {
+      skipBtn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        skipHideWait();
+      };
+    }
+    if (actBtn) {
+      if (g.phase === "hide" && g.player.role === "seeker") {
+        actBtn.innerHTML = "⏭<br>пропуск";
+      } else {
+        actBtn.innerHTML = "E<br>действие";
+      }
+    }
   }
 
   function roundRect(x, y, w, h, r) {
@@ -1372,11 +1430,14 @@
       ctx.fillStyle = "#eee";
       ctx.font = "800 28px Outfit, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Темно… Жди", VW / 2, VH / 2 - 10);
+      ctx.fillText("Темно… Жди", VW / 2, VH / 2 - 24);
       ctx.font = "700 16px Outfit, sans-serif";
       ctx.fillStyle = "#aaa";
-      ctx.fillText("Прячущиеся прячутся. Ты ничего не видишь.", VW / 2, VH / 2 + 24);
-      ctx.fillText(Math.ceil(g.hideLeft) + "с", VW / 2, VH / 2 + 52);
+      ctx.fillText("Прячущиеся прячутся. Ты ничего не видишь.", VW / 2, VH / 2 + 10);
+      ctx.fillText(Math.ceil(g.hideLeft) + "с", VW / 2, VH / 2 + 38);
+      ctx.fillStyle = "#fbbf24";
+      ctx.font = "800 18px Outfit, sans-serif";
+      ctx.fillText("E / Пробел / кнопка — пропустить ожидание", VW / 2, VH / 2 + 78);
       ctx.restore();
       return;
     }
@@ -1396,7 +1457,7 @@
     const st = g.floorMax > 1 ? stairAt(p) || stairNear(p, 70) : null;
     if (st) {
       tip = "E или постой — " + st.label + (p.prop ? " (вещью)" : "");
-    } else if (g.phase === "hide" && p.role === "seeker") tip = "Жди…";
+    } else if (g.phase === "hide" && p.role === "seeker") tip = "E — пропустить ожидание";
     else if (p.role === "hider") {
       if (p.prop) tip = "E — выйти · лестница ↓ меняет этаж";
       else if (nearestProp(p)) tip = "E — стать вещью";
@@ -1445,6 +1506,17 @@
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
     if (!g || !g.player) return;
+    if (t === "ho-skip" || (t === "max" && g.phase === "hide")) {
+      if (g.phase === "hide") {
+        if (g.player.role !== "seeker") {
+          g.player.role = "seeker";
+          g.playerRole = "seeker";
+          g.player.prop = null;
+          g.player.r = 15;
+        }
+        beginSeekPhase(true);
+      }
+    }
     if (t === "heal" || t === "max") {
       g.player.caught = false;
       if (g.player.role === "seeker" && g.phase === "seek") {

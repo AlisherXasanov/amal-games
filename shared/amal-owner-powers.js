@@ -133,14 +133,15 @@
     },
     hideout: {
       title: "Укрытие",
-      subtitle: "Прятки · ловля · скорость",
+      subtitle: "Прятки · пропуск · ловля",
       quick: [
-        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "ho-skip", label: "⏭ Поиск", toast: "Поиск начался" },
         { id: "ho-catch", label: "👁 Ловля", toast: "Супер-ловля" },
         { id: "speed", label: "⚡ Скорость", toast: "Скорость" },
       ],
       buttons: [
-        { id: "heal", label: "💚 Сброс / хилл", cls: "primary" },
+        { id: "ho-skip", label: "⏭ Пропустить прятки → поиск", cls: "primary" },
+        { id: "heal", label: "💚 Сброс / хилл" },
         { id: "god", label: "👻 Неуловим" },
         { id: "ho-catch", label: "👁 Супер-ловля" },
         { id: "ho-time", label: "⏱ +60 сек" },
