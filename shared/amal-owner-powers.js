@@ -131,16 +131,31 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
-    hideout: {
-      title: "Укрытие",
-      subtitle: "Прятки · пропуск · ловля",
+    terraverse: {
+      title: "Пиксель-Террариум",
+      subtitle: "Creative · бессмертие · хост",
       quick: [
-        { id: "ho-skip", label: "⏭ Поиск", toast: "Поиск начался" },
-        { id: "ho-catch", label: "👁 Ловля", toast: "Супер-ловля" },
-        { id: "speed", label: "⚡ Скорость", toast: "Скорость" },
+        { id: "god", label: "🛡 ∞ HP", toast: "Creative + бессмертие" },
+        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
       ],
       buttons: [
-        { id: "ho-skip", label: "⏭ Пропустить прятки → поиск", cls: "primary" },
+        { id: "god", label: "🛡️ Creative + бессмертие", cls: "primary" },
+        { id: "heal", label: "💚 Полный хилл" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    hideout: {
+      title: "Укрытие",
+      subtitle: "Прятки · стрелки · пропуск",
+      quick: [
+        { id: "ho-arrows", label: "➡ Стрелки", toast: "Стрелки к прячущимся" },
+        { id: "ho-skip", label: "⏭ Поиск", toast: "Поиск начался" },
+        { id: "ho-catch", label: "👁 Ловля", toast: "Супер-ловля" },
+      ],
+      buttons: [
+        { id: "ho-arrows", label: "➡ Стрелки: где все прячутся", cls: "primary" },
+        { id: "ho-skip", label: "⏭ Пропустить прятки → поиск" },
         { id: "heal", label: "💚 Сброс / хилл" },
         { id: "god", label: "👻 Неуловим" },
         { id: "ho-catch", label: "👁 Супер-ловля" },
@@ -398,6 +413,9 @@
     jset("globe-owner-god", true);
     jset("zvp-owner-god", true);
     jset("minecraft-owner-god", true);
+    try {
+      localStorage.setItem("pixel-terrarium-host-v1", "1");
+    } catch (_) {}
     global.dispatchEvent(new CustomEvent("amal-powers-applied", { detail: { game: gameId() } }));
   }
 
@@ -411,11 +429,11 @@
         toast("💚 Хилл");
       },
       god() {
-        flags.god = !flags.god;
-        global.__AMAL_GOD__ = flags.god;
+        flags.god = true;
+        global.__AMAL_GOD__ = true;
         applyBoosts();
-        fire("god", { on: flags.god });
-        toast(flags.god ? "🛡️ Бессмертие ВКЛ" : "Бессмертие выкл");
+        fire("god", { on: true });
+        toast("🛡️ Бессмертие ВКЛ");
         syncUi();
       },
       coins() {
