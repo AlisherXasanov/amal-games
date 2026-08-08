@@ -145,6 +145,20 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "snake-game": {
+      title: "Snake Game",
+      subtitle: "Бессмертие · щиты · сердца",
+      quick: [
+        { id: "god", label: "🛡 ∞ жизнь", toast: "Бессмертие змейки" },
+        { id: "heal", label: "💚 Хилл", toast: "Сердца и щиты" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "god", label: "🛡️ Бессмертие (стены/хвост)", cls: "primary" },
+        { id: "heal", label: "💚 +сердца и щиты" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
     hideout: {
       title: "Укрытие",
       subtitle: "Прятки · стрелки · пропуск",
