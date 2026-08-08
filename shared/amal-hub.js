@@ -37,9 +37,15 @@
     { id: "terraverse", name: "Пиксель-Террариум" },
     { id: "zombie-vs-plants", name: "Зомби vs растения" },
     { id: "globe-battle", name: "Globe Battle" },
+    { id: "animal-hospital", name: "Animal Hospital" },
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-08-hospital",
+      title: "Animal Hospital",
+      body: "Новая 2D ветклиника: пациенты, лечение инструментами, улучшения и смена на время.",
+    },
     {
       id: "2026-08-07-grants",
       title: "Админка по играм",
@@ -772,7 +778,19 @@
 .amal-hub-dock button.primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#111}
 .amal-hub-overlay{pointer-events:auto;position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(8px)}
 @media(min-width:720px){.amal-hub-overlay{align-items:center}}
-.amal-hub-modal{width:min(100%,440px);max-height:min(90dvh,680px);overflow:auto;border-radius:24px 24px 18px 18px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#171526f5,#0b1020f7);color:#f8fafc;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.amal-hub-modal{position:relative;width:min(100%,440px);max-height:min(90dvh,680px);display:flex;flex-direction:column;overflow:hidden;border-radius:24px 24px 18px 18px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#171526f5,#0b1020f7);color:#f8fafc;padding:0;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.amal-hub-modal-body{flex:1 1 auto;overflow:auto;padding:16px 18px 20px;-webkit-overflow-scrolling:touch}
+.amal-hub-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 12px;background:rgba(11,16,32,.97);z-index:3}
+.amal-hub-bar.top{border-bottom:1px solid rgba(255,255,255,.12)}
+.amal-hub-bar.bottom{border-top:1px solid rgba(255,255,255,.12);justify-content:stretch;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.amal-hub-bar.bottom button{flex:1;min-height:46px}
+.amal-hub-close-btn{min-width:110px}
+.amal-hub-side-close{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:6;width:44px;height:44px;border-radius:14px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.82);color:#fff;font:800 18px/1 system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.4);padding:0}
+.amal-hub-side-close.left{right:auto;left:8px}
+@media(max-width:520px){
+  .amal-hub-side-close.left{display:none}
+  .amal-hub-side-close{top:auto;bottom:68px;transform:none}
+}
 .amal-hub-modal h2{margin:0;font-size:1.25rem;letter-spacing:-.02em}
 .amal-hub-modal .sub{margin:6px 0 0;font-size:13px;opacity:.7;line-height:1.4}
 .amal-hub-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
@@ -925,7 +943,14 @@
     }
 
     if (open || gateMode) {
+      const canClose = !(gateMode && !nick);
       html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal" data-amal="modal">`;
+      if (canClose) {
+        html += `<div class="amal-hub-bar top"><button type="button" class="amal-hub-close-btn" data-amal="close">✕ Закрыть</button></div>`;
+        html += `<button type="button" class="amal-hub-side-close" data-amal="close" title="Закрыть" aria-label="Закрыть">✕</button>`;
+        html += `<button type="button" class="amal-hub-side-close left" data-amal="close" title="Закрыть" aria-label="Закрыть">✕</button>`;
+      }
+      html += `<div class="amal-hub-modal-body">`;
       if (view === "nick" || !nick) {
         html += nickFormHtml(nick);
       } else if (view === "updates") {
@@ -934,6 +959,10 @@
         html += adminHtml();
       } else {
         html += noteFormHtml(nick);
+      }
+      html += `</div>`;
+      if (canClose) {
+        html += `<div class="amal-hub-bar bottom"><button type="button" class="primary amal-hub-close-btn" data-amal="close">Закрыть</button></div>`;
       }
       html += `</div></div>`;
     }

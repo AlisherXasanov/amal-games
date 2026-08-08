@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Animal Hospital (Anomaly) — 2D</title>
+  <meta name="description" content="Animal Hospital 2D: классы, магазин, обмен, аномалии." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=103" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+
+  <div id="app">
+    <div class="screen" id="screen">
+      <canvas id="gameCanvas" width="960" height="640"></canvas>
+
+      <div class="hud" id="hud" hidden>
+        <div class="hud-stats" id="hudStats"></div>
+        <div class="inv-wrap" id="invWrap">
+          <div class="inv-label">Инвентарь</div>
+          <div class="inv-slots" id="invSlots"></div>
+        </div>
+        <div class="sanity-wrap" title="Рассудок">
+          <div class="sanity-bar"><div class="sanity-fill" id="sanityFill"></div></div>
+          <span id="sanityText">🧠 100</span>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-sm ghost" id="btnMenu">Меню</button>
+        </div>
+      </div>
+
+      <div class="need-panel" id="needPanel" hidden>
+        <div class="need-title" id="needTitle">Нужно принести</div>
+        <div class="need-list" id="needList"></div>
+      </div>
+
+      <div class="shift-tag" id="shiftTag" hidden></div>
+      <div class="event-banner" id="eventBanner" hidden></div>
+      <div class="toast" id="toast"></div>
+      <div class="queue-strip" id="queueStrip" hidden></div>
+
+      <div class="touch" id="touch" hidden>
+        <div class="pad left" id="stick"></div>
+        <div class="pad right" id="actBtn">E<br>действие</div>
+      </div>
+
+      <!-- ЛОББИ -->
+      <div class="panel menu" id="menu">
+        <p class="brand">Animal Hospital</p>
+        <h1>(Anomaly) 🧪</h1>
+        <p class="wallet" id="menuWallet">🪙 0</p>
+
+        <div class="lobby-row">
+          <label class="field">
+            <span>Режим</span>
+            <select id="modeSelect">
+              <option value="solo">Соло</option>
+              <option value="pair">Пара + бадди</option>
+              <option value="local2">2 игрока</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Смена</span>
+            <select id="shiftSelect"></select>
+          </label>
+        </div>
+
+        <label class="field field-wide">
+          <span>Класс (только открытые)</span>
+          <select id="classSelect"></select>
+        </label>
+
+        <label class="field field-wide" id="buddyField" hidden>
+          <span>Бадди</span>
+          <select id="buddySelect"></select>
+        </label>
+
+        <label class="field field-wide">
+          <span>Скин</span>
+          <select id="skinSelect"></select>
+        </label>
+
+        <div class="lobby-actions">
+          <button type="button" class="btn" id="btnStart">Открыть ресепшен</button>
+          <button type="button" class="btn ghost" id="btnOpenShop">Магазин классов</button>
+          <button type="button" class="btn ghost" id="btnOpenExchange">∞ Случайный обмен</button>
+        </div>
+        <p class="hints" id="menuHints">
+          👑 Ты админ команды · ∞ монеты · жёлтые стрелки к автоматам · новые комнаты
+        </p>
+      </div>
+
+      <!-- МАГАЗИН КЛАССОВ -->
+      <div class="panel shop" id="shopPanel" hidden>
+        <h2>Магазин классов</h2>
+        <p class="sub" id="shopWallet">Монеты: 0</p>
+        <div class="shop-list" id="shopList"></div>
+        <button type="button" class="btn ghost" id="btnCloseShop">Назад</button>
+      </div>
+
+      <!-- ОБМЕН -->
+      <div class="panel exchange" id="exchangePanel" hidden>
+        <h2>∞ Случайный обмен</h2>
+        <p class="sub">Тратишь монеты — получаешь случайный класс или секретный скин. Можно крутить сколько угодно.</p>
+        <p class="wallet" id="exWallet">🪙 0</p>
+        <p class="ex-cost">Цена крутки: <strong id="exCost">40</strong> 🪙</p>
+        <div class="ex-result" id="exResult">Нажми «Крутить»</div>
+        <button type="button" class="btn" id="btnSpin">Крутить обмен</button>
+        <button type="button" class="btn ghost" id="btnCloseExchange">Назад</button>
+      </div>
+
+      <div class="panel desk" id="deskPanel" hidden>
+        <h2>🏥 Ресепшен</h2>
+        <p class="sub" id="deskName">Клиент у окна</p>
+        <p class="queue-note" id="deskQueueNote"></p>
+        <div class="inspect-grid">
+          <div class="inspect-card">
+            <div class="inspect-label">Клиент</div>
+            <canvas id="viewPatient" width="160" height="140"></canvas>
+          </div>
+          <div class="inspect-card">
+            <div class="inspect-label">Удостоверение</div>
+            <canvas id="viewPhoto" width="160" height="140"></canvas>
+          </div>
+          <div class="inspect-card">
+            <div class="inspect-label">Камера</div>
+            <canvas id="viewCctv" width="160" height="140"></canvas>
+          </div>
+        </div>
+        <p class="clue" id="deskClue">Сравни три панели. Расхождение = аномалия.</p>
+        <div class="desk-actions">
+          <button type="button" class="btn good" id="btnAdmit">✓ Впустить</button>
+          <button type="button" class="btn bad" id="btnReject">✕ Шторка</button>
+        </div>
+      </div>
+
+      <div class="panel end" id="endPanel" hidden>
+        <h2 id="endTitle">Смена окончена</h2>
+        <p class="sub" id="endSub"></p>
+        <button type="button" class="btn" id="btnAgain">Ещё смена</button>
+        <button type="button" class="btn ghost" id="btnToMenu">В лобби</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=103"></script>
+  <script src="./game.js?v=103"></script>
+  <script src="../shared/amal-hub.js?v=103"></script>
+</body>
+</html>

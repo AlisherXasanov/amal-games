@@ -269,6 +269,22 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "animal-hospital": {
+      title: "Animal Hospital",
+      subtitle: "∞ монеты · бессмертие · все классы",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ монеты" },
+        { id: "god", label: "🛡️", toast: "Бессмертие" },
+        { id: "unlock", label: "🔓", toast: "Всё открыто" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ монеты", cls: "primary" },
+        { id: "god", label: "🛡️ Бессмертие (sanity)" },
+        { id: "unlock", label: "🔓 Все классы и скины" },
+        { id: "heal", label: "💚 Полный рассудок" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
   };
 
   const DEFAULT_PACK = {
@@ -427,6 +443,25 @@
     jset("globe-owner-god", true);
     jset("zvp-owner-god", true);
     jset("minecraft-owner-god", true);
+    // Animal Hospital — ∞ на сайте
+    const ahKeys = ["animal-hospital-anomaly-v7", "animal-hospital-anomaly-v6"];
+    for (const key of ahKeys) {
+      const ah = jget(key, null) || {};
+      if (typeof ah === "object") {
+        ah.infCoins = true;
+        ah.immortal = true;
+        ah.coins = INF;
+        ah.unlocked = [
+          "intern", "nurse", "headnurse", "secretary", "paramedic", "psych",
+          "doctor", "surgeon", "security", "firefighter", "warrior", "agent",
+        ];
+        ah.skins = [
+          "default", "mint", "night", "secret-gold", "secret-void", "secret-agent", "secret-neon",
+        ];
+        jset(key, ah);
+      }
+    }
+    jset("animal-hospital-owner-god", true);
     try {
       localStorage.setItem("pixel-terrarium-host-v1", "1");
     } catch (_) {}
