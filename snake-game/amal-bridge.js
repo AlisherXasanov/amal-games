@@ -1,5 +1,6 @@
 /**
- * Мост сил хозяина → Snake Game (бессмертие / щиты / сердца).
+ * Мост сил хозяина → Snake Game (бессмертие).
+ * Игра читает window.__AMAL_GOD__ / __AMAL_OWNER__ в коллизиях.
  */
 (function () {
   "use strict";
@@ -20,44 +21,13 @@
   function applyGod() {
     window.__AMAL_GOD__ = true;
     window.__AMAL_OWNER__ = true;
-    const api = window.__SNAKE_AMAL__;
-    if (api && typeof api.godUp === "function") {
-      try {
-        api.godUp();
-      } catch (_) {}
-    }
   }
 
-  function pulse() {
-    if (!isOwner() && !window.__AMAL_GOD__) return;
-    applyGod();
-  }
-
-  if (isOwner()) {
-    window.__AMAL_GOD__ = true;
-    let n = 0;
-    const id = setInterval(() => {
-      n++;
-      pulse();
-      if (n > 60) clearInterval(id);
-    }, 500);
-  }
+  if (isOwner()) applyGod();
 
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
-    if (t === "god" || t === "heal" || t === "max" || t === "snake-god") {
-      applyGod();
-    }
-    if (t === "set-score" || (t === "set-amount" && e.detail && e.detail.kind === "score")) {
-      const amount = Number(e.detail.amount);
-      const api = window.__SNAKE_AMAL__;
-      if (api && api.get && Number.isFinite(amount)) {
-        try {
-          // score lives in React ref; best-effort via localStorage used by game if any
-          localStorage.setItem("snake-best", JSON.stringify(amount));
-        } catch (_) {}
-      }
-    }
+    if (t === "god" || t === "heal" || t === "max" || t === "snake-god") applyGod();
   });
 
   window.addEventListener("amal-owner-changed", () => {
