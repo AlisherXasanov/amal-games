@@ -34,14 +34,15 @@
     },
     "kick-buddy": {
       title: "Kick Buddy",
-      subtitle: "Бей бади · оружие · VIP",
+      subtitle: "Беларусь · Минск только тебе",
       quick: [
+        { id: "kb-minsk", label: "🇧🇾 Минск", toast: "Минск твой" },
         { id: "heal", label: "💚 Хилл", toast: "Хилл" },
         { id: "kb-oneshot", label: "💥 Убить", toast: "Одним ударом" },
-        { id: "kb-loot", label: "🎁 Луут", toast: "Весь лут" },
       ],
       buttons: [
-        { id: "heal", label: "💚 Полный хилл", cls: "primary" },
+        { id: "kb-minsk", label: "🇧🇾 Весь Минск (только ты)", cls: "primary" },
+        { id: "heal", label: "💚 Полный хилл" },
         { id: "god", label: "🛡️ God mode" },
         { id: "kb-oneshot", label: "💥 Убить бади" },
         { id: "kb-revive", label: "♻️ Оживить бади" },

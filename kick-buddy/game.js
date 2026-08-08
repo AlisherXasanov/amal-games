@@ -75,19 +75,19 @@
     { id: "flamethrower", name: "Огнемёт", cost: 880, dmg: 18, coinMul: 2.7, knock: 280, element: "fire", color: "#e05030", ranged: true, exclusive: true, proj: "flame", speed: 480, size: 14, cd: 0.04, auto: true, spread: 0.18, life: 0.55, desc: "Эксклюзив · зажми — струя огня" },
     { id: "minigun", name: "Миниган", cost: 1400, dmg: 38, coinMul: 3.2, knock: 580, element: "none", color: "#2a2a30", ranged: true, exclusive: true, proj: "bullet", speed: 1500, size: 4, cd: 0.03, auto: true, spread: 0.16, desc: "Эксклюзив · бешеный темп огня" },
     { id: "railgun", name: "Рельсотрон", cost: 1600, dmg: 220, coinMul: 4.2, knock: 1500, element: "shock", color: "#3de7ff", ranged: true, exclusive: true, proj: "laser", speed: 2800, size: 6, cd: 0.9, desc: "Эксклюзив · луч сквозь комнату" },
-    // Минская серия
-    { id: "minsk_potato", name: "Картофелемёт Минск", cost: 650, dmg: 45, coinMul: 2.8, knock: 580, element: "none", color: "#c4a050", ranged: true, exclusive: true, minsk: true, proj: "pebble", speed: 780, size: 8, cd: 0.32, desc: "Из Минска · картошка летит куда кликнешь" },
-    { id: "minsk_tractor", name: "Трактор Минск", cost: 900, dmg: 95, coinMul: 3.3, knock: 1300, element: "none", color: "#3a7a30", minsk: true, exclusive: true, desc: "Из Минска · мощный удар Беларусью" },
-    { id: "minsk_mg", name: "Пулемёт Минск", cost: 1100, dmg: 42, coinMul: 3.1, knock: 560, element: "none", color: "#c8102e", ranged: true, exclusive: true, minsk: true, proj: "bullet", speed: 1450, size: 4, cd: 0.04, auto: true, spread: 0.1, desc: "Из Минска · зажми — очередь" },
-    { id: "minsk_rpg", name: "Базука Минск", cost: 1300, dmg: 180, coinMul: 3.9, knock: 1250, element: "bomb", color: "#009639", ranged: true, exclusive: true, minsk: true, proj: "rocket", speed: 580, size: 11, cd: 0.8, explode: true, explodeR: 100, desc: "Из Минска · ракета в стену/Бади" },
-    { id: "minsk_sniper", name: "Снайперка Минск", cost: 1500, dmg: 170, coinMul: 3.7, knock: 950, element: "none", color: "#ffffff", ranged: true, exclusive: true, minsk: true, proj: "bullet", speed: 2400, size: 3, cd: 0.65, desc: "Из Минска · точный выстрел" },
+    // Минская серия — ТОЛЬКО хозяин Amal (не гости, не выданные админы)
+    { id: "minsk_potato", name: "Картофелемёт Минск", cost: 0, dmg: 45, coinMul: 2.8, knock: 580, element: "none", color: "#c4a050", ranged: true, exclusive: true, minsk: true, ownerOnly: true, proj: "pebble", speed: 780, size: 8, cd: 0.32, desc: "🇧🇾 Только хозяин · из Минска · картошка" },
+    { id: "minsk_tractor", name: "Трактор Минск", cost: 0, dmg: 95, coinMul: 3.3, knock: 1300, element: "none", color: "#3a7a30", minsk: true, exclusive: true, ownerOnly: true, desc: "🇧🇾 Только хозяин · мощный удар Беларусью" },
+    { id: "minsk_mg", name: "Пулемёт Минск", cost: 0, dmg: 42, coinMul: 3.1, knock: 560, element: "none", color: "#c8102e", ranged: true, exclusive: true, minsk: true, ownerOnly: true, proj: "bullet", speed: 1450, size: 4, cd: 0.04, auto: true, spread: 0.1, desc: "🇧🇾 Только хозяин · зажми — очередь" },
+    { id: "minsk_rpg", name: "Базука Минск", cost: 0, dmg: 180, coinMul: 3.9, knock: 1250, element: "bomb", color: "#009639", ranged: true, exclusive: true, minsk: true, ownerOnly: true, proj: "rocket", speed: 580, size: 11, cd: 0.8, explode: true, explodeR: 100, desc: "🇧🇾 Только хозяин · ракета в стену/Бади" },
+    { id: "minsk_sniper", name: "Снайперка Минск", cost: 0, dmg: 170, coinMul: 3.7, knock: 950, element: "none", color: "#ffffff", ranged: true, exclusive: true, minsk: true, ownerOnly: true, proj: "bullet", speed: 2400, size: 3, cd: 0.65, desc: "🇧🇾 Только хозяин · точный выстрел" },
     { id: "bomb", name: "Бомба", cost: 480, dmg: 90, coinMul: 3, knock: 900, element: "bomb", color: "#3a3a3a", desc: "Взрыв · много монет" },
     { id: "meteor", name: "Метеор", cost: 750, dmg: 130, coinMul: 3.6, knock: 1000, element: "fire", color: "#c44a10", desc: "Огненный удар с неба" },
-    // Админ / ∞ из Минска
+    // Админ / ∞ из Минска — тоже только хозяин
     { id: "admin", name: "Молот админа", cost: 0, dmg: 250, coinMul: 5, knock: 1500, element: "shock", color: "#a78bfa", adminOnly: true, desc: "🔒 Только админ · игроки видят, но взять нельзя" },
-    { id: "minsk_inf_mg", name: "∞ Пулемёт Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 900, element: "none", color: "#c8102e", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "bullet", speed: 1600, size: 5, cd: 0.03, auto: true, spread: 0.14, desc: "🔒 Минск · ∞ урон · только админ" },
-    { id: "minsk_inf_rpg", name: "∞ Базука Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 1600, element: "bomb", color: "#009639", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "rocket", speed: 700, size: 12, cd: 0.5, explode: true, explodeR: 140, desc: "🔒 Минск · ∞ урон · ракета" },
-    { id: "minsk_inf_rail", name: "∞ Рельса Минск", cost: 0, dmg: 99999, coinMul: 15, knock: 1800, element: "shock", color: "#fce300", ranged: true, adminOnly: true, minsk: true, infHit: true, proj: "laser", speed: 3200, size: 7, cd: 0.35, desc: "🔒 Минск · ∞ урон · луч" },
+    { id: "minsk_inf_mg", name: "∞ Пулемёт Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 900, element: "none", color: "#c8102e", ranged: true, adminOnly: true, minsk: true, ownerOnly: true, infHit: true, proj: "bullet", speed: 1600, size: 5, cd: 0.03, auto: true, spread: 0.14, desc: "🇧🇾🔒 Минск · ∞ урон · ТОЛЬКО хозяин" },
+    { id: "minsk_inf_rpg", name: "∞ Базука Минск", cost: 0, dmg: 99999, coinMul: 12, knock: 1600, element: "bomb", color: "#009639", ranged: true, adminOnly: true, minsk: true, ownerOnly: true, infHit: true, proj: "rocket", speed: 700, size: 12, cd: 0.5, explode: true, explodeR: 140, desc: "🇧🇾🔒 Минск · ∞ урон · ТОЛЬКО хозяин" },
+    { id: "minsk_inf_rail", name: "∞ Рельса Минск", cost: 0, dmg: 99999, coinMul: 15, knock: 1800, element: "shock", color: "#fce300", ranged: true, adminOnly: true, minsk: true, ownerOnly: true, infHit: true, proj: "laser", speed: 3200, size: 7, cd: 0.35, desc: "🇧🇾🔒 Минск · ∞ урон · ТОЛЬКО хозяин" },
     { id: "admin_chaos", name: "Хаос-молот", cost: 0, dmg: 99999, coinMul: 14, knock: 1700, element: "nuke", color: "#7c3aed", adminOnly: true, desc: "🔒 Только админ · хаотичный удар" },
     { id: "admin_starfall", name: "Звездопад", cost: 0, dmg: 99999, coinMul: 14, knock: 1500, element: "shock", color: "#f0abfc", ranged: true, adminOnly: true, infHit: true, proj: "laser", speed: 2600, size: 8, cd: 0.2, auto: true, spread: 0.2, desc: "🔒 Только админ · звёздный ливень" },
     { id: "vip_saber", name: "VIP-сабля", cost: 18000, dmg: 110, coinMul: 3.5, knock: 980, element: "shock", color: "#22d3ee", exclusive: true, vipOnly: true, desc: "💎 VIP · сильный ближний удар" },
@@ -537,7 +537,7 @@
     save.gotSite300k = true;
   }
 
-  // Infinite-damage admin weapon (visible in shop, unlock only for admin)
+  // Infinite-damage admin weapon (visible in shop, unlock only for хозяин Минск)
   if (!WEAPONS.find((w) => w.id === "infdmg")) {
     WEAPONS.push({
       id: "infdmg",
@@ -548,10 +548,11 @@
       knock: 1600,
       element: "nuke",
       color: "#c8102e",
-      desc: "🔒 Минск · ∞ урон · только админ",
+      desc: "🇧🇾🔒 Минск · ∞ урон · ТОЛЬКО хозяин Amal",
       cheat: true,
       adminOnly: true,
       minsk: true,
+      ownerOnly: true,
       infHit: true,
     });
   } else {
@@ -559,9 +560,10 @@
     inf.adminOnly = true;
     inf.cheat = true;
     inf.minsk = true;
+    inf.ownerOnly = true;
     inf.infHit = true;
     inf.name = "∞ Урон Минск";
-    inf.desc = "🔒 Минск · ∞ урон · только админ";
+    inf.desc = "🇧🇾🔒 Минск · ∞ урон · ТОЛЬКО хозяин Amal";
     inf.color = "#c8102e";
   }
 
@@ -583,6 +585,33 @@
     } catch {
       return false;
     }
+  }
+
+  /** Права Минск — только настоящий хозяин Amal (не localhost «просто так», не гости) */
+  function isMinskOwner() {
+    try {
+      if (practiceGate) return false;
+      if (window.__AMAL_OWNER__ === true) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+      if (window.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      const code = new URLSearchParams(location.search).get("owner");
+      if (code === "AmalOwner2026" || code === "amal" || code === "1234" || code === "buddy") return true;
+    } catch {
+      /* ignore */
+    }
+    return false;
+  }
+
+  function canUseWeapon(w) {
+    if (!w) return false;
+    if ((w.minsk || w.ownerOnly) && !isMinskOwner()) return false;
+    if (w.adminOnly && !isAdmin()) return false;
+    if (w.vipOnly && !isVip()) return false;
+    return true;
   }
 
   const VIP_PASS_COST = 80000;
@@ -651,8 +680,6 @@
       try {
         localStorage.setItem("amal-owner-v3", "1");
         localStorage.removeItem("kick-buddy-admin");
-        localStorage.removeItem("amal-owner-v1");
-        localStorage.removeItem("amal-owner-v2");
         window.dispatchEvent(new CustomEvent("amal-owner-changed", { detail: true }));
         ok = true;
       } catch { /* ignore */ }
@@ -666,22 +693,30 @@
     return true;
   }
 
-  // Снести ВСЕ старые флаги команды при каждом запуске (кроме активного v3 владельца)
+  // Снести только старый командный флаг (ключи хозяина НЕ трогаем)
   try {
     localStorage.removeItem("kick-buddy-admin");
-    localStorage.removeItem("amal-owner-v1");
-    localStorage.removeItem("amal-owner-v2");
   } catch { /* ignore */ }
 
   function markAdminLocal() {
     /* командный kick-buddy-admin больше не используем */
   }
 
+  function grantMinskLoot() {
+    if (!isMinskOwner()) return false;
+    WEAPONS.filter((w) => w.minsk || w.ownerOnly).forEach((w) => {
+      if (!save.ownedWeapons.includes(w.id)) save.ownedWeapons.push(w.id);
+    });
+    if (save.infDmg) save.weapon = "minsk_inf_mg";
+    return true;
+  }
+
   function grantAdminLoot() {
     if (!isAdmin()) return false;
     markAdminLocal();
-    // Всё оружие + весь админ-лут
+    // Обычный админ-лут БЕЗ Минска (Минск — только хозяину)
     WEAPONS.forEach((w) => {
+      if (w.minsk || w.ownerOnly) return;
       if (!save.ownedWeapons.includes(w.id)) save.ownedWeapons.push(w.id);
     });
     BUDDIES.forEach((b) => {
@@ -691,7 +726,7 @@
       if (!save.owned.includes(c.id)) save.owned.push(c.id);
     });
     save.buddyType = "SkinAdminBuffer";
-    save.weapon = "admin";
+    if (!save.weapon || save.weapon === "hand") save.weapon = "admin";
     save.infDmg = true;
     save.infCoins = true;
     save.godMode = true;
@@ -700,17 +735,31 @@
     save.boughtAdmin = true;
     save.coinBoost = 4;
     save.coins = Math.max(save.coins, 999999);
+    grantMinskLoot();
+    if (isMinskOwner() && (!save.weapon || !canUseWeapon(weaponById(save.weapon)))) {
+      save.weapon = "minsk_inf_mg";
+    }
     return true;
   }
 
   function stripAdminLootIfNeeded() {
     if (isAdmin()) {
       grantAdminLoot();
+      // на всякий случай снять Минск, если это не хозяин (localhost без кода)
+      if (!isMinskOwner()) {
+        save.ownedWeapons = (save.ownedWeapons || []).filter((id) => {
+          const w = WEAPONS.find((x) => x.id === id);
+          return !(w && (w.minsk || w.ownerOnly));
+        });
+        const cur = weaponById(save.weapon);
+        if (cur && (cur.minsk || cur.ownerOnly)) save.weapon = "admin";
+      }
       return;
     }
     save.ownedWeapons = (save.ownedWeapons || []).filter((id) => {
       const w = WEAPONS.find((x) => x.id === id);
       if (!w) return true;
+      if (w.minsk || w.ownerOnly) return false;
       if (w.adminOnly) return false;
       if (w.vipOnly && !save.vip) return false;
       return true;
@@ -727,7 +776,7 @@
     });
     if (!save.ownedBuddies.includes("classic")) save.ownedBuddies.unshift("classic");
     const curW = weaponById(save.weapon);
-    if (curW.adminOnly || (curW.vipOnly && !save.vip && !save.vipPlus)) save.weapon = "hand";
+    if (curW.adminOnly || curW.minsk || curW.ownerOnly || (curW.vipOnly && !save.vip && !save.vipPlus)) save.weapon = "hand";
     const curB = buddyById(save.buddyType);
     if (!canUseBuddy(curB)) save.buddyType = "classic";
     // полный админ-лут сбрасываем, лимит-админ (покупка) оставляем
@@ -786,7 +835,11 @@
   }
 
   function effectiveWeapon() {
-    const w = weaponById(save.weapon);
+    let w = weaponById(save.weapon);
+    if ((w.minsk || w.ownerOnly) && !isMinskOwner()) {
+      save.weapon = "hand";
+      w = weaponById("hand");
+    }
     if (w.infHit || (save.infDmg && w.id !== "hand")) {
       return { ...w, dmg: Math.max(w.dmg, 99999), coinMul: Math.max(w.coinMul, 10), knock: Math.max(w.knock, 1400) };
     }
@@ -1907,25 +1960,29 @@
     overlay.classList.remove("hidden");
     const admin = isAdmin();
     const vip = isVip();
+    const minsk = isMinskOwner();
     const cards = WEAPONS.filter((w) => {
       if (w.cheat && !w.adminOnly && !save.ownedWeapons.includes(w.id) && !admin) return false;
       return true;
     }).map((w) => {
       const owned = save.ownedWeapons.includes(w.id);
       const equipped = save.weapon === w.id;
-      const lockedAdmin = w.adminOnly && !admin;
+      const lockedMinsk = (w.minsk || w.ownerOnly) && !minsk;
+      const lockedAdmin = w.adminOnly && !admin && !lockedMinsk;
       const lockedVip = w.vipOnly && !vip;
-      const locked = lockedAdmin || lockedVip;
+      const locked = lockedMinsk || lockedAdmin || lockedVip;
       let action;
-      if (lockedAdmin) {
+      if (lockedMinsk) {
+        action = `<button class="btn" disabled>🇧🇾 Только хозяин</button>`;
+      } else if (lockedAdmin) {
         action = `<button class="btn" disabled>Только админ</button>`;
       } else if (lockedVip) {
         action = `<button class="btn" disabled>Нужен VIP</button>`;
       } else if (equipped) {
         action = `<button class="btn" disabled>Выбрано</button>`;
-      } else if (owned || (w.adminOnly && admin)) {
-        if (w.adminOnly && admin && !owned) {
-          action = `<button class="btn" data-wclaim="${w.id}">Взять (админ)</button>`;
+      } else if (owned || (w.adminOnly && admin) || ((w.minsk || w.ownerOnly) && minsk)) {
+        if (((w.adminOnly && admin) || ((w.minsk || w.ownerOnly) && minsk)) && !owned) {
+          action = `<button class="btn" data-wclaim="${w.id}">Взять (Минск)</button>`;
         } else {
           action = `<button class="btn" data-weq="${w.id}">Взять</button>`;
         }
@@ -1939,7 +1996,7 @@
       return `
         <div class="shop-card${owned ? " owned" : ""}${equipped ? " equipped" : ""}${w.exclusive ? " exclusive" : ""}${w.minsk ? " minsk" : ""}${w.adminOnly ? " admin-only" : ""}${w.vipOnly ? " vip-item" : ""}${locked ? " locked" : ""}">
           ${weaponPreviewImg(w)}
-          <h4>${w.adminOnly ? "🔒 " : w.vipOnly ? "💎 " : w.minsk ? "🇧🇾 " : w.exclusive ? "★ " : ""}${w.name}</h4>
+          <h4>${w.ownerOnly || w.minsk ? "🇧🇾 " : ""}${w.adminOnly && !w.minsk ? "🔒 " : ""}${w.vipOnly ? "💎 " : ""}${!w.minsk && !w.adminOnly && !w.vipOnly && w.exclusive ? "★ " : ""}${w.name}</h4>
           <p>${power}<br>${w.desc}</p>
           ${action}
         </div>`;
@@ -1947,7 +2004,7 @@
 
     overlay.innerHTML = `
       <div class="brand">ОРУЖИЕ</div>
-      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🔒 админ · 💎 VIP</p>
+      <p class="tagline">Монеты: <b style="color:#ffd76a">${save.infCoins ? "∞" : save.coins}</b> · 🇧🇾 Минск только хозяину · 🔒 админ · 💎 VIP</p>
       <div class="shop-grid">${cards}</div>
       <button class="btn" id="close-shop">Закрыть</button>
     `;
@@ -1956,8 +2013,8 @@
       btn.onclick = () => {
         const id = btn.getAttribute("data-wbuy");
         const w = weaponById(id);
-        if (w.adminOnly && !isAdmin()) return;
-        if (w.vipOnly && !isVip()) return;
+        if (!canUseWeapon(w)) return;
+        if (w.minsk || w.ownerOnly) return;
         if (save.ownedWeapons.includes(id)) return;
         if (!save.infCoins) {
           if (save.coins < w.cost) return;
@@ -1975,15 +2032,16 @@
     });
     overlay.querySelectorAll("[data-wclaim]").forEach((btn) => {
       btn.onclick = () => {
-        if (!isAdmin()) return;
         const id = btn.getAttribute("data-wclaim");
+        const w = weaponById(id);
+        if (!canUseWeapon(w)) return;
         if (!save.ownedWeapons.includes(id)) save.ownedWeapons.push(id);
         save.weapon = id;
         persist();
         syncHud();
         setDeadUI(buddy.dead);
-        canvas.style.cursor = isRanged(weaponById(id)) ? "crosshair" : "grab";
-        say("Админ-оружие готово!");
+        canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
+        say(w.minsk ? "🇧🇾 Минск твоя!" : "Админ-пушка!");
         openWeaponShop();
       };
     });
@@ -1991,14 +2049,13 @@
       btn.onclick = () => {
         const id = btn.getAttribute("data-weq");
         const w = weaponById(id);
-        if (w.adminOnly && !isAdmin()) return;
-        if (w.vipOnly && !isVip()) return;
+        if (!canUseWeapon(w)) return;
+        if (!save.ownedWeapons.includes(id)) return;
         save.weapon = id;
         persist();
         syncHud();
         setDeadUI(buddy.dead);
         canvas.style.cursor = isRanged(w) ? "crosshair" : "grab";
-        say(w.id === "hand" ? "Только руками!" : isRanged(w) ? "Прицел готов!" : "Готов бить!");
         openWeaponShop();
       };
     });
@@ -3870,6 +3927,16 @@
       buddy.hp = 0;
       if (typeof killBuddy === "function") killBuddy(effectiveWeapon());
       syncHud();
+    }
+    if (t === "kb-minsk" || t === "max") {
+      if (isMinskOwner()) {
+        grantMinskLoot();
+        save.infDmg = true;
+        save.weapon = "minsk_inf_mg";
+        persist();
+        syncHud();
+        say("🇧🇾 Минск только тебе!");
+      }
     }
     if (t === "god" || t === "max" || t === "kb-loot" || t === "kb-vip") {
       save.godMode = true;
