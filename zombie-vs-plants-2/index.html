@@ -9,55 +9,56 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=12" />
+  <link rel="stylesheet" href="./style.css?v=13" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
     <section class="screen menu" id="screenMenu">
-      <div class="menu-panel">
-        <p class="brand">Зомби против растений</p>
-        <h1>Часть 2</h1>
-        <p class="tagline">Миры · типы · кооп</p>
-        <p class="desc">
-          Играй всеми растениями из альманаха PvZ 2. Огонь, лёд, электричество,
-          орехи и другие типы работают на поле. Можно вдвоём на одном экране.
-        </p>
-        <p class="stat" id="plantCount">Растений: —</p>
+      <div class="menu-layout">
+        <div class="menu-panel">
+          <p class="brand">Зомби против растений</p>
+          <h1>Часть 2</h1>
+          <p class="tagline">Миры · типы · кооп</p>
+          <p class="desc">
+            Играй всеми растениями из альманаха PvZ 2. Огонь, лёд, электричество,
+            орехи и другие типы работают на поле. Можно вдвоём на одном экране.
+          </p>
+          <p class="stat" id="plantCount">Растений: —</p>
 
-        <label class="field">
-          <span>Режим</span>
-          <select id="modeSelect">
-            <option value="solo">Соло</option>
-            <option value="coop">Вдвоём (локально)</option>
-          </select>
-        </label>
-
-        <label class="field check">
-          <input type="checkbox" id="testMode" checked />
-          <span>Тест: ∞ косилки, ∞ солнце, быстрые волны</span>
-        </label>
-
-        <div class="promo-box" id="promoBox">
           <label class="field">
-            <span>Промокод (для своих)</span>
-            <div class="promo-row">
-              <input type="text" id="promoInput" placeholder="Введи код…" autocomplete="off" maxlength="40" />
-              <button type="button" class="btn btn-ghost" id="btnPromo">Ок</button>
-            </div>
+            <span>Режим</span>
+            <select id="modeSelect">
+              <option value="solo">Соло</option>
+              <option value="coop">Вдвоём (локально)</option>
+            </select>
           </label>
+
+          <label class="field check">
+            <input type="checkbox" id="testMode" checked />
+            <span>Тест: ∞ косилки, ∞ солнце, быстрые волны</span>
+          </label>
+
+          <div class="menu-tools">
+            <button type="button" class="btn btn-ghost" id="btnMuteMenu">🔊 Звук</button>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btnPlay">▶ Играть</button>
+          <button type="button" class="btn btn-ghost" id="btnAlmanac">Альманах растений</button>
+          <a class="btn btn-ghost" href="../zombie-vs-plants/">Часть 1</a>
+        </div>
+
+        <aside class="promo-side" id="promoBox">
+          <h3 class="promo-side-title">Промокод</h3>
+          <p class="promo-side-sub">для своих</p>
+          <div class="promo-row">
+            <input type="text" id="promoInput" placeholder="Введи код…" autocomplete="off" maxlength="40" />
+            <button type="button" class="btn btn-ghost" id="btnPromo">Ок</button>
+          </div>
           <p class="promo-hint" id="promoHint">Код на русском или другом языке — только для тех, кому ты дал.</p>
           <ul class="ability-list" id="abilityList" hidden></ul>
-        </div>
-
-        <div class="menu-tools">
-          <button type="button" class="btn btn-ghost" id="btnMuteMenu">🔊 Звук</button>
-        </div>
-
-        <button type="button" class="btn btn-primary" id="btnPlay">▶ Играть</button>
-        <button type="button" class="btn btn-ghost" id="btnAlmanac">Альманах растений</button>
-        <a class="btn btn-ghost" href="../zombie-vs-plants/">Часть 1</a>
+        </aside>
       </div>
     </section>
 
