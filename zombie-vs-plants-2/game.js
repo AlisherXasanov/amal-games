@@ -369,6 +369,129 @@
     if (hint) {
       hint.textContent = "Промо открыто: это замедление и сюрпризы для друзей (не полный стоп).";
     }
+    refreshSurpriseJournal();
+  }
+
+  function refreshSurpriseJournal() {
+    const wrap = document.getElementById("surpriseJournal");
+    const body = document.getElementById("surpriseJournalBody");
+    if (!wrap || !body) return;
+    if (!amalOwner() || !window.AmalSurprises) {
+      wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    body.innerHTML = AmalSurprises.historyHtml("zombie-vs-plants-2");
+  }
+
+  function placeGiftPlant(typeId) {
+    const type = COMBAT[typeId];
+    if (!type || type.instant) return false;
+    for (let c = 0; c < COLS; c++) {
+      for (let r = 0; r < ROWS; r++) {
+        if (plantAt(r, c)) continue;
+        state.plants.push({
+          id: Math.random().toString(36).slice(2),
+          typeId,
+          row: r,
+          col: c,
+          hp: type.hp,
+          maxHp: type.hp,
+          cd: 0.2,
+          sunCd: type.sunEvery || 0,
+          armed: type.role !== "mine",
+          dead: false,
+          owner: "Сюрприз",
+          nutEffect: type.nut ? "normal" : null,
+        });
+        addFx("✦", cellRect(r, c).x + 24, cellRect(r, c).y + 24, "#ffe7a8");
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function applyLittleSurprise(kind) {
+    if (!state.running) {
+      showToast("Сюрприз сработает в бою — нажми Играть");
+      return;
+    }
+    AudioFX.unlock();
+    AudioFX.ability();
+    if (kind === "sun-kiss" || kind === "sparkle") {
+      const n = kind === "sparkle" ? 3 : 1;
+      for (let i = 0; i < n; i++) {
+        state.suns.push({
+          x: LEFT + 40 + Math.random() * (COLS * CELL_W - 80),
+          y: 12 + Math.random() * 30,
+          value: kind === "sun-kiss" ? 75 : 25,
+          life: 10,
+          falling: true,
+        });
+      }
+      if (kind === "sun-kiss") state.sun += 75;
+      AudioFX.sun();
+    } else if (kind === "nut-hug") {
+      placeGiftPlant("wall-nut") || placeGiftPlant("tall-nut");
+      AudioFX.plant();
+    } else if (kind === "soft-pause") {
+      state.zombies.forEach((z) => {
+        if (!z.dead) z.slow = Math.max(z.slow || 0, 4);
+      });
+      AudioFX.screech();
+    } else if (kind === "green-heal") {
+      state.plants.forEach((p) => {
+        if (!p.dead) p.hp = p.maxHp;
+      });
+      AudioFX.plant();
+    } else if (kind === "lucky-seed") {
+      const pool = ["threepeater", "winter-melon", "snapdragon", "spikerock", "repeater"].filter(
+        (id) => COMBAT[id] && !COMBAT[id].instant
+      );
+      placeGiftPlant(pool[Math.floor(Math.random() * pool.length)] || "wall-nut");
+      AudioFX.plant();
+    }
+    updateHud();
+  }
+
+  function applyOwnerSecretSurprise() {
+    if (!amalOwner()) return;
+    if (!state.running) {
+      showToast("✦ — сначала Играть");
+      return;
+    }
+    AudioFX.unlock();
+    AudioFX.win();
+    state.zombies.forEach((z) => {
+      z.hp = 0;
+      z.dead = true;
+      z.dyingAllergy = 0;
+    });
+    state.zombies = [];
+    state.sun += 500;
+    state.plants.forEach((p) => {
+      if (!p.dead) p.hp = p.maxHp;
+    });
+    for (let i = 0; i < 12; i++) {
+      state.suns.push({
+        x: LEFT + 20 + Math.random() * (COLS * CELL_W - 40),
+        y: 6 + Math.random() * 50,
+        value: 50,
+        life: 12,
+        falling: true,
+      });
+    }
+    state.ownerNoReload = true;
+    Object.keys(state.cooldown).forEach((id) => {
+      state.cooldown[id] = 0;
+    });
+    placeGiftPlant("winter-melon");
+    placeGiftPlant("tall-nut");
+    placeGiftPlant("threepeater");
+    addFx("✦", LEFT + COLS * CELL_W * 0.4, TOP + 40, "#ffe7a8");
+    updateHud();
+    renderSeedBar();
+    syncZombieOwnerUi();
   }
 
   function syncFreezeButton() {
@@ -2608,7 +2731,15 @@
   syncMuteButtons();
   refreshPromoUi();
   syncFreezeButton();
+  refreshSurpriseJournal();
   renderFilters();
+
+  window.addEventListener("amal-surprise", (e) => {
+    const d = e.detail || {};
+    if (d.type === "little" && d.pick) applyLittleSurprise(d.pick.id);
+    if (d.type === "owner-secret") applyOwnerSecretSurprise();
+    refreshSurpriseJournal();
+  });
 
   window.addEventListener("amal-power", (e) => {
     if (!amalOwner()) return;
@@ -2671,6 +2802,15 @@
     if (t === "zvp2-nut-poison") setNutEffect("poison");
     if (t === "zvp2-nut-kill") setNutEffect("kill");
     if (t === "zvp2-freeze") toggleFreeze();
+    if (t === "owner-legend") {
+      state.test = true;
+      state.sun = 99999;
+      state.ownerNoReload = true;
+      updateHud();
+      syncZombieOwnerUi();
+      syncFreezeButton();
+      showToast("👑 Легенда: ∞ солнце · без перезарядки");
+    }
     if (t === "max") {
       state.test = true;
       state.sun = 99999;
@@ -2687,6 +2827,7 @@
     buildZombieOwnerPickers();
     refreshPromoUi();
     syncFreezeButton();
+    refreshSurpriseJournal();
     renderAbilityBar();
   });
 })();

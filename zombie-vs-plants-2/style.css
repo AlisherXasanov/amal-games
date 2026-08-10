@@ -181,6 +181,43 @@ body {
   color: #c8ff9a;
 }
 .promo-code-hint strong { color: #ffe7a8; }
+.surprise-journal {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(238,246,232,.12);
+}
+.surprise-journal-title {
+  margin: 0 0 0.4rem;
+  font: 900 0.78rem/1.2 "Nunito", system-ui, sans-serif;
+  color: #ffe7a8;
+}
+.surprise-log {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+.surprise-log li {
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 220, 120, 0.08);
+  border: 1px solid rgba(255, 220, 120, 0.2);
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--cream);
+}
+.surprise-log li span {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.surprise-empty {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin: 0;
+}
 
 .zombie-bar {
   display: flex;

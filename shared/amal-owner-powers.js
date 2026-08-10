@@ -341,7 +341,21 @@
   }
 
   function packFor(id) {
-    return GAME_PACKS[id] || DEFAULT_PACK;
+    const base = GAME_PACKS[id] || DEFAULT_PACK;
+    const extra = [
+      { id: "surprise-gift", label: "✦ Сюрприз игроку", toast: "Сюрприз выдан", cls: "primary" },
+      { id: "owner-secret", label: "✦", toast: "…" },
+      { id: "owner-legend", label: "👑 Режим легенды", toast: "Легенда ВКЛ", cls: "max" },
+    ];
+    const buttons = [...(base.buttons || [])];
+    extra.forEach((b) => {
+      if (!buttons.some((x) => x.id === b.id)) buttons.push(b);
+    });
+    const quick = [...(base.quick || [])];
+    if (!quick.some((x) => x.id === "surprise-gift")) {
+      quick.unshift({ id: "surprise-gift", label: "✦", toast: "Сюрприз" });
+    }
+    return { ...base, buttons, quick };
   }
 
   function isOwner() {
@@ -547,11 +561,43 @@
         // game-specific crunch burst
         const pack = packFor(gameId());
         (pack.buttons || []).forEach((b) => {
-          if (b.id !== "max" && !["heal", "god", "coins", "dmg", "unlock", "speed"].includes(b.id)) {
+          if (
+            b.id !== "max" &&
+            !["heal", "god", "coins", "dmg", "unlock", "speed", "surprise-gift", "owner-secret", "owner-legend"].includes(
+              b.id
+            )
+          ) {
             fire(b.id);
           }
         });
         toast("⚡ ВСЕ СИЛЫ · " + (pack.title || gameId()));
+        syncUi();
+      },
+      "surprise-gift"() {
+        if (global.AmalSurprises && AmalSurprises.giveLittle) {
+          AmalSurprises.giveLittle({ game: gameId(), to: "игроку" });
+        }
+        fire("surprise-gift");
+      },
+      "owner-secret"() {
+        if (global.AmalSurprises && AmalSurprises.giveSecretOwner) {
+          AmalSurprises.giveSecretOwner({ game: gameId() });
+        }
+        fire("owner-secret");
+      },
+      "owner-legend"() {
+        flags.god = true;
+        flags.speed = true;
+        flags.dmg = true;
+        flags.coins = true;
+        global.__AMAL_GOD__ = true;
+        global.__AMAL_DMG__ = true;
+        global.__AMAL_SPEED__ = true;
+        global.__AMAL_LEGEND__ = true;
+        applyBoosts();
+        fire("owner-legend");
+        fire("max");
+        toast("👑 Режим легенды — во всех играх ты сильнее");
         syncUi();
       },
     };
@@ -720,7 +766,20 @@
     syncUi();
   }
 
+  function ensureSurprisesLib() {
+    if (global.AmalSurprises) return;
+    try {
+      const s = document.createElement("script");
+      s.src = "../shared/amal-surprises.js?v=1";
+      s.async = true;
+      document.head.appendChild(s);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   function boot() {
+    ensureSurprisesLib();
     try {
       if (new URLSearchParams(location.search).get("owner")) unlockAll();
     } catch (_) {}
