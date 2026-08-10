@@ -712,14 +712,14 @@
     css.textContent =
       "#amal-abuse-fx{position:fixed;inset:0;z-index:2147483600;pointer-events:none;display:none;overflow:hidden}" +
       "#amal-abuse-fx.on{display:block}" +
-      "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.72;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:280% 280%;animation:abRain 2s linear infinite}" +
-      "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 70%,rgba(255,255,255,.08),rgba(0,0,0,.45))}" +
-      "#amal-abuse-fx .ab-watcher{position:absolute;left:50%;bottom:-4%;transform:translateX(-50%);width:min(72vw,420px);height:min(78vh,560px);pointer-events:none;opacity:.92;filter:drop-shadow(0 18px 40px rgba(0,0,0,.55));animation:abWatch 3.2s ease-in-out infinite}" +
+      "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.38;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:280% 280%;animation:abRain 2s linear infinite;mix-blend-mode:soft-light}" +
+      "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 70%,rgba(255,255,255,.05),rgba(0,0,0,.18));pointer-events:none}" +
+      "#amal-abuse-fx .ab-watcher{position:absolute;left:max(8px,env(safe-area-inset-left));bottom:calc(72px + env(safe-area-inset-bottom,0px));width:min(28vw,140px);height:min(42vh,220px);pointer-events:none;opacity:.78;filter:drop-shadow(0 10px 18px rgba(0,0,0,.4));animation:abWatch 3.2s ease-in-out infinite;z-index:1}" +
       "#amal-abuse-fx .ab-watcher svg{width:100%;height:100%;display:block}" +
-      "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:10%;transform:translateX(-50%);padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(255,230,120,.65);color:#fff7ed;font:900 16px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.45)}" +
+      "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:10%;transform:translateX(-50%);padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(255,230,120,.65);color:#fff7ed;font:900 16px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:3}" +
       "#amal-abuse-fx .ab-banner small{display:block;margin-top:4px;opacity:.85;font-size:12px;font-weight:700}" +
-      "#amal-abuse-fx .ab-happy{position:absolute;left:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));padding:10px 12px;border-radius:14px;background:rgba(16,24,12,.88);border:1px solid rgba(125,255,154,.4);color:#d8ffe0;font:800 12px/1.35 system-ui,sans-serif;max-width:48vw;pointer-events:none}" +
-      "#amal-abuse-fx .ab-buddy{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom,0px));width:110px;pointer-events:auto;cursor:pointer;text-align:center;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));animation:abBob 1.1s ease-in-out infinite;border:0;background:transparent;padding:0}" +
+      "#amal-abuse-fx .ab-happy{position:absolute;left:max(8px,env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:10px 12px;border-radius:14px;background:rgba(16,24,12,.88);border:1px solid rgba(125,255,154,.4);color:#d8ffe0;font:800 12px/1.35 system-ui,sans-serif;max-width:42vw;pointer-events:none;z-index:3}" +
+      "#amal-abuse-fx .ab-buddy{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom,0px));width:110px;pointer-events:auto;cursor:pointer;text-align:center;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));animation:abBob 1.1s ease-in-out infinite;border:0;background:transparent;padding:0;z-index:4}" +
       "#amal-abuse-fx .ab-buddy img{width:84px;height:84px;border-radius:50%;border:3px solid #ffe566;background:#111;display:block;margin:0 auto}" +
       "#amal-abuse-fx .ab-buddy .ab-label{margin-top:6px;padding:8px 10px;border-radius:12px;background:linear-gradient(135deg,#fde68a,#f59e0b);color:#111;font:900 12px/1.15 system-ui,sans-serif}" +
       "#amal-gift-fx{position:fixed;inset:0;z-index:2147483601;display:none;place-items:center;pointer-events:none}" +
@@ -738,7 +738,7 @@
       ".amal-gift-pick strong{display:block;color:#fde68a;margin-bottom:2px}" +
       "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}" +
       "@keyframes abBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}" +
-      "@keyframes abWatch{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}";
+      "@keyframes abWatch{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}";
     document.head.appendChild(css);
   }
 
@@ -778,8 +778,8 @@
       escapeHtml(text) +
       "<small>от " +
       escapeHtml(from) +
-      " · радуга · большой смотрит · можно забрать всё</small></div>" +
-      '<div class="ab-happy">Раздача открыта ✨<br/>Жми на человечка справа</div>' +
+      " · радуга · смотрит сбоку · можно забрать всё</small></div>" +
+      '<div class="ab-happy">Раздача открыта ✨<br/>Жми человечка справа · поле свободно</div>' +
       '<button type="button" class="ab-buddy" id="amal-abuse-buddy" title="Забрать всё">' +
       '<img src="' +
       face +
