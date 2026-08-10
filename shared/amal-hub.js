@@ -15,6 +15,7 @@
     myPowers: "amal-hub-my-powers-v1",
     revokedGrants: "amal-hub-revoked-grants-v1",
     registry: "amal-hub-registry-v1",
+    abuse: "amal-hub-abuse-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
@@ -43,6 +44,11 @@
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-10-admin-abuse",
+      title: "Admin Abuse во всех играх",
+      body: "Хозяин запускает Abuse — радуга на экране, человечек раздаёт подарки. Видно, кто играет с тобой в этой же игре в реальном времени.",
+    },
     {
       id: "2026-08-10-register-all",
       title: "Одна регистрация — все игры",
@@ -637,35 +643,235 @@
     }, 4200);
   }
 
-  function maybeRepaintPlayers() {
-    if (!open || adminPage !== "players") return;
-    const now = Date.now();
-    if (now - lastPlayersPaint < 800) return;
-    lastPlayersPaint = now;
-    paint();
+  function playersInThisGame(maxAgeMs) {
+    const gid = gameIdFromPath();
+    return recentPlayers(maxAgeMs).filter((p) => p && p.game === gid);
   }
 
-  function broadcastToPlayers(text) {
-    const body = String(text || "").trim().slice(0, 240);
-    if (!body) return { ok: false, error: "Напиши текст" };
+  function activeAbuse() {
+    const a = storeGet(KEYS.abuse, null);
+    if (!a || !a.until || a.until < Date.now()) return null;
+    return a;
+  }
+
+  function ensureAbuseStyles() {
+    if (document.getElementById("amal-abuse-css")) return;
+    const css = document.createElement("style");
+    css.id = "amal-abuse-css";
+    css.textContent =
+      "#amal-abuse-fx{position:fixed;inset:0;z-index:2147483600;pointer-events:none;display:none}" +
+      "#amal-abuse-fx.on{display:block}" +
+      "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.42;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:300% 300%;animation:abRain 2.2s linear infinite;mix-blend-mode:soft-light}" +
+      "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.18),rgba(0,0,0,.35))}" +
+      "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:12%;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(255,230,120,.55);color:#fff7ed;font:900 15px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}" +
+      "#amal-abuse-fx .ab-banner small{display:block;margin-top:4px;opacity:.8;font-size:11px;font-weight:700}" +
+      "#amal-abuse-fx .ab-buddy{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(88px + env(safe-area-inset-bottom,0px));width:92px;pointer-events:auto;cursor:pointer;text-align:center;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));animation:abBob 1.1s ease-in-out infinite}" +
+      "#amal-abuse-fx .ab-buddy img{width:72px;height:72px;border-radius:50%;border:3px solid #ffe566;background:#111;display:block;margin:0 auto}" +
+      "#amal-abuse-fx .ab-buddy .ab-label{margin-top:6px;padding:6px 8px;border-radius:12px;background:linear-gradient(135deg,#fde68a,#f59e0b);color:#111;font:900 11px/1.15 system-ui,sans-serif}" +
+      "#amal-abuse-fx .ab-happy{position:absolute;left:12px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:8px 10px;border-radius:14px;background:rgba(16,24,12,.82);border:1px solid rgba(125,255,154,.35);color:#d8ffe0;font:800 11px/1.3 system-ui,sans-serif;max-width:46vw}" +
+      "#amal-same-game{pointer-events:none;position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:2147483500;display:flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(8,12,18,.82);border:1px solid rgba(255,255,255,.14);color:#e8eef8;font:800 11px/1 system-ui,sans-serif;max-width:94vw;overflow:hidden;white-space:nowrap}" +
+      "#amal-same-game .sg-faces{display:flex;gap:4px;align-items:center}" +
+      "#amal-same-game img{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:#222}" +
+      "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}" +
+      "@keyframes abBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}";
+    document.head.appendChild(css);
+  }
+
+  function showAdminAbuseFx(payload) {
+    ensureAbuseStyles();
+    let el = document.getElementById("amal-abuse-fx");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-abuse-fx";
+      document.body.appendChild(el);
+    }
+    const text = (payload && payload.text) || "Admin Abuse начинается!";
+    const from = (payload && payload.fromNick) || "Амаль";
+    const face = faceUrl("abuse-" + from);
+    el.innerHTML =
+      '<div class="ab-rainbow"></div><div class="ab-veil"></div>' +
+      '<div class="ab-banner">🔥 ' +
+      escapeHtml(text) +
+      "<small>от " +
+      escapeHtml(from) +
+      " · можно забрать подарок у человечка</small></div>" +
+      '<div class="ab-happy">Админы рады ✨<br/>Раздача открыта</div>' +
+      '<button type="button" class="ab-buddy" id="amal-abuse-buddy" title="Забрать всё">' +
+      '<img src="' +
+      face +
+      '" alt="" />' +
+      '<div class="ab-label">🎁 Забрать всё</div></button>';
+    el.classList.add("on");
+    const buddy = el.querySelector("#amal-abuse-buddy");
+    if (buddy) {
+      buddy.onclick = () => claimAbuseGift(payload);
+    }
+    clearTimeout(showAdminAbuseFx._t);
+    const left = Math.max(4000, (payload && payload.until ? payload.until - Date.now() : 45000));
+    showAdminAbuseFx._t = setTimeout(() => {
+      el.classList.remove("on");
+    }, Math.min(left, 90000));
+  }
+
+  function claimAbuseGift(payload) {
+    try {
+      const key = "amal-abuse-claim-" + String((payload && payload.at) || 0);
+      if (sessionStorage.getItem(key) === "1") {
+        showHubToast("Ты уже забрал подарок");
+        return;
+      }
+      sessionStorage.setItem(key, "1");
+    } catch (_) {
+      /* ignore */
+    }
+    showHubToast("🎁 Получено от Admin Abuse!");
+    try {
+      if (global.AmalSurprises && AmalSurprises.giveLittle) {
+        AmalSurprises.giveLittle({ game: gameIdFromPath(), to: getNick() || "игроку" });
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      if ((isOwner() || isGameAdmin()) && global.AmalPowers && AmalPowers.runAbility) {
+        AmalPowers.runAbility("max");
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    global.dispatchEvent(
+      new CustomEvent("amal-admin-abuse-claim", {
+        detail: { payload: payload || activeAbuse(), nick: getNick(), at: Date.now() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "abuse-gift", abuse: true },
+      })
+    );
+  }
+
+  function startAdminAbuse(rawText) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const text = String(rawText || "Admin Abuse начинается!").trim().slice(0, 120);
+    const payload = {
+      type: "admin-abuse",
+      text: text || "Admin Abuse начинается!",
+      at: Date.now(),
+      until: Date.now() + 60000,
+      fromGame: gameIdFromPath(),
+      fromNick: getNick() || "Amal",
+    };
+    storeSet(KEYS.abuse, payload);
     let n = 0;
     hostConnections.forEach((conn) => {
       try {
         if (conn.open) {
-          conn.send({ type: "admin-msg", text: body, at: Date.now() });
+          conn.send(payload);
           n += 1;
         }
       } catch {
         /* ignore */
       }
     });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    showAdminAbuseFx(payload);
+    addNote("🔥 " + payload.text, { fromAdmin: true, toNick: "*всем*", game: gameIdFromPath() });
+    showHubToast("🔥 Abuse запущен во всех играх");
+    return { ok: true, count: n, payload };
+  }
+
+  function broadcastToPlayers(text) {
+    const body = String(text || "").trim().slice(0, 240);
+    if (!body) return { ok: false, error: "Напиши текст" };
+    // если в тексте abuse — запускаем полный режим
+    if (/admin\s*abuse|админ\s*абуз|abuse/i.test(body)) {
+      return startAdminAbuse(body);
+    }
+    const payload = {
+      type: "admin-msg",
+      text: body,
+      at: Date.now(),
+      fromNick: getNick() || "Amal",
+      fromGame: gameIdFromPath(),
+    };
+    let n = 0;
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn.open) {
+          conn.send(payload);
+          n += 1;
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    showHubToast("📢 " + body);
     addNote(body, { fromAdmin: true, toNick: "*всем*", game: gameIdFromPath() });
     return { ok: true, count: n };
+  }
+
+  function updateSameGameStrip() {
+    ensureAbuseStyles();
+    const gid = gameIdFromPath();
+    if (!gid || gid === "portal") {
+      const old = document.getElementById("amal-same-game");
+      if (old) old.remove();
+      return;
+    }
+    const peers = playersInThisGame();
+    let el = document.getElementById("amal-same-game");
+    if (!peers.length && !isOwner()) {
+      // всё равно покажем себя как соло, если есть ник
+      if (!getNick()) {
+        if (el) el.remove();
+        return;
+      }
+    }
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-same-game";
+      document.body.appendChild(el);
+    }
+    const faces = peers
+      .slice(0, 6)
+      .map((p) => '<img src="' + faceUrl(p.nick) + '" title="' + escapeHtml(p.nick) + '" alt="" />')
+      .join("");
+    if (!peers.length) {
+      el.innerHTML = "👤 В этой игре сейчас только ты";
+    } else {
+      el.innerHTML =
+        '<span class="sg-faces">' +
+        faces +
+        "</span><span>С тобой в игре: <b>" +
+        peers.map((p) => escapeHtml(p.nick)).join(", ") +
+        "</b> · " +
+        peers.length +
+        "</span>";
+    }
   }
 
   function clearIncomingNotes() {
     const kept = loadNotes().filter((n) => n.fromAdmin);
     saveNotes(kept);
+  }
+
+  function maybeRepaintPlayers() {
+    updateSameGameStrip();
+    if (!open || (adminPage !== "players" && adminPage !== "live")) return;
+    const now = Date.now();
+    if (now - lastPlayersPaint < 800) return;
+    lastPlayersPaint = now;
+    paint();
   }
 
   function clearPresenceList() {
@@ -764,12 +970,27 @@
       if (!global.__amalPresenceBc) {
         global.__amalPresenceBc = new BroadcastChannel("amal-hub-presence");
         global.__amalPresenceBc.onmessage = (ev) => {
-          if (!isOwner() || !ev.data) return;
-          upsertLivePlayer(ev.data);
-          if (ev.data.type === "register" && ev.data.nick) {
-            const reg = registerEverywhere(ev.data.nick, ev.data.game);
-            if (reg.isNew) notifyOwnerAboutRegistration(reg.entry);
+          const data = ev.data;
+          if (!data) return;
+          if (data.type === "admin-abuse") {
+            storeSet(KEYS.abuse, data);
+            showAdminAbuseFx(data);
+            return;
           }
+          if (data.type === "admin-msg" && data.text) {
+            showHubToast("👑 " + (data.fromNick || "Амаль") + ": " + data.text);
+            return;
+          }
+          if (isOwner()) {
+            upsertLivePlayer(data);
+            if (data.type === "register" && data.nick) {
+              const reg = registerEverywhere(data.nick, data.game);
+              if (reg.isNew) notifyOwnerAboutRegistration(reg.entry);
+            }
+          } else if (data.nick) {
+            upsertLivePlayer(data);
+          }
+          updateSameGameStrip();
         };
       }
     } catch {
@@ -852,6 +1073,19 @@
     });
   }
 
+  function startAdminAbuseFromRemote(data) {
+    const payload = {
+      type: "admin-abuse",
+      text: (data && data.text) || "Admin Abuse начинается!",
+      at: (data && data.at) || Date.now(),
+      until: (data && data.until) || Date.now() + 60000,
+      fromGame: (data && data.fromGame) || "portal",
+      fromNick: (data && data.fromNick) || "Amal",
+    };
+    storeSet(KEYS.abuse, payload);
+    showAdminAbuseFx(payload);
+  }
+
   function connectToHost() {
     if (!presencePeer || isOwner()) return;
     try {
@@ -868,8 +1102,17 @@
         bumpPresence();
       });
       presenceConn.on("data", (data) => {
-        if (data && data.type === "admin-msg" && data.text) {
-          showHubToast("👑 Амаль: " + data.text);
+        if (!data) return;
+        if (data.type === "admin-abuse") {
+          storeSet(KEYS.abuse, data);
+          showAdminAbuseFx(data);
+          showHubToast("🔥 " + (data.text || "Admin Abuse"));
+        } else if (data.type === "admin-msg" && data.text) {
+          if (/admin\s*abuse|админ\s*абуз|abuse/i.test(data.text)) {
+            startAdminAbuseFromRemote(data);
+          } else {
+            showHubToast("👑 " + (data.fromNick || "Амаль") + ": " + data.text);
+          }
         }
       });
       presenceConn.on("close", () => {
@@ -1063,11 +1306,12 @@
 
     // Быстрые действия во время игры (только главному)
     if (owner && inGame && !open && !gateMode) {
-      const players = recentPlayers();
+      const players = playersInThisGame();
       html += `<div class="amal-hub-dock">
-        <button type="button" class="primary" data-amal="admin-live">📡 Live</button>
+        <button type="button" class="primary" data-amal="admin-abuse">🔥 Abuse</button>
+        <button type="button" data-amal="admin-live">📡 Live</button>
+        <button type="button" data-amal="admin-same">👥 ${players.length}</button>
         <button type="button" data-amal="quick-grant">⚡</button>
-        <button type="button" data-amal="admin-players">👥 ${players.length}</button>
         <button type="button" data-amal="admin-write">✉️</button>
         <button type="button" data-amal="open">☰</button>
       </div>`;
@@ -1103,6 +1347,7 @@
     }
     root.innerHTML = html;
     bindUi();
+    updateSameGameStrip();
   }
 
   function escapeHtml(s) {
@@ -1358,14 +1603,17 @@
     if (adminPage === "broadcast" && fullOwner) {
       return `
         <div class="amal-hub-hero"><div class="badge">📢</div><div>
-          <h2>Всем онлайн</h2>
-          <p class="sub">Увидят гости, которые сейчас в сети</p>
+          <h2>Сказать всем</h2>
+          <p class="sub">Увидят гости онлайн. Abuse = радуга + человечек с подарками во всех играх</p>
         </div></div>
-        <textarea id="amal-broadcast" maxlength="240" placeholder="Например: Через 5 минут новая игра!"></textarea>
+        <textarea id="amal-broadcast" maxlength="240" placeholder="Например: Admin Abuse начинается!"></textarea>
+        <div class="amal-hub-row" style="margin-top:8px">
+          <button type="button" class="primary" data-amal="admin-abuse" style="flex:1">🔥 Admin Abuse</button>
+        </div>
         ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
         <div class="amal-hub-row">
-          <button type="button" class="primary" data-amal="admin-broadcast" style="flex:1">Отправить всем</button>
+          <button type="button" data-amal="admin-broadcast" style="flex:1">Отправить текст</button>
         </div>
         ${back}`;
     }
@@ -1525,6 +1773,29 @@
           open = true;
           view = "admin";
           paint();
+        }
+        if (act === "admin-abuse") {
+          if (!canGrantAdmin()) return;
+          const area = root.querySelector("#amal-broadcast");
+          const text =
+            (area && area.value && area.value.trim()) || "Admin Abuse начинается!";
+          const res = startAdminAbuse(text);
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok ? "🔥 Abuse в эфире · онлайн: " + (res.count || 0) : "";
+          paint();
+          return;
+        }
+        if (act === "admin-same") {
+          adminPage = "players";
+          open = true;
+          view = "admin";
+          msg =
+            "Сейчас в этой игре: " +
+            (playersInThisGame()
+              .map((p) => p.nick)
+              .join(", ") || "пока только ты");
+          paint();
+          return;
         }
         if (act === "admin-broadcast") {
           if (!canGrantAdmin()) return;
@@ -1834,6 +2105,14 @@
     bumpPresence();
     startPresenceNet();
     paint();
+    updateSameGameStrip();
+    setInterval(() => {
+      bumpPresence();
+      updateSameGameStrip();
+      maybeRepaintPlayers();
+    }, 8000);
+    const abuse = activeAbuse();
+    if (abuse) showAdminAbuseFx(abuse);
     if (!getNick() && !isOwner()) {
       gateMode = true;
       open = true;
@@ -1896,6 +2175,8 @@
     gameId: gameIdFromPath,
     registerEverywhere,
     listRegistry,
+    startAdminAbuse,
+    playersInThisGame,
     CHANGELOG,
   };
 

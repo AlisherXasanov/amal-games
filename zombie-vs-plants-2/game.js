@@ -2811,6 +2811,23 @@
       syncFreezeButton();
       showToast("👑 Легенда: ∞ солнце · без перезарядки");
     }
+    if (t === "abuse-gift") {
+      state.sun += 250;
+      state.zombies.forEach((z) => {
+        if (!z.dead) z.slow = Math.max(z.slow || 0, 3);
+      });
+      for (let i = 0; i < 6; i++) {
+        state.suns.push({
+          x: LEFT + 30 + Math.random() * (COLS * CELL_W - 60),
+          y: 10 + Math.random() * 40,
+          value: 50,
+          life: 10,
+          falling: true,
+        });
+      }
+      updateHud();
+      showToast("🎁 Admin Abuse: солнце и замедление зомби!");
+    }
     if (t === "max") {
       state.test = true;
       state.sun = 99999;
