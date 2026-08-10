@@ -6,6 +6,7 @@
     <title>Пиксель-Террариум — 2D песочница</title>
     <meta name="description" content="Копай блоки, строй дома и исследуй пещеры в 2D песочнице в стиле Terraria." />
     <style>
+      html, body { margin: 0; min-height: 100%; background: #09090b; color: #a1a1aa; }
       .portal-back {
         position: fixed;
         bottom: 10px;
@@ -20,13 +21,34 @@
         backdrop-filter: blur(4px);
       }
       .portal-back:hover { background: rgba(0, 0, 0, .85); }
+      #root { min-height: 100dvh; }
+      #tv-boot {
+        position: fixed; inset: 0; display: grid; place-items: center;
+        background: #09090b; color: #888; font: 14px/1.4 system-ui, sans-serif;
+        pointer-events: none; z-index: 1;
+      }
     </style>
-    <script type="module" crossorigin src="./assets/static-index-TreeFix2.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/static-index-DPwEJUCe.css">
   </head>
   <body>
     <a class="portal-back" href="../">&larr; Все игры</a>
+    <div id="tv-boot">Генерируем мир…</div>
     <div id="root"></div>
+    <script type="module" crossorigin src="./assets/static-index-TreeFix2.js"></script>
+    <script>
+      // если React так и не смонтировался — не оставляем белый экран молча
+      setTimeout(function () {
+        var root = document.getElementById("root");
+        var boot = document.getElementById("tv-boot");
+        if (boot && root && root.childElementCount > 0) boot.remove();
+        else if (boot) boot.textContent = "Мир не загрузился — обнови страницу (Ctrl+F5)";
+      }, 20000);
+      new MutationObserver(function () {
+        var root = document.getElementById("root");
+        var boot = document.getElementById("tv-boot");
+        if (boot && root && root.childElementCount > 0) boot.remove();
+      }).observe(document.getElementById("root"), { childList: true, subtree: true });
+    </script>
     <script src="../shared/amal-owner-powers.js?v=10"></script>
     <script src="./amal-bridge.js?v=1"></script>
     <script src="../shared/amal-hub.js?v=18"></script>
