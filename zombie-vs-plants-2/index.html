@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=4" />
+  <link rel="stylesheet" href="./style.css?v=8" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -70,7 +70,14 @@
           <div class="hud-wave" id="waveText">Волна 1</div>
           <div class="hud-mode" id="modeText">Соло</div>
           <button type="button" class="btn-sm" id="btnShovel">🪏 Лопата</button>
+          <button type="button" class="btn-sm" id="btnNutTool" hidden>🥜 Орех</button>
           <button type="button" class="btn-sm ghost" id="btnQuit">Меню</button>
+        </div>
+        <div class="nut-bar" id="nutBar" hidden>
+          <span class="nut-bar-label">Только хозяин — эффект ореха:</span>
+          <button type="button" class="nut-mode active" data-nut="normal" id="nutModeNormal">Обычный</button>
+          <button type="button" class="nut-mode" data-nut="poison" id="nutModePoison">☠️ Яд</button>
+          <button type="button" class="nut-mode" data-nut="kill" id="nutModeKill">💀 Смерть</button>
         </div>
         <div class="seed-bar" id="seedBar"></div>
         <p class="coop-hint" id="coopHint" hidden>
@@ -93,8 +100,10 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="./plants-data.js?v=7"></script>
-  <script src="./zombie-sprites.js?v=7"></script>
-  <script src="./game.js?v=7"></script>
+  <script src="../shared/amal-owner-powers.js?v=8"></script>
+  <script src="../shared/amal-hub.js?v=8"></script>
+  <script src="./plants-data.js?v=8"></script>
+  <script src="./zombie-sprites.js?v=8"></script>
+  <script src="./game.js?v=8"></script>
 </body>
 </html>

@@ -251,6 +251,24 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "zombie-vs-plants-2": {
+      title: "Зомби vs Растения 2",
+      subtitle: "Орехи · яд/смерть только тебе · зомби",
+      quick: [
+        { id: "zvp2-kill", label: "☠ Зомби", toast: "Зомби убиты" },
+        { id: "zvp2-spawn", label: "🧟 +1", toast: "Зомби заспавнен" },
+        { id: "zvp2-nut-kill", label: "💀 Орех", toast: "Орехи = смерть" },
+      ],
+      buttons: [
+        { id: "zvp2-kill", label: "☠ Убить всех зомби", cls: "primary" },
+        { id: "zvp2-spawn", label: "🧟 Заспавнить 1 зомби" },
+        { id: "zvp2-noreload", label: "⏳ Без перезарядки" },
+        { id: "zvp2-nut-normal", label: "🥜 Орех: обычный" },
+        { id: "zvp2-nut-poison", label: "☠️ Орех: яд" },
+        { id: "zvp2-nut-kill", label: "💀 Орех: смерть" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
     minecraft: {
       title: "Minecraft",
       subtitle: "Креатив · полёт · хилл",

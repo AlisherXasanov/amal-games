@@ -44,6 +44,12 @@
   let lastTs = 0;
   let animId = 0;
   let shovel = false;
+  let nutTool = false;
+  const NUT_EFFECTS = {
+    normal: { id: "normal", label: "Обычный", short: "обычн." },
+    poison: { id: "poison", label: "Яд", short: "яд" },
+    kill: { id: "kill", label: "Смерть", short: "смерть" },
+  };
 
   const state = {
     mode: "solo",
@@ -67,6 +73,8 @@
     won: false,
     fallen: 0,
     time: 0,
+    nutEffect: "normal",
+    ownerNoReload: false,
   };
 
   function showToast(text) {
@@ -88,6 +96,58 @@
   function parseSun(value) {
     const n = Number(String(value).replace(/[^\d.]/g, ""));
     return Number.isFinite(n) ? n : 100;
+  }
+
+  function amalOwner() {
+    try {
+      if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+      if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (window.__AMAL_OWNER__ || window.__AMAL_GOD__) return true;
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      const code = new URLSearchParams(location.search).get("owner");
+      if (code === "AmalOwner2026" || code === "amal" || code === "1234") return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function syncNutOwnerUi() {
+    const mine = amalOwner();
+    const nutBar = document.getElementById("nutBar");
+    const btnNut = document.getElementById("btnNutTool");
+    if (nutBar) nutBar.hidden = !mine;
+    if (btnNut) btnNut.hidden = !mine;
+    if (!mine) {
+      nutTool = false;
+      state.nutEffect = "normal";
+    }
+    document.querySelectorAll(".nut-mode").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-nut") === state.nutEffect);
+    });
+    if (btnNut) btnNut.classList.toggle("on", !!(nutTool && mine));
+  }
+
+  function setNutEffect(effectId) {
+    if (!amalOwner()) return;
+    if (!NUT_EFFECTS[effectId]) return;
+    state.nutEffect = effectId;
+    syncNutOwnerUi();
+    showToast(`Эффект ореха (только ты): ${NUT_EFFECTS[effectId].label}`);
+  }
+
+  function applyNutEffectToPlant(plant) {
+    if (!amalOwner()) return false;
+    const type = COMBAT[plant.typeId];
+    if (!type?.nut) {
+      showToast("Это не орех");
+      return false;
+    }
+    plant.nutEffect = state.nutEffect || "normal";
+    const fx = NUT_EFFECTS[plant.nutEffect];
+    addFx(fx.short, cellRect(plant.row, plant.col).x + 20, cellRect(plant.row, plant.col).y + 20, "#ffe7a8");
+    showToast(`Орех: «${fx.label}»`);
+    return true;
   }
 
   function parseRecharge(value) {
@@ -349,6 +409,8 @@
     state.selectedP1 = STARTER_LOADOUT[0];
     state.selectedP2 = STARTER_LOADOUT[1] || STARTER_LOADOUT[0];
     shovel = false;
+    nutTool = false;
+    if (!amalOwner()) state.nutEffect = "normal";
     state.mowers = Array.from({ length: ROWS }, (_, row) => ({
       row,
       used: false,
@@ -356,6 +418,7 @@
       active: false,
     }));
     showScreen("play");
+    syncNutOwnerUi();
     els.modeText.textContent =
       (state.mode === "coop" ? "Вдвоём" : "Соло") + (state.test ? " · ТЕСТ ∞" : "");
     els.coopHint.hidden = state.mode !== "coop";
@@ -459,6 +522,7 @@
       chomp: 0,
       allergyFlash: 0,
       dyingAllergy: 0,
+      poison: 0,
       dead: false,
     };
     state.zombies.push(z);
@@ -577,7 +641,11 @@
     }
 
     if (!state.test) state.sun -= type.sunCost;
-    state.cooldown[typeId] = state.test ? Math.min(1.2, type.recharge * 0.25) : type.recharge;
+    if (amalOwner() && state.ownerNoReload) {
+      state.cooldown[typeId] = 0;
+    } else {
+      state.cooldown[typeId] = state.test ? Math.min(1.2, type.recharge * 0.25) : type.recharge;
+    }
 
     if (type.instant) {
       if (type.role === "bomb" || type.role === "mint") {
@@ -608,10 +676,21 @@
       armed: type.role !== "mine",
       dead: false,
       owner: player,
+      nutEffect: type.nut
+        ? amalOwner()
+          ? state.nutEffect || "normal"
+          : "normal"
+        : null,
     };
     state.plants.push(plant);
     updateHud();
     renderSeedBar();
+    if (type.nut) {
+      const fx = NUT_EFFECTS[plant.nutEffect] || NUT_EFFECTS.normal;
+      showToast(`${player}: ${type.name} · эффект «${fx.label}»`);
+    } else {
+      showToast(`${player}: ${type.name}`);
+    }
   }
 
   function tryShovel(row, col) {
@@ -825,6 +904,10 @@
         z.burn -= dt;
         z.hp -= 12 * dt;
       }
+      if (z.poison > 0) {
+        z.poison -= dt;
+        z.hp -= 28 * dt;
+      }
       if (z.slow > 0) z.slow -= dt;
       if (z.allergyFlash > 0) z.allergyFlash -= dt;
       z.walkPhase += dt * (z.kind === "runner" ? 10 : 6);
@@ -843,7 +926,28 @@
         z.biteCd -= dt;
         if (z.biteCd <= 0) {
           z.biteCd = 1;
-          if (z.nutAllergy && type?.nut) {
+          const nutFx = type?.nut ? plant.nutEffect || "normal" : null;
+
+          // Хозяин настроил орех на «смерть» — любой зомби умирает от укуса
+          if (nutFx === "kill") {
+            z.dyingAllergy = 0.9;
+            z.allergyFlash = 1;
+            z.eating = false;
+            addFx("СМЕРТЬ!", cellRect(plant.row, plant.col).x, cellRect(plant.row, plant.col).y, "#ff8866");
+            addFx("🥜💀", z.x - 8, cellRect(z.row, 0).y + 20, "#ffe7a8");
+            showToast("Орех хозяина: зомби умер!");
+            return;
+          }
+
+          // Хозяин настроил орех на «яд»
+          if (nutFx === "poison") {
+            z.poison = Math.max(z.poison || 0, 4.5);
+            z.allergyFlash = 0.4;
+            addFx("ЯД", z.x - 4, cellRect(z.row, 0).y + 18, "#c08cff");
+          }
+
+          // Случайная аллергия 10% — только на обычных орехах
+          if (z.nutAllergy && type?.nut && nutFx !== "poison") {
             z.dyingAllergy = 0.9;
             z.allergyFlash = 1;
             z.eating = false;
@@ -852,6 +956,7 @@
             showToast("Зомби съел орех и умер от аллергии! (10%)");
             return;
           }
+
           plant.hp -= z.damage;
           if (plant.hp <= 0) plant.dead = true;
         }
@@ -1013,9 +1118,11 @@
       ctx.font = "34px sans-serif";
       ctx.fillText(type.icon || "🌱", rect.x + 22, rect.y + 55);
       if (type.nut) {
+        const fx = NUT_EFFECTS[p.nutEffect || "normal"] || NUT_EFFECTS.normal;
         ctx.font = "800 10px Nunito";
-        ctx.fillStyle = "#ffe7a8";
-        ctx.fillText("орех", rect.x + 24, rect.y + 72);
+        ctx.fillStyle =
+          p.nutEffect === "poison" ? "#d9b3ff" : p.nutEffect === "kill" ? "#ff9a8a" : "#ffe7a8";
+        ctx.fillText(fx.short, rect.x + 18, rect.y + 72);
       }
       // hp bar
       const pct = Math.max(0, p.hp / p.maxHp);
@@ -1142,7 +1249,32 @@
   document.getElementById("btnQuit").addEventListener("click", showMenu);
   document.getElementById("btnShovel").addEventListener("click", () => {
     shovel = !shovel;
+    if (shovel) nutTool = false;
+    syncNutOwnerUi();
     showToast(shovel ? "Лопата включена" : "Лопата выключена");
+  });
+  document.getElementById("btnNutTool")?.addEventListener("click", () => {
+    if (!amalOwner()) {
+      showToast("Выбор эффекта ореха только у хозяина");
+      return;
+    }
+    nutTool = !nutTool;
+    if (nutTool) shovel = false;
+    syncNutOwnerUi();
+    showToast(
+      nutTool
+        ? "Режим ореха: кликни по ореху на поле, чтобы дать ему эффект"
+        : "Режим ореха выключен"
+    );
+  });
+  document.querySelectorAll(".nut-mode").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!amalOwner()) {
+        showToast("Только хозяин выбирает эффект ореха");
+        return;
+      }
+      setNutEffect(btn.getAttribute("data-nut"));
+    });
   });
   els.plantSearch.addEventListener("input", renderAlmanacGrid);
 
@@ -1166,6 +1298,12 @@
       tryShovel(cell.row, cell.col);
       return;
     }
+    if (nutTool && amalOwner()) {
+      const p = plantAt(cell.row, cell.col);
+      if (p) applyNutEffectToPlant(p);
+      else showToast("Кликни по ореху на поле");
+      return;
+    }
     const player2 = state.mode === "coop" && e.shiftKey;
     const typeId = player2 ? state.selectedP2 : state.selectedP1;
     placePlant(typeId, cell.row, cell.col, player2 ? "Игрок 2" : "Игрок 1");
@@ -1174,5 +1312,43 @@
   if (els.plantCount) {
     els.plantCount.textContent = `Растений в альманахе: ${plantsCatalog.length}`;
   }
+  syncNutOwnerUi();
   renderFilters();
+
+  window.addEventListener("amal-power", (e) => {
+    if (!amalOwner()) return;
+    const t = e.detail && e.detail.type;
+    if (!t) return;
+    if (t === "zvp2-kill" || t === "max") {
+      state.zombies.forEach((z) => {
+        z.hp = 0;
+        z.dead = true;
+      });
+      state.zombies = [];
+      showToast("☠ Все зомби убиты (только ты)");
+    }
+    if (t === "zvp2-spawn") {
+      spawnZombie();
+      showToast("🧟 +1 зомби");
+    }
+    if (t === "zvp2-noreload" || t === "max") {
+      state.ownerNoReload = true;
+      Object.keys(state.cooldown).forEach((id) => {
+        state.cooldown[id] = 0;
+      });
+      showToast("⏳ Без перезарядки (только ты)");
+      renderSeedBar();
+    }
+    if (t === "zvp2-nut-normal") setNutEffect("normal");
+    if (t === "zvp2-nut-poison") setNutEffect("poison");
+    if (t === "zvp2-nut-kill") setNutEffect("kill");
+    if (t === "max") {
+      state.test = true;
+      state.sun = 99999;
+      state.ownerNoReload = true;
+      updateHud();
+    }
+  });
+
+  window.addEventListener("amal-owner-changed", () => syncNutOwnerUi());
 })();
