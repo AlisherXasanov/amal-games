@@ -311,6 +311,7 @@
     spawnAllergy: "random",
     paused: false,
     timeScale: 1,
+    freezeOn: false,
     slowmoOn: false,
     shieldLeft: 0,
     abilityCd: {},
@@ -326,13 +327,12 @@
   }
 
   function promoUnlocked() {
-    if (amalOwner()) return true;
     return !!(window.PVZ2Promo && PVZ2Promo.hasAnyPromo());
   }
 
+  /** Только промокод ПОПУГАЙ — хозяин сюда не подмешивается */
   function promoAbilityDefs() {
     const all = (window.PVZ2Promo && PVZ2Promo.ABILITIES) || [];
-    if (amalOwner()) return all;
     if (!window.PVZ2Promo) return [];
     const ids = new Set(PVZ2Promo.unlockedAbilityIds());
     return all.filter((a) => ids.has(a.id));
@@ -341,13 +341,21 @@
   function refreshPromoUi() {
     const list = document.getElementById("abilityList");
     const hint = document.getElementById("promoHint");
+    const codeHint = document.getElementById("promoCodeHint");
+    if (codeHint) {
+      codeHint.innerHTML = amalOwner()
+        ? 'Друзьям скажи код: <strong>ПОПУГАЙ</strong> (или PARROT)'
+        : 'Введи код, если тебе его дали';
+    }
     if (!list) return;
     const abs = promoAbilityDefs();
     if (!abs.length) {
       list.hidden = true;
       list.innerHTML = "";
       if (hint) {
-        hint.textContent = "Код на русском или другом языке — только для тех, кому ты дал.";
+        hint.textContent = amalOwner()
+          ? "Попугай — не твоя админка. У тебя в бою кнопка ❄ Стоп (время стоит совсем)."
+          : "Код на русском или другом языке — только для тех, кому хозяин дал.";
       }
       return;
     }
@@ -359,10 +367,34 @@
       )
       .join("");
     if (hint) {
-      hint.textContent = amalOwner()
-        ? "Хозяин: все сюрприз-способности открыты. Если непонятно — скажи кодовое слово."
-        : "Сюрприз открыт! Ниже — что умеют способности. Если непонятно — скажи одно слово.";
+      hint.textContent = "Промо открыто: это замедление и сюрпризы для друзей (не полный стоп).";
     }
+  }
+
+  function syncFreezeButton() {
+    const btn = document.getElementById("btnFreeze");
+    if (!btn) return;
+    const mine = amalOwner();
+    btn.hidden = !mine;
+    btn.classList.toggle("on", !!(mine && state.freezeOn));
+    btn.textContent = state.freezeOn ? "❄ Стоп ВКЛ" : "❄ Стоп";
+  }
+
+  function toggleFreeze() {
+    if (!amalOwner() || !state.running) return;
+    state.freezeOn = !state.freezeOn;
+    if (state.freezeOn) {
+      state.slowmoOn = false;
+      state.timeScale = 0;
+      showToast("❄ Время СТОИТ — пока сам не выключишь");
+    } else {
+      state.timeScale = 1;
+      showToast("❄ Время снова идёт");
+    }
+    AudioFX.unlock();
+    AudioFX.ability();
+    syncFreezeButton();
+    renderAbilityBar();
   }
 
   function tryRedeemPromo() {
@@ -433,10 +465,12 @@
     let ok = false;
     if (id === "slowmo") {
       state.slowmoOn = !state.slowmoOn;
+      if (state.slowmoOn) state.freezeOn = false;
       state.timeScale = state.slowmoOn ? 0.35 : 1;
       ok = true;
-      showToast(state.slowmoOn ? "⏱ Замедление ВКЛ — пока сам не выключишь" : "⏱ Замедление ВЫКЛ");
+      showToast(state.slowmoOn ? "⏱ Замедление ВКЛ (промо)" : "⏱ Замедление ВЫКЛ");
       AudioFX.ability();
+      syncFreezeButton();
     } else if (id === "screech") {
       state.zombies.forEach((z) => {
         if (!z.dead) z.slow = Math.max(z.slow || 0, 2.2);
@@ -1057,6 +1091,7 @@
     zombieTool = null;
     state.paused = false;
     state.timeScale = 1;
+    state.freezeOn = false;
     state.slowmoOn = false;
     state.shieldLeft = 0;
     state.abilityCd = {};
@@ -1078,6 +1113,7 @@
     buildZombieOwnerPickers();
     syncZombieOwnerUi();
     renderAbilityBar();
+    syncFreezeButton();
     const pauseBtn = document.getElementById("btnPause");
     if (pauseBtn) pauseBtn.textContent = "⏸";
     AudioFX.unlock();
@@ -2263,7 +2299,9 @@
       return;
     }
 
-    if (state.slowmoOn) {
+    if (state.freezeOn && amalOwner()) {
+      state.timeScale = 0;
+    } else if (state.slowmoOn) {
       state.timeScale = 0.35;
     } else {
       state.timeScale = 1;
@@ -2281,14 +2319,17 @@
 
     const dt = rawDt * state.timeScale;
     state.time += dt;
-    updateWaves(dt);
-    if (!state.running) return;
-    updatePlants(dt);
-    updateZombies(dt);
-    updateMowers(dt);
-    updateProjectiles(dt);
-    updateSuns(dt);
-    updateFx(dt);
+    // при полном стопе (хозяин) логика не тикает, только рисуем
+    if (state.timeScale > 0) {
+      updateWaves(dt);
+      if (!state.running) return;
+      updatePlants(dt);
+      updateZombies(dt);
+      updateMowers(dt);
+      updateProjectiles(dt);
+      updateSuns(dt);
+      updateFx(dt);
+    }
     if (Math.floor(ts / 250) !== Math.floor((ts - rawDt * 1000) / 250)) {
       renderSeedBar();
       renderAbilityBar();
@@ -2302,7 +2343,15 @@
       ctx.lineWidth = 3;
       ctx.strokeRect(2, TOP + 2, LEFT - 10, ROWS * CELL_H - 4);
     }
-    if (state.slowmoOn) {
+    if (state.freezeOn) {
+      ctx.fillStyle = "rgba(140, 200, 255, 0.16)";
+      ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+      ctx.fillStyle = "#c8e8ff";
+      ctx.font = "900 28px Rubik Dirt, Nunito, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("ВРЕМЯ СТОИТ", els.canvas.width / 2, 28);
+      ctx.textAlign = "start";
+    } else if (state.slowmoOn) {
       ctx.fillStyle = "rgba(180, 220, 255, 0.08)";
       ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
     }
@@ -2386,6 +2435,7 @@
   document.getElementById("btnEndMenu").addEventListener("click", showMenu);
   document.getElementById("btnQuit").addEventListener("click", showMenu);
   document.getElementById("btnPause")?.addEventListener("click", togglePause);
+  document.getElementById("btnFreeze")?.addEventListener("click", toggleFreeze);
   document.getElementById("btnMute")?.addEventListener("click", toggleMute);
   document.getElementById("btnMuteMenu")?.addEventListener("click", toggleMute);
   document.getElementById("btnPromo")?.addEventListener("click", tryRedeemPromo);
@@ -2557,6 +2607,7 @@
   syncNutOwnerUi();
   syncMuteButtons();
   refreshPromoUi();
+  syncFreezeButton();
   renderFilters();
 
   window.addEventListener("amal-power", (e) => {
@@ -2619,14 +2670,14 @@
     if (t === "zvp2-nut-normal") setNutEffect("normal");
     if (t === "zvp2-nut-poison") setNutEffect("poison");
     if (t === "zvp2-nut-kill") setNutEffect("kill");
-    if (t === "zvp2-slowmo") useAbility("slowmo");
-    if (t === "zvp2-screech") useAbility("screech");
+    if (t === "zvp2-freeze") toggleFreeze();
     if (t === "max") {
       state.test = true;
       state.sun = 99999;
       state.ownerNoReload = true;
       updateHud();
       syncZombieOwnerUi();
+      syncFreezeButton();
       renderAbilityBar();
     }
   });
@@ -2635,6 +2686,7 @@
     syncNutOwnerUi();
     buildZombieOwnerPickers();
     refreshPromoUi();
+    syncFreezeButton();
     renderAbilityBar();
   });
 })();

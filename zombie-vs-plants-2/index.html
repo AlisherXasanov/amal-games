@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=13" />
+  <link rel="stylesheet" href="./style.css?v=14" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -51,12 +51,13 @@
 
         <aside class="promo-side" id="promoBox">
           <h3 class="promo-side-title">Промокод</h3>
-          <p class="promo-side-sub">для своих</p>
+          <p class="promo-side-sub">для друзей · не админка</p>
+          <p class="promo-code-hint" id="promoCodeHint">Код: <strong>ПОПУГАЙ</strong> (или PARROT)</p>
           <div class="promo-row">
             <input type="text" id="promoInput" placeholder="Введи код…" autocomplete="off" maxlength="40" />
             <button type="button" class="btn btn-ghost" id="btnPromo">Ок</button>
           </div>
-          <p class="promo-hint" id="promoHint">Код на русском или другом языке — только для тех, кому ты дал.</p>
+          <p class="promo-hint" id="promoHint">Друзьям даёт замедление и сюрпризы. У хозяина — отдельный ❄ Стоп времени в бою.</p>
           <ul class="ability-list" id="abilityList" hidden></ul>
         </aside>
       </div>
@@ -87,6 +88,7 @@
           <div class="hud-wave" id="waveText">Волна 1</div>
           <div class="hud-mode" id="modeText">Соло</div>
           <button type="button" class="btn-sm" id="btnPause" title="Пауза / стоп времени">⏸</button>
+          <button type="button" class="btn-sm" id="btnFreeze" title="Полный стоп времени (хозяин)" hidden>❄ Стоп</button>
           <button type="button" class="btn-sm" id="btnMute" title="Звук">🔊</button>
           <button type="button" class="btn-sm" id="btnShovel">🪏 Лопата</button>
           <button type="button" class="btn-sm" id="btnNutTool" hidden>🥜 Орех</button>
@@ -135,10 +137,10 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="../shared/amal-owner-powers.js?v=11"></script>
+  <script src="../shared/amal-owner-powers.js?v=12"></script>
   <script src="../shared/amal-hub.js?v=9"></script>
   <script src="./plants-data.js?v=9"></script>
-  <script src="./promo.js?v=2"></script>
-  <script src="./game.js?v=13"></script>
+  <script src="./promo.js?v=3"></script>
+  <script src="./game.js?v=14"></script>
 </body>
 </html>

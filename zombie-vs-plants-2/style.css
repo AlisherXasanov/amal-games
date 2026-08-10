@@ -173,6 +173,14 @@ body {
 .nut-mode.active[data-nut="poison"] { background: #7a3ab0; color: #f5e8ff; border-color: transparent; }
 .nut-mode.active[data-nut="kill"] { background: #d4543a; color: #fff; border-color: transparent; }
 .btn-sm.on { outline: 2px solid #ffd27a; }
+#btnFreeze.on { outline: 2px solid #9fdfff; background: #2a4a6a; color: #e8f6ff; }
+.promo-code-hint {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #c8ff9a;
+}
+.promo-code-hint strong { color: #ffe7a8; }
 
 .zombie-bar {
   display: flex;
