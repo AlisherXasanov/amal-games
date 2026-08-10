@@ -114,6 +114,7 @@
     .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #5a9e3a 55%, #8b5a2b); }
     .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #3d2a18 60%, #0c1612); }
     .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #143a3f 55%, #3a8f88); }
+    .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #e25a3c 55%, #f0b429); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -169,6 +170,7 @@
     .play-btn.craft { background: #5a9e3a; color: #0a1808; }
     .play-btn.hideout { background: #e8c547; color: #0c1612; }
     .play-btn.hospital { background: #7ed9b8; color: #0c2a28; }
+    .play-btn.createlab { background: #0d6e5f; color: #f3efe6; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -186,14 +188,24 @@
       Сначала напиши <strong style="color:#e4e4e7">ник</strong> (кнопка 📝). Можно отправить <strong style="color:#e4e4e7">заметку Амалю</strong> из любой игры.
     </p>
     <p style="margin-top:0.75rem">
-      <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру — меню</a>
+      <a href="create-lab/" style="color:#6ee7b7;font-weight:600;text-decoration:none">Create Lab</a>
       ·
-      <a href="voice-ai-proposal/" style="color:#6ee7b7;font-weight:600;text-decoration:none">предложение</a>
+      <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру</a>
     </p>
   </header>
 
   <p class="section-title">Все игры</p>
   <div class="grid all">
+    <a class="card featured" href="create-lab/">
+      <div class="card-img createlab">👂</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>Create Lab</h2>
+        <p>Свои анимации и игры. Ушастик слышит микрофоном и говорит по-русски.</p>
+        <span class="play-btn createlab">Открыть</span>
+      </div>
+    </a>
+
     <a class="card featured" href="animal-hospital/">
       <div class="card-img hospital">🐾</div>
       <div class="card-body">
@@ -284,16 +296,6 @@
       </div>
     </a>
 
-    <a class="card featured" href="space-courier/">
-      <div class="card-img courier">🚀</div>
-      <div class="card-body">
-        <span class="badge update">Обновлено</span>
-        <h2>Космический курьер</h2>
-        <p>15 миссий, неуязвимость, бомбы ∞. Лети на станцию — коробку брать не нужно. Очки всегда максимум.</p>
-        <span class="play-btn courier">Играть</span>
-      </div>
-    </a>
-
     <a class="card featured" href="bravol-stars/">
       <div class="card-img brawl">⭐</div>
       <div class="card-body">
@@ -373,6 +375,6 @@
   </script>
   <script src="./owner-cheats.js"></script>
   <script src="./shared/amal-owner-powers.js?v=11"></script>
-  <script src="./shared/amal-hub.js?v=14"></script>
+  <script src="./shared/amal-hub.js?v=15"></script>
 </body>
 </html>

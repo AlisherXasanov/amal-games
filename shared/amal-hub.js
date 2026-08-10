@@ -14,6 +14,7 @@
     issuedGrants: "amal-hub-issued-grants-v1",
     myPowers: "amal-hub-my-powers-v1",
     revokedGrants: "amal-hub-revoked-grants-v1",
+    registry: "amal-hub-registry-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
@@ -36,11 +37,17 @@
     { id: "ladder-climb", name: "Ступеньки вверх" },
     { id: "terraverse", name: "Пиксель-Террариум" },
     { id: "zombie-vs-plants", name: "Зомби vs растения" },
+    { id: "zombie-vs-plants-2", name: "Зомби vs растения 2" },
     { id: "globe-battle", name: "Globe Battle" },
     { id: "animal-hospital", name: "Animal Hospital" },
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-10-register-all",
+      title: "Одна регистрация — все игры",
+      body: "Сохранил ник в одной игре — ты уже во всех. Хозяину приходит сообщение: кто, когда и из какой игры.",
+    },
     {
       id: "2026-08-08-hospital",
       title: "Animal Hospital",
@@ -399,6 +406,7 @@
       minecraft: "CraftWorld",
       "kick-buddy": "Kick Buddy",
       "zombie-vs-plants": "Зомби vs растения",
+      "zombie-vs-plants-2": "Зомби vs растения 2",
       "coin-arsenal": "Coin Arsenal",
       "x-buggy": "X-Buggy",
       "melon-playground": "Melon Playground",
@@ -408,8 +416,113 @@
       "ladder-climb": "Ступеньки вверх",
       terraverse: "Пиксель-Террариум",
       "globe-battle": "Globe Battle",
+      "animal-hospital": "Animal Hospital",
     };
     return map[id] || id;
+  }
+
+  function formatRegDay(ts) {
+    try {
+      return new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(ts));
+    } catch (_) {
+      return new Date(ts).toLocaleString("ru-RU");
+    }
+  }
+
+  function loadRegistry() {
+    const map = storeGet(KEYS.registry, {});
+    return map && typeof map === "object" ? map : {};
+  }
+
+  function saveRegistry(map) {
+    storeSet(KEYS.registry, map);
+  }
+
+  function listRegistry() {
+    return Object.values(loadRegistry()).sort((a, b) => (b.firstAt || 0) - (a.firstAt || 0));
+  }
+
+  /**
+   * Одна регистрация на весь портал.
+   * isNew=true → первый раз; хозяин должен узнать.
+   */
+  function registerEverywhere(nickRaw, gameId) {
+    const nick = String(nickRaw || "").trim().slice(0, NICK_MAX);
+    if (nick.length < NICK_MIN) return { ok: false, isNew: false };
+    const key = nick.toLowerCase();
+    const game = gameId || gameIdFromPath();
+    const map = loadRegistry();
+    const prev = map[key];
+    const now = Date.now();
+    const isNew = !prev;
+    const games = prev && Array.isArray(prev.games) ? prev.games.slice() : [];
+    if (!games.includes(game)) games.push(game);
+    const entry = {
+      nick,
+      firstAt: prev && prev.firstAt ? prev.firstAt : now,
+      firstGame: prev && prev.firstGame ? prev.firstGame : game,
+      lastAt: now,
+      lastGame: game,
+      games,
+    };
+    map[key] = entry;
+    saveRegistry(map);
+    return { ok: true, isNew, entry };
+  }
+
+  function notifyOwnerAboutRegistration(entry) {
+    if (!entry || !entry.nick) return;
+    const when = formatRegDay(entry.firstAt || Date.now());
+    const fromGame = gameTitle(entry.firstGame || entry.lastGame || "portal");
+    const text =
+      "🆕 РЕГИСТРАЦИЯ ВО ВСЕХ ИГРАХ\n" +
+      "Ник: " +
+      entry.nick +
+      "\nДень: " +
+      when +
+      "\nОткуда: " +
+      fromGame +
+      "\nТеперь этот человек есть во всём Amal Games.";
+    // Локальный инбокс (если хозяин на этом же устройстве / синхрон через заметки)
+    const list = loadNotes();
+    list.push({
+      id: "reg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+      nick: entry.nick,
+      game: entry.firstGame || entry.lastGame || gameIdFromPath(),
+      text,
+      at: entry.firstAt || Date.now(),
+      fromAdmin: false,
+      toNick: null,
+      status: "new",
+      kind: "registration",
+    });
+    saveNotes(list);
+    showHubToast("🆕 Зарегистрировался: " + entry.nick + " · " + when);
+  }
+
+  function broadcastRegistration(entry) {
+    if (!entry) return;
+    const payload = {
+      type: "register",
+      nick: entry.nick,
+      game: entry.firstGame || entry.lastGame || gameIdFromPath(),
+      gameTitle: gameTitle(entry.firstGame || entry.lastGame || gameIdFromPath()),
+      at: entry.firstAt || Date.now(),
+      firstAt: entry.firstAt || Date.now(),
+      live: true,
+    };
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    sendPresenceToHost(payload);
   }
 
   function getNick() {
@@ -431,10 +544,18 @@
       .slice(0, NICK_MAX);
     if (nick.length < NICK_MIN) return { ok: false, error: "Минимум " + NICK_MIN + " символа" };
     if (/[<>]/.test(nick)) return { ok: false, error: "Без < >" };
+    const prev = getNick();
     storeSet(KEYS.nick, nick);
+    const reg = registerEverywhere(nick, gameIdFromPath());
     if (!isOwner()) bumpPresence();
     else removeSelfFromPresence();
-    return { ok: true, nick };
+    if (reg.isNew && !isOwner()) {
+      broadcastRegistration(reg.entry);
+    } else if (!reg.isNew && prev.toLowerCase() === nick.toLowerCase()) {
+      // повторный вход
+      bumpPresence();
+    }
+    return { ok: true, nick, isNew: !!reg.isNew, registeredAt: reg.entry && reg.entry.firstAt };
   }
 
   function loadNotes() {
@@ -643,7 +764,12 @@
       if (!global.__amalPresenceBc) {
         global.__amalPresenceBc = new BroadcastChannel("amal-hub-presence");
         global.__amalPresenceBc.onmessage = (ev) => {
-          if (isOwner() && ev.data) upsertLivePlayer(ev.data);
+          if (!isOwner() || !ev.data) return;
+          upsertLivePlayer(ev.data);
+          if (ev.data.type === "register" && ev.data.nick) {
+            const reg = registerEverywhere(ev.data.nick, ev.data.game);
+            if (reg.isNew) notifyOwnerAboutRegistration(reg.entry);
+          }
         };
       }
     } catch {
@@ -692,7 +818,16 @@
       if (data.type === "presence" || data.nick) {
         const wasNew = !livePlayers[data.nick];
         upsertLivePlayer(data);
-        if (wasNew && data.nick) showHubToast("Вошёл: " + data.nick + " · " + gameTitle(data.game || "portal"));
+        if (data.type === "register" && data.nick) {
+          const reg = registerEverywhere(data.nick, data.game);
+          if (reg.isNew) {
+            notifyOwnerAboutRegistration(reg.entry);
+          } else {
+            showHubToast("Снова вошёл: " + data.nick + " · " + gameTitle(data.game || "portal"));
+          }
+        } else if (wasNew && data.nick) {
+          showHubToast("Вошёл: " + data.nick + " · " + gameTitle(data.game || "portal"));
+        }
       }
     });
     conn.on("close", () => hostConnections.delete(conn));
@@ -979,16 +1114,24 @@
   }
 
   function nickFormHtml(current) {
+    const already = current
+      ? `<p class="sub" style="color:#bbf7d0">Ты уже зарегистрирован во <b>всех</b> играх Amal Games как <b>${escapeHtml(
+          current,
+        )}</b>.</p>`
+      : "";
     return `
-      <h2>${current ? "Сменить ник" : "Как тебя зовут?"}</h2>
-      <p class="sub">Ник нужен во всех играх Amal's Games. Без ника играть нельзя.</p>
+      <h2>${current ? "Твой ник" : "Регистрация"}</h2>
+      <p class="sub">Один ник — сразу во всех играх. Сохранил здесь → можешь заходить в любую игру без новой регистрации.</p>
+      ${already}
       <input id="amal-nick-input" maxlength="${NICK_MAX}" placeholder="Например: AmalPro" value="${escapeHtml(
         current || "",
       )}" />
       ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
       ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
       <div class="amal-hub-row">
-        <button type="button" class="primary" data-amal="save-nick" style="flex:1">Сохранить ник</button>
+        <button type="button" class="primary" data-amal="save-nick" style="flex:1">${
+          current ? "Обновить ник" : "Зарегистрироваться"
+        }</button>
         ${current && !gateMode ? `<button type="button" data-amal="close">Закрыть</button>` : ""}
       </div>
     `;
@@ -1101,6 +1244,33 @@
         <div class="amal-hub-row" style="margin-top:10px">
           <button type="button" data-amal="admin-clear-presence">Очистить список</button>
         </div>
+        ${back}`;
+    }
+
+    if (adminPage === "registry") {
+      const regs = listRegistry();
+      return `
+        <div class="amal-hub-hero"><div class="badge">🆕</div><div>
+          <h2>Регистрации</h2>
+          <p class="sub">Кто зарегистрировался, в какой день и из какой игры (сразу на весь портал)</p>
+        </div></div>
+        <ul class="amal-hub-list">${
+          regs.length
+            ? regs
+                .map(
+                  (r) =>
+                    `<li><div class="meta">${escapeHtml(formatRegDay(r.firstAt))}</div>` +
+                    `<b>${escapeHtml(r.nick)}</b>` +
+                    `<div style="margin-top:4px;opacity:.8">Первая игра: ${escapeHtml(
+                      gameTitle(r.firstGame),
+                    )}</div>` +
+                    `<div style="margin-top:2px;opacity:.7;font-size:11px">Игр заходил: ${(r.games || [])
+                      .map((g) => gameTitle(g))
+                      .join(", ")}</div></li>`,
+                )
+                .join("")
+            : `<li class="meta">Пока никто не регистрировался.</li>`
+        }</ul>
         ${back}`;
     }
 
@@ -1293,6 +1463,7 @@
       </div>
       <div class="amal-hub-grid2"><button type="button" data-amal="admin-live"><span class="ico">📡</span><b>Живая карта</b><span>Лица онлайн</span></button>
         <button type="button" data-amal="admin-players"><span class="ico">👥</span><b>Кто играет</b><span>Ники и игры</span></button>
+        <button type="button" data-amal="admin-registry"><span class="ico">🆕</span><b>Регистрации</b><span>Кто и когда</span></button>
         <button type="button" data-amal="admin-inbox"><span class="ico">📩</span><b>Входящие</b><span>${
           unread.length ? unread.length + " новых" : "пусто"
         }</span></button>
@@ -1446,6 +1617,12 @@
           view = "admin";
           paint();
         }
+        if (act === "admin-registry") {
+          adminPage = "registry";
+          open = true;
+          view = "admin";
+          paint();
+        }
         if (act === "admin-inbox") {
           adminPage = "inbox";
           open = true;
@@ -1546,7 +1723,16 @@
             return;
           }
           err = "";
-          msg = "Ник сохранён: " + res.nick;
+          if (res.isNew) {
+            msg =
+              "Готово! «" +
+              res.nick +
+              "» зарегистрирован во ВСЕХ играх · " +
+              formatRegDay(res.registeredAt || Date.now());
+            showHubToast("Регистрация на весь портал: " + res.nick);
+          } else {
+            msg = "Снова привет, " + res.nick + " — ты уже во всех играх";
+          }
           gateMode = false;
           view = isOwner() ? "admin" : "note";
           paint();
@@ -1708,6 +1894,8 @@
     revokeGrant,
     open: openUi,
     gameId: gameIdFromPath,
+    registerEverywhere,
+    listRegistry,
     CHANGELOG,
   };
 
