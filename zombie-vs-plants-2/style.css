@@ -205,6 +205,95 @@ body {
 .z-chip.hybrid.active { background: #c9a23a; color: #1a1204; }
 .z-chip.allergy.active { background: #d48a3a; color: #1a1004; }
 
+.field.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.promo-box {
+  margin: 0.75rem 0 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(123, 196, 74, 0.28);
+}
+.promo-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+.promo-row input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid rgba(238, 246, 232, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--cream);
+  border-radius: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  font: 800 0.9rem/1.2 "Nunito", system-ui, sans-serif;
+}
+.promo-hint {
+  margin-top: 0.45rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+.ability-list {
+  list-style: none;
+  margin-top: 0.55rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.ability-list li {
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  background: rgba(123, 196, 74, 0.12);
+  border: 1px solid rgba(123, 196, 74, 0.28);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+.ability-list li strong { color: #c8ff9a; }
+.ability-list li span { display: block; margin-top: 0.15rem; color: var(--muted); font-weight: 700; font-size: 0.72rem; }
+.menu-tools { margin: 0.5rem 0 0.75rem; }
+
+.ability-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+.ability-btn {
+  border: 1px solid rgba(238, 246, 232, 0.22);
+  background: rgba(20, 40, 28, 0.85);
+  color: var(--cream);
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.65rem;
+  font: 800 0.72rem/1.15 "Nunito", system-ui, sans-serif;
+  cursor: pointer;
+}
+.ability-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.ability-btn.on {
+  outline: 2px solid #ffe566;
+  background: #3a5028;
+}
+.hud-pause-banner {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+  font: 900 1.6rem/1 "Rubik Dirt", "Nunito", sans-serif;
+  color: #ffe7a8;
+  text-shadow: 0 2px 12px rgba(0,0,0,.6);
+  letter-spacing: 0.04em;
+}
+.play-shell { position: relative; }
+
 .toast {
   position: fixed;
   left: 50%;

@@ -8,6 +8,170 @@
   const ALLERGY_CHANCE = 0.1;
   const START_SUN = 200;
   const MAX_WAVES = 8;
+  const MUTE_KEY = "pvz2-mute-v1";
+
+  function readMuted() {
+    try {
+      return localStorage.getItem(MUTE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function writeMuted(v) {
+    try {
+      localStorage.setItem(MUTE_KEY, v ? "1" : "0");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  const AudioFX = {
+    ctx: null,
+    muted: readMuted(),
+    musicTimer: null,
+    musicStep: 0,
+    unlock() {
+      try {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          this.ctx = new AC();
+        }
+        if (this.ctx.state === "suspended") this.ctx.resume();
+      } catch (_) {
+        /* ignore */
+      }
+    },
+    beep(freq, dur, type = "square", vol = 0.08, slide = 0) {
+      if (this.muted || !this.ctx) return;
+      const t0 = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t0);
+      if (slide) osc.frequency.linearRampToValueAtTime(freq + slide, t0 + dur);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.02);
+    },
+    noise(dur, vol = 0.05) {
+      if (this.muted || !this.ctx) return;
+      const t0 = this.ctx.currentTime;
+      const len = Math.floor(this.ctx.sampleRate * dur);
+      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      const src = this.ctx.createBufferSource();
+      const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 900;
+      src.buffer = buf;
+      gain.gain.value = vol;
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+      src.start(t0);
+    },
+    startMusic() {
+      if (!this.ctx || this.muted || this.musicTimer) return;
+      const melody = [262, 311, 349, 392, 349, 311, 262, 233, 262, 311, 349, 415, 392, 349, 311, 262];
+      const bass = [131, 131, 155, 155, 175, 175, 147, 147];
+      this.musicTimer = setInterval(() => {
+        if (this.muted || !this.ctx) return;
+        const i = this.musicStep % melody.length;
+        const m = melody[i];
+        const b = bass[this.musicStep % bass.length];
+        this.beep(b, 0.28, "triangle", 0.03);
+        this.beep(m, 0.2, "square", 0.022);
+        if (i % 4 === 0) this.beep(m * 1.5, 0.1, "sine", 0.014);
+        this.musicStep += 1;
+      }, 340);
+    },
+    stopMusic() {
+      if (this.musicTimer) {
+        clearInterval(this.musicTimer);
+        this.musicTimer = null;
+      }
+    },
+    plant() {
+      this.beep(220, 0.08, "triangle", 0.07);
+      this.beep(330, 0.1, "triangle", 0.05);
+    },
+    shoot() {
+      this.beep(480, 0.05, "square", 0.04, -120);
+    },
+    sun() {
+      this.beep(660, 0.08, "sine", 0.06);
+      this.beep(880, 0.1, "sine", 0.05);
+    },
+    hit() {
+      this.beep(180, 0.06, "sawtooth", 0.04);
+    },
+    bite() {
+      this.beep(90, 0.1, "sawtooth", 0.05);
+    },
+    explode() {
+      this.noise(0.35, 0.12);
+      this.beep(120, 0.25, "sawtooth", 0.08, -80);
+    },
+    mower() {
+      this.noise(0.25, 0.08);
+      this.beep(90, 0.35, "sawtooth", 0.06, 80);
+    },
+    wave() {
+      this.beep(200, 0.15, "triangle", 0.07, 200);
+    },
+    win() {
+      this.beep(523, 0.12, "sine", 0.07);
+      setTimeout(() => this.beep(659, 0.12, "sine", 0.07), 120);
+      setTimeout(() => this.beep(784, 0.2, "sine", 0.08), 240);
+    },
+    lose() {
+      this.beep(300, 0.2, "sawtooth", 0.07, -150);
+      setTimeout(() => this.beep(160, 0.3, "sawtooth", 0.08), 180);
+    },
+    click() {
+      this.beep(500, 0.04, "square", 0.03);
+    },
+    zombie() {
+      this.beep(110, 0.12, "sawtooth", 0.06, -30);
+    },
+    ability() {
+      this.beep(440, 0.08, "sine", 0.06);
+      this.beep(660, 0.12, "triangle", 0.05);
+      this.beep(880, 0.1, "sine", 0.04);
+    },
+    screech() {
+      this.beep(900, 0.08, "square", 0.05, -400);
+      this.beep(1200, 0.12, "sawtooth", 0.04, -600);
+    },
+  };
+
+  function syncMuteButtons() {
+    const label = AudioFX.muted ? "🔇 Звук выкл" : "🔊 Звук";
+    const icon = AudioFX.muted ? "🔇" : "🔊";
+    const menu = document.getElementById("btnMuteMenu");
+    const play = document.getElementById("btnMute");
+    if (menu) menu.textContent = label;
+    if (play) play.textContent = icon;
+  }
+
+  function toggleMute() {
+    AudioFX.unlock();
+    AudioFX.muted = !AudioFX.muted;
+    writeMuted(AudioFX.muted);
+    syncMuteButtons();
+    if (AudioFX.muted) AudioFX.stopMusic();
+    else {
+      AudioFX.click();
+      if (state.running && !state.paused) AudioFX.startMusic();
+    }
+  }
 
   const ALLERGY_TYPES = {
     nut: { id: "nut", label: "орехи", short: "орех", color: "#ffd27a" },
@@ -145,6 +309,11 @@
     spawnKind: "normal",
     spawnRow: 0,
     spawnAllergy: "random",
+    paused: false,
+    timeScale: 1,
+    slowmoLeft: 0,
+    shieldLeft: 0,
+    abilityCd: {},
   };
 
   function showToast(text) {
@@ -153,7 +322,197 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       els.toast.hidden = true;
-    }, 2200);
+    }, 2600);
+  }
+
+  function promoUnlocked() {
+    if (amalOwner()) return true;
+    return !!(window.PVZ2Promo && PVZ2Promo.hasAnyPromo());
+  }
+
+  function promoAbilityDefs() {
+    const all = (window.PVZ2Promo && PVZ2Promo.ABILITIES) || [];
+    if (amalOwner()) return all;
+    if (!window.PVZ2Promo) return [];
+    const ids = new Set(PVZ2Promo.unlockedAbilityIds());
+    return all.filter((a) => ids.has(a.id));
+  }
+
+  function refreshPromoUi() {
+    const list = document.getElementById("abilityList");
+    const hint = document.getElementById("promoHint");
+    if (!list) return;
+    const abs = promoAbilityDefs();
+    if (!abs.length) {
+      list.hidden = true;
+      list.innerHTML = "";
+      if (hint) {
+        hint.textContent = "Код на русском или другом языке — только для тех, кому ты дал.";
+      }
+      return;
+    }
+    list.hidden = false;
+    list.innerHTML = abs
+      .map(
+        (a) =>
+          `<li><strong>${a.name}</strong> <em style="opacity:.7">(${a.word})</em><span>${a.desc}</span></li>`
+      )
+      .join("");
+    if (hint) {
+      hint.textContent = amalOwner()
+        ? "Хозяин: все сюрприз-способности открыты. Если непонятно — скажи кодовое слово."
+        : "Сюрприз открыт! Ниже — что умеют способности. Если непонятно — скажи одно слово.";
+    }
+  }
+
+  function tryRedeemPromo() {
+    AudioFX.unlock();
+    AudioFX.click();
+    const input = document.getElementById("promoInput");
+    const raw = input ? input.value : "";
+    if (!window.PVZ2Promo) {
+      showToast("Промокоды не загрузились");
+      return;
+    }
+    const result = PVZ2Promo.redeem(raw);
+    showToast(result.message);
+    if (result.ok) {
+      AudioFX.ability();
+      if (input) input.value = "";
+      refreshPromoUi();
+      renderAbilityBar();
+      if (result.abilities && result.abilities.length) {
+        const names = result.abilities.map((a) => a.name).join(" · ");
+        setTimeout(() => showToast(`Способности: ${names}`), 900);
+      }
+    } else {
+      AudioFX.hit();
+    }
+  }
+
+  function renderAbilityBar() {
+    const bar = document.getElementById("abilityBar");
+    if (!bar) return;
+    const abs = promoAbilityDefs();
+    if (!abs.length || !state.running) {
+      bar.hidden = true;
+      bar.innerHTML = "";
+      return;
+    }
+    bar.hidden = false;
+    bar.innerHTML = "";
+    abs.forEach((a, i) => {
+      const cd = state.abilityCd[a.id] || 0;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "ability-btn";
+      btn.disabled = cd > 0 || state.paused;
+      btn.title = a.desc;
+      btn.textContent = cd > 0 ? `${a.name} ${Math.ceil(cd)}с` : `${i + 1}. ${a.name}`;
+      btn.addEventListener("click", () => useAbility(a.id));
+      bar.appendChild(btn);
+    });
+  }
+
+  function useAbility(id) {
+    if (!state.running || state.paused) return;
+    const def = promoAbilityDefs().find((a) => a.id === id);
+    if (!def) {
+      showToast("Сначала введи промокод в меню");
+      return;
+    }
+    if ((state.abilityCd[id] || 0) > 0) {
+      showToast("Ещё перезарядка способности");
+      return;
+    }
+    AudioFX.unlock();
+    let ok = false;
+    if (id === "slowmo") {
+      state.slowmoLeft = 6;
+      state.timeScale = 0.35;
+      ok = true;
+      showToast("⏱ Замедление времени!");
+      AudioFX.ability();
+    } else if (id === "screech") {
+      state.zombies.forEach((z) => {
+        if (!z.dead) z.slow = Math.max(z.slow || 0, 2.2);
+      });
+      ok = true;
+      showToast("🦜 Крик попугая — зомби замерли!");
+      AudioFX.screech();
+    } else if (id === "sunrain") {
+      for (let i = 0; i < 8; i++) {
+        state.suns.push({
+          x: LEFT + 30 + Math.random() * (COLS * CELL_W - 60),
+          y: 8 + Math.random() * 40,
+          value: 25,
+          life: 10,
+          falling: true,
+        });
+      }
+      ok = true;
+      showToast("☀️ Дождь солнца!");
+      AudioFX.sun();
+    } else if (id === "homeshield") {
+      state.shieldLeft = 8;
+      ok = true;
+      showToast("🛡 Щит дома на 8 сек!");
+      AudioFX.ability();
+    } else if (id === "giftplant") {
+      const gifts = ["winter-melon", "tall-nut", "threepeater", "snapdragon", "spikerock", "repeater", "bonk-choy"].filter(
+        (pid) => COMBAT[pid] && !COMBAT[pid].instant
+      );
+      const typeId = gifts[Math.floor(Math.random() * gifts.length)] || "wall-nut";
+      let placed = false;
+      for (let c = 0; c < COLS && !placed; c++) {
+        for (let r = 0; r < ROWS && !placed; r++) {
+          if (!plantAt(r, c)) {
+            const type = COMBAT[typeId];
+            state.plants.push({
+              id: Math.random().toString(36).slice(2),
+              typeId,
+              row: r,
+              col: c,
+              hp: type.hp,
+              maxHp: type.hp,
+              cd: 0.2,
+              sunCd: type.sunEvery || 0,
+              armed: type.role !== "mine",
+              dead: false,
+              owner: "Сюрприз",
+              nutEffect: type.nut ? "normal" : null,
+            });
+            placed = true;
+            addFx("🎁", cellRect(r, c).x + 24, cellRect(r, c).y + 24, "#ffe7a8");
+            showToast(`🎁 Сюрприз: ${type.name}`);
+          }
+        }
+      }
+      ok = placed;
+      if (!placed) showToast("Нет свободной клетки для подарка");
+      else AudioFX.plant();
+    }
+    if (ok) {
+      state.abilityCd[id] = def.cd;
+      renderAbilityBar();
+    }
+  }
+
+  function togglePause() {
+    if (!state.running) return;
+    state.paused = !state.paused;
+    AudioFX.unlock();
+    AudioFX.click();
+    const btn = document.getElementById("btnPause");
+    if (btn) btn.textContent = state.paused ? "▶" : "⏸";
+    if (state.paused) {
+      AudioFX.stopMusic();
+      showToast("⏸ Время остановлено");
+    } else {
+      AudioFX.startMusic();
+      showToast("▶ Время снова идёт");
+    }
+    renderAbilityBar();
   }
 
   function showScreen(name) {
@@ -649,14 +1008,21 @@
   function showMenu() {
     cancelAnimationFrame(animId);
     state.running = false;
+    state.paused = false;
+    AudioFX.stopMusic();
     showScreen("menu");
+    refreshPromoUi();
   }
 
   function endGame(won, reason) {
     state.running = false;
+    state.paused = false;
     state.won = won;
     state.lost = !won;
     cancelAnimationFrame(animId);
+    AudioFX.stopMusic();
+    if (won) AudioFX.win();
+    else AudioFX.lose();
     showScreen("end");
     els.endTitle.textContent = won ? "Победа!" : "Зомби дошли до дома";
     els.endSub.textContent = reason || (won ? "Все волны отражены." : "Попробуй ещё раз.");
@@ -685,6 +1051,11 @@
     shovel = false;
     nutTool = false;
     zombieTool = null;
+    state.paused = false;
+    state.timeScale = 1;
+    state.slowmoLeft = 0;
+    state.shieldLeft = 0;
+    state.abilityCd = {};
     if (!amalOwner()) {
       state.nutEffect = "normal";
       state.ownerNoReload = false;
@@ -702,6 +1073,12 @@
     syncNutOwnerUi();
     buildZombieOwnerPickers();
     syncZombieOwnerUi();
+    renderAbilityBar();
+    const pauseBtn = document.getElementById("btnPause");
+    if (pauseBtn) pauseBtn.textContent = "⏸";
+    AudioFX.unlock();
+    AudioFX.startMusic();
+    AudioFX.wave();
     els.modeText.textContent =
       (state.mode === "coop" ? "Вдвоём" : "Соло") + (state.test ? " · ТЕСТ ∞" : "");
     els.coopHint.hidden = state.mode !== "coop";
@@ -830,7 +1207,10 @@
       drawScale: base.scale || 1,
     };
     state.zombies.push(z);
-    if (allergyType) showToast(`Зомби с аллергией на ${allergyLabel(allergyType)}!`);
+    if (allergyType) {
+      showToast(`Зомби с аллергией на ${allergyLabel(allergyType)}!`);
+      AudioFX.zombie();
+    }
     return z;
   }
 
@@ -1240,6 +1620,7 @@
     } else {
       state.cooldown[typeId] = state.test ? Math.min(1.2, type.recharge * 0.25) : type.recharge;
     }
+    AudioFX.plant();
 
     if (type.instant) {
       if (type.role === "bomb" || type.role === "mint") {
@@ -1401,6 +1782,7 @@
     if (isThree) {
       addFx("3×", rect.x + 36, rect.y + 22, "#c8ff9a");
     }
+    AudioFX.shoot();
     if (type.id.includes("repeater") || type.id.includes("split-pea")) {
       state.projectiles.push(mk(plant.row, { x: rect.x + rect.w * 0.55 }));
     }
@@ -1562,6 +1944,7 @@
           }
 
           plant.hp -= z.damage;
+          AudioFX.bite();
           if (plant.hp <= 0) plant.dead = true;
         }
       } else {
@@ -1570,11 +1953,16 @@
       }
 
       if (z.x < LEFT - 20) {
+        if (state.shieldLeft > 0) {
+          z.x = LEFT - 10;
+          z.slow = Math.max(z.slow || 0, 0.8);
+        } else {
         const mower = state.mowers[z.row];
         if (mower && !mower.gone && (!mower.used || state.test) && !mower.active) {
           if (!state.test) mower.used = true;
           mower.active = true;
           mower.x = 34;
+          AudioFX.mower();
           showToast(
             state.test
               ? `∞ Косилка снова спасла ряд ${z.row + 1}`
@@ -1582,6 +1970,7 @@
           );
         } else if (!mower || mower.gone || (mower.used && !mower.active && !state.test)) {
           endGame(false, "Зомби прорвались. Косилки больше нет.");
+        }
         }
       }
       if (z.hp <= 0 && z.dyingAllergy <= 0) {
@@ -1614,6 +2003,7 @@
           if (pr.burn) z.burn = Math.max(z.burn, 2.2);
           pr.hit.add(z.id);
           pr.pierce -= 1;
+          AudioFX.hit();
           if (pr.chain > 0) {
             const next = state.zombies.find(
               (o) => !o.dead && o.row === z.row && o.x > z.x && !pr.hit.has(o.id)
@@ -1674,6 +2064,7 @@
         state.wave += 1;
         state.zombiesLeft = 5 + state.wave * 2;
         showToast(`Волна ${state.wave}!`);
+        AudioFX.wave();
         updateHud();
       }
     }
@@ -1852,8 +2243,45 @@
 
   function frame(ts) {
     if (!state.running) return;
-    const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0.016);
+    const rawDt = Math.min(0.05, (ts - lastTs) / 1000 || 0.016);
     lastTs = ts;
+    if (state.paused) {
+      draw();
+      // баннер паузы
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+      ctx.fillStyle = "#ffe7a8";
+      ctx.font = "900 36px Rubik Dirt, Nunito, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("ПАУЗА", els.canvas.width / 2, els.canvas.height / 2);
+      ctx.textAlign = "start";
+      animId = requestAnimationFrame(frame);
+      return;
+    }
+
+    if (state.slowmoLeft > 0) {
+      state.slowmoLeft -= rawDt;
+      state.timeScale = 0.35;
+      if (state.slowmoLeft <= 0) {
+        state.slowmoLeft = 0;
+        state.timeScale = 1;
+        showToast("Время снова обычное");
+      }
+    } else {
+      state.timeScale = 1;
+    }
+    if (state.shieldLeft > 0) {
+      state.shieldLeft -= rawDt;
+      if (state.shieldLeft <= 0) {
+        state.shieldLeft = 0;
+        showToast("Щит дома закончился");
+      }
+    }
+    Object.keys(state.abilityCd).forEach((id) => {
+      state.abilityCd[id] = Math.max(0, (state.abilityCd[id] || 0) - rawDt);
+    });
+
+    const dt = rawDt * state.timeScale;
     state.time += dt;
     updateWaves(dt);
     if (!state.running) return;
@@ -1863,9 +2291,23 @@
     updateProjectiles(dt);
     updateSuns(dt);
     updateFx(dt);
-    if (Math.floor(ts / 250) !== Math.floor((ts - dt * 1000) / 250)) renderSeedBar();
+    if (Math.floor(ts / 250) !== Math.floor((ts - rawDt * 1000) / 250)) {
+      renderSeedBar();
+      renderAbilityBar();
+    }
     updateHud();
     draw();
+    if (state.shieldLeft > 0) {
+      ctx.fillStyle = "rgba(120, 200, 255, 0.18)";
+      ctx.fillRect(0, TOP, LEFT - 4, ROWS * CELL_H);
+      ctx.strokeStyle = "rgba(180, 230, 255, 0.7)";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(2, TOP + 2, LEFT - 10, ROWS * CELL_H - 4);
+    }
+    if (state.slowmoLeft > 0) {
+      ctx.fillStyle = "rgba(180, 220, 255, 0.08)";
+      ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
+    }
     animId = requestAnimationFrame(frame);
   }
 
@@ -1926,16 +2368,47 @@
   }
 
   // Events
-  document.getElementById("btnPlay").addEventListener("click", startGame);
+  document.getElementById("btnPlay").addEventListener("click", () => {
+    AudioFX.unlock();
+    AudioFX.click();
+    startGame();
+  });
   document.getElementById("btnAlmanac").addEventListener("click", () => {
+    AudioFX.unlock();
+    AudioFX.click();
     showScreen("almanac");
     renderFilters();
     renderAlmanacGrid();
   });
   document.getElementById("btnBackMenu").addEventListener("click", showMenu);
-  document.getElementById("btnAgain").addEventListener("click", startGame);
+  document.getElementById("btnAgain").addEventListener("click", () => {
+    AudioFX.unlock();
+    startGame();
+  });
   document.getElementById("btnEndMenu").addEventListener("click", showMenu);
   document.getElementById("btnQuit").addEventListener("click", showMenu);
+  document.getElementById("btnPause")?.addEventListener("click", togglePause);
+  document.getElementById("btnMute")?.addEventListener("click", toggleMute);
+  document.getElementById("btnMuteMenu")?.addEventListener("click", toggleMute);
+  document.getElementById("btnPromo")?.addEventListener("click", tryRedeemPromo);
+  document.getElementById("promoInput")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") tryRedeemPromo();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (!state.running) return;
+    if (e.key === "p" || e.key === "P" || e.key === "Escape") {
+      e.preventDefault();
+      togglePause();
+      return;
+    }
+    if (state.paused) return;
+    const abs = promoAbilityDefs();
+    const idx = Number(e.key) - 1;
+    if (idx >= 0 && idx < abs.length) {
+      e.preventDefault();
+      useAbility(abs[idx].id);
+    }
+  });
   document.getElementById("btnShovel").addEventListener("click", () => {
     shovel = !shovel;
     if (shovel) {
@@ -2008,6 +2481,12 @@
 
   els.canvas.addEventListener("click", (e) => {
     if (!state.running) return;
+    if (state.paused) {
+      togglePause();
+      return;
+    }
+    AudioFX.unlock();
+    if (!AudioFX.musicTimer && !AudioFX.muted) AudioFX.startMusic();
     const rect = els.canvas.getBoundingClientRect();
     const sx = els.canvas.width / rect.width;
     const sy = els.canvas.height / rect.height;
@@ -2017,6 +2496,7 @@
     if (sun) {
       state.sun += sun.value;
       sun.life = 0;
+      AudioFX.sun();
       updateHud();
       return;
     }
@@ -2077,6 +2557,8 @@
   }
   buildZombieOwnerPickers();
   syncNutOwnerUi();
+  syncMuteButtons();
+  refreshPromoUi();
   renderFilters();
 
   window.addEventListener("amal-power", (e) => {
@@ -2139,17 +2621,22 @@
     if (t === "zvp2-nut-normal") setNutEffect("normal");
     if (t === "zvp2-nut-poison") setNutEffect("poison");
     if (t === "zvp2-nut-kill") setNutEffect("kill");
+    if (t === "zvp2-slowmo") useAbility("slowmo");
+    if (t === "zvp2-screech") useAbility("screech");
     if (t === "max") {
       state.test = true;
       state.sun = 99999;
       state.ownerNoReload = true;
       updateHud();
       syncZombieOwnerUi();
+      renderAbilityBar();
     }
   });
 
   window.addEventListener("amal-owner-changed", () => {
     syncNutOwnerUi();
     buildZombieOwnerPickers();
+    refreshPromoUi();
+    renderAbilityBar();
   });
 })();

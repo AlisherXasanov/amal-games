@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=11" />
+  <link rel="stylesheet" href="./style.css?v=12" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -38,6 +38,22 @@
           <input type="checkbox" id="testMode" checked />
           <span>Тест: ∞ косилки, ∞ солнце, быстрые волны</span>
         </label>
+
+        <div class="promo-box" id="promoBox">
+          <label class="field">
+            <span>Промокод (для своих)</span>
+            <div class="promo-row">
+              <input type="text" id="promoInput" placeholder="Введи код…" autocomplete="off" maxlength="40" />
+              <button type="button" class="btn btn-ghost" id="btnPromo">Ок</button>
+            </div>
+          </label>
+          <p class="promo-hint" id="promoHint">Код на русском или другом языке — только для тех, кому ты дал.</p>
+          <ul class="ability-list" id="abilityList" hidden></ul>
+        </div>
+
+        <div class="menu-tools">
+          <button type="button" class="btn btn-ghost" id="btnMuteMenu">🔊 Звук</button>
+        </div>
 
         <button type="button" class="btn btn-primary" id="btnPlay">▶ Играть</button>
         <button type="button" class="btn btn-ghost" id="btnAlmanac">Альманах растений</button>
@@ -69,10 +85,13 @@
           <div class="hud-sun" title="Солнце">☀️ <strong id="sunText">150</strong></div>
           <div class="hud-wave" id="waveText">Волна 1</div>
           <div class="hud-mode" id="modeText">Соло</div>
+          <button type="button" class="btn-sm" id="btnPause" title="Пауза / стоп времени">⏸</button>
+          <button type="button" class="btn-sm" id="btnMute" title="Звук">🔊</button>
           <button type="button" class="btn-sm" id="btnShovel">🪏 Лопата</button>
           <button type="button" class="btn-sm" id="btnNutTool" hidden>🥜 Орех</button>
           <button type="button" class="btn-sm ghost" id="btnQuit">Меню</button>
         </div>
+        <div class="ability-bar" id="abilityBar" hidden></div>
         <div class="nut-bar" id="nutBar" hidden>
           <span class="nut-bar-label">Только хозяин — эффект ореха:</span>
           <button type="button" class="nut-mode active" data-nut="normal" id="nutModeNormal">Обычный</button>
@@ -115,9 +134,10 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="../shared/amal-owner-powers.js?v=10"></script>
+  <script src="../shared/amal-owner-powers.js?v=11"></script>
   <script src="../shared/amal-hub.js?v=9"></script>
   <script src="./plants-data.js?v=9"></script>
-  <script src="./game.js?v=11"></script>
+  <script src="./promo.js?v=1"></script>
+  <script src="./game.js?v=12"></script>
 </body>
 </html>
