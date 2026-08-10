@@ -311,7 +311,7 @@
     spawnAllergy: "random",
     paused: false,
     timeScale: 1,
-    slowmoLeft: 0,
+    slowmoOn: false,
     shieldLeft: 0,
     abilityCd: {},
   };
@@ -405,10 +405,14 @@
       const cd = state.abilityCd[a.id] || 0;
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "ability-btn";
+      btn.className = "ability-btn" + (a.id === "slowmo" && state.slowmoOn ? " on" : "");
       btn.disabled = cd > 0 || state.paused;
       btn.title = a.desc;
-      btn.textContent = cd > 0 ? `${a.name} ${Math.ceil(cd)}с` : `${i + 1}. ${a.name}`;
+      if (a.id === "slowmo" && state.slowmoOn) {
+        btn.textContent = "⏱ Замедление ВКЛ";
+      } else {
+        btn.textContent = cd > 0 ? `${a.name} ${Math.ceil(cd)}с` : `${i + 1}. ${a.name}`;
+      }
       btn.addEventListener("click", () => useAbility(a.id));
       bar.appendChild(btn);
     });
@@ -428,10 +432,10 @@
     AudioFX.unlock();
     let ok = false;
     if (id === "slowmo") {
-      state.slowmoLeft = 6;
-      state.timeScale = 0.35;
+      state.slowmoOn = !state.slowmoOn;
+      state.timeScale = state.slowmoOn ? 0.35 : 1;
       ok = true;
-      showToast("⏱ Замедление времени!");
+      showToast(state.slowmoOn ? "⏱ Замедление ВКЛ — пока сам не выключишь" : "⏱ Замедление ВЫКЛ");
       AudioFX.ability();
     } else if (id === "screech") {
       state.zombies.forEach((z) => {
@@ -492,10 +496,10 @@
       if (!placed) showToast("Нет свободной клетки для подарка");
       else AudioFX.plant();
     }
-    if (ok) {
+    if (ok && def.cd > 0) {
       state.abilityCd[id] = def.cd;
-      renderAbilityBar();
     }
+    if (ok) renderAbilityBar();
   }
 
   function togglePause() {
@@ -1053,7 +1057,7 @@
     zombieTool = null;
     state.paused = false;
     state.timeScale = 1;
-    state.slowmoLeft = 0;
+    state.slowmoOn = false;
     state.shieldLeft = 0;
     state.abilityCd = {};
     if (!amalOwner()) {
@@ -2259,14 +2263,8 @@
       return;
     }
 
-    if (state.slowmoLeft > 0) {
-      state.slowmoLeft -= rawDt;
+    if (state.slowmoOn) {
       state.timeScale = 0.35;
-      if (state.slowmoLeft <= 0) {
-        state.slowmoLeft = 0;
-        state.timeScale = 1;
-        showToast("Время снова обычное");
-      }
     } else {
       state.timeScale = 1;
     }
@@ -2304,7 +2302,7 @@
       ctx.lineWidth = 3;
       ctx.strokeRect(2, TOP + 2, LEFT - 10, ROWS * CELL_H - 4);
     }
-    if (state.slowmoLeft > 0) {
+    if (state.slowmoOn) {
       ctx.fillStyle = "rgba(180, 220, 255, 0.08)";
       ctx.fillRect(0, 0, els.canvas.width, els.canvas.height);
     }
