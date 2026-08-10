@@ -244,7 +244,7 @@
         nutTool = false;
         shovel = false;
         syncNutOwnerUi();
-        showToast(`Спавн: ${def.name}. Кликни по ряду на поле`);
+        showToast(`Спавн: ${def.name}. Клик у ДОМА слева = зомби, по грядке = растение`);
       });
       kindsEl.appendChild(btn);
     });
@@ -692,8 +692,11 @@
     state.mowers = Array.from({ length: ROWS }, (_, row) => ({
       row,
       used: false,
-      x: 18,
+      x: 34,
+      y: TOP + row * CELL_H + CELL_H * 0.62,
       active: false,
+      speed: 320,
+      gone: false,
     }));
     showScreen("play");
     syncNutOwnerUi();
@@ -750,6 +753,12 @@
       btn.title = `${p.name} · ${(p.types || []).map((t) => typeName[t] || t).join(", ")}`;
       btn.addEventListener("click", (e) => {
         shovel = false;
+        nutTool = false;
+        if (zombieTool) {
+          zombieTool = null;
+          syncZombieOwnerUi();
+          showToast(`Сажаем: ${p.name}`);
+        }
         if (state.mode === "coop" && (e.shiftKey || e.button === 2)) {
           state.selectedP2 = id;
         } else if (state.mode === "coop" && e.altKey) {
@@ -758,13 +767,16 @@
           state.selectedP1 = id;
         }
         renderSeedBar();
+        syncNutOwnerUi();
       });
       btn.addEventListener("contextmenu", (e) => {
         e.preventDefault();
         if (state.mode === "coop") {
           state.selectedP2 = id;
           shovel = false;
+          zombieTool = null;
           renderSeedBar();
+          syncNutOwnerUi();
         }
       });
       els.seedBar.appendChild(btn);
@@ -1559,22 +1571,16 @@
 
       if (z.x < LEFT - 20) {
         const mower = state.mowers[z.row];
-        if (mower && (!mower.used || state.test)) {
+        if (mower && !mower.gone && (!mower.used || state.test) && !mower.active) {
           if (!state.test) mower.used = true;
           mower.active = true;
-          state.zombies.forEach((zz) => {
-            if (!zz.dead && zz.row === z.row) zz.hp = 0;
-          });
+          mower.x = 34;
           showToast(
             state.test
               ? `∞ Косилка снова спасла ряд ${z.row + 1}`
               : `Косилка спасла ряд ${z.row + 1}`
           );
-          if (state.test) {
-            mower.used = false;
-            mower.active = false;
-          }
-        } else {
+        } else if (!mower || mower.gone || (mower.used && !mower.active && !state.test)) {
           endGame(false, "Зомби прорвались. Косилки больше нет.");
         }
       }
@@ -1686,12 +1692,91 @@
     }
   }
 
+  function updateMowers(dt) {
+    state.mowers.forEach((m) => {
+      if (!m.active) return;
+      m.x += m.speed * dt;
+      state.zombies.forEach((z) => {
+        if (z.dead || z.row !== m.row) return;
+        if (Math.abs(z.x - m.x) < 36) {
+          z.hp = 0;
+          z.dead = true;
+          z.dyingAllergy = 0;
+          state.fallen += 1;
+        }
+      });
+      if (m.x > LEFT + COLS * CELL_W + 50) {
+        m.active = false;
+        if (state.test) {
+          m.used = false;
+          m.gone = false;
+          m.x = 34;
+        } else {
+          m.gone = true;
+        }
+      }
+    });
+  }
+
   function updateFx(dt) {
     state.fx.forEach((f) => {
       f.life -= dt;
       f.y -= 18 * dt;
     });
     state.fx = state.fx.filter((f) => f.life > 0);
+  }
+
+  function drawLawnmower(m) {
+    if (m.gone && !m.active) return;
+    if (m.used && !m.active && !state.test) return;
+
+    ctx.save();
+    ctx.translate(m.x, m.y);
+
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, 16, 20, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // body — газонокосилка, не трактор
+    ctx.fillStyle = m.active ? "#e8f0f5" : "#c5d0d8";
+    ctx.fillRect(-20, -8, 40, 16);
+    ctx.fillStyle = "#3d7eb8";
+    ctx.fillRect(-16, -14, 24, 8);
+    ctx.fillStyle = "#2a5f8f";
+    ctx.fillRect(6, -18, 6, 10);
+
+    // blade housing
+    ctx.fillStyle = "#6a7278";
+    ctx.beginPath();
+    ctx.ellipse(0, 6, 16, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // wheels
+    ctx.fillStyle = "#222";
+    ctx.beginPath();
+    ctx.arc(-12, 10, 6, 0, Math.PI * 2);
+    ctx.arc(12, 10, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#999";
+    ctx.beginPath();
+    ctx.arc(-12, 10, 2.5, 0, Math.PI * 2);
+    ctx.arc(12, 10, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (m.active) {
+      ctx.strokeStyle = "#ffe566";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) {
+        const a = state.time * 22 + i * 2.1;
+        ctx.beginPath();
+        ctx.moveTo(18, Math.sin(a) * 5);
+        ctx.lineTo(30, Math.sin(a + 1) * 9);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
   }
 
   function draw() {
@@ -1715,11 +1800,7 @@
     ctx.font = "800 12px Nunito";
     ctx.fillText("ДОМ", 16, TOP + ROWS * CELL_H * 0.5);
 
-    state.mowers.forEach((m) => {
-      if (m.used && !m.active) return;
-      ctx.font = "28px sans-serif";
-      ctx.fillText("🚜", 8, TOP + m.row * CELL_H + 55);
-    });
+    state.mowers.forEach((m) => drawLawnmower(m));
 
     state.plants.forEach((p) => {
       const type = COMBAT[p.typeId];
@@ -1778,6 +1859,7 @@
     if (!state.running) return;
     updatePlants(dt);
     updateZombies(dt);
+    updateMowers(dt);
     updateProjectiles(dt);
     updateSuns(dt);
     updateFx(dt);
@@ -1918,7 +2000,7 @@
       syncNutOwnerUi();
       if (zombieTool === "kill") showToast("☠ Кликни по зомби, чтобы убить его");
       else if (zombieTool === "cure") showToast("💉 Кликни по зомби, чтобы снять аллергию");
-      else if (zombieTool === "spawn") showToast("＋ Выбери тип/ряд и кликни по ряду на поле");
+      else if (zombieTool === "spawn") showToast("＋ Зомби: клик у ДОМА слева · Орех/растение: клик по грядке");
       else showToast("Инструмент зомби выключен");
     });
   });
@@ -1950,12 +2032,24 @@
       return;
     }
 
+    // Спавн зомби только у дома слева — по грядке можно сажать орехи и растения
+    if (amalOwner() && zombieTool === "spawn" && x < LEFT) {
+      const row = Math.floor((y - TOP) / CELL_H);
+      if (row >= 0 && row < ROWS) {
+        state.spawnRow = row;
+        syncZombieOwnerUi();
+        spawnZombieOwner(row);
+      } else {
+        showToast("Кликни у дома слева, в нужном ряду");
+      }
+      return;
+    }
+
     const cell = canvasToCell(e.clientX, e.clientY);
-    if (!cell) return;
-    if (amalOwner() && zombieTool === "spawn") {
-      state.spawnRow = cell.row;
-      syncZombieOwnerUi();
-      spawnZombieOwner(cell.row);
+    if (!cell) {
+      if (amalOwner() && zombieTool === "spawn") {
+        showToast("Зомби: клик у ДОМА слева · Растение: выбери семя и кликни по грядке");
+      }
       return;
     }
     if (shovel) {
@@ -1967,6 +2061,11 @@
       if (p) applyNutEffectToPlant(p);
       else showToast("Кликни по ореху на поле");
       return;
+    }
+    // Если режим спавна включён, но клик по грядке — сажаем растение (и выходим из спавна)
+    if (zombieTool === "spawn") {
+      zombieTool = null;
+      syncZombieOwnerUi();
     }
     const player2 = state.mode === "coop" && e.shiftKey;
     const typeId = player2 ? state.selectedP2 : state.selectedP1;
