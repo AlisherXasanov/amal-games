@@ -9,6 +9,72 @@
   const START_SUN = 200;
   const MAX_WAVES = 8;
 
+  const ALLERGY_TYPES = {
+    nut: { id: "nut", label: "орехи", short: "орех", color: "#ffd27a" },
+    fire: { id: "fire", label: "огонь", short: "огонь", color: "#ff7a2a" },
+    ice: { id: "ice", label: "лёд", short: "лёд", color: "#9fdfff" },
+    electric: { id: "electric", label: "электро", short: "электро", color: "#ffe566" },
+    pea: { id: "pea", label: "горох", short: "горох", color: "#9dff7a" },
+    sun: { id: "sun", label: "подсолнух", short: "солнце", color: "#ffd84a" },
+    bomb: { id: "bomb", label: "бомбы", short: "бомба", color: "#ff6a6a" },
+    melee: { id: "melee", label: "рукопашные", short: "удар", color: "#c8ff9a" },
+  };
+  const ALLERGY_POOL = Object.keys(ALLERGY_TYPES);
+
+  const ZOMBIE_KINDS = {
+    normal: { hp: 120, speed: 22, damage: 20, color: "#8fbc7a", name: "Обычный", hats: [] },
+    runner: { hp: 80, speed: 38, damage: 14, color: "#c9d46a", name: "Быстрый", hats: [] },
+    cone: { hp: 220, speed: 20, damage: 20, color: "#86a976", name: "С конусом", hats: ["cone"] },
+    bucket: { hp: 420, speed: 14, damage: 28, color: "#66865f", name: "С ведром", hats: ["bucket"] },
+    "cone-runner": {
+      hp: 200,
+      speed: 34,
+      damage: 18,
+      color: "#a8c96a",
+      name: "Конус-быстрый",
+      hats: ["cone"],
+      hybrid: true,
+    },
+    "bucket-runner": {
+      hp: 380,
+      speed: 28,
+      damage: 24,
+      color: "#7a9a68",
+      name: "Ведро-быстрый",
+      hats: ["bucket"],
+      hybrid: true,
+    },
+    "double-hat": {
+      hp: 520,
+      speed: 16,
+      damage: 30,
+      color: "#5a7a52",
+      name: "Конус+ведро",
+      hats: ["cone", "bucket"],
+      hybrid: true,
+    },
+    "tank-hybrid": {
+      hp: 700,
+      speed: 11,
+      damage: 32,
+      color: "#4a6a48",
+      name: "Танк-гибрид",
+      hats: ["bucket"],
+      scale: 1.18,
+      hybrid: true,
+    },
+    "spark-hybrid": {
+      hp: 260,
+      speed: 26,
+      damage: 22,
+      color: "#8ab87a",
+      name: "Искровой",
+      hats: ["cone"],
+      spark: true,
+      hybrid: true,
+    },
+  };
+
   const plantsCatalog = window.PVZ2_PLANTS || [];
   const typesMeta = window.PVZ2_TYPES || [];
   const typeName = Object.fromEntries(typesMeta.map((t) => [t.id, t.name]));
@@ -45,6 +111,7 @@
   let animId = 0;
   let shovel = false;
   let nutTool = false;
+  let zombieTool = null; // kill | cure | spawn | null
   const NUT_EFFECTS = {
     normal: { id: "normal", label: "Обычный", short: "обычн." },
     poison: { id: "poison", label: "Яд", short: "яд" },
@@ -75,6 +142,9 @@
     time: 0,
     nutEffect: "normal",
     ownerNoReload: false,
+    spawnKind: "normal",
+    spawnRow: 0,
+    spawnAllergy: "random",
   };
 
   function showToast(text) {
@@ -116,16 +186,118 @@
     const mine = amalOwner();
     const nutBar = document.getElementById("nutBar");
     const btnNut = document.getElementById("btnNutTool");
+    const zombieBar = document.getElementById("zombieBar");
     if (nutBar) nutBar.hidden = !mine;
     if (btnNut) btnNut.hidden = !mine;
+    if (zombieBar) zombieBar.hidden = !mine;
     if (!mine) {
       nutTool = false;
+      zombieTool = null;
       state.nutEffect = "normal";
     }
     document.querySelectorAll(".nut-mode").forEach((btn) => {
       btn.classList.toggle("active", btn.getAttribute("data-nut") === state.nutEffect);
     });
     if (btnNut) btnNut.classList.toggle("on", !!(nutTool && mine));
+    syncZombieOwnerUi();
+  }
+
+  function syncZombieOwnerUi() {
+    const mine = amalOwner();
+    document.querySelectorAll(".z-tool").forEach((btn) => {
+      const id = btn.getAttribute("data-ztool");
+      if (id === "noreload") {
+        btn.classList.toggle("on", !!(mine && state.ownerNoReload));
+      } else {
+        btn.classList.toggle("on", !!(mine && zombieTool === id));
+      }
+    });
+    document.querySelectorAll("#zombieKinds .z-chip").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-kind") === state.spawnKind);
+    });
+    document.querySelectorAll("#zombieRows .z-chip").forEach((btn) => {
+      const row = Number(btn.getAttribute("data-row"));
+      btn.classList.toggle("active", row === state.spawnRow);
+    });
+    document.querySelectorAll("#zombieAllergies .z-chip").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-allergy") === state.spawnAllergy);
+    });
+  }
+
+  function buildZombieOwnerPickers() {
+    const kindsEl = document.getElementById("zombieKinds");
+    const rowsEl = document.getElementById("zombieRows");
+    const allEl = document.getElementById("zombieAllergies");
+    if (!kindsEl || !rowsEl || !allEl) return;
+
+    kindsEl.innerHTML = "";
+    Object.entries(ZOMBIE_KINDS).forEach(([id, def]) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "z-chip" + (def.hybrid ? " hybrid" : "");
+      btn.setAttribute("data-kind", id);
+      btn.textContent = def.hybrid ? `✧ ${def.name}` : def.name;
+      btn.addEventListener("click", () => {
+        if (!amalOwner()) return;
+        state.spawnKind = id;
+        zombieTool = "spawn";
+        nutTool = false;
+        shovel = false;
+        syncNutOwnerUi();
+        showToast(`Спавн: ${def.name}. Кликни по ряду на поле`);
+      });
+      kindsEl.appendChild(btn);
+    });
+
+    rowsEl.innerHTML = "";
+    for (let r = 0; r < ROWS; r++) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "z-chip";
+      btn.setAttribute("data-row", String(r));
+      btn.textContent = String(r + 1);
+      btn.addEventListener("click", () => {
+        if (!amalOwner()) return;
+        state.spawnRow = r;
+        zombieTool = "spawn";
+        syncZombieOwnerUi();
+        showToast(`Ряд ${r + 1} выбран`);
+      });
+      rowsEl.appendChild(btn);
+    }
+    const rndRow = document.createElement("button");
+    rndRow.type = "button";
+    rndRow.className = "z-chip";
+    rndRow.setAttribute("data-row", "-1");
+    rndRow.textContent = "?";
+    rndRow.title = "Случайный ряд";
+    rndRow.addEventListener("click", () => {
+      if (!amalOwner()) return;
+      state.spawnRow = -1;
+      syncZombieOwnerUi();
+      showToast("Ряд: случайный");
+    });
+    rowsEl.appendChild(rndRow);
+
+    allEl.innerHTML = "";
+    [
+      { id: "none", label: "нет" },
+      { id: "random", label: "случ." },
+      ...ALLERGY_POOL.map((id) => ({ id, label: ALLERGY_TYPES[id].short })),
+    ].forEach((opt) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "z-chip allergy";
+      btn.setAttribute("data-allergy", opt.id);
+      btn.textContent = opt.label;
+      btn.addEventListener("click", () => {
+        if (!amalOwner()) return;
+        state.spawnAllergy = opt.id;
+        syncZombieOwnerUi();
+        showToast(`Аллергия при спавне: ${opt.label}`);
+      });
+      allEl.appendChild(btn);
+    });
   }
 
   function setNutEffect(effectId) {
@@ -148,6 +320,108 @@
     addFx(fx.short, cellRect(plant.row, plant.col).x + 20, cellRect(plant.row, plant.col).y + 20, "#ffe7a8");
     showToast(`Орех: «${fx.label}»`);
     return true;
+  }
+
+  function plantTriggersAllergy(plantType, allergyId) {
+    if (!allergyId || !plantType) return false;
+    const types = plantType.types || [];
+    if (allergyId === "nut") return !!plantType.nut;
+    if (allergyId === "fire") {
+      return types.includes("fire") || plantType.burn > 0 || plantType.role === "breath" || plantType.role === "rowbomb";
+    }
+    if (allergyId === "ice") {
+      return types.includes("ice") || !!plantType.slow || plantType.role === "freeze";
+    }
+    if (allergyId === "electric") {
+      return types.includes("electric") || plantType.role === "electric";
+    }
+    if (allergyId === "pea") return types.includes("pea");
+    if (allergyId === "sun") return types.includes("sun") || plantType.role === "sun";
+    if (allergyId === "bomb") {
+      return (
+        types.includes("bomb") ||
+        plantType.role === "bomb" ||
+        plantType.role === "mine" ||
+        plantType.role === "rowbomb"
+      );
+    }
+    if (allergyId === "melee") return types.includes("melee") || plantType.role === "melee";
+    return false;
+  }
+
+  function allergyLabel(allergyId) {
+    return ALLERGY_TYPES[allergyId]?.label || allergyId || "";
+  }
+
+  function triggerAllergyDeath(z, plantName) {
+    const meta = ALLERGY_TYPES[z.allergyType];
+    z.dyingAllergy = 0.9;
+    z.allergyFlash = 1;
+    z.eating = false;
+    const label = meta ? meta.short.toUpperCase() : "АЛЛЕРГИЯ";
+    addFx(label + "!", z.x - 10, cellRect(z.row, 0).y + 18, meta?.color || "#ffd27a");
+    showToast(
+      `Зомби умер от аллергии на ${allergyLabel(z.allergyType)}${plantName ? ` (${plantName})` : ""}!`
+    );
+  }
+
+  function findZombieNear(x, y) {
+    let best = null;
+    let bestD = 48;
+    state.zombies.forEach((z) => {
+      if (z.dead) return;
+      const groundY = cellRect(z.row, 0).y + CELL_H * 0.55;
+      const d = Math.hypot(z.x - x, groundY - y);
+      if (d < bestD) {
+        bestD = d;
+        best = z;
+      }
+    });
+    return best;
+  }
+
+  function killZombieOwner(z) {
+    if (!z || z.dead) return;
+    z.hp = 0;
+    z.dead = true;
+    z.dyingAllergy = 0;
+    state.fallen += 1;
+    addFx("☠", z.x - 6, cellRect(z.row, 0).y + 24, "#ff8866");
+    showToast(`Убит: ${z.name}`);
+    state.zombies = state.zombies.filter((o) => !o.dead);
+  }
+
+  function cureZombieAllergy(z) {
+    if (!z || z.dead) return;
+    if (!z.allergyType) {
+      showToast("У этого зомби нет аллергии");
+      return;
+    }
+    const was = allergyLabel(z.allergyType);
+    z.allergyType = null;
+    z.nutAllergy = false;
+    z.allergyFlash = 0.5;
+    z.name = (ZOMBIE_KINDS[z.kind]?.name || z.name).replace(/\s*\(.*\)$/, "");
+    addFx("💉", z.x - 4, cellRect(z.row, 0).y + 20, "#9dffc8");
+    showToast(`Спасён от аллергии на ${was}`);
+  }
+
+  function resolveSpawnAllergy(mode) {
+    if (mode === "none") return null;
+    if (mode && mode !== "random" && ALLERGY_TYPES[mode]) return mode;
+    // mode random / wave: 10% шанс любой аллергии
+    if (Math.random() < ALLERGY_CHANCE) {
+      return ALLERGY_POOL[Math.floor(Math.random() * ALLERGY_POOL.length)];
+    }
+    return null;
+  }
+
+  function pickAllergyForced(mode) {
+    if (mode === "none" || mode == null) return null;
+    if (mode === "random") {
+      return ALLERGY_POOL[Math.floor(Math.random() * ALLERGY_POOL.length)];
+    }
+    return ALLERGY_TYPES[mode] ? mode : null;
   }
 
   function parseRecharge(value) {
@@ -410,7 +684,11 @@
     state.selectedP2 = STARTER_LOADOUT[1] || STARTER_LOADOUT[0];
     shovel = false;
     nutTool = false;
-    if (!amalOwner()) state.nutEffect = "normal";
+    zombieTool = null;
+    if (!amalOwner()) {
+      state.nutEffect = "normal";
+      state.ownerNoReload = false;
+    }
     state.mowers = Array.from({ length: ROWS }, (_, row) => ({
       row,
       used: false,
@@ -419,6 +697,8 @@
     }));
     showScreen("play");
     syncNutOwnerUi();
+    buildZombieOwnerPickers();
+    syncZombieOwnerUi();
     els.modeText.textContent =
       (state.mode === "coop" ? "Вдвоём" : "Соло") + (state.test ? " · ТЕСТ ∞" : "");
     els.coopHint.hidden = state.mode !== "coop";
@@ -491,32 +771,41 @@
     });
   }
 
-  function spawnZombie(forcedType) {
-    const pool = ["normal", "normal", "cone", "runner", "bucket"];
-    const kind = forcedType || pool[Math.floor(Math.random() * pool.length)];
-    const row = Math.floor(Math.random() * ROWS);
-    const allergy = Math.random() < ALLERGY_CHANCE;
-    const base = {
-      normal: { hp: 120, speed: 22, damage: 20, color: "#8fbc7a", name: "Обычный" },
-      runner: { hp: 80, speed: 38, damage: 14, color: "#c9d46a", name: "Быстрый" },
-      cone: { hp: 220, speed: 20, damage: 20, color: "#86a976", name: "С конусом" },
-      bucket: { hp: 420, speed: 14, damage: 28, color: "#66865f", name: "С ведром" },
-    }[kind];
+  function spawnZombie(forcedType, forcedRow, forcedAllergy) {
+    const wavePool = ["normal", "normal", "cone", "runner", "bucket"];
+    const hybridPool = ["cone-runner", "bucket-runner", "double-hat", "tank-hybrid", "spark-hybrid"];
+    const kind =
+      forcedType ||
+      (Math.random() < 0.12
+        ? hybridPool[Math.floor(Math.random() * hybridPool.length)]
+        : wavePool[Math.floor(Math.random() * wavePool.length)]);
+    const base = ZOMBIE_KINDS[kind] || ZOMBIE_KINDS.normal;
+    const finalRow =
+      forcedRow == null ? Math.floor(Math.random() * ROWS) : forcedRow < 0 ? Math.floor(Math.random() * ROWS) : forcedRow;
+
+    let allergyType = null;
+    if (forcedAllergy === undefined) {
+      allergyType = resolveSpawnAllergy("random");
+    } else {
+      allergyType = pickAllergyForced(forcedAllergy);
+    }
+
     const z = {
       id: Math.random().toString(36).slice(2),
       kind,
-      row,
+      row: finalRow,
       x: LEFT + COLS * CELL_W + 20,
       hp: base.hp + state.wave * 18,
       maxHp: base.hp + state.wave * 18,
       speed: base.speed,
       damage: base.damage,
       color: base.color,
-      name: allergy ? `${base.name} (аллергия на орехи)` : base.name,
+      name: allergyType ? `${base.name} (аллергия: ${allergyLabel(allergyType)})` : base.name,
       biteCd: 0,
       slow: 0,
       burn: 0,
-      nutAllergy: allergy,
+      allergyType,
+      nutAllergy: allergyType === "nut",
       eating: false,
       walkPhase: Math.random() * Math.PI * 2,
       chomp: 0,
@@ -524,9 +813,26 @@
       dyingAllergy: 0,
       poison: 0,
       dead: false,
+      hats: base.hats || [],
+      spark: !!base.spark,
+      drawScale: base.scale || 1,
     };
     state.zombies.push(z);
-    if (allergy) showToast("Зомби с аллергией на орехи! (10%)");
+    if (allergyType) showToast(`Зомби с аллергией на ${allergyLabel(allergyType)}!`);
+    return z;
+  }
+
+  function spawnZombieOwner(rowOverride) {
+    if (!amalOwner()) return null;
+    const row =
+      rowOverride != null
+        ? rowOverride
+        : state.spawnRow < 0
+          ? Math.floor(Math.random() * ROWS)
+          : state.spawnRow;
+    const z = spawnZombie(state.spawnKind, row, state.spawnAllergy);
+    showToast(`＋ ${z.name} → ряд ${row + 1}`);
+    return z;
   }
 
   function drawAnimatedZombie(z) {
@@ -537,8 +843,16 @@
       ? Math.sin(state.time * 16) * 0.55
       : Math.sin(state.time * 6 + z.walkPhase) * 0.35;
     const legSwing = z.eating ? 0.08 : Math.sin(state.time * 6 + z.walkPhase) * 0.45;
-    const scale = z.kind === "bucket" ? 1.08 : z.kind === "runner" ? 0.92 : 1;
+    const scale =
+      z.drawScale ||
+      (z.kind === "bucket" || z.kind === "double-hat" || z.kind === "tank-hybrid"
+        ? 1.08
+        : z.kind === "runner" || z.kind === "cone-runner"
+          ? 0.92
+          : 1);
     const alpha = dying ? Math.max(0, z.dyingAllergy / 0.9) : 1;
+    const hats = z.hats || (z.kind === "cone" ? ["cone"] : z.kind === "bucket" ? ["bucket"] : []);
+    const allergyMeta = z.allergyType ? ALLERGY_TYPES[z.allergyType] : null;
 
     ctx.save();
     ctx.globalAlpha = alpha;
@@ -576,7 +890,7 @@
     ctx.lineTo(20 + Math.cos(armSwing) * 6, 2 + Math.sin(armSwing + 0.4) * (z.eating ? 14 : 8));
     ctx.stroke();
 
-    const headColor = z.slow > 0 ? "#b8ecff" : z.poison > 0 ? "#b89ad8" : z.nutAllergy ? "#b8d490" : "#9ec98a";
+    const headColor = z.slow > 0 ? "#b8ecff" : z.poison > 0 ? "#b89ad8" : allergyMeta ? "#b8d490" : "#9ec98a";
     ctx.fillStyle = headColor;
     ctx.beginPath();
     ctx.arc(0, -12, 14, 0, Math.PI * 2);
@@ -603,18 +917,19 @@
       ctx.fillRect(-3, -6, 6, 2);
     }
 
-    if (z.kind === "cone") {
+    if (hats.includes("cone")) {
+      const cy = hats.includes("bucket") ? -48 : -24;
       ctx.fillStyle = "#ef8b2c";
       ctx.beginPath();
-      ctx.moveTo(-12, -24);
-      ctx.lineTo(0, -52);
-      ctx.lineTo(12, -24);
+      ctx.moveTo(-12, cy);
+      ctx.lineTo(0, cy - 28);
+      ctx.lineTo(12, cy);
       ctx.closePath();
       ctx.fill();
       ctx.fillStyle = "#ffd08a";
-      ctx.fillRect(-9, -32, 18, 3);
+      ctx.fillRect(-9, cy - 8, 18, 3);
     }
-    if (z.kind === "bucket") {
+    if (hats.includes("bucket")) {
       ctx.fillStyle = "#9ba6ad";
       ctx.fillRect(-14, -40, 28, 17);
       ctx.strokeStyle = "#d9e0e4";
@@ -624,7 +939,7 @@
       ctx.arc(0, -39, 16, Math.PI, Math.PI * 2);
       ctx.stroke();
     }
-    if (z.kind === "runner") {
+    if (z.kind === "runner" || z.kind === "cone-runner" || z.kind === "bucket-runner") {
       ctx.strokeStyle = "#e8f07a";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -634,9 +949,18 @@
       ctx.lineTo(16, 36);
       ctx.stroke();
     }
+    if (z.spark) {
+      ctx.fillStyle = "#ffe566";
+      for (let i = 0; i < 4; i++) {
+        const a = state.time * 10 + i * 1.7;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a) * 16, -8 + Math.sin(a * 1.3) * 10, 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
-    if (z.nutAllergy) {
-      ctx.fillStyle = "#ff7a7a";
+    if (allergyMeta) {
+      ctx.fillStyle = allergyMeta.color;
       [[-10, -8], [9, -10], [-2, -18], [7, -4]].forEach(([x, y], i) => {
         ctx.beginPath();
         ctx.arc(x, y + Math.sin(state.time * 8 + i) * 0.8, 2.2, 0, Math.PI * 2);
@@ -669,12 +993,12 @@
     const barY = groundY - 62 + eatBob;
     ctx.fillStyle = "rgba(0,0,0,0.4)";
     ctx.fillRect(z.x - 18, barY, 36, 5);
-    ctx.fillStyle = z.nutAllergy ? "#ffd27a" : "#e85a3a";
+    ctx.fillStyle = allergyMeta ? allergyMeta.color : "#e85a3a";
     ctx.fillRect(z.x - 18, barY, 36 * pct, 5);
-    if (z.nutAllergy) {
-      ctx.fillStyle = "#ffe7a8";
+    if (allergyMeta) {
+      ctx.fillStyle = allergyMeta.color;
       ctx.font = "800 9px Nunito";
-      ctx.fillText("аллерг.", z.x - 14, barY - 2);
+      ctx.fillText(allergyMeta.short, z.x - 14, barY - 2);
     }
   }
 
@@ -885,7 +1209,7 @@
   function placePlant(typeId, row, col, player) {
     const type = COMBAT[typeId];
     if (!type) return;
-    if ((state.cooldown[typeId] || 0) > 0) {
+    if ((state.cooldown[typeId] || 0) > 0 && !(amalOwner() && state.ownerNoReload)) {
       showToast("Ещё перезарядка");
       return;
     }
@@ -986,6 +1310,7 @@
         burn: type.burn || 0,
         chain: type.chain || 0,
         lob: !!type.lob,
+        plantTypeId: type.id,
         color:
           type.types.includes("fire")
             ? "#ff6a2a"
@@ -1001,10 +1326,19 @@
       };
     };
 
+    const applyHitAllergy = (z) => {
+      if (z.allergyType && plantTriggersAllergy(type, z.allergyType)) {
+        triggerAllergyDeath(z, type.name);
+        return true;
+      }
+      return false;
+    };
+
     if (type.role === "breath") {
       state.zombies.forEach((z) => {
         if (z.dead || z.row < plant.row - 1 || z.row > plant.row + 1) return;
         if (z.x < rect.x || z.x > rect.x + CELL_W * 3.2) return;
+        if (applyHitAllergy(z)) return;
         z.hp -= type.damage;
         z.burn = Math.max(z.burn, 2);
       });
@@ -1017,6 +1351,7 @@
       state.zombies.forEach((z) => {
         if (z.dead || z.row !== plant.row) return;
         if (z.x > rect.x - 10 && z.x < rect.x + CELL_W * 1.6) {
+          if (applyHitAllergy(z)) return;
           z.hp -= type.damage;
           hit = true;
         }
@@ -1032,6 +1367,10 @@
       let left = type.pierce || 3;
       for (const z of sorted) {
         if (left <= 0) break;
+        if (applyHitAllergy(z)) {
+          left -= 1;
+          continue;
+        }
         z.hp -= type.damage;
         if (type.slow) z.slow = Math.max(z.slow, type.slow * 4);
         if (type.burn) z.burn = Math.max(z.burn, 2);
@@ -1204,14 +1543,9 @@
             addFx("ЯД", z.x - 4, cellRect(z.row, 0).y + 18, "#c08cff");
           }
 
-          // Случайная аллергия 10% — только на обычных орехах
-          if (z.nutAllergy && type?.nut && nutFx !== "poison") {
-            z.dyingAllergy = 0.9;
-            z.allergyFlash = 1;
-            z.eating = false;
-            addFx("АЛЛЕРГИЯ!", cellRect(plant.row, plant.col).x, cellRect(plant.row, plant.col).y, "#ffd27a");
-            addFx("🥜💥", z.x - 8, cellRect(z.row, 0).y + 20, "#ffe7a8");
-            showToast("Зомби съел орех и умер от аллергии! (10%)");
+          // Случайная аллергия — на орехи и другие типы растений
+          if (z.allergyType && plantTriggersAllergy(type, z.allergyType) && nutFx !== "poison") {
+            triggerAllergyDeath(z, type.name);
             return;
           }
 
@@ -1261,6 +1595,14 @@
       for (const z of state.zombies) {
         if (z.dead || z.row !== pr.row || pr.hit.has(z.id)) continue;
         if (Math.abs(z.x - pr.x) < 28) {
+          const src = pr.plantTypeId ? COMBAT[pr.plantTypeId] : null;
+          if (z.allergyType && src && plantTriggersAllergy(src, z.allergyType)) {
+            triggerAllergyDeath(z, src.name);
+            pr.hit.add(z.id);
+            pr.pierce -= 1;
+            if (pr.pierce <= 0) pr.dead = true;
+            break;
+          }
           z.hp -= pr.damage;
           if (pr.slow) z.slow = Math.max(z.slow, pr.slow * 5);
           if (pr.burn) z.burn = Math.max(z.burn, 2.2);
@@ -1271,7 +1613,11 @@
               (o) => !o.dead && o.row === z.row && o.x > z.x && !pr.hit.has(o.id)
             );
             if (next) {
-              next.hp -= pr.damage * 0.7;
+              if (next.allergyType && src && plantTriggersAllergy(src, next.allergyType)) {
+                triggerAllergyDeath(next, src.name);
+              } else {
+                next.hp -= pr.damage * 0.7;
+              }
               pr.hit.add(next.id);
             }
             pr.chain -= 1;
@@ -1298,6 +1644,11 @@
     Object.keys(state.cooldown).forEach((id) => {
       state.cooldown[id] = Math.max(0, state.cooldown[id] - dt);
     });
+    if (amalOwner() && state.ownerNoReload) {
+      Object.keys(state.cooldown).forEach((id) => {
+        state.cooldown[id] = 0;
+      });
+    }
 
     if (state.zombiesLeft > 0) {
       state.spawnTimer -= dt;
@@ -1505,7 +1856,10 @@
   document.getElementById("btnQuit").addEventListener("click", showMenu);
   document.getElementById("btnShovel").addEventListener("click", () => {
     shovel = !shovel;
-    if (shovel) nutTool = false;
+    if (shovel) {
+      nutTool = false;
+      zombieTool = null;
+    }
     syncNutOwnerUi();
     showToast(shovel ? "Лопата включена" : "Лопата выключена");
   });
@@ -1515,7 +1869,10 @@
       return;
     }
     nutTool = !nutTool;
-    if (nutTool) shovel = false;
+    if (nutTool) {
+      shovel = false;
+      zombieTool = null;
+    }
     syncNutOwnerUi();
     showToast(
       nutTool
@@ -1530,6 +1887,39 @@
         return;
       }
       setNutEffect(btn.getAttribute("data-nut"));
+    });
+  });
+  document.querySelectorAll(".z-tool").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!amalOwner()) {
+        showToast("Только хозяин");
+        return;
+      }
+      const id = btn.getAttribute("data-ztool");
+      if (id === "noreload") {
+        state.ownerNoReload = !state.ownerNoReload;
+        if (state.ownerNoReload) {
+          Object.keys(state.cooldown).forEach((k) => {
+            state.cooldown[k] = 0;
+          });
+          renderSeedBar();
+          showToast("⏳ Без перезарядки: можно сажать снова сразу");
+        } else {
+          showToast("Перезарядка снова обычная");
+        }
+        syncZombieOwnerUi();
+        return;
+      }
+      zombieTool = zombieTool === id ? null : id;
+      if (zombieTool) {
+        shovel = false;
+        nutTool = false;
+      }
+      syncNutOwnerUi();
+      if (zombieTool === "kill") showToast("☠ Кликни по зомби, чтобы убить его");
+      else if (zombieTool === "cure") showToast("💉 Кликни по зомби, чтобы снять аллергию");
+      else if (zombieTool === "spawn") showToast("＋ Выбери тип/ряд и кликни по ряду на поле");
+      else showToast("Инструмент зомби выключен");
     });
   });
   els.plantSearch.addEventListener("input", renderAlmanacGrid);
@@ -1548,8 +1938,26 @@
       updateHud();
       return;
     }
+
+    if (amalOwner() && (zombieTool === "kill" || zombieTool === "cure")) {
+      const z = findZombieNear(x, y);
+      if (!z) {
+        showToast(zombieTool === "kill" ? "Кликни по зомби" : "Кликни по зомби с аллергией");
+        return;
+      }
+      if (zombieTool === "kill") killZombieOwner(z);
+      else cureZombieAllergy(z);
+      return;
+    }
+
     const cell = canvasToCell(e.clientX, e.clientY);
     if (!cell) return;
+    if (amalOwner() && zombieTool === "spawn") {
+      state.spawnRow = cell.row;
+      syncZombieOwnerUi();
+      spawnZombieOwner(cell.row);
+      return;
+    }
     if (shovel) {
       tryShovel(cell.row, cell.col);
       return;
@@ -1568,6 +1976,7 @@
   if (els.plantCount) {
     els.plantCount.textContent = `Растений в альманахе: ${plantsCatalog.length}`;
   }
+  buildZombieOwnerPickers();
   syncNutOwnerUi();
   renderFilters();
 
@@ -1583,9 +1992,41 @@
       state.zombies = [];
       showToast("☠ Все зомби убиты (только ты)");
     }
+    if (t === "zvp2-kill-one") {
+      zombieTool = "kill";
+      shovel = false;
+      nutTool = false;
+      syncNutOwnerUi();
+      showToast("☠ Кликни по зомби на поле");
+    }
     if (t === "zvp2-spawn") {
-      spawnZombie();
-      showToast("🧟 +1 зомби");
+      spawnZombieOwner();
+    }
+    if (t === "zvp2-spawn-pick") {
+      zombieTool = "spawn";
+      shovel = false;
+      nutTool = false;
+      syncNutOwnerUi();
+      showToast("＋ Выбери тип и кликни по ряду");
+    }
+    if (t === "zvp2-cure") {
+      zombieTool = "cure";
+      shovel = false;
+      nutTool = false;
+      syncNutOwnerUi();
+      showToast("💉 Кликни по зомби, чтобы снять аллергию");
+    }
+    if (t === "zvp2-cure-all") {
+      let n = 0;
+      state.zombies.forEach((z) => {
+        if (z.allergyType) {
+          z.allergyType = null;
+          z.nutAllergy = false;
+          z.name = (ZOMBIE_KINDS[z.kind]?.name || z.name).replace(/\s*\(.*\)$/, "");
+          n += 1;
+        }
+      });
+      showToast(n ? `💉 Снята аллергия у ${n} зомби` : "Аллергичных зомби нет");
     }
     if (t === "zvp2-noreload" || t === "max") {
       state.ownerNoReload = true;
@@ -1594,6 +2035,7 @@
       });
       showToast("⏳ Без перезарядки (только ты)");
       renderSeedBar();
+      syncZombieOwnerUi();
     }
     if (t === "zvp2-nut-normal") setNutEffect("normal");
     if (t === "zvp2-nut-poison") setNutEffect("poison");
@@ -1603,8 +2045,12 @@
       state.sun = 99999;
       state.ownerNoReload = true;
       updateHud();
+      syncZombieOwnerUi();
     }
   });
 
-  window.addEventListener("amal-owner-changed", () => syncNutOwnerUi());
+  window.addEventListener("amal-owner-changed", () => {
+    syncNutOwnerUi();
+    buildZombieOwnerPickers();
+  });
 })();

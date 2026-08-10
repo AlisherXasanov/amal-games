@@ -155,6 +155,56 @@ body {
 .nut-mode.active[data-nut="kill"] { background: #d4543a; color: #fff; border-color: transparent; }
 .btn-sm.on { outline: 2px solid #ffd27a; }
 
+.zombie-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.z-tool {
+  border: 1px solid rgba(238,246,232,.2);
+  background: rgba(0,0,0,.3);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font: 800 0.75rem/1 "Nunito", system-ui, sans-serif;
+  cursor: pointer;
+}
+.z-tool.on { outline: 2px solid #ff9a7a; background: #5a3028; }
+.z-tool.on[data-ztool="noreload"] { outline-color: #7dff9a; background: #1e4a28; }
+.z-pick {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.35rem 0.2rem 0.15rem;
+  border-top: 1px solid rgba(238,246,232,.12);
+  margin-top: 0.15rem;
+}
+.z-pick-label { color: var(--muted); font-size: 0.72rem; margin-right: 0.15rem; }
+.z-kinds, .z-rows, .z-allergies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+}
+.z-chip {
+  border: 1px solid rgba(238,246,232,.2);
+  background: rgba(0,0,0,.28);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  font: 800 0.7rem/1 "Nunito", system-ui, sans-serif;
+  cursor: pointer;
+}
+.z-chip.active { background: #6aaa3a; color: #0a1808; border-color: transparent; }
+.z-chip.hybrid.active { background: #c9a23a; color: #1a1204; }
+.z-chip.allergy.active { background: #d48a3a; color: #1a1004; }
+
 .toast {
   position: fixed;
   left: 50%;

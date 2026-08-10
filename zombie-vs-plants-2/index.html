@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Зомби против растений 2</title>
-  <meta name="description" content="PVZ-2: играй с альманахом растений, кооп вдвоём, огонь/лёд/электро и зомби с аллергией на орехи." />
+  <meta name="description" content="PVZ-2: альманах, кооп, гибриды зомби, аллергии на разные растения, инструменты хозяина." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Rubik+Dirt&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=9" />
+  <link rel="stylesheet" href="./style.css?v=10" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -79,6 +79,21 @@
           <button type="button" class="nut-mode" data-nut="poison" id="nutModePoison">☠️ Яд</button>
           <button type="button" class="nut-mode" data-nut="kill" id="nutModeKill">💀 Смерть</button>
         </div>
+        <div class="zombie-bar" id="zombieBar" hidden>
+          <span class="nut-bar-label">Только хозяин — зомби:</span>
+          <button type="button" class="z-tool" data-ztool="kill" id="zToolKill">☠ Убить</button>
+          <button type="button" class="z-tool" data-ztool="cure" id="zToolCure">💉 Спасти</button>
+          <button type="button" class="z-tool" data-ztool="spawn" id="zToolSpawn">＋ Спавн</button>
+          <button type="button" class="z-tool" data-ztool="noreload" id="zToolNoreload">⏳ Без перезарядки</button>
+          <div class="z-pick" id="zombiePick">
+            <span class="z-pick-label">Тип:</span>
+            <div class="z-kinds" id="zombieKinds"></div>
+            <span class="z-pick-label">Ряд:</span>
+            <div class="z-rows" id="zombieRows"></div>
+            <span class="z-pick-label">Аллергия:</span>
+            <div class="z-allergies" id="zombieAllergies"></div>
+          </div>
+        </div>
         <div class="seed-bar" id="seedBar"></div>
         <p class="coop-hint" id="coopHint" hidden>
           Вдвоём: Игрок 1 — клик по клетке · Игрок 2 — Shift+клик · общий банк солнца
@@ -100,9 +115,9 @@
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="../shared/amal-owner-powers.js?v=9"></script>
+  <script src="../shared/amal-owner-powers.js?v=10"></script>
   <script src="../shared/amal-hub.js?v=9"></script>
   <script src="./plants-data.js?v=9"></script>
-  <script src="./game.js?v=9"></script>
+  <script src="./game.js?v=10"></script>
 </body>
 </html>
