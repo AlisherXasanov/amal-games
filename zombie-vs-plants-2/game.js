@@ -565,30 +565,33 @@
 
   function shootFrom(plant, type) {
     const rect = cellRect(plant.row, plant.col);
-    const mk = (row, extra = {}) => ({
-      row,
-      x: rect.x + rect.w * 0.7,
-      y: rect.y + rect.h * 0.45,
-      speed: type.lob ? 160 : 220,
-      damage: type.damage,
-      pierce: type.pierce || 1,
-      slow: type.slow || 0,
-      burn: type.burn || 0,
-      chain: type.chain || 0,
-      lob: !!type.lob,
-      color:
-        type.types.includes("fire")
-          ? "#ff6a2a"
-          : type.types.includes("ice")
-            ? "#7ecbff"
-            : type.types.includes("electric")
-              ? "#ffe566"
-              : type.types.includes("shadow")
-                ? "#a56bff"
-                : "#7dff6a",
-      hit: new Set(),
-      ...extra,
-    });
+    const mk = (row, extra = {}) => {
+      const lane = cellRect(row, plant.col);
+      return {
+        row,
+        x: rect.x + rect.w * 0.7,
+        y: lane.y + lane.h * 0.45,
+        speed: type.lob ? 160 : 220,
+        damage: type.damage,
+        pierce: type.pierce || 1,
+        slow: type.slow || 0,
+        burn: type.burn || 0,
+        chain: type.chain || 0,
+        lob: !!type.lob,
+        color:
+          type.types.includes("fire")
+            ? "#ff6a2a"
+            : type.types.includes("ice")
+              ? "#7ecbff"
+              : type.types.includes("electric")
+                ? "#ffe566"
+                : type.types.includes("shadow")
+                  ? "#a56bff"
+                  : "#7dff6a",
+        hit: new Set(),
+        ...extra,
+      };
+    };
 
     if (type.role === "breath") {
       state.zombies.forEach((z) => {
@@ -630,13 +633,27 @@
       return;
     }
 
-    const rows =
-      type.id.includes("threepeater")
-        ? [plant.row - 1, plant.row, plant.row + 1].filter((r) => r >= 0 && r < ROWS)
-        : [plant.row];
+    // Тройной горохострел — по 1 горошине в свой ряд и соседние
+    const isThree = type.id === "threepeater" || type.id.includes("threepeater");
+    const rows = isThree
+      ? [plant.row - 1, plant.row, plant.row + 1].filter((r) => r >= 0 && r < ROWS)
+      : [plant.row];
     rows.forEach((r) => state.projectiles.push(mk(r)));
+    if (isThree) {
+      addFx("3×", rect.x + 36, rect.y + 22, "#c8ff9a");
+    }
     if (type.id.includes("repeater") || type.id.includes("split-pea")) {
       state.projectiles.push(mk(plant.row, { x: rect.x + rect.w * 0.55 }));
+    }
+    // Разрезной горох — ещё и назад
+    if (type.id.includes("split-pea")) {
+      state.projectiles.push(
+        mk(plant.row, {
+          x: rect.x + rect.w * 0.3,
+          speed: -220,
+          color: "#9dff7a",
+        })
+      );
     }
   }
 
@@ -813,7 +830,8 @@
           break;
         }
       }
-      if (pr.x > LEFT + COLS * CELL_W + 40) pr.dead = true;
+      if (pr.speed >= 0 && pr.x > LEFT + COLS * CELL_W + 40) pr.dead = true;
+      if (pr.speed < 0 && pr.x < LEFT - 40) pr.dead = true;
     });
     state.projectiles = state.projectiles.filter((p) => !p.dead);
   }
