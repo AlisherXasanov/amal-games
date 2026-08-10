@@ -24,39 +24,13 @@
       #root { min-height: 100dvh; }
     </style>
     <link rel="stylesheet" crossorigin href="./assets/static-index-DPwEJUCe.css">
+    <script type="module" crossorigin src="./assets/static-index-TreeFix3.js"></script>
   </head>
   <body>
     <a class="portal-back" href="../">&larr; Все игры</a>
     <div id="root"></div>
-    <script type="module" crossorigin src="./assets/static-index-TreeFix2.js?v=fix2"></script>
-    <script>
-      // Amal-оверлеи после старта мира — иначе React-корень иногда сбрасывается
-      function loadAmal() {
-        if (window.__AMAL_TV_LOADED__) return;
-        window.__AMAL_TV_LOADED__ = true;
-        var files = [
-          "../shared/amal-owner-powers.js?v=10",
-          "./amal-bridge.js?v=2",
-          "../shared/amal-hub.js?v=18",
-        ];
-        files.forEach(function (src) {
-          var s = document.createElement("script");
-          s.src = src;
-          document.body.appendChild(s);
-        });
-      }
-      function whenReady(fn) {
-        var n = 0;
-        var t = setInterval(function () {
-          n += 1;
-          if (document.querySelector("#root canvas") || n > 40) {
-            clearInterval(t);
-            fn();
-          }
-        }, 250);
-      }
-      whenReady(loadAmal);
-      setTimeout(loadAmal, 8000);
-    </script>
+    <script src="../shared/amal-owner-powers.js?v=10"></script>
+    <script src="./amal-bridge.js?v=2"></script>
+    <script src="../shared/amal-hub.js?v=18"></script>
   </body>
 </html>

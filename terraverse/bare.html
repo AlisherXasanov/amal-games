@@ -20,26 +20,15 @@
     <div id="log">boot…</div>
     <div id="root"></div>
     <script>
-      const log = (m) => {
-        const el = document.getElementById("log");
-        el.textContent += "\n" + m;
-      };
-      window.addEventListener("error", (e) => {
-        log("ERR " + e.message + " @" + (e.filename || "") + ":" + e.lineno + ":" + e.colno);
-      });
-      window.addEventListener("unhandledrejection", (e) => {
-        const r = e.reason;
-        log("REJ " + (r && (r.stack || r.message) || r));
-      });
-      window.addEventListener("vite:preloadError", (e) => {
-        const p = e.payload;
-        log("PRELOAD " + (p && (p.stack || p.message) || p));
-      });
+      const log = (m) => { document.getElementById("log").textContent += "\n" + m; };
+      window.addEventListener("error", (e) => log("ERR " + e.message + " @" + (e.filename || "") + ":" + e.lineno));
+      window.addEventListener("unhandledrejection", (e) => log("REJ " + (e.reason && (e.reason.stack || e.reason.message) || e.reason)));
+      window.addEventListener("vite:preloadError", (e) => log("PRE " + (e.payload && (e.payload.stack || e.payload.message) || e.payload)));
       setInterval(() => {
         const root = document.getElementById("root");
         log("root kids=" + (root ? root.childElementCount : "null") + " canvas=" + !!document.querySelector("canvas"));
       }, 2000);
     </script>
-    <script type="module" crossorigin src="./assets/static-index-TreeFix2.js?v=fix1"></script>
+    <script type="module" crossorigin src="./assets/static-index-TreeFix3.js"></script>
   </body>
 </html>
