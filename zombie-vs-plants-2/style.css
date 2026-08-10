@@ -2,9 +2,10 @@
   --lawn: #4f8f3a;
   --lawn-dark: #3d7430;
   --cream: #eef6e8;
-  --panel: rgba(18, 28, 22, 0.9);
+  --panel: rgba(18, 28, 22, 0.92);
   --accent: #7bc44a;
   --ink: #1c2418;
+  --muted: #a8bba0;
 }
 
 * {
@@ -48,6 +49,10 @@ body {
   padding: 64px 16px 24px;
 }
 
+.screen[hidden] {
+  display: none !important;
+}
+
 .menu-panel {
   width: min(440px, 100%);
   padding: 2rem 1.75rem;
@@ -81,10 +86,16 @@ body {
 }
 
 .desc {
-  color: #a8bba0;
+  color: var(--muted);
   font-size: 0.95rem;
   line-height: 1.45;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat {
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 1.25rem;
 }
 
 .btn {
@@ -130,4 +141,175 @@ body {
   font-weight: 800;
   font-size: 0.95rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.almanac {
+  width: min(1100px, 100%);
+  align-self: stretch;
+  justify-self: stretch;
+  display: block;
+}
+
+.almanac-wrap {
+  background: var(--panel);
+  border: 1px solid rgba(123, 196, 74, 0.28);
+  border-radius: 1.1rem;
+  padding: 1rem 1rem 1.25rem;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.almanac-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.almanac-head h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.almanac-head .sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.btn-back {
+  border: 1px solid rgba(238, 246, 232, 0.25);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--cream);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.8rem;
+  font: 800 0.9rem/1 "Nunito", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.type-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.type-btn {
+  border: 1px solid rgba(238, 246, 232, 0.18);
+  background: rgba(0, 0, 0, 0.28);
+  color: var(--cream);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font: 800 0.78rem/1 "Nunito", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.type-btn.active {
+  background: linear-gradient(180deg, #8fd35a, var(--lawn-dark));
+  color: var(--ink);
+  border-color: transparent;
+}
+
+.search-wrap {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.search-wrap input {
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(238, 246, 232, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--cream);
+  padding: 0.7rem 0.85rem;
+  font: 700 0.95rem/1.2 "Nunito", system-ui, sans-serif;
+}
+
+.plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.65rem;
+  max-height: min(62vh, 640px);
+  overflow: auto;
+  padding-right: 0.2rem;
+}
+
+.plant-card {
+  border-radius: 0.85rem;
+  border: 1px solid rgba(238, 246, 232, 0.14);
+  background: rgba(8, 14, 10, 0.55);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.plant-card .emoji {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.plant-card h3 {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.plant-card .en {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+.plant-card .meta {
+  margin-top: 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #c7dfb8;
+}
+
+.plant-card .tags {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.18rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(123, 196, 74, 0.18);
+  color: #d7f0c4;
+}
+
+.tag.fire { background: rgba(232, 96, 48, 0.28); color: #ffd0b8; }
+.tag.ice { background: rgba(96, 180, 240, 0.25); color: #d4f0ff; }
+.tag.electric { background: rgba(240, 220, 64, 0.22); color: #fff4b0; }
+.tag.shadow { background: rgba(120, 80, 180, 0.28); color: #e6d4ff; }
+.tag.water { background: rgba(48, 140, 220, 0.25); color: #c8e8ff; }
+.tag.bomb { background: rgba(220, 60, 60, 0.28); color: #ffd0d0; }
+.tag.mint { background: rgba(80, 180, 120, 0.25); color: #d0ffd8; }
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  font-weight: 800;
+  padding: 2rem 1rem;
+}
+
+@media (max-width: 640px) {
+  #app {
+    padding: 56px 10px 16px;
+    place-items: stretch;
+  }
+
+  .plant-grid {
+    max-height: none;
+  }
 }
