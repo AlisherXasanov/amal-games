@@ -16,6 +16,7 @@
     revokedGrants: "amal-hub-revoked-grants-v1",
     registry: "amal-hub-registry-v1",
     abuse: "amal-hub-abuse-v1",
+    pendingGifts: "amal-hub-pending-gifts-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
@@ -45,9 +46,14 @@
 
   const CHANGELOG = [
     {
+      id: "2026-08-10-owner-gifts",
+      title: "Подарки от хозяина",
+      body: "Только Амаль выдаёт подарок: сразу, одному игроку (по нику) и только в выбранной игре. На экране написано, что именно ты получил.",
+    },
+    {
       id: "2026-08-10-admin-abuse",
       title: "Admin Abuse во всех играх",
-      body: "Хозяин запускает Abuse — радуга на экране, человечек раздаёт подарки. Видно, кто играет с тобой в этой же игре в реальном времени.",
+      body: "Хозяин запускает Abuse — радуга на экране. Видно, кто играет с тобой в этой же игре в реальном времени.",
     },
     {
       id: "2026-08-10-register-all",
@@ -654,6 +660,48 @@
     return a;
   }
 
+  /** Что именно можно выдать — коротко и понятно */
+  const OWNER_GIFTS = [
+    {
+      id: "mega-sun",
+      label: "Мега-солнце",
+      detail: "Сразу много солнца / ресурсов в этой игре",
+    },
+    {
+      id: "lucky-box",
+      label: "Коробка удачи",
+      detail: "Сюрприз-подарок прямо сейчас",
+    },
+    {
+      id: "soft-shield",
+      label: "Мягкий щит",
+      detail: "Защита / подлечивание на короткое время",
+    },
+    {
+      id: "party-boost",
+      label: "Пати-буст",
+      detail: "Усиление: быстрее и сильнее на время",
+    },
+    {
+      id: "rainbow-hello",
+      label: "Радужный привет",
+      detail: "Радуга на экране + поздравление от хозяина",
+    },
+  ];
+
+  function giftById(id) {
+    return OWNER_GIFTS.find((g) => g.id === id) || OWNER_GIFTS[0];
+  }
+
+  function loadPendingGifts() {
+    const list = storeGet(KEYS.pendingGifts, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function savePendingGifts(list) {
+    storeSet(KEYS.pendingGifts, list.slice(-40));
+  }
+
   function ensureAbuseStyles() {
     if (document.getElementById("amal-abuse-css")) return;
     const css = document.createElement("style");
@@ -665,15 +713,21 @@
       "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.18),rgba(0,0,0,.35))}" +
       "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:12%;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(255,230,120,.55);color:#fff7ed;font:900 15px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}" +
       "#amal-abuse-fx .ab-banner small{display:block;margin-top:4px;opacity:.8;font-size:11px;font-weight:700}" +
-      "#amal-abuse-fx .ab-buddy{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(88px + env(safe-area-inset-bottom,0px));width:92px;pointer-events:auto;cursor:pointer;text-align:center;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));animation:abBob 1.1s ease-in-out infinite}" +
-      "#amal-abuse-fx .ab-buddy img{width:72px;height:72px;border-radius:50%;border:3px solid #ffe566;background:#111;display:block;margin:0 auto}" +
-      "#amal-abuse-fx .ab-buddy .ab-label{margin-top:6px;padding:6px 8px;border-radius:12px;background:linear-gradient(135deg,#fde68a,#f59e0b);color:#111;font:900 11px/1.15 system-ui,sans-serif}" +
-      "#amal-abuse-fx .ab-happy{position:absolute;left:12px;bottom:calc(88px + env(safe-area-inset-bottom,0px));padding:8px 10px;border-radius:14px;background:rgba(16,24,12,.82);border:1px solid rgba(125,255,154,.35);color:#d8ffe0;font:800 11px/1.3 system-ui,sans-serif;max-width:46vw}" +
+      "#amal-gift-fx{position:fixed;inset:0;z-index:2147483601;display:none;place-items:center;pointer-events:none}" +
+      "#amal-gift-fx.on{display:grid}" +
+      "#amal-gift-fx .gf-card{pointer-events:none;min-width:min(90vw,340px);padding:1.2rem 1.35rem;border-radius:1.2rem;background:linear-gradient(160deg,rgba(40,28,8,.96),rgba(12,14,22,.96));border:1px solid rgba(251,191,36,.55);box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;color:#fff7ed;font-family:system-ui,sans-serif}" +
+      "#amal-gift-fx .gf-kicker{font:900 11px/1 system-ui;letter-spacing:.1em;color:#fde68a;margin:0 0 .4rem}" +
+      "#amal-gift-fx .gf-title{font:900 1.35rem/1.2 system-ui;margin:0 0 .35rem}" +
+      "#amal-gift-fx .gf-detail{font:700 .88rem/1.35 system-ui;color:#d6d3d1;margin:0 0 .45rem}" +
+      "#amal-gift-fx .gf-meta{font:700 .72rem/1.3 system-ui;color:#a8a29e;margin:0}" +
       "#amal-same-game{pointer-events:none;position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:2147483500;display:flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(8,12,18,.82);border:1px solid rgba(255,255,255,.14);color:#e8eef8;font:800 11px/1 system-ui,sans-serif;max-width:94vw;overflow:hidden;white-space:nowrap}" +
       "#amal-same-game .sg-faces{display:flex;gap:4px;align-items:center}" +
       "#amal-same-game img{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.35);background:#222}" +
-      "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}" +
-      "@keyframes abBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}";
+      ".amal-gift-pick{display:grid;gap:6px;margin:8px 0}" +
+      ".amal-gift-pick button{display:block;width:100%;text-align:left;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#e7e5e4;cursor:pointer;font:700 12px/1.35 system-ui}" +
+      ".amal-gift-pick button.on{border-color:rgba(251,191,36,.65);background:rgba(251,191,36,.12)}" +
+      ".amal-gift-pick strong{display:block;color:#fde68a;margin-bottom:2px}" +
+      "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}";
     document.head.appendChild(css);
   }
 
@@ -687,79 +741,185 @@
     }
     const text = (payload && payload.text) || "Admin Abuse начинается!";
     const from = (payload && payload.fromNick) || "Амаль";
-    const face = faceUrl("abuse-" + from);
     el.innerHTML =
       '<div class="ab-rainbow"></div><div class="ab-veil"></div>' +
       '<div class="ab-banner">🔥 ' +
       escapeHtml(text) +
       "<small>от " +
       escapeHtml(from) +
-      " · можно забрать подарок у человечка</small></div>" +
-      '<div class="ab-happy">Админы рады ✨<br/>Раздача открыта</div>' +
-      '<button type="button" class="ab-buddy" id="amal-abuse-buddy" title="Забрать всё">' +
-      '<img src="' +
-      face +
-      '" alt="" />' +
-      '<div class="ab-label">🎁 Забрать всё</div></button>';
+      " · только в этой игре</small></div>";
     el.classList.add("on");
-    const buddy = el.querySelector("#amal-abuse-buddy");
-    if (buddy) {
-      buddy.onclick = () => claimAbuseGift(payload);
-    }
     clearTimeout(showAdminAbuseFx._t);
-    const left = Math.max(4000, (payload && payload.until ? payload.until - Date.now() : 45000));
+    const left = Math.max(4000, (payload && payload.until ? payload.until - Date.now() : 25000));
     showAdminAbuseFx._t = setTimeout(() => {
       el.classList.remove("on");
-    }, Math.min(left, 90000));
+    }, Math.min(left, 60000));
   }
 
-  function claimAbuseGift(payload) {
-    try {
-      const key = "amal-abuse-claim-" + String((payload && payload.at) || 0);
-      if (sessionStorage.getItem(key) === "1") {
-        showHubToast("Ты уже забрал подарок");
-        return;
-      }
-      sessionStorage.setItem(key, "1");
-    } catch (_) {
-      /* ignore */
+  function showGiftReceived(payload) {
+    ensureAbuseStyles();
+    let el = document.getElementById("amal-gift-fx");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-gift-fx";
+      document.body.appendChild(el);
     }
-    showHubToast("🎁 Получено от Admin Abuse!");
-    try {
-      if (global.AmalSurprises && AmalSurprises.giveLittle) {
-        AmalSurprises.giveLittle({ game: gameIdFromPath(), to: getNick() || "игроку" });
-      }
-    } catch (_) {
-      /* ignore */
+    el.innerHTML =
+      '<div class="gf-card">' +
+      '<p class="gf-kicker">ПОДАРОК ОТ ХОЗЯИНА</p>' +
+      '<p class="gf-title">🎁 ' +
+      escapeHtml((payload && payload.label) || "Подарок") +
+      "</p>" +
+      '<p class="gf-detail">' +
+      escapeHtml((payload && payload.detail) || "") +
+      "</p>" +
+      '<p class="gf-meta">Игра: ' +
+      escapeHtml(gameTitle((payload && payload.game) || gameIdFromPath())) +
+      " · от " +
+      escapeHtml((payload && payload.fromNick) || "Амаль") +
+      "</p></div>";
+    el.classList.add("on");
+    if (payload && payload.giftId === "rainbow-hello") {
+      showAdminAbuseFx({
+        text: (payload && payload.label) || "Радужный привет!",
+        fromNick: payload.fromNick,
+        until: Date.now() + 12000,
+      });
     }
-    try {
-      if ((isOwner() || isGameAdmin()) && global.AmalPowers && AmalPowers.runAbility) {
-        AmalPowers.runAbility("max");
-      }
-    } catch (_) {
-      /* ignore */
-    }
+    clearTimeout(showGiftReceived._t);
+    showGiftReceived._t = setTimeout(() => el.classList.remove("on"), 4200);
+  }
+
+  function applyOwnerGiftLocally(payload) {
+    if (!payload) return;
+    showGiftReceived(payload);
     global.dispatchEvent(
-      new CustomEvent("amal-admin-abuse-claim", {
-        detail: { payload: payload || activeAbuse(), nick: getNick(), at: Date.now() },
+      new CustomEvent("amal-owner-gift", {
+        detail: payload,
       })
     );
     global.dispatchEvent(
       new CustomEvent("amal-power", {
-        detail: { type: "abuse-gift", abuse: true },
+        detail: {
+          type: "owner-gift",
+          giftId: payload.giftId,
+          label: payload.label,
+          detail: payload.detail,
+          abuse: false,
+        },
       })
     );
+    try {
+      if (payload.giftId === "lucky-box" && global.AmalSurprises && AmalSurprises.giveLittle) {
+        AmalSurprises.giveLittle({
+          game: payload.game || gameIdFromPath(),
+          to: getNick() || "игроку",
+        });
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function receiveOwnerGift(payload) {
+    if (!payload || !payload.toNick) return;
+    const me = (getNick() || "").toLowerCase();
+    if (!me || me !== String(payload.toNick).toLowerCase()) return;
+    const game = payload.game || gameIdFromPath();
+    if (gameIdFromPath() !== game) {
+      const list = loadPendingGifts().filter(
+        (g) => !(g.toNick === payload.toNick && g.game === game && g.at === payload.at)
+      );
+      list.unshift(payload);
+      savePendingGifts(list);
+      showHubToast("🎁 Тебе подарок в игре «" + gameTitle(game) + "» — зайди туда");
+      return;
+    }
+    applyOwnerGiftLocally(payload);
+    showHubToast("🎁 Получено: " + (payload.label || "подарок"));
+  }
+
+  function flushPendingGifts() {
+    const me = (getNick() || "").toLowerCase();
+    if (!me) return;
+    const gid = gameIdFromPath();
+    const list = loadPendingGifts();
+    const keep = [];
+    list.forEach((g) => {
+      if (!g) return;
+      if (String(g.toNick || "").toLowerCase() === me && g.game === gid) {
+        applyOwnerGiftLocally(g);
+      } else {
+        keep.push(g);
+      }
+    });
+    savePendingGifts(keep);
+  }
+
+  /**
+   * Хозяин выдаёт подарок СРАЗУ конкретному игроку в КОНКРЕТНОЙ игре.
+   */
+  function giveGiftToPlayer(opts) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const nick = String((opts && opts.nick) || "").trim().slice(0, NICK_MAX);
+    if (nick.length < NICK_MIN) return { ok: false, error: "Укажи ник игрока" };
+    const game = (opts && opts.game) || gameIdFromPath();
+    if (!game || game === "portal") return { ok: false, error: "Выбери игру" };
+    const gift = giftById((opts && opts.giftId) || "mega-sun");
+    const payload = {
+      type: "owner-gift",
+      toNick: nick,
+      game,
+      giftId: gift.id,
+      label: gift.label,
+      detail: gift.detail,
+      at: Date.now(),
+      fromNick: getNick() || "Amal",
+    };
+    let n = 0;
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn.open) {
+          conn.send(payload);
+          n += 1;
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    // если цель — ты сам в этой игре (тест)
+    if ((getNick() || "").toLowerCase() === nick.toLowerCase() && gameIdFromPath() === game) {
+      applyOwnerGiftLocally(payload);
+    }
+    addNote(
+      "🎁 Выдал «" + gift.label + "» → " + nick + " · " + gameTitle(game) + "\n" + gift.detail,
+      { fromAdmin: true, toNick: nick, game }
+    );
+    try {
+      if (global.AmalSurprises && AmalSurprises.record) {
+        /* optional */
+      }
+    } catch (_) {}
+    showHubToast("🎁 Выдано " + nick + ": " + gift.label + " · " + gameTitle(game));
+    return { ok: true, count: n, payload, gift };
   }
 
   function startAdminAbuse(rawText) {
     if (!isOwner()) return { ok: false, error: "Только хозяин" };
     const text = String(rawText || "Admin Abuse начинается!").trim().slice(0, 120);
+    const onlyGame = gameIdFromPath();
     const payload = {
       type: "admin-abuse",
       text: text || "Admin Abuse начинается!",
       at: Date.now(),
-      until: Date.now() + 60000,
-      fromGame: gameIdFromPath(),
+      until: Date.now() + 45000,
+      fromGame: onlyGame,
+      game: onlyGame,
       fromNick: getNick() || "Amal",
     };
     storeSet(KEYS.abuse, payload);
@@ -780,8 +940,12 @@
       /* ignore */
     }
     showAdminAbuseFx(payload);
-    addNote("🔥 " + payload.text, { fromAdmin: true, toNick: "*всем*", game: gameIdFromPath() });
-    showHubToast("🔥 Abuse запущен во всех играх");
+    addNote("🔥 " + payload.text + " · только " + gameTitle(onlyGame), {
+      fromAdmin: true,
+      toNick: "*всем*",
+      game: onlyGame,
+    });
+    showHubToast("🔥 Abuse только в «" + gameTitle(onlyGame) + "»");
     return { ok: true, count: n, payload };
   }
 
@@ -823,20 +987,18 @@
   function updateSameGameStrip() {
     ensureAbuseStyles();
     const gid = gameIdFromPath();
+    const old = document.getElementById("amal-same-game");
     if (!gid || gid === "portal") {
-      const old = document.getElementById("amal-same-game");
       if (old) old.remove();
       return;
     }
     const peers = playersInThisGame();
-    let el = document.getElementById("amal-same-game");
-    if (!peers.length && !isOwner()) {
-      // всё равно покажем себя как соло, если есть ник
-      if (!getNick()) {
-        if (el) el.remove();
-        return;
-      }
+    // Сверху не шумим, если ты один — полоска только когда есть другие
+    if (!peers.length) {
+      if (old) old.remove();
+      return;
     }
+    let el = old;
     if (!el) {
       el = document.createElement("div");
       el.id = "amal-same-game";
@@ -846,18 +1008,14 @@
       .slice(0, 6)
       .map((p) => '<img src="' + faceUrl(p.nick) + '" title="' + escapeHtml(p.nick) + '" alt="" />')
       .join("");
-    if (!peers.length) {
-      el.innerHTML = "👤 В этой игре сейчас только ты";
-    } else {
-      el.innerHTML =
-        '<span class="sg-faces">' +
-        faces +
-        "</span><span>С тобой в игре: <b>" +
-        peers.map((p) => escapeHtml(p.nick)).join(", ") +
-        "</b> · " +
-        peers.length +
-        "</span>";
-    }
+    el.innerHTML =
+      '<span class="sg-faces">' +
+      faces +
+      "</span><span>С тобой в игре: <b>" +
+      peers.map((p) => escapeHtml(p.nick)).join(", ") +
+      "</b> · " +
+      peers.length +
+      "</span>";
   }
 
   function clearIncomingNotes() {
@@ -972,9 +1130,12 @@
         global.__amalPresenceBc.onmessage = (ev) => {
           const data = ev.data;
           if (!data) return;
+          if (data.type === "owner-gift") {
+            receiveOwnerGift(data);
+            return;
+          }
           if (data.type === "admin-abuse") {
-            storeSet(KEYS.abuse, data);
-            showAdminAbuseFx(data);
+            startAdminAbuseFromRemote(data);
             return;
           }
           if (data.type === "admin-msg" && data.text) {
@@ -1074,12 +1235,15 @@
   }
 
   function startAdminAbuseFromRemote(data) {
+    const onlyGame = data && (data.game || data.fromGame);
+    if (onlyGame && onlyGame !== gameIdFromPath()) return;
     const payload = {
       type: "admin-abuse",
       text: (data && data.text) || "Admin Abuse начинается!",
       at: (data && data.at) || Date.now(),
-      until: (data && data.until) || Date.now() + 60000,
-      fromGame: (data && data.fromGame) || "portal",
+      until: (data && data.until) || Date.now() + 45000,
+      fromGame: onlyGame || gameIdFromPath(),
+      game: onlyGame || gameIdFromPath(),
       fromNick: (data && data.fromNick) || "Amal",
     };
     storeSet(KEYS.abuse, payload);
@@ -1103,13 +1267,16 @@
       });
       presenceConn.on("data", (data) => {
         if (!data) return;
+        if (data.type === "owner-gift") {
+          receiveOwnerGift(data);
+          return;
+        }
         if (data.type === "admin-abuse") {
-          storeSet(KEYS.abuse, data);
-          showAdminAbuseFx(data);
+          startAdminAbuseFromRemote(data);
           showHubToast("🔥 " + (data.text || "Admin Abuse"));
         } else if (data.type === "admin-msg" && data.text) {
           if (/admin\s*abuse|админ\s*абуз|abuse/i.test(data.text)) {
-            startAdminAbuseFromRemote(data);
+            startAdminAbuseFromRemote({ ...data, game: data.fromGame || data.game });
           } else {
             showHubToast("👑 " + (data.fromNick || "Амаль") + ": " + data.text);
           }
@@ -1304,18 +1471,8 @@
       html += `<div class="amal-hub-toast">${escapeHtml(hubToast)}</div>`;
     }
 
-    // Быстрые действия во время игры (только главному)
-    if (owner && inGame && !open && !gateMode) {
-      const players = playersInThisGame();
-      html += `<div class="amal-hub-dock">
-        <button type="button" class="primary" data-amal="admin-abuse">🔥 Abuse</button>
-        <button type="button" data-amal="admin-live">📡 Live</button>
-        <button type="button" data-amal="admin-same">👥 ${players.length}</button>
-        <button type="button" data-amal="quick-grant">⚡</button>
-        <button type="button" data-amal="admin-write">✉️</button>
-        <button type="button" data-amal="open">☰</button>
-      </div>`;
-    } else {
+    // Быстрые действия во время игры — без верхней «пятёрки»; всё в 👑 Хозяин
+    if (!(owner && inGame && !open && !gateMode)) {
       html += `<button type="button" class="amal-hub-fab ${owner || gameAdmin ? "admin" : ""}" data-amal="open" title="${
         owner ? "Меню хозяина" : gameAdmin ? "Твоя админка" : "Ник и заметки"
       }">${owner || gameAdmin ? "👑" : "📝"}</button>`;
@@ -1600,6 +1757,50 @@
         </div>
         ${back}`;
     }
+    if (adminPage === "gift" && fullOwner) {
+      const peers = recentPlayers();
+      const curGame = gameIdFromPath();
+      return `
+        <div class="amal-hub-hero"><div class="badge">🎁</div><div>
+          <h2>Выдать подарок</h2>
+          <p class="sub">Ты даёшь сразу · одному игроку · в одной игре</p>
+        </div></div>
+        <label class="sub">Ник игрока</label>
+        <input id="amal-gift-nick" maxlength="${NICK_MAX}" placeholder="Ник" value="${escapeHtml(replyTo || "")}" />
+        <div class="amal-hub-row" style="flex-wrap:wrap;margin:6px 0 8px">
+          ${peers
+            .slice(0, 8)
+            .map(
+              (p) =>
+                `<button type="button" data-amal="gift-pick-nick" data-nick="${escapeHtml(p.nick)}">${escapeHtml(
+                  p.nick,
+                )}</button>`,
+            )
+            .join("") || `<span class="meta">Пока нет онлайн — впиши ник руками</span>`}
+        </div>
+        <label class="sub">Игра</label>
+        <select id="amal-gift-game" style="width:100%;margin:6px 0 10px;padding:10px;border-radius:12px;border:0;background:#111;color:#fff;font:800 13px system-ui">
+          ${GRANTABLE_GAMES.map(
+            (g) =>
+              `<option value="${g.id}" ${g.id === curGame ? "selected" : ""}>${escapeHtml(g.name)}</option>`,
+          ).join("")}
+        </select>
+        <label class="sub">Что выдаём</label>
+        <div class="amal-gift-pick" id="amal-gift-pick">
+          ${OWNER_GIFTS.map(
+            (g, i) =>
+              `<button type="button" class="${i === 0 ? "on" : ""}" data-amal="gift-select" data-gift="${g.id}"><strong>${escapeHtml(
+                g.label,
+              )}</strong>${escapeHtml(g.detail)}</button>`,
+          ).join("")}
+        </div>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row">
+          <button type="button" class="primary" data-amal="gift-send" style="flex:1">Выдать сейчас</button>
+        </div>
+        ${back}`;
+    }
     if (adminPage === "broadcast" && fullOwner) {
       return `
         <div class="amal-hub-hero"><div class="badge">📢</div><div>
@@ -1716,6 +1917,7 @@
           unread.length ? unread.length + " новых" : "пусто"
         }</span></button>
         <button type="button" data-amal="admin-write"><span class="ico">✉️</span><b>Написать</b><span>Одному нику</span></button>
+        <button type="button" data-amal="admin-gift"><span class="ico">🎁</span><b>Выдать подарок</b><span>Игрок · игра · что именно</span></button>
         <button type="button" data-amal="admin-broadcast"><span class="ico">📢</span><b>Всем онлайн</b><span>Рассылка</span></button>
         <button type="button" data-amal="admin-grant"><span class="ico">⚡</span><b>Админка</b><span>Выдать / забрать</span></button>
         <button type="button" data-amal="admin-games"><span class="ico">🎮</span><b>Игры</b><span>Быстрый переход</span></button>
@@ -1773,6 +1975,56 @@
           open = true;
           view = "admin";
           paint();
+        }
+        if (act === "admin-gift") {
+          if (!isOwner()) return;
+          adminPage = "gift";
+          open = true;
+          view = "admin";
+          paint();
+          return;
+        }
+        if (act === "gift-pick-nick") {
+          replyTo = el.getAttribute("data-nick") || "";
+          const input = root.querySelector("#amal-gift-nick");
+          if (input) input.value = replyTo;
+          paint();
+          return;
+        }
+        if (act === "gift-select") {
+          root.querySelectorAll(".amal-gift-pick [data-gift]").forEach((btn) => {
+            btn.classList.toggle("on", btn === el);
+          });
+          return;
+        }
+        if (act === "gift-send") {
+          if (!isOwner()) return;
+          const nickEl = root.querySelector("#amal-gift-nick");
+          const gameEl = root.querySelector("#amal-gift-game");
+          const onGift = root.querySelector(".amal-gift-pick [data-gift].on");
+          const res = giveGiftToPlayer({
+            nick: nickEl && nickEl.value,
+            game: gameEl && gameEl.value,
+            giftId: onGift && onGift.getAttribute("data-gift"),
+          });
+          if (!res.ok) {
+            err = res.error || "Не вышло";
+            msg = "";
+            paint();
+            return;
+          }
+          err = "";
+          msg =
+            "Выдано «" +
+            res.gift.label +
+            "» → " +
+            res.payload.toNick +
+            " · " +
+            gameTitle(res.payload.game) +
+            "\nЧто это: " +
+            res.gift.detail;
+          paint();
+          return;
         }
         if (act === "admin-abuse") {
           if (!canGrantAdmin()) return;
@@ -2104,6 +2356,7 @@
     const redeemed = redeemGrantFromUrl();
     bumpPresence();
     startPresenceNet();
+    flushPendingGifts();
     paint();
     updateSameGameStrip();
     setInterval(() => {
@@ -2176,6 +2429,7 @@
     registerEverywhere,
     listRegistry,
     startAdminAbuse,
+    giveGiftToPlayer,
     playersInThisGame,
     CHANGELOG,
   };

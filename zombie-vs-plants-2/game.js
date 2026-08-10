@@ -2741,9 +2741,73 @@
     refreshSurpriseJournal();
   });
 
+  function applyOwnerGiftEffect(detail) {
+    const id = (detail && detail.giftId) || "";
+    const label = (detail && detail.label) || "Подарок";
+    if (!state.running && id !== "rainbow-hello") {
+      showToast("🎁 " + label + " — нажми Играть, эффект в бою");
+    }
+    AudioFX.unlock();
+    AudioFX.ability();
+    if (id === "mega-sun") {
+      state.sun += 500;
+      for (let i = 0; i < 8; i++) {
+        state.suns.push({
+          x: LEFT + 30 + Math.random() * (COLS * CELL_W - 60),
+          y: 10 + Math.random() * 40,
+          value: 50,
+          life: 12,
+          falling: true,
+        });
+      }
+      updateHud();
+      showToast("🎁 Мега-солнце: +500 и падающие солнца");
+      return;
+    }
+    if (id === "lucky-box") {
+      applyLittleSurprise("lucky-seed");
+      applyLittleSurprise("sun-kiss");
+      showToast("🎁 Коробка удачи!");
+      return;
+    }
+    if (id === "soft-shield") {
+      state.plants.forEach((p) => {
+        if (!p.dead) p.hp = p.maxHp;
+      });
+      showToast("🎁 Мягкий щит: растения подлечены");
+      updateHud();
+      return;
+    }
+    if (id === "party-boost") {
+      state.sun += 200;
+      state.ownerNoReload = true;
+      Object.keys(state.cooldown).forEach((k) => {
+        state.cooldown[k] = 0;
+      });
+      state.zombies.forEach((z) => {
+        if (!z.dead) z.slow = Math.max(z.slow || 0, 5);
+      });
+      updateHud();
+      renderSeedBar();
+      showToast("🎁 Пати-буст: сила и скорость!");
+      return;
+    }
+    if (id === "rainbow-hello") {
+      showToast("🎁 Радужный привет от хозяина!");
+    }
+  }
+
+  window.addEventListener("amal-owner-gift", (e) => {
+    applyOwnerGiftEffect(e.detail || {});
+  });
+
   window.addEventListener("amal-power", (e) => {
-    if (!amalOwner()) return;
     const t = e.detail && e.detail.type;
+    if (t === "owner-gift") {
+      applyOwnerGiftEffect(e.detail || {});
+      return;
+    }
+    if (!amalOwner()) return;
     if (!t) return;
     if (t === "zvp2-kill" || t === "max") {
       state.zombies.forEach((z) => {
