@@ -62,7 +62,7 @@
       }
       return;
     }
-    if (t === "god" || t === "heal" || t === "max" || t === "tv-creative") {
+    if (t === "god" || t === "heal" || t === "max" || t === "tv-creative" || t === "abuse-gift") {
       enableImmortal();
     }
   });

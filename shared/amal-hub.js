@@ -53,7 +53,7 @@
     {
       id: "2026-08-10-admin-abuse",
       title: "Admin Abuse во всех играх",
-      body: "Хозяин запускает Abuse — радуга на экране. Видно, кто играет с тобой в этой же игре в реальном времени.",
+      body: "Хозяин запускает Abuse — радуга на весь экран, большой смотрит на поле, справа человечек: «Забрать всё».",
     },
     {
       id: "2026-08-10-register-all",
@@ -703,16 +703,25 @@
   }
 
   function ensureAbuseStyles() {
-    if (document.getElementById("amal-abuse-css")) return;
+    const old = document.getElementById("amal-abuse-css");
+    if (old) old.remove();
+    const old2 = document.getElementById("amal-abuse-css-v2");
+    if (old2) old2.remove();
     const css = document.createElement("style");
-    css.id = "amal-abuse-css";
+    css.id = "amal-abuse-css-v2";
     css.textContent =
-      "#amal-abuse-fx{position:fixed;inset:0;z-index:2147483600;pointer-events:none;display:none}" +
+      "#amal-abuse-fx{position:fixed;inset:0;z-index:2147483600;pointer-events:none;display:none;overflow:hidden}" +
       "#amal-abuse-fx.on{display:block}" +
-      "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.42;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:300% 300%;animation:abRain 2.2s linear infinite;mix-blend-mode:soft-light}" +
-      "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.18),rgba(0,0,0,.35))}" +
-      "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:12%;transform:translateX(-50%);padding:10px 18px;border-radius:999px;background:rgba(0,0,0,.72);border:1px solid rgba(255,230,120,.55);color:#fff7ed;font:900 15px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}" +
-      "#amal-abuse-fx .ab-banner small{display:block;margin-top:4px;opacity:.8;font-size:11px;font-weight:700}" +
+      "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.72;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:280% 280%;animation:abRain 2s linear infinite}" +
+      "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 70%,rgba(255,255,255,.08),rgba(0,0,0,.45))}" +
+      "#amal-abuse-fx .ab-watcher{position:absolute;left:50%;bottom:-4%;transform:translateX(-50%);width:min(72vw,420px);height:min(78vh,560px);pointer-events:none;opacity:.92;filter:drop-shadow(0 18px 40px rgba(0,0,0,.55));animation:abWatch 3.2s ease-in-out infinite}" +
+      "#amal-abuse-fx .ab-watcher svg{width:100%;height:100%;display:block}" +
+      "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:10%;transform:translateX(-50%);padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(255,230,120,.65);color:#fff7ed;font:900 16px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.45)}" +
+      "#amal-abuse-fx .ab-banner small{display:block;margin-top:4px;opacity:.85;font-size:12px;font-weight:700}" +
+      "#amal-abuse-fx .ab-happy{position:absolute;left:12px;bottom:calc(96px + env(safe-area-inset-bottom,0px));padding:10px 12px;border-radius:14px;background:rgba(16,24,12,.88);border:1px solid rgba(125,255,154,.4);color:#d8ffe0;font:800 12px/1.35 system-ui,sans-serif;max-width:48vw;pointer-events:none}" +
+      "#amal-abuse-fx .ab-buddy{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(96px + env(safe-area-inset-bottom,0px));width:110px;pointer-events:auto;cursor:pointer;text-align:center;filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));animation:abBob 1.1s ease-in-out infinite;border:0;background:transparent;padding:0}" +
+      "#amal-abuse-fx .ab-buddy img{width:84px;height:84px;border-radius:50%;border:3px solid #ffe566;background:#111;display:block;margin:0 auto}" +
+      "#amal-abuse-fx .ab-buddy .ab-label{margin-top:6px;padding:8px 10px;border-radius:12px;background:linear-gradient(135deg,#fde68a,#f59e0b);color:#111;font:900 12px/1.15 system-ui,sans-serif}" +
       "#amal-gift-fx{position:fixed;inset:0;z-index:2147483601;display:none;place-items:center;pointer-events:none}" +
       "#amal-gift-fx.on{display:grid}" +
       "#amal-gift-fx .gf-card{pointer-events:none;min-width:min(90vw,340px);padding:1.2rem 1.35rem;border-radius:1.2rem;background:linear-gradient(160deg,rgba(40,28,8,.96),rgba(12,14,22,.96));border:1px solid rgba(251,191,36,.55);box-shadow:0 20px 60px rgba(0,0,0,.5);text-align:center;color:#fff7ed;font-family:system-ui,sans-serif}" +
@@ -727,8 +736,26 @@
       ".amal-gift-pick button{display:block;width:100%;text-align:left;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#e7e5e4;cursor:pointer;font:700 12px/1.35 system-ui}" +
       ".amal-gift-pick button.on{border-color:rgba(251,191,36,.65);background:rgba(251,191,36,.12)}" +
       ".amal-gift-pick strong{display:block;color:#fde68a;margin-bottom:2px}" +
-      "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}";
+      "@keyframes abRain{0%{background-position:0% 50%}100%{background-position:100% 50%}}" +
+      "@keyframes abBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}" +
+      "@keyframes abWatch{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}";
     document.head.appendChild(css);
+  }
+
+  function abuseWatcherSvg() {
+    return (
+      '<svg viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<ellipse cx="100" cy="268" rx="58" ry="10" fill="rgba(0,0,0,.35)"/>' +
+      '<path d="M70 250c8-42 14-78 14-118h32c0 40 6 76 14 118z" fill="#1f2937"/>' +
+      '<path d="M62 132c0-38 17-68 38-68s38 30 38 68c0 8-4 14-10 18H72c-6-4-10-10-10-18z" fill="#fbbf24"/>' +
+      '<circle cx="100" cy="78" r="36" fill="#fde68a"/>' +
+      '<circle cx="88" cy="74" r="5" fill="#111"/><circle cx="112" cy="74" r="5" fill="#111"/>' +
+      '<path d="M90 92c6 6 14 6 20 0" stroke="#111" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M48 150c22 10 40 12 52 12s30-2 52-12l-8 54c-14 8-30 12-44 12s-30-4-44-12z" fill="#f59e0b"/>' +
+      '<path d="M42 148c-18 22-22 48-18 70" stroke="#fbbf24" stroke-width="14" fill="none" stroke-linecap="round"/>' +
+      '<path d="M158 148c18 22 22 48 18 70" stroke="#fbbf24" stroke-width="14" fill="none" stroke-linecap="round"/>' +
+      "</svg>"
+    );
   }
 
   function showAdminAbuseFx(payload) {
@@ -741,19 +768,71 @@
     }
     const text = (payload && payload.text) || "Admin Abuse начинается!";
     const from = (payload && payload.fromNick) || "Амаль";
+    const face = faceUrl("abuse-" + from);
     el.innerHTML =
       '<div class="ab-rainbow"></div><div class="ab-veil"></div>' +
+      '<div class="ab-watcher">' +
+      abuseWatcherSvg() +
+      "</div>" +
       '<div class="ab-banner">🔥 ' +
       escapeHtml(text) +
       "<small>от " +
       escapeHtml(from) +
-      " · только в этой игре</small></div>";
+      " · радуга · большой смотрит · можно забрать всё</small></div>" +
+      '<div class="ab-happy">Раздача открыта ✨<br/>Жми на человечка справа</div>' +
+      '<button type="button" class="ab-buddy" id="amal-abuse-buddy" title="Забрать всё">' +
+      '<img src="' +
+      face +
+      '" alt="" />' +
+      '<div class="ab-label">🎁 Забрать всё</div></button>';
     el.classList.add("on");
+    const buddy = el.querySelector("#amal-abuse-buddy");
+    if (buddy) {
+      buddy.onclick = () => claimAbuseGift(payload);
+    }
     clearTimeout(showAdminAbuseFx._t);
-    const left = Math.max(4000, (payload && payload.until ? payload.until - Date.now() : 25000));
+    const left = Math.max(8000, (payload && payload.until ? payload.until - Date.now() : 45000));
     showAdminAbuseFx._t = setTimeout(() => {
       el.classList.remove("on");
-    }, Math.min(left, 60000));
+    }, Math.min(left, 90000));
+  }
+
+  function claimAbuseGift(payload) {
+    try {
+      const key = "amal-abuse-claim-" + String((payload && payload.at) || 0);
+      if (sessionStorage.getItem(key) === "1") {
+        showHubToast("Ты уже забрал подарок");
+        return;
+      }
+      sessionStorage.setItem(key, "1");
+    } catch (_) {
+      /* ignore */
+    }
+    showHubToast("🎁 Получено от Admin Abuse!");
+    try {
+      if (global.AmalSurprises && AmalSurprises.giveLittle) {
+        AmalSurprises.giveLittle({ game: gameIdFromPath(), to: getNick() || "игроку" });
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      if ((isOwner() || isGameAdmin()) && global.AmalPowers && AmalPowers.runAbility) {
+        AmalPowers.runAbility("max");
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    global.dispatchEvent(
+      new CustomEvent("amal-admin-abuse-claim", {
+        detail: { payload: payload || activeAbuse(), nick: getNick(), at: Date.now() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "abuse-gift", abuse: true },
+      })
+    );
   }
 
   function showGiftReceived(payload) {
@@ -1805,7 +1884,7 @@
       return `
         <div class="amal-hub-hero"><div class="badge">📢</div><div>
           <h2>Сказать всем</h2>
-          <p class="sub">Увидят гости онлайн. Abuse = радуга + человечек с подарками во всех играх</p>
+          <p class="sub">Abuse = радуга + большой смотрит + «Забрать всё» у человечка</p>
         </div></div>
         <textarea id="amal-broadcast" maxlength="240" placeholder="Например: Admin Abuse начинается!"></textarea>
         <div class="amal-hub-row" style="margin-top:8px">
