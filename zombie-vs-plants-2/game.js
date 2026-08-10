@@ -66,6 +66,7 @@
     lost: false,
     won: false,
     fallen: 0,
+    time: 0,
   };
 
   function showToast(text) {
@@ -433,10 +434,10 @@
     const row = Math.floor(Math.random() * ROWS);
     const allergy = Math.random() < ALLERGY_CHANCE;
     const base = {
-      normal: { hp: 120, speed: 22, damage: 20, icon: "🧟", name: "Обычный" },
-      runner: { hp: 80, speed: 38, damage: 14, icon: "🏃🧟", name: "Быстрый" },
-      cone: { hp: 220, speed: 20, damage: 20, icon: "🔶🧟", name: "С конусом" },
-      bucket: { hp: 420, speed: 14, damage: 28, icon: "🪣🧟", name: "С ведром" },
+      normal: { hp: 120, speed: 22, damage: 20, color: "#8fbc7a", name: "Обычный" },
+      runner: { hp: 80, speed: 38, damage: 14, color: "#c9d46a", name: "Быстрый" },
+      cone: { hp: 220, speed: 20, damage: 20, color: "#86a976", name: "С конусом" },
+      bucket: { hp: 420, speed: 14, damage: 28, color: "#66865f", name: "С ведром" },
     }[kind];
     const z = {
       id: Math.random().toString(36).slice(2),
@@ -447,16 +448,177 @@
       maxHp: base.hp + state.wave * 18,
       speed: base.speed,
       damage: base.damage,
-      icon: allergy ? "🥜😵🧟" : base.icon,
+      color: base.color,
       name: allergy ? `${base.name} (аллергия на орехи)` : base.name,
       biteCd: 0,
       slow: 0,
       burn: 0,
       nutAllergy: allergy,
+      eating: false,
+      walkPhase: Math.random() * Math.PI * 2,
+      chomp: 0,
+      allergyFlash: 0,
+      dyingAllergy: 0,
       dead: false,
     };
     state.zombies.push(z);
     if (allergy) showToast("Зомби с аллергией на орехи! (10%)");
+  }
+
+  function drawAnimatedZombie(z) {
+    const groundY = cellRect(z.row, 0).y + CELL_H - 18;
+    const dying = z.dyingAllergy > 0;
+    const eatBob = z.eating ? Math.sin(state.time * 14) * 2.5 : Math.sin(state.time * 5.5 + z.walkPhase) * 3;
+    const armSwing = z.eating
+      ? Math.sin(state.time * 16) * 0.55
+      : Math.sin(state.time * 6 + z.walkPhase) * 0.35;
+    const legSwing = z.eating ? 0.08 : Math.sin(state.time * 6 + z.walkPhase) * 0.45;
+    const scale = z.kind === "bucket" ? 1.08 : z.kind === "runner" ? 0.92 : 1;
+    const alpha = dying ? Math.max(0, z.dyingAllergy / 0.9) : 1;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(z.x, groundY + (dying ? (0.9 - z.dyingAllergy) * 20 : 0));
+    ctx.scale(scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.2 : 1), scale);
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, 8, 18, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.translate(0, eatBob - 28);
+
+    // legs
+    ctx.strokeStyle = "#4a6a40";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-5, 28);
+    ctx.lineTo(-5 - Math.sin(legSwing) * 8, 42);
+    ctx.moveTo(5, 28);
+    ctx.lineTo(5 + Math.sin(legSwing) * 8, 42);
+    ctx.stroke();
+
+    // body
+    ctx.fillStyle = z.color;
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 15, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // arms
+    ctx.strokeStyle = z.color;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-12, 6);
+    ctx.lineTo(-18 - Math.cos(armSwing) * 10, 4 + Math.sin(armSwing) * 12);
+    ctx.moveTo(12, 6);
+    ctx.lineTo(20 + Math.cos(armSwing) * 6, 2 + Math.sin(armSwing + 0.4) * (z.eating ? 14 : 8));
+    ctx.stroke();
+
+    // head
+    const headColor = z.slow > 0 ? "#b8ecff" : z.nutAllergy ? "#b8d490" : "#9ec98a";
+    ctx.fillStyle = headColor;
+    ctx.beginPath();
+    ctx.arc(0, -12, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    // eyes
+    ctx.fillStyle = "#fff8d8";
+    ctx.beginPath();
+    ctx.ellipse(-5, -14, 3.2, 4, -0.15, 0, Math.PI * 2);
+    ctx.ellipse(5, -14, 3.2, 4, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a2810";
+    ctx.beginPath();
+    ctx.arc(-4, -14, 1.5, 0, Math.PI * 2);
+    ctx.arc(6, -14, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // mouth / chomp
+    const chompOpen = z.eating ? 4 + Math.abs(Math.sin(state.time * 16)) * 5 : 2;
+    ctx.fillStyle = "#3a2018";
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 5, chompOpen, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (z.eating) {
+      ctx.fillStyle = "#d4543a";
+      ctx.fillRect(-3, -6, 6, 2);
+    }
+
+    // accessories
+    if (z.kind === "cone") {
+      ctx.fillStyle = "#ef8b2c";
+      ctx.beginPath();
+      ctx.moveTo(-12, -24);
+      ctx.lineTo(0, -52);
+      ctx.lineTo(12, -24);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#ffd08a";
+      ctx.fillRect(-9, -32, 18, 3);
+    }
+    if (z.kind === "bucket") {
+      ctx.fillStyle = "#9ba6ad";
+      ctx.fillRect(-14, -40, 28, 17);
+      ctx.strokeStyle = "#d9e0e4";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-14, -40, 28, 17);
+      ctx.beginPath();
+      ctx.arc(0, -39, 16, Math.PI, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (z.kind === "runner") {
+      ctx.strokeStyle = "#e8f07a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-8, 24);
+      ctx.lineTo(-16, 36);
+      ctx.moveTo(8, 24);
+      ctx.lineTo(16, 36);
+      ctx.stroke();
+    }
+
+    // nut allergy markers
+    if (z.nutAllergy) {
+      ctx.fillStyle = "#ff7a7a";
+      [[-10, -8], [9, -10], [-2, -18], [7, -4]].forEach(([x, y], i) => {
+        ctx.beginPath();
+        ctx.arc(x, y + Math.sin(state.time * 8 + i) * 0.8, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // peanut badge
+      ctx.font = "14px sans-serif";
+      ctx.fillText("🥜", 12, -28);
+      if (z.allergyFlash > 0 || dying) {
+        ctx.fillStyle = `rgba(255, 210, 120, ${0.35 + Math.sin(state.time * 20) * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(0, -8, 28, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    if (z.burn > 0) {
+      ctx.fillStyle = "rgba(255, 100, 40, 0.35)";
+      ctx.beginPath();
+      ctx.arc(0, 8, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+
+    // hp bar above
+    const pct = Math.max(0, z.hp / z.maxHp);
+    const barY = groundY - 62 + eatBob;
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    ctx.fillRect(z.x - 18, barY, 36, 5);
+    ctx.fillStyle = z.nutAllergy ? "#ffd27a" : "#e85a3a";
+    ctx.fillRect(z.x - 18, barY, 36 * pct, 5);
+    if (z.nutAllergy) {
+      ctx.fillStyle = "#ffe7a8";
+      ctx.font = "800 9px Nunito";
+      ctx.fillText("аллерг.", z.x - 14, barY - 2);
+    }
   }
 
   function addFx(text, x, y, color) {
@@ -739,11 +901,24 @@
   function updateZombies(dt) {
     state.zombies.forEach((z) => {
       if (z.dead) return;
+
+      if (z.dyingAllergy > 0) {
+        z.dyingAllergy -= dt;
+        z.allergyFlash = 1;
+        if (z.dyingAllergy <= 0) {
+          z.dead = true;
+          state.fallen += 1;
+        }
+        return;
+      }
+
       if (z.burn > 0) {
         z.burn -= dt;
         z.hp -= 12 * dt;
       }
       if (z.slow > 0) z.slow -= dt;
+      if (z.allergyFlash > 0) z.allergyFlash -= dt;
+      z.walkPhase += dt * (z.kind === "runner" ? 10 : 6);
 
       const speedMul = z.slow > 0 ? 0.45 : 1;
       const plant = state.plants
@@ -755,20 +930,24 @@
 
       if (plant) {
         const type = COMBAT[plant.typeId];
+        z.eating = true;
         z.biteCd -= dt;
         if (z.biteCd <= 0) {
           z.biteCd = 1;
           if (z.nutAllergy && type?.nut) {
-            z.hp = 0;
-            z.dead = true;
+            z.dyingAllergy = 0.9;
+            z.allergyFlash = 1;
+            z.eating = false;
             addFx("АЛЛЕРГИЯ!", cellRect(plant.row, plant.col).x, cellRect(plant.row, plant.col).y, "#ffd27a");
-            showToast("Зомби съел орех и умер от аллергии!");
+            addFx("🥜💥", z.x - 8, cellRect(z.row, 0).y + 20, "#ffe7a8");
+            showToast("Зомби съел орех и умер от аллергии! (10%)");
             return;
           }
           plant.hp -= z.damage;
           if (plant.hp <= 0) plant.dead = true;
         }
       } else {
+        z.eating = false;
         z.x -= z.speed * speedMul * dt;
       }
 
@@ -786,7 +965,6 @@
               : `Косилка спасла ряд ${z.row + 1}`
           );
           if (state.test) {
-            // бесконечные косилки: сразу снова доступны
             mower.used = false;
             mower.active = false;
           }
@@ -794,7 +972,7 @@
           endGame(false, "Зомби прорвались. Косилки больше нет.");
         }
       }
-      if (z.hp <= 0) {
+      if (z.hp <= 0 && z.dyingAllergy <= 0) {
         z.dead = true;
         state.fallen += 1;
         if (Math.random() < 0.18) {
@@ -945,20 +1123,7 @@
       }
     });
 
-    state.zombies.forEach((z) => {
-      ctx.font = "32px sans-serif";
-      ctx.fillText(z.icon, z.x - 10, cellRect(z.row, 0).y + 55);
-      const pct = Math.max(0, z.hp / z.maxHp);
-      ctx.fillStyle = "rgba(0,0,0,.4)";
-      ctx.fillRect(z.x - 12, cellRect(z.row, 0).y + 14, 40, 5);
-      ctx.fillStyle = z.nutAllergy ? "#ffd27a" : "#e85a3a";
-      ctx.fillRect(z.x - 12, cellRect(z.row, 0).y + 14, 40 * pct, 5);
-      if (z.nutAllergy) {
-        ctx.fillStyle = "#ffe7a8";
-        ctx.font = "800 9px Nunito";
-        ctx.fillText("аллерг.", z.x - 8, cellRect(z.row, 0).y + 12);
-      }
-    });
+    state.zombies.forEach((z) => drawAnimatedZombie(z));
 
     state.projectiles.forEach((pr) => {
       ctx.beginPath();
@@ -985,6 +1150,7 @@
     if (!state.running) return;
     const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0.016);
     lastTs = ts;
+    state.time += dt;
     updateWaves(dt);
     if (!state.running) return;
     updatePlants(dt);
