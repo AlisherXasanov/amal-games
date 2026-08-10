@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terraverse bare test</title>
+    <style>
+      html, body { margin: 0; background: #09090b; color: #a1a1aa; }
+      #root { min-height: 100dvh; }
+      #log {
+        position: fixed; left: 8px; top: 8px; z-index: 99999;
+        max-width: 90vw; max-height: 40vh; overflow: auto;
+        background: rgba(0,0,0,.85); color: #fbbf24; font: 12px/1.35 ui-monospace, monospace;
+        padding: 8px; border-radius: 8px; white-space: pre-wrap;
+      }
+    </style>
+    <link rel="stylesheet" crossorigin href="./assets/static-index-DPwEJUCe.css" />
+  </head>
+  <body>
+    <div id="log">boot…</div>
+    <div id="root"></div>
+    <script>
+      const log = (m) => {
+        const el = document.getElementById("log");
+        el.textContent += "\n" + m;
+      };
+      window.addEventListener("error", (e) => {
+        log("ERR " + e.message + " @" + (e.filename || "") + ":" + e.lineno + ":" + e.colno);
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        const r = e.reason;
+        log("REJ " + (r && (r.stack || r.message) || r));
+      });
+      window.addEventListener("vite:preloadError", (e) => {
+        const p = e.payload;
+        log("PRELOAD " + (p && (p.stack || p.message) || p));
+      });
+      setInterval(() => {
+        const root = document.getElementById("root");
+        log("root kids=" + (root ? root.childElementCount : "null") + " canvas=" + !!document.querySelector("canvas"));
+      }, 2000);
+    </script>
+    <script type="module" crossorigin src="./assets/static-index-TreeFix2.js"></script>
+  </body>
+</html>
