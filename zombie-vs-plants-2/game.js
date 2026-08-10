@@ -530,59 +530,143 @@
   }
 
   function drawAnimatedZombie(z) {
-    const groundY = cellRect(z.row, 0).y + CELL_H - 14;
+    const groundY = cellRect(z.row, 0).y + CELL_H - 18;
     const dying = z.dyingAllergy > 0;
-    const bob = z.eating ? Math.sin(state.time * 14) * 1.5 : Math.sin(state.time * 5.5 + z.walkPhase) * 2;
+    const eatBob = z.eating ? Math.sin(state.time * 14) * 2.5 : Math.sin(state.time * 5.5 + z.walkPhase) * 3;
+    const armSwing = z.eating
+      ? Math.sin(state.time * 16) * 0.55
+      : Math.sin(state.time * 6 + z.walkPhase) * 0.35;
+    const legSwing = z.eating ? 0.08 : Math.sin(state.time * 6 + z.walkPhase) * 0.45;
     const scale = z.kind === "bucket" ? 1.08 : z.kind === "runner" ? 0.92 : 1;
     const alpha = dying ? Math.max(0, z.dyingAllergy / 0.9) : 1;
-    const sprites = window.PVZ2_ZombieSprites;
-    const animTime = state.time + (z.walkPhase || 0) * 0.2;
 
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.translate(z.x, groundY + bob + (dying ? (0.9 - z.dyingAllergy) * 18 : 0));
-    ctx.scale(
-      scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.15 : 1),
-      scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.15 : 1)
-    );
+    ctx.translate(z.x, groundY + (dying ? (0.9 - z.dyingAllergy) * 20 : 0));
+    ctx.scale(scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.2 : 1), scale);
 
-    if (sprites && sprites.getFrame) {
-      const { sheet, idx } = sprites.getFrame(z.kind, !!z.nutAllergy, !!z.eating, animTime);
-      ctx.drawImage(
-        sheet.canvas,
-        idx * sheet.fw,
-        0,
-        sheet.fw,
-        sheet.fh,
-        -sheet.fw / 2,
-        -sheet.fh + 8,
-        sheet.fw,
-        sheet.fh
-      );
-    } else {
-      // fallback if sprites failed to load
-      ctx.fillStyle = z.color || "#8fbc7a";
-      ctx.beginPath();
-      ctx.ellipse(0, -10, 16, 28, 0, 0, Math.PI * 2);
-      ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, 8, 18, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.translate(0, eatBob - 28);
+
+    ctx.strokeStyle = "#4a6a40";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-5, 28);
+    ctx.lineTo(-5 - Math.sin(legSwing) * 8, 42);
+    ctx.moveTo(5, 28);
+    ctx.lineTo(5 + Math.sin(legSwing) * 8, 42);
+    ctx.stroke();
+
+    ctx.fillStyle = z.color;
+    ctx.beginPath();
+    ctx.ellipse(0, 14, 15, 20, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = z.color;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-12, 6);
+    ctx.lineTo(-18 - Math.cos(armSwing) * 10, 4 + Math.sin(armSwing) * 12);
+    ctx.moveTo(12, 6);
+    ctx.lineTo(20 + Math.cos(armSwing) * 6, 2 + Math.sin(armSwing + 0.4) * (z.eating ? 14 : 8));
+    ctx.stroke();
+
+    const headColor = z.slow > 0 ? "#b8ecff" : z.poison > 0 ? "#b89ad8" : z.nutAllergy ? "#b8d490" : "#9ec98a";
+    ctx.fillStyle = headColor;
+    ctx.beginPath();
+    ctx.arc(0, -12, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#fff8d8";
+    ctx.beginPath();
+    ctx.ellipse(-5, -14, 3.2, 4, -0.15, 0, Math.PI * 2);
+    ctx.ellipse(5, -14, 3.2, 4, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a2810";
+    ctx.beginPath();
+    ctx.arc(-4, -14, 1.5, 0, Math.PI * 2);
+    ctx.arc(6, -14, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    const chompOpen = z.eating ? 4 + Math.abs(Math.sin(state.time * 16)) * 5 : 2;
+    ctx.fillStyle = "#3a2018";
+    ctx.beginPath();
+    ctx.ellipse(0, -5, 5, chompOpen, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (z.eating) {
+      ctx.fillStyle = "#d4543a";
+      ctx.fillRect(-3, -6, 6, 2);
     }
 
-    if (z.allergyFlash > 0 || dying) {
-      ctx.fillStyle = `rgba(255, 210, 120, ${0.25 + Math.sin(state.time * 20) * 0.15})`;
+    if (z.kind === "cone") {
+      ctx.fillStyle = "#ef8b2c";
       ctx.beginPath();
-      ctx.arc(0, -40, 30, 0, Math.PI * 2);
+      ctx.moveTo(-12, -24);
+      ctx.lineTo(0, -52);
+      ctx.lineTo(12, -24);
+      ctx.closePath();
       ctx.fill();
+      ctx.fillStyle = "#ffd08a";
+      ctx.fillRect(-9, -32, 18, 3);
     }
+    if (z.kind === "bucket") {
+      ctx.fillStyle = "#9ba6ad";
+      ctx.fillRect(-14, -40, 28, 17);
+      ctx.strokeStyle = "#d9e0e4";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-14, -40, 28, 17);
+      ctx.beginPath();
+      ctx.arc(0, -39, 16, Math.PI, Math.PI * 2);
+      ctx.stroke();
+    }
+    if (z.kind === "runner") {
+      ctx.strokeStyle = "#e8f07a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(-8, 24);
+      ctx.lineTo(-16, 36);
+      ctx.moveTo(8, 24);
+      ctx.lineTo(16, 36);
+      ctx.stroke();
+    }
+
+    if (z.nutAllergy) {
+      ctx.fillStyle = "#ff7a7a";
+      [[-10, -8], [9, -10], [-2, -18], [7, -4]].forEach(([x, y], i) => {
+        ctx.beginPath();
+        ctx.arc(x, y + Math.sin(state.time * 8 + i) * 0.8, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      if (z.allergyFlash > 0 || dying) {
+        ctx.fillStyle = `rgba(255, 210, 120, ${0.35 + Math.sin(state.time * 20) * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(0, -8, 28, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
     if (z.burn > 0) {
-      ctx.fillStyle = "rgba(255, 100, 40, 0.3)";
+      ctx.fillStyle = "rgba(255, 100, 40, 0.35)";
       ctx.beginPath();
-      ctx.arc(0, -30, 24, 0, Math.PI * 2);
+      ctx.arc(0, 8, 20, 0, Math.PI * 2);
       ctx.fill();
     }
+    if (z.poison > 0) {
+      ctx.fillStyle = "rgba(160, 80, 220, 0.3)";
+      ctx.beginPath();
+      ctx.arc(0, 4, 18, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     ctx.restore();
 
     const pct = Math.max(0, z.hp / z.maxHp);
-    const barY = groundY - 78 + bob;
+    const barY = groundY - 62 + eatBob;
     ctx.fillStyle = "rgba(0,0,0,0.4)";
     ctx.fillRect(z.x - 18, barY, 36, 5);
     ctx.fillStyle = z.nutAllergy ? "#ffd27a" : "#e85a3a";
@@ -592,6 +676,180 @@
       ctx.font = "800 9px Nunito";
       ctx.fillText("аллерг.", z.x - 14, barY - 2);
     }
+  }
+
+  function drawPlantSprite(plant, type, rect) {
+    const cx = rect.x + rect.w * 0.5;
+    const cy = rect.y + rect.h * 0.58;
+    const bob = Math.sin(state.time * 3 + plant.col * 0.7 + plant.row) * 1.2;
+    const types = type.types || [];
+
+    ctx.save();
+    ctx.translate(cx, cy + bob);
+
+    // shadow
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.beginPath();
+    ctx.ellipse(0, 22, 16, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (type.nut || type.role === "wall") {
+      // ordinary nut / wall
+      const g = ctx.createRadialGradient(-4, -6, 2, 0, 0, 22);
+      g.addColorStop(0, "#e8c878");
+      g.addColorStop(0.55, "#c49a45");
+      g.addColorStop(1, "#7a5a22");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(0, 4, type.id.includes("tall") ? 16 : 18, type.id.includes("tall") ? 28 : 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#5a4018";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-4, 0, 10, 0.2, 2.2);
+      ctx.stroke();
+      ctx.fillStyle = "#3a2810";
+      ctx.beginPath();
+      ctx.arc(-5, -2, 2, 0, Math.PI * 2);
+      ctx.arc(5, -2, 2, 0, Math.PI * 2);
+      ctx.fill();
+      if (plant.nutEffect === "poison") {
+        ctx.fillStyle = "rgba(160,80,220,0.35)";
+        ctx.beginPath();
+        ctx.arc(0, 4, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (plant.nutEffect === "kill") {
+        ctx.fillStyle = "rgba(220,60,40,0.3)";
+        ctx.beginPath();
+        ctx.arc(0, 4, 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    } else if (type.role === "sun" || types.includes("sun")) {
+      ctx.fillStyle = "#2f7a28";
+      ctx.fillRect(-3, 8, 6, 14);
+      ctx.fillStyle = "#f0c430";
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2 + state.time * 0.4;
+        ctx.beginPath();
+        ctx.ellipse(Math.cos(a) * 14, Math.sin(a) * 14 - 4, 5, 9, a, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#c47a18";
+      ctx.beginPath();
+      ctx.arc(0, -4, 10, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (type.role === "bomb" || type.role === "mine" || types.includes("bomb")) {
+      if (type.role === "mine" && !plant.armed) {
+        ctx.fillStyle = "#6b4a2e";
+        ctx.beginPath();
+        ctx.ellipse(0, 10, 16, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.fillStyle = "#d62828";
+        ctx.beginPath();
+        ctx.arc(-7, 0, 11, 0, Math.PI * 2);
+        ctx.arc(8, 2, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#3d7a28";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-7, -10);
+        ctx.quadraticCurveTo(0, -22, 8, -8);
+        ctx.stroke();
+      }
+    } else if (type.role === "spike" || types.includes("spike")) {
+      ctx.fillStyle = "#4a8f3a";
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * 7 - 3, 16);
+        ctx.lineTo(i * 7, -2);
+        ctx.lineTo(i * 7 + 3, 16);
+        ctx.fill();
+      }
+    } else if (type.role === "melee" || types.includes("melee")) {
+      ctx.fillStyle = "#3d8f2a";
+      ctx.fillRect(-4, 6, 8, 16);
+      ctx.fillStyle = "#6bbb48";
+      ctx.beginPath();
+      ctx.ellipse(0, -2, 14, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#2a5a1a";
+      ctx.fillRect(-16, -6, 10, 5);
+      ctx.fillRect(6, -6, 10, 5);
+    } else if (types.includes("fire") || type.role === "breath") {
+      ctx.fillStyle = "#3d7a28";
+      ctx.fillRect(-3, 6, 6, 14);
+      const flame = ctx.createRadialGradient(0, -6, 2, 0, -6, 16);
+      flame.addColorStop(0, "#ffe566");
+      flame.addColorStop(0.5, "#ff7a2a");
+      flame.addColorStop(1, "#c02010");
+      ctx.fillStyle = flame;
+      ctx.beginPath();
+      ctx.moveTo(-12, 4);
+      ctx.quadraticCurveTo(-14, -18, 0, -22);
+      ctx.quadraticCurveTo(14, -18, 12, 4);
+      ctx.closePath();
+      ctx.fill();
+    } else if (types.includes("ice") || type.role === "freeze") {
+      ctx.fillStyle = "#9fdfff";
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(12, 2);
+      ctx.lineTo(0, 16);
+      ctx.lineTo(-12, 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "#5aa0d0";
+      ctx.stroke();
+    } else if (types.includes("electric") || type.role === "electric") {
+      ctx.fillStyle = "#3d8f2a";
+      ctx.fillRect(-3, 4, 6, 16);
+      ctx.fillStyle = "#ffe566";
+      ctx.beginPath();
+      ctx.moveTo(-2, -18);
+      ctx.lineTo(6, -4);
+      ctx.lineTo(1, -4);
+      ctx.lineTo(8, 12);
+      ctx.lineTo(-6, -2);
+      ctx.lineTo(0, -2);
+      ctx.closePath();
+      ctx.fill();
+    } else if (type.role === "lobber" || types.includes("lobber")) {
+      ctx.fillStyle = "#3d7a28";
+      ctx.fillRect(-3, 4, 6, 16);
+      ctx.fillStyle = types.includes("ice") ? "#9fdfff" : "#6bbb48";
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 14, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#c45a28";
+      ctx.beginPath();
+      ctx.arc(10, -10, 7, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // ordinary peashooter-style plant
+      ctx.fillStyle = "#3d8f2a";
+      ctx.fillRect(-3, 6, 6, 16);
+      ctx.fillStyle = "#6bbb48";
+      ctx.beginPath();
+      ctx.ellipse(-2, 2, 8, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      const head = types.includes("shadow") ? "#6b4ca8" : "#7ed957";
+      ctx.fillStyle = head;
+      ctx.beginPath();
+      ctx.arc(4, -6, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1a2810";
+      ctx.beginPath();
+      ctx.arc(8, -8, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#2f6a28";
+      ctx.beginPath();
+      ctx.ellipse(14, -4, 6, 4, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
   function addFx(text, x, y, color) {
@@ -1115,16 +1373,14 @@
     state.plants.forEach((p) => {
       const type = COMBAT[p.typeId];
       const rect = cellRect(p.row, p.col);
-      ctx.font = "34px sans-serif";
-      ctx.fillText(type.icon || "🌱", rect.x + 22, rect.y + 55);
+      drawPlantSprite(p, type, rect);
       if (type.nut) {
         const fx = NUT_EFFECTS[p.nutEffect || "normal"] || NUT_EFFECTS.normal;
         ctx.font = "800 10px Nunito";
         ctx.fillStyle =
           p.nutEffect === "poison" ? "#d9b3ff" : p.nutEffect === "kill" ? "#ff9a8a" : "#ffe7a8";
-        ctx.fillText(fx.short, rect.x + 18, rect.y + 72);
+        ctx.fillText(fx.short, rect.x + 18, rect.y + 78);
       }
-      // hp bar
       const pct = Math.max(0, p.hp / p.maxHp);
       ctx.fillStyle = "rgba(0,0,0,.35)";
       ctx.fillRect(rect.x + 10, rect.y + 8, rect.w - 24, 5);
