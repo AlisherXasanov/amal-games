@@ -466,150 +466,59 @@
   }
 
   function drawAnimatedZombie(z) {
-    const groundY = cellRect(z.row, 0).y + CELL_H - 18;
+    const groundY = cellRect(z.row, 0).y + CELL_H - 14;
     const dying = z.dyingAllergy > 0;
-    const eatBob = z.eating ? Math.sin(state.time * 14) * 2.5 : Math.sin(state.time * 5.5 + z.walkPhase) * 3;
-    const armSwing = z.eating
-      ? Math.sin(state.time * 16) * 0.55
-      : Math.sin(state.time * 6 + z.walkPhase) * 0.35;
-    const legSwing = z.eating ? 0.08 : Math.sin(state.time * 6 + z.walkPhase) * 0.45;
+    const bob = z.eating ? Math.sin(state.time * 14) * 1.5 : Math.sin(state.time * 5.5 + z.walkPhase) * 2;
     const scale = z.kind === "bucket" ? 1.08 : z.kind === "runner" ? 0.92 : 1;
     const alpha = dying ? Math.max(0, z.dyingAllergy / 0.9) : 1;
+    const sprites = window.PVZ2_ZombieSprites;
+    const animTime = state.time + (z.walkPhase || 0) * 0.2;
 
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.translate(z.x, groundY + (dying ? (0.9 - z.dyingAllergy) * 20 : 0));
-    ctx.scale(scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.2 : 1), scale);
+    ctx.translate(z.x, groundY + bob + (dying ? (0.9 - z.dyingAllergy) * 18 : 0));
+    ctx.scale(
+      scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.15 : 1),
+      scale * (dying ? 1 + (0.9 - z.dyingAllergy) * 0.15 : 1)
+    );
 
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,0.28)";
-    ctx.beginPath();
-    ctx.ellipse(0, 8, 18, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.translate(0, eatBob - 28);
-
-    // legs
-    ctx.strokeStyle = "#4a6a40";
-    ctx.lineWidth = 5;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(-5, 28);
-    ctx.lineTo(-5 - Math.sin(legSwing) * 8, 42);
-    ctx.moveTo(5, 28);
-    ctx.lineTo(5 + Math.sin(legSwing) * 8, 42);
-    ctx.stroke();
-
-    // body
-    ctx.fillStyle = z.color;
-    ctx.beginPath();
-    ctx.ellipse(0, 14, 15, 20, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // arms
-    ctx.strokeStyle = z.color;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(-12, 6);
-    ctx.lineTo(-18 - Math.cos(armSwing) * 10, 4 + Math.sin(armSwing) * 12);
-    ctx.moveTo(12, 6);
-    ctx.lineTo(20 + Math.cos(armSwing) * 6, 2 + Math.sin(armSwing + 0.4) * (z.eating ? 14 : 8));
-    ctx.stroke();
-
-    // head
-    const headColor = z.slow > 0 ? "#b8ecff" : z.nutAllergy ? "#b8d490" : "#9ec98a";
-    ctx.fillStyle = headColor;
-    ctx.beginPath();
-    ctx.arc(0, -12, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    // eyes
-    ctx.fillStyle = "#fff8d8";
-    ctx.beginPath();
-    ctx.ellipse(-5, -14, 3.2, 4, -0.15, 0, Math.PI * 2);
-    ctx.ellipse(5, -14, 3.2, 4, 0.15, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#1a2810";
-    ctx.beginPath();
-    ctx.arc(-4, -14, 1.5, 0, Math.PI * 2);
-    ctx.arc(6, -14, 1.5, 0, Math.PI * 2);
-    ctx.fill();
-
-    // mouth / chomp
-    const chompOpen = z.eating ? 4 + Math.abs(Math.sin(state.time * 16)) * 5 : 2;
-    ctx.fillStyle = "#3a2018";
-    ctx.beginPath();
-    ctx.ellipse(0, -5, 5, chompOpen, 0, 0, Math.PI * 2);
-    ctx.fill();
-    if (z.eating) {
-      ctx.fillStyle = "#d4543a";
-      ctx.fillRect(-3, -6, 6, 2);
-    }
-
-    // accessories
-    if (z.kind === "cone") {
-      ctx.fillStyle = "#ef8b2c";
+    if (sprites && sprites.getFrame) {
+      const { sheet, idx } = sprites.getFrame(z.kind, !!z.nutAllergy, !!z.eating, animTime);
+      ctx.drawImage(
+        sheet.canvas,
+        idx * sheet.fw,
+        0,
+        sheet.fw,
+        sheet.fh,
+        -sheet.fw / 2,
+        -sheet.fh + 8,
+        sheet.fw,
+        sheet.fh
+      );
+    } else {
+      // fallback if sprites failed to load
+      ctx.fillStyle = z.color || "#8fbc7a";
       ctx.beginPath();
-      ctx.moveTo(-12, -24);
-      ctx.lineTo(0, -52);
-      ctx.lineTo(12, -24);
-      ctx.closePath();
+      ctx.ellipse(0, -10, 16, 28, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#ffd08a";
-      ctx.fillRect(-9, -32, 18, 3);
-    }
-    if (z.kind === "bucket") {
-      ctx.fillStyle = "#9ba6ad";
-      ctx.fillRect(-14, -40, 28, 17);
-      ctx.strokeStyle = "#d9e0e4";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(-14, -40, 28, 17);
-      ctx.beginPath();
-      ctx.arc(0, -39, 16, Math.PI, Math.PI * 2);
-      ctx.stroke();
-    }
-    if (z.kind === "runner") {
-      ctx.strokeStyle = "#e8f07a";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-8, 24);
-      ctx.lineTo(-16, 36);
-      ctx.moveTo(8, 24);
-      ctx.lineTo(16, 36);
-      ctx.stroke();
     }
 
-    // nut allergy markers
-    if (z.nutAllergy) {
-      ctx.fillStyle = "#ff7a7a";
-      [[-10, -8], [9, -10], [-2, -18], [7, -4]].forEach(([x, y], i) => {
-        ctx.beginPath();
-        ctx.arc(x, y + Math.sin(state.time * 8 + i) * 0.8, 2.2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      // peanut badge
-      ctx.font = "14px sans-serif";
-      ctx.fillText("🥜", 12, -28);
-      if (z.allergyFlash > 0 || dying) {
-        ctx.fillStyle = `rgba(255, 210, 120, ${0.35 + Math.sin(state.time * 20) * 0.2})`;
-        ctx.beginPath();
-        ctx.arc(0, -8, 28, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    if (z.allergyFlash > 0 || dying) {
+      ctx.fillStyle = `rgba(255, 210, 120, ${0.25 + Math.sin(state.time * 20) * 0.15})`;
+      ctx.beginPath();
+      ctx.arc(0, -40, 30, 0, Math.PI * 2);
+      ctx.fill();
     }
-
     if (z.burn > 0) {
-      ctx.fillStyle = "rgba(255, 100, 40, 0.35)";
+      ctx.fillStyle = "rgba(255, 100, 40, 0.3)";
       ctx.beginPath();
-      ctx.arc(0, 8, 20, 0, Math.PI * 2);
+      ctx.arc(0, -30, 24, 0, Math.PI * 2);
       ctx.fill();
     }
-
     ctx.restore();
 
-    // hp bar above
     const pct = Math.max(0, z.hp / z.maxHp);
-    const barY = groundY - 62 + eatBob;
+    const barY = groundY - 78 + bob;
     ctx.fillStyle = "rgba(0,0,0,0.4)";
     ctx.fillRect(z.x - 18, barY, 36, 5);
     ctx.fillStyle = z.nutAllergy ? "#ffd27a" : "#e85a3a";
