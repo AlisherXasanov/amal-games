@@ -190,102 +190,99 @@
     }
 
     // Старт
-    addPlatform(0, 0, 0, 6, 0.5, 6, 0x4ade80);
+    addPlatform(0, 0, 0, 7, 0.5, 7, 0x4ade80);
     addCheckpoint(0, 0, 0, "Старт");
 
-    // Секция 1 — разминка
+    // Секция 1 — широкая разминка, почти без прыжков в сторону
     for (let i = 1; i <= 6; i++) {
-      addPlatform((i % 2 === 0 ? 1.2 : -1.2), i * 0.35, 6 + i * 3.2, 2.2, 0.4, 2.2, 0x60a5fa);
+      addPlatform((i % 2 === 0 ? 0.6 : -0.6), i * 0.2, 5 + i * 3.5, 3.2, 0.4, 3.0, 0x60a5fa);
     }
-    addPlatform(0, 2.2, 28, 4, 0.45, 4, 0x818cf8);
-    addCheckpoint(0, 2.2, 28, "Чек 1");
+    addPlatform(0, 1.4, 28, 5, 0.45, 5, 0x818cf8);
+    addCheckpoint(0, 1.4, 28, "Чек 1");
 
-    // Секция 2 — узкие плиты + статичные лазеры
-    for (let i = 0; i < 8; i++) {
-      addPlatform((i % 3) - 1, 2.4 + (i % 2) * 0.4, 33 + i * 2.8, 1.4, 0.35, 1.4, 0xa78bfa);
-      if (i % 2 === 1) {
+    // Секция 2 — широкие плиты, редкие медленные мигающие лазеры
+    for (let i = 0; i < 7; i++) {
+      addPlatform((i % 2) * 0.8 - 0.4, 1.5 + i * 0.15, 33 + i * 3.0, 2.6, 0.4, 2.6, 0xa78bfa);
+      if (i === 2 || i === 5) {
         addLaser({
           x: 0,
-          y: 3.5 + (i % 2) * 0.3,
-          z: 33 + i * 2.8,
-          len: 5,
+          y: 3.0,
+          z: 33 + i * 3.0,
+          len: 4,
           axis: "x",
           mode: "blink",
-          period: 1.1 + (i % 3) * 0.25,
-          phase: i * 0.4,
+          period: 2.4,
+          phase: i * 0.8,
           color: 0xff3366,
         });
       }
     }
-    addPlatform(0, 3.2, 56, 4, 0.45, 4, 0x818cf8);
-    addCheckpoint(0, 3.2, 56, "Чек 2");
+    addPlatform(0, 2.6, 56, 5, 0.45, 5, 0x818cf8);
+    addCheckpoint(0, 2.6, 56, "Чек 2");
 
-    // Секция 3 — sweeping лазеры
-    for (let i = 0; i < 7; i++) {
-      addPlatform(0, 3.4, 61 + i * 3.5, 3.5, 0.4, 2.2, 0x34d399);
+    // Секция 3 — широкая дорожка, медленные лазеры с малой амплитудой
+    for (let i = 0; i < 6; i++) {
+      addPlatform(0, 2.7, 61 + i * 4.0, 4.2, 0.4, 3.0, 0x34d399);
       addLaser({
         x: 0,
-        y: 4.5,
-        z: 61 + i * 3.5,
-        len: 6,
+        y: 4.0,
+        z: 61 + i * 4.0,
+        len: 5,
         axis: "x",
         mode: "sweep",
-        speed: 1.2 + i * 0.15,
-        amp: 2.2,
-        phase: i * 0.7,
+        speed: 0.55,
+        amp: 1.1,
+        phase: i * 1.1,
         color: 0xff0044,
       });
     }
-    addPlatform(0, 3.8, 88, 4.5, 0.45, 4, 0x818cf8);
-    addCheckpoint(0, 3.8, 88, "Чек 3");
+    addPlatform(0, 3.0, 88, 5.5, 0.45, 5, 0x818cf8);
+    addCheckpoint(0, 3.0, 88, "Чек 3");
 
-    // Секция 4 — спиральные/spin лазеры + высокие прыжки
+    // Секция 4 — спокойные ступени, почти без спина (один медленный)
     for (let i = 0; i < 6; i++) {
-      const ang = i * 0.9;
-      addPlatform(Math.sin(ang) * 2.5, 4 + i * 0.7, 94 + i * 3.4, 1.8, 0.35, 1.8, 0xf472b6);
-      addLaser({
-        x: Math.sin(ang) * 2.5,
-        y: 5.2 + i * 0.7,
-        z: 94 + i * 3.4,
-        len: 3.5,
-        axis: "x",
-        mode: "spin",
-        speed: 1.6,
-        phase: i,
-        color: 0xff66aa,
-      });
+      addPlatform((i % 2 ? 0.8 : -0.8), 3.2 + i * 0.35, 94 + i * 3.5, 2.8, 0.4, 2.8, 0xf472b6);
     }
-    addPlatform(0, 7.5, 116, 4, 0.45, 4, 0x818cf8);
-    addCheckpoint(0, 7.5, 116, "Чек 4");
+    addLaser({
+      x: 0,
+      y: 5.0,
+      z: 104,
+      len: 2.8,
+      axis: "x",
+      mode: "spin",
+      speed: 0.7,
+      phase: 0,
+      color: 0xff66aa,
+    });
+    addPlatform(0, 5.2, 116, 5, 0.45, 5, 0x818cf8);
+    addCheckpoint(0, 5.2, 116, "Чек 4");
 
-    // Секция 5 — коридор лазеров (вертикальные «стены»)
-    addPlatform(0, 7.5, 122, 3, 0.4, 8, 0x38bdf8);
-    for (let i = 0; i < 5; i++) {
+    // Секция 5 — широкий коридор, редкие медленные лазеры
+    addPlatform(0, 5.2, 123, 4.5, 0.4, 10, 0x38bdf8);
+    for (let i = 0; i < 3; i++) {
       addLaser({
-        x: -1.3 + (i % 2) * 2.6,
-        y: 8.4,
-        z: 120 + i * 1.6,
-        len: 2.6,
+        x: -1.6 + (i % 2) * 3.2,
+        y: 6.2,
+        z: 121 + i * 2.5,
+        len: 2.2,
         axis: "z",
-        mode: i % 2 ? "blink" : "sweep",
-        speed: 2,
-        amp: 1.4,
-        period: 0.85,
-        phase: i * 0.5,
+        mode: "blink",
+        period: 2.6,
+        phase: i * 0.9,
         color: 0xff2200,
       });
     }
-    for (let i = 0; i < 5; i++) {
-      addPlatform((i % 2 ? 1.5 : -1.5), 7.8 + i * 0.25, 130 + i * 2.6, 1.5, 0.35, 1.5, 0xc084fc);
+    for (let i = 0; i < 4; i++) {
+      addPlatform((i % 2 ? 1.0 : -1.0), 5.4 + i * 0.15, 132 + i * 2.8, 2.4, 0.4, 2.4, 0xc084fc);
     }
 
     // Финиш
-    addPlatform(0, 8.5, FINISH_Z, 6, 0.5, 6, 0xfbbf24);
+    addPlatform(0, 6.2, FINISH_Z, 7, 0.5, 7, 0xfbbf24);
     const finishRing = new THREE.Mesh(
       new THREE.TorusGeometry(1.6, 0.12, 8, 24),
       new THREE.MeshBasicMaterial({ color: 0xfde68a })
     );
-    finishRing.position.set(0, 10.2, FINISH_Z);
+    finishRing.position.set(0, 8.0, FINISH_Z);
     finishRing.rotation.x = Math.PI / 2;
     scene.add(finishRing);
 
@@ -299,9 +296,9 @@
 
     let vx = 0, vy = 0, vz = 0;
     let onGround = false;
-    const GRAVITY = -28;
-    const JUMP = 11;
-    const SPEED = 8.5;
+    const GRAVITY = -26;
+    const JUMP = 12;
+    const SPEED = 9.5;
 
     const keys = {};
     window.addEventListener("keydown", (e) => {
@@ -420,7 +417,9 @@
           if (L.axis === "x") z = L.base.z + off;
           else x = L.base.x + off;
         } else if (L.mode === "blink") {
-          const on = Math.sin(t * ((Math.PI * 2) / L.period) + L.phase) > 0;
+          // Дольше выключен, чем включён — проще пройти
+          const wave = Math.sin(t * ((Math.PI * 2) / L.period) + L.phase);
+          const on = wave > 0.35;
           L.active = on;
           L.beam.visible = on;
           L.glow.visible = on;
@@ -445,11 +444,11 @@
         const dy = Math.abs(player.position.y - L.beam.position.y);
         const dz = Math.abs(player.position.z - L.beam.position.z);
         if (L.mode === "spin") {
-          if (Math.hypot(dx, dz) < spinPad + 0.35 && dy < 1.0) {
+          if (Math.hypot(dx, dz) < spinPad * 0.75 + 0.2 && dy < 0.75) {
             die("Лазер!");
             return;
           }
-        } else if (dx < hw + 0.35 && dy < 0.85 && dz < hd + 0.35) {
+        } else if (dx < hw * 0.85 + 0.2 && dy < 0.7 && dz < hd * 0.85 + 0.2) {
           die("Лазер!");
           return;
         }
