@@ -308,6 +308,54 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "night-stitch": {
+      title: "Нить сна",
+      subtitle: "Тень · нити · утро · хозяин",
+      quick: [
+        { id: "god", label: "🛡 ∞", toast: "Тень не берёт" },
+        { id: "ns-threads", label: "糸 Нити", toast: "Все нити" },
+        { id: "ns-win", label: "🌅 Утро", toast: "Победа" },
+      ],
+      buttons: [
+        { id: "god", label: "🛡️ Бессмертие (тень)", cls: "primary" },
+        { id: "heal", label: "💚 Полная ясность" },
+        { id: "ns-banish", label: "👻 Убрать тень" },
+        { id: "ns-freeze", label: "❄️ Заморозить тень" },
+        { id: "ns-threads", label: "糸 Собрать все нити" },
+        { id: "ns-win", label: "🌅 Мгновенное утро" },
+        { id: "speed", label: "⚡ Супер-бег" },
+        { id: "ns-dash", label: "⚡ ∞ рывок" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    obby: {
+      title: "Obby",
+      subtitle: "Полёт · бессмертие · невидимый пол",
+      quick: [
+        { id: "god", label: "🛡 ∞", toast: "Бессмертие" },
+        { id: "obby-fly", label: "🕊 Полёт", toast: "Полёт" },
+        { id: "obby-floor", label: "⬛ Пол", toast: "Невидимый пол" },
+      ],
+      buttons: [
+        { id: "god", label: "🛡️ Бессмертие (лазеры/падение)", cls: "primary" },
+        { id: "obby-fly", label: "🕊 Полёт (Пробел↑ Shift↓)" },
+        { id: "obby-floor", label: "⬛ Невидимый пол (только ты)" },
+        { id: "speed", label: "⚡ Супер-бег" },
+        { id: "obby-cp", label: "🚩 След. чекпоинт" },
+        { id: "obby-finish", label: "🏁 На финиш" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "old-pc": {
+      title: "Старый ПК",
+      subtitle: "Админка — кнопка ⚡ справа, не на поле сапёра",
+      quick: [],
+      buttons: [
+        { id: "heal", label: "💚 Хилл", cls: "primary" },
+        { id: "god", label: "🛡️ Бессмертие" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
   };
 
   const DEFAULT_PACK = {
@@ -352,8 +400,10 @@
       if (!buttons.some((x) => x.id === b.id)) buttons.push(b);
     });
     const quick = [...(base.quick || [])];
-    if (!quick.some((x) => x.id === "surprise-gift")) {
-      quick.unshift({ id: "surprise-gift", label: "✦", toast: "Сюрприз" });
+    if (!(Array.isArray(base.quick) && base.quick.length === 0)) {
+      if (!quick.some((x) => x.id === "surprise-gift")) {
+        quick.unshift({ id: "surprise-gift", label: "✦", toast: "Сюрприз" });
+      }
     }
     return { ...base, buttons, quick };
   }
