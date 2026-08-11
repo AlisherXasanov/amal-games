@@ -59,7 +59,7 @@
   </div>
   <div id="toast"></div>
   <a id="back" href="../">← Каталог</a>
-  <div id="controls">W — вперёд куда смотрит камера · A/D влево-вправо · Пробел прыжок · ПКМ крутить</div>
+  <div id="controls">W — вперёд по камере · Пробел прыжок/полёт↑ · Shift полёт↓ · ПКМ камера · админ ⚡</div>
   <div id="mobile-btns">
     <button type="button" id="m-left">←</button>
     <button type="button" id="m-jump">↑</button>
@@ -294,11 +294,96 @@
     player.castShadow = true;
     scene.add(player);
 
+    // Невидимый пол только для хозяина (другие его не видят и не имеют)
+    const safetyFloor = new THREE.Mesh(
+      new THREE.BoxGeometry(3.2, 0.25, 3.2),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.0,
+        depthWrite: false,
+      })
+    );
+    safetyFloor.visible = false;
+    scene.add(safetyFloor);
+
     let vx = 0, vy = 0, vz = 0;
     let onGround = false;
     const GRAVITY = -26;
     const JUMP = 12;
-    const SPEED = 9.5;
+    let moveSpeed = 9.5;
+
+    const admin = {
+      god: false,
+      fly: false,
+      floor: false,
+      speed: false,
+    };
+
+    function isSiteOwner() {
+      try {
+        if (window.__AMAL_OWNER__ || window.__AMAL_GOD__ || window.__AMAL_LEGEND__) return true;
+        if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function applyOwnerDefaults() {
+      if (!isSiteOwner()) return;
+      admin.god = true;
+      admin.fly = true;
+      admin.floor = true;
+      admin.speed = true;
+      moveSpeed = 13;
+      toast("Админ Obby: полёт · ∞ · невидимый пол");
+    }
+
+    function handlePower(detail) {
+      const type = detail && detail.type;
+      if (!type) return;
+      if (type === "god" || type === "owner-legend") {
+        admin.god = true;
+        toast("🛡 Бессмертие");
+      }
+      if (type === "obby-fly") {
+        admin.fly = !admin.fly;
+        toast(admin.fly ? "🕊 Полёт ВКЛ" : "Полёт ВЫКЛ");
+      }
+      if (type === "obby-floor") {
+        admin.floor = !admin.floor;
+        if (!admin.floor) safetyFloor.visible = false;
+        toast(admin.floor ? "⬛ Невидимый пол ВКЛ (только ты)" : "Невидимый пол ВЫКЛ");
+      }
+      if (type === "speed") {
+        admin.speed = true;
+        moveSpeed = 13;
+        toast("⚡ Супер-бег");
+      }
+      if (type === "obby-cp") {
+        activeCp = Math.min(activeCp + 1, checkpoints.length - 1);
+        spawnAtCheckpoint();
+        toast("Чек: " + checkpoints[activeCp].name);
+      }
+      if (type === "obby-finish") {
+        player.position.set(0, 8, FINISH_Z);
+        vx = vy = vz = 0;
+        toast("🏁 Финиш");
+      }
+      if (type === "max") {
+        admin.god = true;
+        admin.fly = true;
+        admin.floor = true;
+        admin.speed = true;
+        moveSpeed = 14;
+        toast("⚡ ВСЁ НА МАКС");
+      }
+    }
+
+    window.addEventListener("amal-power", (e) => handlePower(e.detail || {}));
+    window.addEventListener("amal-powers-applied", () => applyOwnerDefaults());
+    window.addEventListener("amal-owner-changed", () => applyOwnerDefaults());
+    setTimeout(applyOwnerDefaults, 400);
 
     const keys = {};
     window.addEventListener("keydown", (e) => {
@@ -355,9 +440,54 @@
 
     function die(reason) {
       if (finished) return;
+      if (admin.god || window.__AMAL_GOD__) {
+        // Бессмертие: не умираем от лазеров
+        toast("🛡 " + (reason || "блок") + " — бессмертие");
+        return;
+      }
       deaths++;
       toast(reason || "Ай!");
       spawnAtCheckpoint();
+    }
+
+    function updateSafetyFloor() {
+      // Только хозяин с включённым полом — маленький невидимый пол под ногами при падении
+      const ownerFloor = admin.floor && isSiteOwner();
+      if (!ownerFloor) {
+        safetyFloor.visible = false;
+        return;
+      }
+      // Появляется, когда падаешь ниже трассы; следует за тобой
+      if (player.position.y < 2.5 || vy < -2) {
+        safetyFloor.visible = true;
+        safetyFloor.position.set(player.position.x, Math.min(player.position.y - 0.9, -0.5), player.position.z);
+      }
+      if (!safetyFloor.visible) return;
+
+      const pw = 0.35;
+      const ph = 0.75;
+      const bx = safetyFloor.position.x;
+      const by = safetyFloor.position.y;
+      const bz = safetyFloor.position.z;
+      const hw = 1.6;
+      const hh = 0.125;
+      const hd = 1.6;
+      const px = player.position.x;
+      const py = player.position.y;
+      const pz = player.position.z;
+      if (
+        px + pw > bx - hw &&
+        px - pw < bx + hw &&
+        pz + pw > bz - hd &&
+        pz - pw < bz + hd &&
+        py - ph <= by + hh + 0.15 &&
+        py - ph > by - hh - 0.5 &&
+        vy <= 0
+      ) {
+        player.position.y = by + hh + ph;
+        vy = 0;
+        onGround = true;
+      }
     }
 
     function checkPlatforms() {
@@ -417,7 +547,6 @@
           if (L.axis === "x") z = L.base.z + off;
           else x = L.base.x + off;
         } else if (L.mode === "blink") {
-          // Дольше выключен, чем включён — проще пройти
           const wave = Math.sin(t * ((Math.PI * 2) / L.period) + L.phase);
           const on = wave > 0.35;
           L.active = on;
@@ -434,11 +563,10 @@
         }
 
         if (!L.active || !L.beam.visible) continue;
+        if (admin.god || window.__AMAL_GOD__) continue;
 
-        // AABB vs player
         const hw = L.axis === "x" ? L.len / 2 : 0.25;
         const hd = L.axis === "z" ? L.len / 2 : 0.25;
-        // spin: rough circle radius
         const spinPad = L.mode === "spin" ? L.len / 2 : 0;
         const dx = Math.abs(player.position.x - L.beam.position.x);
         const dy = Math.abs(player.position.y - L.beam.position.y);
@@ -473,7 +601,6 @@
       const t = now / 1000;
 
       if (!finished) {
-        // Движение относительно камеры: W = куда смотришь
         let wishX = 0;
         let wishZ = 0;
         const yaw = orbit.state.yaw;
@@ -505,24 +632,49 @@
           wishZ /= len;
         }
 
-        if ((keys.Space || mJump) && onGround) {
-          vy = JUMP;
-          onGround = false;
-        }
+        const spd = admin.speed ? moveSpeed : 9.5;
 
-        vx = wishX * SPEED;
-        vz = wishZ * SPEED;
-        vy += GRAVITY * dt;
+        if (admin.fly) {
+          // Полёт: Пробел вверх, Shift вниз, без гравитации
+          vy = 0;
+          if (keys.Space || mJump) vy = 10;
+          if (keys.ShiftLeft || keys.ShiftRight || keys.ControlLeft) vy = -10;
+          vx = wishX * spd;
+          vz = wishZ * spd;
+        } else {
+          if ((keys.Space || mJump) && onGround) {
+            vy = JUMP;
+            onGround = false;
+          }
+          vx = wishX * spd;
+          vz = wishZ * spd;
+          vy += GRAVITY * dt;
+        }
 
         player.position.x += vx * dt;
         player.position.y += vy * dt;
         player.position.z += vz * dt;
 
         checkPlatforms();
+        updateSafetyFloor();
         checkCheckpoints();
         updateLasers(t, dt);
 
-        if (player.position.y < -8) die("Упал!");
+        if (player.position.y < -8) {
+          if (admin.floor && isSiteOwner()) {
+            // Невидимый пол ловит падение — не умираешь
+            safetyFloor.visible = true;
+            safetyFloor.position.set(player.position.x, -1, player.position.z);
+            player.position.y = -1 + 0.125 + 0.75;
+            vy = 0;
+            onGround = true;
+          } else if (admin.god) {
+            player.position.y = checkpoints[activeCp].y;
+            vy = 0;
+          } else {
+            die("Упал!");
+          }
+        }
 
         if (!finished && player.position.z > FINISH_Z - 1.5 && Math.abs(player.position.x) < 3.2) {
           finished = true;
@@ -540,6 +692,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-hub.js" defer></script>
+  <script src="../shared/amal-owner-powers.js?v=13"></script>
+  <script src="../shared/amal-hub.js?v=21"></script>
 </body>
 </html>
