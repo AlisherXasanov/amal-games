@@ -104,7 +104,24 @@
     }
   }
 
+  function isGuestMode() {
+    try {
+      if (global.__AMAL_GUEST__ === true) return true;
+      const g = new URLSearchParams(location.search).get("guest");
+      if (g === "1" || g === "true" || g === "yes") {
+        global.__AMAL_GUEST__ = true;
+        global.__AMAL_OWNER__ = false;
+        global.__AMAL_GOD__ = false;
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    return false;
+  }
+
   function isOwner() {
+    if (isGuestMode()) return false;
     if (global.__AMAL_OWNER__ === true) return true;
     try {
       if (global.AmalOwner && typeof global.AmalOwner.isOwner === "function" && global.AmalOwner.isOwner()) {

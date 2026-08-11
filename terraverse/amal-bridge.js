@@ -4,7 +4,22 @@
 (function () {
   "use strict";
 
+  function isGuestMode() {
+    try {
+      if (window.__AMAL_GUEST__ === true) return true;
+      const g = new URLSearchParams(location.search).get("guest");
+      if (g === "1" || g === "true" || g === "yes") {
+        window.__AMAL_GUEST__ = true;
+        window.__AMAL_OWNER__ = false;
+        window.__AMAL_GOD__ = false;
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function isOwner() {
+    if (isGuestMode()) return false;
     try {
       if (window.__AMAL_OWNER__ || window.__AMAL_GOD__) return true;
       if (localStorage.getItem("amal-owner-v1") === "1") return true;
