@@ -15,6 +15,16 @@
     .btn-egg { background: #8b5cf6; }
     .btn-sell { background: #ef4444; }
     .btn-coin { background: #fbbf24; color: #000; }
+    #admin-shop {
+      position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: none; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 96vw;
+      padding: 8px; border-radius: 12px; background: rgba(120, 53, 15, .88); border: 1px solid rgba(251, 191, 36, .55);
+    }
+    #admin-shop.show { display: flex; }
+    #admin-shop .label { width: 100%; text-align: center; color: #fde68a; font: 800 11px/1 system-ui, sans-serif; margin-bottom: 2px; }
+    #admin-shop button { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #111; background: linear-gradient(135deg, #fde68a, #f59e0b); font-weight: 800; }
+    #admin-shop button:disabled { opacity: .45; }
+    #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
     #hatch-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 20; background: rgba(0,0,0,.85); color: #fff; padding: 24px 32px; border-radius: 12px; text-align: center; display: none; font-size: 18px; }
     #pets-bar { position: fixed; top: 60px; left: 12px; z-index: 10; color: #fff; font-size: 11px; max-height: 200px; overflow: auto; }
     #pets-bar div { padding: 2px 0; }
@@ -29,9 +39,16 @@
     <b>Pet Simulator</b><br/>
     Монеты: <span id="coins">0</span><br/>
     Питомцы: <span id="pet-count">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <a id="back" href="../">← Каталог</a>
   <div id="pets-bar"></div>
+  <div id="admin-shop">
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-egg" type="button">Радужное легендарное яйцо ($0)</button>
+    <button id="ex-pedestal" type="button">Золотой пьедестал ($0)</button>
+    <button id="ex-crownpet" type="button">Корона-питомец ($0)</button>
+  </div>
   <div id="actions">
     <button class="btn-coin" id="btn-farm">Фармить монеты</button>
     <button class="btn-egg" id="btn-egg">Открыть яйцо (100)</button>
@@ -87,6 +104,96 @@
     const RARITY_CHANCE = { common: 0.55, rare: 0.3, epic: 0.12, legendary: 0.03 };
 
     let coins = 50, pets = [], petMeshes = [];
+    const exclusiveOwned = { egg: false, pedestal: false, crownpet: false };
+    const exclusiveMeshes = [];
+
+    function isAdmin() {
+      try {
+        if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+        if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("pet-simulator")) return true;
+        if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function trackExclusive(mesh) {
+      scene.add(mesh);
+      exclusiveMeshes.push(mesh);
+      return mesh;
+    }
+
+    function placeRainbowEgg() {
+      const geo = new THREE.SphereGeometry(0.85, 16, 16);
+      geo.scale(1, 1.35, 1);
+      const display = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: 0xf472b6, emissive: 0x7c3aed }));
+      display.position.set(-6, 1.2, -4);
+      trackExclusive(display);
+      const colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0xa855f7];
+      for (let i = 0; i < 5; i++) {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.55 + i * 0.08, 0.04, 6, 16), new THREE.MeshLambertMaterial({ color: colors[i] }));
+        ring.rotation.x = Math.PI / 2;
+        ring.position.set(-6, 0.35 + i * 0.12, -4);
+        trackExclusive(ring);
+      }
+    }
+
+    function placePedestal() {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 0.3, 10), new THREE.MeshLambertMaterial({ color: 0xd97706 }));
+      base.position.set(6, 0.15, -4);
+      trackExclusive(base);
+      const column = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 1.4, 10), new THREE.MeshLambertMaterial({ color: 0xfbbf24 }));
+      column.position.set(6, 1.0, -4);
+      trackExclusive(column);
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.55, 0.2, 10), new THREE.MeshLambertMaterial({ color: 0xfde68a }));
+      top.position.set(6, 1.8, -4);
+      trackExclusive(top);
+    }
+
+    function placeCrownPet() {
+      const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 12, 12), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309 }));
+      body.position.set(0, 0.55, 7);
+      trackExclusive(body);
+      for (let i = 0; i < 5; i++) {
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.4, 5), new THREE.MeshLambertMaterial({ color: i % 2 ? 0xfde68a : 0xf59e0b }));
+        const a = (i / 5) * Math.PI * 2;
+        spike.position.set(Math.cos(a) * 0.35, 1.05, 7 + Math.sin(a) * 0.35);
+        trackExclusive(spike);
+      }
+      const gem = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), new THREE.MeshLambertMaterial({ color: 0x22d3ee, emissive: 0x0e7490 }));
+      gem.position.set(0, 1.0, 7);
+      trackExclusive(gem);
+    }
+
+    const exclusiveDefs = {
+      egg: { id: "ex-egg", place: placeRainbowEgg },
+      pedestal: { id: "ex-pedestal", place: placePedestal },
+      crownpet: { id: "ex-crownpet", place: placeCrownPet },
+    };
+
+    function claimExclusive(key) {
+      if (!isAdmin() || exclusiveOwned[key]) return;
+      exclusiveOwned[key] = true;
+      exclusiveDefs[key].place();
+      syncAdminShop();
+    }
+
+    function syncAdminShop() {
+      const admin = isAdmin();
+      document.getElementById("admin-shop").classList.toggle("show", admin);
+      document.getElementById("admin-tag").style.display = admin ? "block" : "none";
+      if (!admin) return;
+      Object.keys(exclusiveDefs).forEach((key) => {
+        const btn = document.getElementById(exclusiveDefs[key].id);
+        if (!btn) return;
+        btn.disabled = !!exclusiveOwned[key];
+        btn.classList.toggle("owned", !!exclusiveOwned[key]);
+        if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
+          btn.dataset.ownedLabel = "1";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+        }
+      });
+    }
 
     function rollPet() {
       const r = Math.random();
@@ -150,6 +257,15 @@
 
     updateUI();
 
+    Object.keys(exclusiveDefs).forEach((key) => {
+      document.getElementById(exclusiveDefs[key].id).addEventListener("click", () => claimExclusive(key));
+    });
+    window.addEventListener("amal-owner-changed", () => syncAdminShop());
+    window.addEventListener("amal-powers-applied", () => syncAdminShop());
+    syncAdminShop();
+    setTimeout(syncAdminShop, 200);
+    setTimeout(syncAdminShop, 1000);
+
     let lastTime = performance.now();
     function animate() {
       requestAnimationFrame(animate);
@@ -159,13 +275,17 @@
       // Egg float
       egg.position.y = 1.4 + Math.sin(now * 0.002) * 0.1;
       egg.rotation.y += 0.005;
+      exclusiveMeshes.forEach((o, i) => {
+        if (o.isLight) return;
+        if (o.rotation) o.rotation.y += 0.006 + (i % 3) * 0.001;
+      });
       orbit.lookAt(0, 1, 0);
       renderer.render(scene, camera);
     }
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=22"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

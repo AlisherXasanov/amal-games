@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Дом под крышей</title>
-  <meta name="description" content="Дом с крышей и странными этажами: заходи на каждый — там свой прикол." />
+  <title>Р”РѕРј РїРѕРґ РєСЂС‹С€РµР№</title>
+  <meta name="description" content="Р”РѕРј СЃ РєСЂС‹С€РµР№ Рё СЃС‚СЂР°РЅРЅС‹РјРё СЌС‚Р°Р¶Р°РјРё: Р·Р°С…РѕРґРё РЅР° РєР°Р¶РґС‹Р№ вЂ” С‚Р°Рј СЃРІРѕР№ РїСЂРёРєРѕР»." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,49 +12,49 @@
   <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Все игры</a>
+  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
 
   <div id="app">
-    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Дом под крышей"></canvas>
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Р”РѕРј РїРѕРґ РєСЂС‹С€РµР№"></canvas>
 
     <div id="hud" class="hud hidden">
       <div class="hud-row">
-        <span id="floor">Этаж: подвал</span>
-        <span id="found">Открыто: 0/10</span>
-        <span id="roof">Крыша: закрыта</span>
+        <span id="floor">Р­С‚Р°Р¶: РїРѕРґРІР°Р»</span>
+        <span id="found">РћС‚РєСЂС‹С‚Рѕ: 0/10</span>
+        <span id="roof">РљСЂС‹С€Р°: Р·Р°РєСЂС‹С‚Р°</span>
       </div>
-      <p id="hint" class="hint">←→ — ходьба · ↑↓ у лестницы — этаж · E — странность</p>
-      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
+      <p id="hint" class="hint">в†ђв†’ вЂ” С…РѕРґСЊР±Р° В· в†‘в†“ Сѓ Р»РµСЃС‚РЅРёС†С‹ вЂ” СЌС‚Р°Р¶ В· E вЂ” СЃС‚СЂР°РЅРЅРѕСЃС‚СЊ</p>
+      <button type="button" id="menu-btn" class="menu-btn">РњРµРЅСЋ</button>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="panel">
-        <p class="brand">Дом под крышей</p>
-        <h1 id="title">Крыша есть — этажей слишком много</h1>
+        <p class="brand">Р”РѕРј РїРѕРґ РєСЂС‹С€РµР№</p>
+        <h1 id="title">РљСЂС‹С€Р° РµСЃС‚СЊ вЂ” СЌС‚Р°Р¶РµР№ СЃР»РёС€РєРѕРј РјРЅРѕРіРѕ</h1>
         <p id="blurb" class="blurb">
-          Разрез дома: поднимайся по лестнице, заходи в комнаты. На каждом этаже — что-то смешное и странное.
-          Открой все десять — и доберись до крыши.
+          Р Р°Р·СЂРµР· РґРѕРјР°: РїРѕРґРЅРёРјР°Р№СЃСЏ РїРѕ Р»РµСЃС‚РЅРёС†Рµ, Р·Р°С…РѕРґРё РІ РєРѕРјРЅР°С‚С‹. РќР° РєР°Р¶РґРѕРј СЌС‚Р°Р¶Рµ вЂ” С‡С‚Рѕ-С‚Рѕ СЃРјРµС€РЅРѕРµ Рё СЃС‚СЂР°РЅРЅРѕРµ.
+          РћС‚РєСЂРѕР№ РІСЃРµ РґРµСЃСЏС‚СЊ вЂ” Рё РґРѕР±РµСЂРёСЃСЊ РґРѕ РєСЂС‹С€Рё.
         </p>
-        <button type="button" id="start-btn" class="btn">Войти в дом</button>
-        <p class="controls">Стрелки или WASD · E — взаимодействие · админ ⚡</p>
+        <button type="button" id="start-btn" class="btn">Р’РѕР№С‚Рё РІ РґРѕРј</button>
+        <p class="controls">РЎС‚СЂРµР»РєРё РёР»Рё WASD В· E вЂ” РІР·Р°РёРјРѕРґРµР№СЃС‚РІРёРµ В· Р°РґРјРёРЅ вљЎ</p>
       </div>
     </div>
 
     <div id="touch" class="touch hidden" aria-hidden="true">
       <div class="pad">
-        <button type="button" data-dir="up">↑</button>
+        <button type="button" data-dir="up">в†‘</button>
         <div class="row">
-          <button type="button" data-dir="left">←</button>
-          <button type="button" data-dir="down">↓</button>
-          <button type="button" data-dir="right">→</button>
+          <button type="button" data-dir="left">в†ђ</button>
+          <button type="button" data-dir="down">в†“</button>
+          <button type="button" data-dir="right">в†’</button>
         </div>
       </div>
       <button type="button" id="use-btn" class="act use">E</button>
     </div>
   </div>
 
-  <script src="../shared/amal-owner-powers.js?v=14"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
   <script src="./game.js?v=2"></script>
-  <script src="../shared/amal-hub.js?v=21"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

@@ -13,6 +13,16 @@
     #build-panel { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 8px; }
     #build-panel button { padding: 10px 16px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #fff; background: #0ea5e9; }
     #build-panel .btn-go { background: #16a34a; }
+    #admin-shop {
+      position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: none; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 96vw;
+      padding: 8px; border-radius: 12px; background: rgba(120, 53, 15, .88); border: 1px solid rgba(251, 191, 36, .55);
+    }
+    #admin-shop.show { display: flex; }
+    #admin-shop .label { width: 100%; text-align: center; color: #fde68a; font: 800 11px/1 system-ui, sans-serif; margin-bottom: 2px; }
+    #admin-shop button { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #111; background: linear-gradient(135deg, #fde68a, #f59e0b); font-weight: 800; }
+    #admin-shop button:disabled { opacity: .45; }
+    #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
     #result { position: fixed; inset: 0; display: none; z-index: 20; background: rgba(0,0,0,.85); align-items: center; justify-content: center; flex-direction: column; color: #fff; }
     #result.show { display: flex; }
     #result h1 { font-size: 28px; color: #4ade80; }
@@ -25,8 +35,15 @@
     Блоки: <span id="blocks">0</span><br/>
     Расстояние: <span id="dist">0</span>м<br/>
     Монеты: <span id="coins">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <a id="back" href="../">← Каталог</a>
+  <div id="admin-shop">
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-sail" type="button">Золотой парус ($0)</button>
+    <button id="ex-figurehead" type="button">Носовая корона ($0)</button>
+    <button id="ex-stripe" type="button">Радужная полоса ($0)</button>
+  </div>
   <div id="build-panel">
     <button id="add-wood">+ Дерево</button>
     <button id="add-metal">+ Металл</button>
@@ -65,6 +82,85 @@
     let boatBlocks = [];
     let blockCount = 0, totalHP = 5, speed = 3, sailing = false, distance = 0, coins = 0;
     let obstacles = [];
+    const exclusiveOwned = { sail: false, figurehead: false, stripe: false };
+    const exclusiveMeshes = [];
+
+    function isAdmin() {
+      try {
+        if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+        if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("build-boat")) return true;
+        if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function trackExclusive(mesh) {
+      boatGroup.add(mesh);
+      exclusiveMeshes.push(mesh);
+      return mesh;
+    }
+
+    function placeSail() {
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.2, 8), new THREE.MeshLambertMaterial({ color: 0x78716c }));
+      mast.position.set(0, 1.8, 0.2);
+      trackExclusive(mast);
+      const sail = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.2, 1.6), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309 }));
+      sail.position.set(0.35, 2.2, 0.2);
+      trackExclusive(sail);
+    }
+
+    function placeFigurehead() {
+      const nose = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.9, 8), new THREE.MeshLambertMaterial({ color: 0xf59e0b }));
+      nose.rotation.x = Math.PI / 2;
+      nose.position.set(0, 0.35, -2.3);
+      trackExclusive(nose);
+      for (let i = 0; i < 5; i++) {
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.28, 5), new THREE.MeshLambertMaterial({ color: i % 2 ? 0xfde68a : 0xfbbf24 }));
+        const a = (i / 5) * Math.PI * 2;
+        spike.position.set(Math.cos(a) * 0.22, 0.55 + Math.sin(a) * 0.1, -2.55);
+        trackExclusive(spike);
+      }
+    }
+
+    function placeStripe() {
+      const colors = [0xef4444, 0xf59e0b, 0x22c55e, 0x3b82f6, 0xa855f7];
+      for (let i = 0; i < 5; i++) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.12, 0.35), new THREE.MeshLambertMaterial({ color: colors[i] }));
+        stripe.position.set(0, 0.15, -1.4 + i * 0.55);
+        trackExclusive(stripe);
+      }
+    }
+
+    const exclusiveDefs = {
+      sail: { id: "ex-sail", place: placeSail },
+      figurehead: { id: "ex-figurehead", place: placeFigurehead },
+      stripe: { id: "ex-stripe", place: placeStripe },
+    };
+
+    function claimExclusive(key) {
+      if (!isAdmin() || exclusiveOwned[key]) return;
+      exclusiveOwned[key] = true;
+      exclusiveDefs[key].place();
+      syncAdminShop();
+    }
+
+    function syncAdminShop() {
+      const admin = isAdmin();
+      document.getElementById("admin-shop").classList.toggle("show", admin);
+      document.getElementById("admin-tag").style.display = admin ? "block" : "none";
+      if (!admin) return;
+      Object.keys(exclusiveDefs).forEach((key) => {
+        const btn = document.getElementById(exclusiveDefs[key].id);
+        if (!btn) return;
+        btn.disabled = !!exclusiveOwned[key];
+        btn.classList.toggle("owned", !!exclusiveOwned[key]);
+        if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
+          btn.dataset.ownedLabel = "1";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+        }
+      });
+    }
 
     function addBlock(type) {
       if (sailing) return;
@@ -123,6 +219,15 @@
       document.getElementById("blocks").textContent = 0;
     });
 
+    Object.keys(exclusiveDefs).forEach((key) => {
+      document.getElementById(exclusiveDefs[key].id).addEventListener("click", () => claimExclusive(key));
+    });
+    window.addEventListener("amal-owner-changed", () => syncAdminShop());
+    window.addEventListener("amal-powers-applied", () => syncAdminShop());
+    syncAdminShop();
+    setTimeout(syncAdminShop, 200);
+    setTimeout(syncAdminShop, 1000);
+
     const keys = {};
     window.addEventListener("keydown", (e) => keys[e.code] = true);
     window.addEventListener("keyup", (e) => keys[e.code] = false);
@@ -133,6 +238,13 @@
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+
+      exclusiveMeshes.forEach((o, i) => {
+        if (o.isLight) return;
+        if (o.rotation && o.geometry && o.geometry.type === "ConeGeometry" && o.position.y > 0.5) {
+          o.rotation.y += 0.02;
+        }
+      });
 
       if (sailing) {
         // Move forward
@@ -177,7 +289,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=22"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

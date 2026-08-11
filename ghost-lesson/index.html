@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>РќРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СѓСЂРѕРє</title>
+  <meta name="description" content="РќРѕС‡РЅР°СЏ С€РєРѕР»Р° Р±РµР· СЂР°СЃРїРёСЃР°РЅРёСЏ: СЃРѕР±РµСЂРё РѕС‚РІРµС‚С‹ РјРµР»РѕРј Рё Р·Р°РєСЂРѕР№ СѓСЂРѕРє, РєРѕС‚РѕСЂРѕРіРѕ РЅРµС‚." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=3" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+
+  <div id="app">
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="РќРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СѓСЂРѕРє"></canvas>
+
+    <div id="hud" class="hud hidden">
+      <div class="hud-row">
+        <span id="answers">РћС‚РІРµС‚С‹: 0/5</span>
+        <span id="bell">Р—РІРѕРЅРѕРє: 100%</span>
+        <span id="held">Р’ СЂСѓРєР°С…: вЂ”</span>
+      </div>
+      <p id="hint" class="hint">WASD / СЃС‚СЂРµР»РєРё В· E вЂ” РІР·СЏС‚СЊ / РѕС‚РґР°С‚СЊ В· РїСЂРѕР±РµР» вЂ” РїСЂС‹Р¶РѕРє</p>
+      <button type="button" id="menu-btn" class="menu-btn">РњРµРЅСЋ</button>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <p class="brand">РќРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СѓСЂРѕРє</p>
+        <h1 id="title">Р’ СЂР°СЃРїРёСЃР°РЅРёРё вЂ” РїСѓСЃС‚Р°СЏ РєР»РµС‚РєР°</h1>
+        <p id="blurb" class="blurb">
+          РЁРєРѕР»Р° РѕС‚РєСЂС‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ РІ С‰РµР»Рё РјРµР¶РґСѓ Р·РІРѕРЅРєР°РјРё. РџСЂРёР·СЂР°РєРё-СѓС‡РµРЅРёРєРё Р¶РґСѓС‚ РѕС‚РІРµС‚С‹,
+          РєРѕС‚РѕСЂС‹С… РЅРёРєС‚Рѕ РЅРµ РїРёСЃР°Р». РЎРѕР±РµСЂРё РјРµР» СЃ РїРѕР»Р°, РѕС‚РґР°Р№ РЅСѓР¶РЅС‹Р№ РѕС‚РІРµС‚ вЂ” Рё СѓСЂРѕРє СЃС‚Р°РЅРµС‚ РЅР°СЃС‚РѕСЏС‰РёРј.
+        </p>
+        <button type="button" id="start-btn" class="btn">РћС‚РєСЂС‹С‚СЊ РєР»Р°СЃСЃ</button>
+        <p class="controls">РљР»Р°РІРёР°С‚СѓСЂР°: WASD, РїСЂРѕР±РµР», E В· РќР° С‚РµР»РµС„РѕРЅРµ вЂ” РєРЅРѕРїРєРё РІРЅРёР·Сѓ</p>
+      </div>
+    </div>
+
+    <div id="touch" class="touch hidden" aria-hidden="true">
+      <div class="pad">
+        <button type="button" data-dir="up">в†‘</button>
+        <div class="row">
+          <button type="button" data-dir="left">в†ђ</button>
+          <button type="button" data-dir="down">в†“</button>
+          <button type="button" data-dir="right">в†’</button>
+        </div>
+      </div>
+      <button type="button" id="jump-btn" class="act">РџР Р«Р–РћРљ</button>
+      <button type="button" id="use-btn" class="act use">E</button>
+    </div>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="./game.js?v=3"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
+</body>
+</html>

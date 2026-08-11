@@ -60,6 +60,11 @@
 
   const CHANGELOG = [
     {
+      id: "2026-08-11-no-black-admin-things",
+      title: "Без чёрного экрана · эксклюзивы админам",
+      body: "Опубликованы old-pc, lift-void, ghost-lesson, night-stitch, create-lab. Во всех играх у админ-команды свои уникальные вещи (не команды). В 3D-играх — свои предметы на карте.",
+    },
+    {
       id: "2026-08-11-admin-team-all",
       title: "Админ-команда · все игры сайта",
       body: "Выдача админки теперь покрывает Obby, Tycoon, Tower Defense, Murder Mystery, Pet Simulator, Flee и Build a Boat. В Pizza Tycoon у админов — свои эксклюзивные вещи в магазине (не команды).",

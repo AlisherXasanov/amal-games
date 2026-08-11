@@ -17,6 +17,16 @@
     #result button { margin-top: 16px; padding: 10px 24px; font-size: 16px; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
     #hack-bar { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); width: 200px; height: 16px; background: #333; border-radius: 8px; overflow: hidden; z-index: 10; display: none; }
     #hack-fill { height: 100%; width: 0%; background: #4ade80; transition: width 0.1s; }
+    #admin-shop {
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: none; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 96vw;
+      padding: 8px; border-radius: 12px; background: rgba(120, 53, 15, .88); border: 1px solid rgba(251, 191, 36, .55);
+    }
+    #admin-shop.show { display: flex; }
+    #admin-shop .label { width: 100%; text-align: center; color: #fde68a; font: 800 11px/1 system-ui, sans-serif; margin-bottom: 2px; }
+    #admin-shop button { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #111; background: linear-gradient(135deg, #fde68a, #f59e0b); font-weight: 800; }
+    #admin-shop button:disabled { opacity: .45; }
+    #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
   </style>
 </head>
 <body>
@@ -24,8 +34,15 @@
     <b>Flee the Facility</b><br/>
     Компьютеры: <span id="hacked">0</span> / <span id="total">4</span><br/>
     <span id="status">Взломай все ПК и выберись!</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <a id="back" href="../">← Каталог</a>
+  <div id="admin-shop">
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-keycard" type="button">Пьедестал ключ-карты ($0)</button>
+    <button id="ex-doorsign" type="button">VIP-табличка выхода ($0)</button>
+    <button id="ex-beacon" type="button">Админ-маяк ($0)</button>
+  </div>
   <div id="controls">WASD — ход · E — взлом · ПКМ — камера · Q/E поворот</div>
   <div id="hack-bar"><div id="hack-fill"></div></div>
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Ещё раз</button></div>
@@ -85,6 +102,91 @@
     const exitMesh = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 0.3), new THREE.MeshLambertMaterial({ color: 0xef4444 }));
     exitMesh.position.copy(exitPos); scene.add(exitMesh);
 
+    const exclusiveOwned = { keycard: false, doorsign: false, beacon: false };
+    const exclusiveMeshes = [];
+
+    function isAdmin() {
+      try {
+        if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+        if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("flee-facility")) return true;
+        if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function trackExclusive(mesh) {
+      scene.add(mesh);
+      exclusiveMeshes.push(mesh);
+      return mesh;
+    }
+
+    function placeKeycard() {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.65, 0.9, 10), new THREE.MeshLambertMaterial({ color: 0x374151 }));
+      base.position.set(-11, 0.45, 0);
+      trackExclusive(base);
+      const card = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.08, 0.45), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309 }));
+      card.position.set(-11, 1.05, 0);
+      trackExclusive(card);
+      const chip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.14), new THREE.MeshLambertMaterial({ color: 0x22d3ee }));
+      chip.position.set(-11.15, 1.12, 0);
+      trackExclusive(chip);
+    }
+
+    function placeDoorSign() {
+      const board = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 0.1), new THREE.MeshLambertMaterial({ color: 0x111827, emissive: 0x312e81 }));
+      board.position.set(0, 3.2, -13.2);
+      trackExclusive(board);
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.15, 0.12), new THREE.MeshLambertMaterial({ color: 0xfbbf24 }));
+      stripe.position.set(0, 3.2, -13.12);
+      trackExclusive(stripe);
+      const glow = new THREE.PointLight(0xa78bfa, 1.0, 8);
+      glow.position.set(0, 3.2, -12.5);
+      trackExclusive(glow);
+    }
+
+    function placeBeacon() {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 2.8, 8), new THREE.MeshLambertMaterial({ color: 0x6b7280 }));
+      pole.position.set(11, 1.4, 0);
+      trackExclusive(pole);
+      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 12), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xf59e0b }));
+      lamp.position.set(11, 3.0, 0);
+      trackExclusive(lamp);
+      const light = new THREE.PointLight(0xfbbf24, 1.6, 14);
+      light.position.set(11, 3.2, 0);
+      trackExclusive(light);
+    }
+
+    const exclusiveDefs = {
+      keycard: { id: "ex-keycard", place: placeKeycard },
+      doorsign: { id: "ex-doorsign", place: placeDoorSign },
+      beacon: { id: "ex-beacon", place: placeBeacon },
+    };
+
+    function claimExclusive(key) {
+      if (!isAdmin() || exclusiveOwned[key]) return;
+      exclusiveOwned[key] = true;
+      exclusiveDefs[key].place();
+      syncAdminShop();
+    }
+
+    function syncAdminShop() {
+      const admin = isAdmin();
+      document.getElementById("admin-shop").classList.toggle("show", admin);
+      document.getElementById("admin-tag").style.display = admin ? "block" : "none";
+      if (!admin) return;
+      Object.keys(exclusiveDefs).forEach((key) => {
+        const btn = document.getElementById(exclusiveDefs[key].id);
+        if (!btn) return;
+        btn.disabled = !!exclusiveOwned[key];
+        btn.classList.toggle("owned", !!exclusiveOwned[key]);
+        if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
+          btn.dataset.ownedLabel = "1";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+        }
+      });
+    }
+
     // Beast (hunter bot)
     const beast = new THREE.Mesh(new THREE.CapsuleGeometry(0.4, 1.2, 4, 8), new THREE.MeshLambertMaterial({ color: 0xe11d48 }));
     beast.position.set(0, 1, 0); scene.add(beast);
@@ -130,6 +232,15 @@
     startGame();
     document.getElementById("total").textContent = pcs.length;
 
+    Object.keys(exclusiveDefs).forEach((key) => {
+      document.getElementById(exclusiveDefs[key].id).addEventListener("click", () => claimExclusive(key));
+    });
+    window.addEventListener("amal-owner-changed", () => syncAdminShop());
+    window.addEventListener("amal-powers-applied", () => syncAdminShop());
+    syncAdminShop();
+    setTimeout(syncAdminShop, 200);
+    setTimeout(syncAdminShop, 1000);
+
     let lastTime = performance.now();
     function animate() {
       requestAnimationFrame(animate);
@@ -137,6 +248,11 @@
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+
+      exclusiveMeshes.forEach((o, i) => {
+        if (o.isLight) return;
+        if (o.rotation) o.rotation.y += 0.004 + (i % 3) * 0.001;
+      });
 
       // Player move
       let mx = 0, mz = 0;
@@ -214,7 +330,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=22"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

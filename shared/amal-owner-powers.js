@@ -463,6 +463,66 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "create-lab": {
+      title: "Create Lab",
+      subtitle: "Монеты · хилл · хозяин",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ монеты" },
+        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ монеты", cls: "primary" },
+        { id: "heal", label: "💚 Полный хилл" },
+        { id: "god", label: "🛡️ God mode" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "lift-void": {
+      title: "Лифт без цифр",
+      subtitle: "Хилл · бессмертие · макс",
+      quick: [
+        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "god", label: "🛡 ∞", toast: "Бессмертие" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "heal", label: "💚 Полный хилл", cls: "primary" },
+        { id: "god", label: "🛡️ Бессмертие" },
+        { id: "coins", label: "💰 ∞ монеты" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "ghost-lesson": {
+      title: "Несуществующий урок",
+      subtitle: "Хилл · бессмертие · макс",
+      quick: [
+        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "god", label: "🛡 ∞", toast: "Бессмертие" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "heal", label: "💚 Полный хилл", cls: "primary" },
+        { id: "god", label: "🛡️ Бессмертие" },
+        { id: "coins", label: "💰 ∞ монеты" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "echo-postman": {
+      title: "Эхо-почтальон",
+      subtitle: "Монеты · хилл · хозяин",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ монеты" },
+        { id: "heal", label: "💚 Хилл", toast: "Хилл" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ монеты", cls: "primary" },
+        { id: "heal", label: "💚 Полный хилл" },
+        { id: "god", label: "🛡️ God mode" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
   };
 
   const DEFAULT_PACK = {
@@ -938,11 +998,26 @@
     syncUi();
   }
 
-  function ensureSurprisesLib() {
-    if (global.AmalSurprises) return;
+  function sharedScriptSrc(file) {
+    const id = gameId();
+    let usePortal = id === "portal";
+    if (!usePortal) {
+      try {
+        const path = location.pathname.replace(/\\/g, "/");
+        if (/\/amal-games\/?$/i.test(path) || /\/amal-games\/index\.html?$/i.test(path)) usePortal = true;
+        else if (/\/games\/?$/i.test(path) || /\/games\/index\.html?$/i.test(path)) usePortal = true;
+      } catch (_) {}
+    }
+    return (usePortal ? "./shared/" : "../shared/") + file;
+  }
+
+  function injectSharedScript(file, flag) {
+    if (flag && global[flag]) return;
     try {
+      const src = sharedScriptSrc(file);
+      if (document.querySelector('script[src="' + src + '"]')) return;
       const s = document.createElement("script");
-      s.src = "../shared/amal-surprises.js?v=1";
+      s.src = src;
       s.async = true;
       document.head.appendChild(s);
     } catch (_) {
@@ -950,8 +1025,17 @@
     }
   }
 
+  function ensureSurprisesLib() {
+    injectSharedScript("amal-surprises.js?v=1", "AmalSurprises");
+  }
+
+  function ensureAdminThingsLib() {
+    injectSharedScript("amal-admin-things.js?v=1", "AmalAdminThings");
+  }
+
   function boot() {
     ensureSurprisesLib();
+    ensureAdminThingsLib();
     try {
       if (new URLSearchParams(location.search).get("owner")) unlockAll();
     } catch (_) {}

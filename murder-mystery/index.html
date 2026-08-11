@@ -16,6 +16,16 @@
     #result h1 { font-size: 32px; }
     #result button { margin-top: 16px; padding: 10px 24px; font-size: 16px; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
     #controls { position: fixed; bottom: 12px; left: 12px; color: #fff; text-shadow: 1px 1px 2px #000; font-size: 12px; z-index: 10; }
+    #admin-shop {
+      position: fixed; bottom: 52px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: none; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 96vw;
+      padding: 8px; border-radius: 12px; background: rgba(120, 53, 15, .88); border: 1px solid rgba(251, 191, 36, .55);
+    }
+    #admin-shop.show { display: flex; }
+    #admin-shop .label { width: 100%; text-align: center; color: #fde68a; font: 800 11px/1 system-ui, sans-serif; margin-bottom: 2px; }
+    #admin-shop button { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #111; background: linear-gradient(135deg, #fde68a, #f59e0b); font-weight: 800; }
+    #admin-shop button:disabled { opacity: .45; }
+    #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
   </style>
 </head>
 <body>
@@ -24,8 +34,15 @@
     Роль: <span id="role">—</span><br/>
     Выжившие: <span id="alive">5</span><br/>
     Время: <span id="timer">60</span>с
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <a id="back" href="../">← Каталог</a>
+  <div id="admin-shop">
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-knife" type="button">Золотой нож-витрина ($0)</button>
+    <button id="ex-badge" type="button">Подиум шерифа ($0)</button>
+    <button id="ex-chair" type="button">VIP-кресло ($0)</button>
+  </div>
   <div id="controls">WASD — ход · клик — действие · ПКМ — камера · Q/E</div>
   <div id="role-msg" id="role-popup"></div>
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Играть ещё</button></div>
@@ -63,6 +80,91 @@
       const f = new THREE.Mesh(new THREE.BoxGeometry(1 + Math.random(), 1 + Math.random() * 2, 1 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x8b6914 }));
       f.position.set((Math.random() - 0.5) * 18, f.geometry.parameters.height / 2, (Math.random() - 0.5) * 18);
       f.castShadow = true; scene.add(f);
+    }
+
+    const exclusiveOwned = { knife: false, badge: false, chair: false };
+    const exclusiveMeshes = [];
+
+    function isAdmin() {
+      try {
+        if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+        if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("murder-mystery")) return true;
+        if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function trackExclusive(mesh) {
+      scene.add(mesh);
+      exclusiveMeshes.push(mesh);
+      return mesh;
+    }
+
+    function placeKnife() {
+      const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 0.9, 10), new THREE.MeshLambertMaterial({ color: 0x44403c }));
+      stand.position.set(-9.5, 0.45, -9.5);
+      trackExclusive(stand);
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.2, 0.28), new THREE.MeshLambertMaterial({ color: 0xfde68a, emissive: 0xb45309 }));
+      blade.position.set(-9.5, 1.5, -9.5);
+      trackExclusive(blade);
+      const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.18, 0.18), new THREE.MeshLambertMaterial({ color: 0x92400e }));
+      hilt.position.set(-9.5, 0.95, -9.5);
+      trackExclusive(hilt);
+    }
+
+    function placeBadge() {
+      const podium = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.7, 1.0, 8), new THREE.MeshLambertMaterial({ color: 0x1e3a8a }));
+      podium.position.set(9.5, 0.5, -9.5);
+      trackExclusive(podium);
+      const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.35, 0), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309 }));
+      star.position.set(9.5, 1.35, -9.5);
+      trackExclusive(star);
+      const glow = new THREE.PointLight(0xfbbf24, 0.9, 6);
+      glow.position.set(9.5, 1.8, -9.5);
+      trackExclusive(glow);
+    }
+
+    function placeChair() {
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.18, 1.0), new THREE.MeshLambertMaterial({ color: 0x7c3aed }));
+      seat.position.set(9.5, 0.55, 9.5);
+      trackExclusive(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.2, 0.14), new THREE.MeshLambertMaterial({ color: 0xa78bfa }));
+      back.position.set(9.5, 1.2, 9.95);
+      trackExclusive(back);
+      const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.8), new THREE.MeshLambertMaterial({ color: 0xfde68a }));
+      cushion.position.set(9.5, 0.7, 9.5);
+      trackExclusive(cushion);
+    }
+
+    const exclusiveDefs = {
+      knife: { id: "ex-knife", place: placeKnife },
+      badge: { id: "ex-badge", place: placeBadge },
+      chair: { id: "ex-chair", place: placeChair },
+    };
+
+    function claimExclusive(key) {
+      if (!isAdmin() || exclusiveOwned[key]) return;
+      exclusiveOwned[key] = true;
+      exclusiveDefs[key].place();
+      syncAdminShop();
+    }
+
+    function syncAdminShop() {
+      const admin = isAdmin();
+      document.getElementById("admin-shop").classList.toggle("show", admin);
+      document.getElementById("admin-tag").style.display = admin ? "block" : "none";
+      if (!admin) return;
+      Object.keys(exclusiveDefs).forEach((key) => {
+        const btn = document.getElementById(exclusiveDefs[key].id);
+        if (!btn) return;
+        btn.disabled = !!exclusiveOwned[key];
+        btn.classList.toggle("owned", !!exclusiveOwned[key]);
+        if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
+          btn.dataset.ownedLabel = "1";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+        }
+      });
     }
 
     // NPCs
@@ -167,6 +269,15 @@
 
     startGame();
 
+    Object.keys(exclusiveDefs).forEach((key) => {
+      document.getElementById(exclusiveDefs[key].id).addEventListener("click", () => claimExclusive(key));
+    });
+    window.addEventListener("amal-owner-changed", () => syncAdminShop());
+    window.addEventListener("amal-powers-applied", () => syncAdminShop());
+    syncAdminShop();
+    setTimeout(syncAdminShop, 200);
+    setTimeout(syncAdminShop, 1000);
+
     let lastTime = performance.now();
     function animate() {
       requestAnimationFrame(animate);
@@ -174,6 +285,11 @@
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+
+      exclusiveMeshes.forEach((o, i) => {
+        if (o.isLight) return;
+        if (o.rotation) o.rotation.y += 0.005 + (i % 3) * 0.001;
+      });
 
       timeLeft -= dt;
       if (timeLeft <= 0) {
@@ -230,7 +346,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=22"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>РќРёС‚СЊ СЃРЅР°</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=6" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+
+  <div id="app">
+    <canvas id="game" width="960" height="540" tabindex="0"></canvas>
+
+    <div id="hud" class="hud hidden">
+      <span id="stitches">РќРёС‚Рё: 0/5</span>
+      <span id="msg">РўС‹ СѓРїСЂР°РІР»СЏРµС€СЊ В· СЃС‚СЂРµР»РєРё / WASD / РєР»РёРє</span>
+      <button type="button" id="menu-btn" class="menu-btn">РњРµРЅСЋ</button>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <h1 id="title">РќРёС‚СЊ СЃРЅР°</h1>
+        <p id="blurb">
+          <strong>РўС‹ С…РѕРґРёС€СЊ СЃР°Рј</strong> вЂ” СЃС‚СЂРµР»РєРё РІРЅРёР·Сѓ, WASD РёР»Рё РєР»РёРє РїРѕ РєР°СЂС‚Рµ.<br />
+          РЎРѕР±РµСЂРё С„РёРѕР»РµС‚РѕРІС‹Рµ РЅРёС‚Рё, РїРѕС‚РѕРј РєРѕСЃРЅРёСЃСЊ Р·РµР»С‘РЅРѕРіРѕ <strong>РЈРўР Рћ</strong>.<br />
+          РћС‚ С‚РµРЅРё вЂ” РєРЅРѕРїРєР° <strong>Р Р«Р’РћРљ</strong>.
+        </p>
+        <button type="button" id="start-btn" class="btn big">РќРђР§РђРўР¬</button>
+        <p class="alt">РђРґРјРёРЅ-СЃРёР»С‹ С…РѕР·СЏРёРЅР° В· РєРЅРѕРїРєР° <strong>РњРµРЅСЋ</strong> РІ РёРіСЂРµ</p>
+      </div>
+    </div>
+
+    <div id="controls" class="controls hidden">
+      <div class="pad">
+        <button type="button" data-dir="up">в†‘</button>
+        <div class="row">
+          <button type="button" data-dir="left">в†ђ</button>
+          <button type="button" data-dir="down">в†“</button>
+          <button type="button" data-dir="right">в†’</button>
+        </div>
+      </div>
+      <button type="button" id="dash-btn" class="dash-btn">Р Р«Р’РћРљ</button>
+    </div>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="./game.js?v=6"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
+</body>
+</html>

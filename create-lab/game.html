@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Игры — Create Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./">Create <span>Lab</span></a>
+      <nav class="nav">
+        <a href="./">Главная</a>
+        <a href="./animate.html">Анимации</a>
+        <a class="is-active" href="./game.html">Игры</a>
+      </nav>
+    </header>
+
+    <p class="eyebrow">Мастер игр</p>
+    <h1 class="page-title" style="margin-bottom:1rem">Своя игра</h1>
+
+    <div class="grid-2">
+      <section class="panel">
+        <h2>Идея</h2>
+        <label class="field">
+          <span>Название</span>
+          <input id="game-name" type="text" placeholder="Например: Лесная змейка" />
+        </label>
+        <label class="field">
+          <span>Описание / голос</span>
+          <textarea id="game-prompt" placeholder="Сделай зелёную змейку с яблоками"></textarea>
+        </label>
+        <label class="field">
+          <span>Тип игры</span>
+          <select id="game-kind">
+            <option value="basketball">Баскетбол (бросок в кольцо)</option>
+            <option value="playground">Площадка (человек, дыни, кубы)</option>
+            <option value="soccer">Футбол</option>
+            <option value="snake">Змейка</option>
+            <option value="jump">Прыжки</option>
+            <option value="race">Гонка</option>
+            <option value="zombie">Зомби</option>
+            <option value="shooter">Тир</option>
+            <option value="hide">Прятки</option>
+            <option value="catch">Ловилка</option>
+          </select>
+        </label>
+        <p class="lede" style="margin:0;font-size:0.88rem">Площадка = кликай и кидай фигуры. Ловилка = бегай шаром и лови падающие кубики (это другое!).</p>
+        <label class="field">
+          <span>Цвет</span>
+          <input id="game-color" type="color" value="#0d6e5f" />
+        </label>
+        <div class="toolbar">
+          <button type="button" class="mic-btn" id="btn-mic" aria-pressed="false" aria-label="Сказать">
+            <span class="mic-ico">🎤</span>
+            <span class="mic-txt">Сказать</span>
+          </button>
+          <button type="button" class="btn primary" id="btn-create">Включить сразу</button>
+          <a class="btn" id="btn-play" href="./play.html" hidden>Играть</a>
+        </div>
+        <p id="mic-label" class="mic-hint-line" data-label-start="Сказать" data-label-stop="СТОП">
+          Оранжевая = сказать. Зелёная «СТОП» = выключить.
+        </p>
+        <p id="ai-status-text" style="color:rgba(26,36,32,0.7)">Пиши идею текстом — надёжнее. Микрофон: нажал → говори → Стоп.</p>
+        <form id="text-form" class="chat-form">
+          <input type="text" id="text-input" placeholder="Напиши Ушастику: сделай синюю змейку" />
+          <button class="btn primary" type="submit">Отправить</button>
+        </form>
+        <div class="chat-log" id="chat-log"></div>
+      </section>
+
+      <aside class="panel ai-stage">
+        <div class="ai-buddy" id="ai-buddy">
+          <div class="rings"></div>
+          <div class="ear left"></div>
+          <div class="ear right"></div>
+          <div class="ai-body">
+            <div class="ai-face">
+              <div class="eyes"><span class="eye"></span><span class="eye"></span></div>
+              <div class="mouth"></div>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <strong>Ушастик</strong>
+        <p id="preview-caption" style="margin:0;font-size:0.85rem;text-align:center;color:rgba(26,36,32,0.7)">Превью: площадка</p>
+        <canvas id="gamePreview" width="320" height="220" aria-label="Превью"></canvas>
+        <h3 style="justify-self:start;width:100%">Сохранённые игры</h3>
+        <div class="list" id="saved-list" style="width:100%"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="./catalog.js"></script>
+  <script src="./storage.js"></script>
+  <script src="./ai.js"></script>
+  <script src="./game-maker.js"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
+</body>
+</html>

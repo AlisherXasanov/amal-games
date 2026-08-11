@@ -15,6 +15,16 @@
     .btn-tower1 { background: #3b82f6; }
     .btn-tower2 { background: #ef4444; }
     .btn-tower3 { background: #8b5cf6; }
+    #admin-shop {
+      position: fixed; bottom: 68px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: none; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 96vw;
+      padding: 8px; border-radius: 12px; background: rgba(120, 53, 15, .88); border: 1px solid rgba(251, 191, 36, .55);
+    }
+    #admin-shop.show { display: flex; }
+    #admin-shop .label { width: 100%; text-align: center; color: #fde68a; font: 800 11px/1 system-ui, sans-serif; margin-bottom: 2px; }
+    #admin-shop button { padding: 8px 12px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; color: #111; background: linear-gradient(135deg, #fde68a, #f59e0b); font-weight: 800; }
+    #admin-shop button:disabled { opacity: .45; }
+    #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
     #back { position: fixed; top: 12px; right: 12px; z-index: 10; padding: 8px 14px; background: rgba(0,0,0,.5); color: #fff; text-decoration: none; border-radius: 6px; font-size: 13px; }
     #wave-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 15; font-size: 28px; color: #fbbf24; text-shadow: 2px 2px 6px #000; display: none; pointer-events: none; }
     #gameover { position: fixed; inset: 0; display: none; z-index: 20; background: rgba(0,0,0,.8); align-items: center; justify-content: center; flex-direction: column; color: #fff; }
@@ -29,8 +39,15 @@
     <div>Волна: <span id="wave">1</span></div>
     <div>Монеты: <span id="coins">100</span></div>
     <div>Жизни: <span id="lives">10</span></div>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <a id="back" href="../">← Каталог</a>
+  <div id="admin-shop">
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-banner" type="button">Золотой баннер крепости ($0)</button>
+    <button id="ex-crystal" type="button">Кристальная башня ($0)</button>
+    <button id="ex-flag" type="button">Флаг владельца ($0)</button>
+  </div>
   <div id="shop">
     <button class="btn-tower1" id="buy1">Башня (30)</button>
     <button class="btn-tower2" id="buy2">Огненная (60)</button>
@@ -101,6 +118,91 @@
     let enemies = [], towers = [], bullets = [];
     let placing = null;
     let waveTimer = 0, spawnIdx = 0, spawning = false;
+
+    const exclusiveOwned = { banner: false, crystal: false, flag: false };
+    const exclusiveMeshes = [];
+
+    function isAdmin() {
+      try {
+        if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+        if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+        if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("tower-defense")) return true;
+        if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function trackExclusive(mesh) {
+      scene.add(mesh);
+      exclusiveMeshes.push(mesh);
+      return mesh;
+    }
+
+    function placeBanner() {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 4.5, 8), new THREE.MeshLambertMaterial({ color: 0x78716c }));
+      pole.position.set(-14, 2.25, 8);
+      trackExclusive(pole);
+      const cloth = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.6, 2.2), new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309 }));
+      cloth.position.set(-14, 3.4, 7.2);
+      trackExclusive(cloth);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.4, 6), new THREE.MeshLambertMaterial({ color: 0xfde68a }));
+      tip.position.set(-14, 4.7, 8);
+      trackExclusive(tip);
+    }
+
+    function placeCrystal() {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.9, 0.35, 8), new THREE.MeshLambertMaterial({ color: 0x4b5563 }));
+      base.position.set(12, 0.18, -10);
+      trackExclusive(base);
+      const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(1.1, 0), new THREE.MeshLambertMaterial({ color: 0x67e8f9, emissive: 0x0891b2, transparent: true, opacity: 0.9 }));
+      crystal.position.set(12, 1.4, -10);
+      trackExclusive(crystal);
+      const glow = new THREE.PointLight(0x22d3ee, 1.4, 10);
+      glow.position.set(12, 2.2, -10);
+      trackExclusive(glow);
+    }
+
+    function placeFlag() {
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.8, 8), new THREE.MeshLambertMaterial({ color: 0x374151 }));
+      pole.position.set(16, 1.9, 8);
+      trackExclusive(pole);
+      const flag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.1, 1.6), new THREE.MeshLambertMaterial({ color: 0xf59e0b, emissive: 0x92400e }));
+      flag.position.set(16, 3.1, 7.3);
+      trackExclusive(flag);
+      const gem = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 10), new THREE.MeshLambertMaterial({ color: 0x22d3ee, emissive: 0x0e7490 }));
+      gem.position.set(16, 3.95, 8);
+      trackExclusive(gem);
+    }
+
+    const exclusiveDefs = {
+      banner: { id: "ex-banner", place: placeBanner },
+      crystal: { id: "ex-crystal", place: placeCrystal },
+      flag: { id: "ex-flag", place: placeFlag },
+    };
+
+    function claimExclusive(key) {
+      if (!isAdmin() || exclusiveOwned[key]) return;
+      exclusiveOwned[key] = true;
+      exclusiveDefs[key].place();
+      syncAdminShop();
+    }
+
+    function syncAdminShop() {
+      const admin = isAdmin();
+      document.getElementById("admin-shop").classList.toggle("show", admin);
+      document.getElementById("admin-tag").style.display = admin ? "block" : "none";
+      if (!admin) return;
+      Object.keys(exclusiveDefs).forEach((key) => {
+        const btn = document.getElementById(exclusiveDefs[key].id);
+        if (!btn) return;
+        btn.disabled = !!exclusiveOwned[key];
+        btn.classList.toggle("owned", !!exclusiveOwned[key]);
+        if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
+          btn.dataset.ownedLabel = "1";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+        }
+      });
+    }
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -207,6 +309,15 @@
       startGame();
     });
 
+    Object.keys(exclusiveDefs).forEach((key) => {
+      document.getElementById(exclusiveDefs[key].id).addEventListener("click", () => claimExclusive(key));
+    });
+    window.addEventListener("amal-owner-changed", () => syncAdminShop());
+    window.addEventListener("amal-powers-applied", () => syncAdminShop());
+    syncAdminShop();
+    setTimeout(syncAdminShop, 200);
+    setTimeout(syncAdminShop, 1000);
+
     startGame();
 
     let lastTime = performance.now();
@@ -215,6 +326,11 @@
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
+
+      exclusiveMeshes.forEach((o, i) => {
+        if (o.isLight) return;
+        if (o.rotation) o.rotation.y += 0.004 + (i % 3) * 0.001;
+      });
 
       // Spawning
       if (spawning) {
@@ -302,7 +418,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=22"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Эхо-почтальон</title>
-  <meta name="description" content="Доставляй чужие воспоминания по адресам. Правильный адресат — город яснее. Чужой — мир смешивается." />
+  <title>Р­С…Рѕ-РїРѕС‡С‚Р°Р»СЊРѕРЅ</title>
+  <meta name="description" content="Р”РѕСЃС‚Р°РІР»СЏР№ С‡СѓР¶РёРµ РІРѕСЃРїРѕРјРёРЅР°РЅРёСЏ РїРѕ Р°РґСЂРµСЃР°Рј. РџСЂР°РІРёР»СЊРЅС‹Р№ Р°РґСЂРµСЃР°С‚ вЂ” РіРѕСЂРѕРґ СЏСЃРЅРµРµ. Р§СѓР¶РѕР№ вЂ” РјРёСЂ СЃРјРµС€РёРІР°РµС‚СЃСЏ." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,38 +12,38 @@
   <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Все игры</a>
+  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
   <div id="app">
-    <canvas id="game" width="960" height="540" aria-label="Эхо-почтальон"></canvas>
+    <canvas id="game" width="960" height="540" aria-label="Р­С…Рѕ-РїРѕС‡С‚Р°Р»СЊРѕРЅ"></canvas>
     <div id="hud" class="hud hidden">
       <div class="hud-row">
-        <span id="orb-label">Воспоминание: нет</span>
-        <span id="integrity">Целость: —</span>
-        <span id="strange">Странность: 0%</span>
+        <span id="orb-label">Р’РѕСЃРїРѕРјРёРЅР°РЅРёРµ: РЅРµС‚</span>
+        <span id="integrity">Р¦РµР»РѕСЃС‚СЊ: вЂ”</span>
+        <span id="strange">РЎС‚СЂР°РЅРЅРѕСЃС‚СЊ: 0%</span>
       </div>
-      <p id="hint" class="hint">A/D — ходьба · Пробел — прыжок · E — взять / отдать</p>
+      <p id="hint" class="hint">A/D вЂ” С…РѕРґСЊР±Р° В· РџСЂРѕР±РµР» вЂ” РїСЂС‹Р¶РѕРє В· E вЂ” РІР·СЏС‚СЊ / РѕС‚РґР°С‚СЊ</p>
     </div>
     <div id="overlay" class="overlay">
       <div class="panel">
-        <p class="brand">Эхо-почтальон</p>
-        <h1 id="title">Ночная доставка памяти</h1>
+        <p class="brand">Р­С…Рѕ-РїРѕС‡С‚Р°Р»СЊРѕРЅ</p>
+        <h1 id="title">РќРѕС‡РЅР°СЏ РґРѕСЃС‚Р°РІРєР° РїР°РјСЏС‚Рё</h1>
         <p id="blurb" class="blurb">
-          Ты несёшь чужие моменты в хрупких шарах. Отдай нужному дому — район прояснится.
-          Отдай чужому — мир начнёт помнить не своё.
+          РўС‹ РЅРµСЃС‘С€СЊ С‡СѓР¶РёРµ РјРѕРјРµРЅС‚С‹ РІ С…СЂСѓРїРєРёС… С€Р°СЂР°С…. РћС‚РґР°Р№ РЅСѓР¶РЅРѕРјСѓ РґРѕРјСѓ вЂ” СЂР°Р№РѕРЅ РїСЂРѕСЏСЃРЅРёС‚СЃСЏ.
+          РћС‚РґР°Р№ С‡СѓР¶РѕРјСѓ вЂ” РјРёСЂ РЅР°С‡РЅС‘С‚ РїРѕРјРЅРёС‚СЊ РЅРµ СЃРІРѕС‘.
         </p>
-        <button type="button" id="start-btn" class="btn">Начать смену</button>
-        <p class="controls">Клавиатура: A/D, Пробел, E · На телефоне — кнопки внизу</p>
+        <button type="button" id="start-btn" class="btn">РќР°С‡Р°С‚СЊ СЃРјРµРЅСѓ</button>
+        <p class="controls">РљР»Р°РІРёР°С‚СѓСЂР°: A/D, РџСЂРѕР±РµР», E В· РќР° С‚РµР»РµС„РѕРЅРµ вЂ” РєРЅРѕРїРєРё РІРЅРёР·Сѓ</p>
       </div>
     </div>
     <div id="touch" class="touch hidden" aria-hidden="true">
-      <button type="button" data-act="left">←</button>
-      <button type="button" data-act="jump">⬆</button>
-      <button type="button" data-act="right">→</button>
+      <button type="button" data-act="left">в†ђ</button>
+      <button type="button" data-act="jump">в¬†</button>
+      <button type="button" data-act="right">в†’</button>
       <button type="button" data-act="use">E</button>
     </div>
   </div>
-  <script src="../shared/amal-owner-powers.js?v=11"></script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
   <script src="./game.js?v=2"></script>
-  <script src="../shared/amal-hub.js?v=21"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
 </body>
 </html>

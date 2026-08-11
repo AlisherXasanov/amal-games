@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Lab — анимации, игры и Ушастик</title>
+  <meta name="description" content="Создавай анимации и игры. Ушастик: пиши текстом или говори в микрофон." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="./">Create <span>Lab</span></a>
+      <nav class="nav" aria-label="Nav">
+        <a class="is-active" href="./" data-i18n="navHome">Главная</a>
+        <a href="./animate.html" data-i18n="navAnim">Анимации</a>
+        <a href="./game.html" data-i18n="navGames">Игры</a>
+        <a href="../" data-i18n="navCatalog">Amal's Games</a>
+      </nav>
+    </header>
+
+    <div class="lang-bar" id="lang-bar"></div>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" data-i18n="eyebrow">Твоя мастерская</p>
+        <h1>Create Lab</h1>
+        <p class="lede" data-i18n="lede">
+          Рисуй анимации, собирай игры и пиши Ушастику текстом — или говори в микрофон (нажал → говоришь → Стоп).
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="./animate.html" data-i18n="ctaAnim">Сделать анимацию</a>
+          <a class="btn coral" href="./game.html" data-i18n="ctaGame">Сделать игру</a>
+        </div>
+      </div>
+
+      <aside class="panel ai-stage" aria-label="Ушастик">
+        <div class="ai-buddy" id="ai-buddy">
+          <div class="rings" aria-hidden="true"></div>
+          <div class="ear left" aria-hidden="true"></div>
+          <div class="ear right" aria-hidden="true"></div>
+          <div class="ai-body">
+            <div class="ai-face">
+              <div class="eyes"><span class="eye"></span><span class="eye"></span></div>
+              <div class="mouth"></div>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="ai-status">
+          <strong>Ушастик</strong>
+          <p id="ai-status-text">Нажми микрофон и скажи чётко, что включить. Или напиши ниже.</p>
+        </div>
+        <div class="mic-row">
+          <button type="button" class="mic-btn" id="btn-mic" aria-pressed="false" aria-label="Сказать">
+            <span class="mic-ico">🎤</span>
+            <span class="mic-txt">Сказать</span>
+          </button>
+          <button type="button" class="btn" id="btn-greet">Поздороваться</button>
+        </div>
+        <p id="mic-label" class="mic-hint-line" data-label-start="Сказать" data-label-stop="СТОП">
+          Оранжевая кнопка = сказать. Когда слушаю — станет зелёной «СТОП»: нажми, чтобы выключить.
+        </p>
+      </aside>
+    </section>
+
+    <section class="grid-2">
+      <a class="card" href="./animate.html">
+        <div class="icon">🎬</div>
+        <h2 data-i18n="cardAnimTitle">Анимации</h2>
+        <p data-i18n="cardAnimBody">Кадры на холсте, лук, скорость, сохранение.</p>
+      </a>
+      <a class="card" href="./game.html">
+        <div class="icon">🕹️</div>
+        <h2 data-i18n="cardGameTitle">Игры</h2>
+        <p data-i18n="cardGameBody">Змейка, ловилка, прыжки или гонка — голосом или текстом.</p>
+      </a>
+    </section>
+
+    <section class="panel chat-box" style="margin-top:1rem">
+      <h2 data-i18n="chatTitle">Диалог с Ушастиком</h2>
+      <p class="lede" style="margin:0">Скажи или напиши чётко: «баскетбол», «площадка», «змейка»…</p>
+      <div class="chat-log" id="chat-log" aria-live="polite"></div>
+      <form class="chat-form" id="text-form">
+        <input type="text" id="text-input" placeholder="Напиши идею… например: баскетбол" autocomplete="off" />
+        <button class="btn primary" type="submit">Сказать</button>
+      </form>
+    </section>
+
+    <section class="grid-2" style="margin-top:1rem">
+      <div class="panel">
+        <h3 data-i18n="yourAnims">Твои анимации</h3>
+        <div class="list" id="anim-list"></div>
+      </div>
+      <div class="panel">
+        <h3 data-i18n="yourGames">Твои игры</h3>
+        <div class="list" id="game-list"></div>
+      </div>
+    </section>
+
+    <p class="footer-note" data-i18n="footer">Микрофон: Chrome / Edge. Можно всегда писать текстом. Сохранения — в этом браузере.</p>
+  </div>
+
+  <script src="./catalog.js"></script>
+  <script src="./storage.js"></script>
+  <script src="./i18n.js"></script>
+  <script src="./ai.js"></script>
+  <script>
+    (() => {
+      CreateLabI18n.mountLangBar(document.getElementById("lang-bar"));
+      const ai = Ushastik.create({ autoNavigate: true });
+      document.getElementById("btn-greet").addEventListener("click", () => ai.greet());
+
+      document.getElementById("text-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const input = document.getElementById("text-input");
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = "";
+        ai.handleTranscript(text);
+      });
+
+      function dict() {
+        return CreateLabI18n.t(CreateLabI18n.getLang());
+      }
+
+      function renderLists() {
+        const d = dict();
+        const anims = CreateLabStore.listAnims();
+        const games = CreateLabStore.listGames();
+        const animList = document.getElementById("anim-list");
+        const gameList = document.getElementById("game-list");
+        const kindRu = { catch: "ловилка", snake: "змейка", jump: "прыжки", race: "гонка", playground: "площадка" };
+
+        animList.innerHTML = anims.length
+          ? anims.slice(0, 6).map((a) => `
+              <div class="list-item">
+                <div>
+                  <h4>${escapeHtml(a.name)}</h4>
+                  <p>${a.frames?.length || 0} · ${a.fps || 8} FPS</p>
+                </div>
+                <a class="btn" href="./animate.html?id=${encodeURIComponent(a.id)}">${escapeHtml(d.open)}</a>
+              </div>
+            `).join("")
+          : `<p class="empty">${escapeHtml(d.emptyAnim)}</p>`;
+
+        gameList.innerHTML = games.length
+          ? games.slice(0, 6).map((g) => `
+              <div class="list-item">
+                <div>
+                  <h4>${escapeHtml(g.name)}</h4>
+                  <p>${escapeHtml(kindRu[g.kind] || "игра")}</p>
+                </div>
+                <a class="btn primary" href="./play.html?id=${encodeURIComponent(g.id)}">${escapeHtml(d.play)}</a>
+              </div>
+            `).join("")
+          : `<p class="empty">${escapeHtml(d.emptyGame)}</p>`;
+      }
+
+      function escapeHtml(s) {
+        return String(s || "").replace(/[&<>"']/g, (c) => ({
+          "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+        }[c]));
+      }
+
+      document.getElementById("lang-bar").addEventListener("click", (e) => {
+        if (e.target.classList.contains("lang-btn")) renderLists();
+      });
+
+      renderLists();
+    })();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-hub.js?v=23"></script>
+</body>
+</html>
