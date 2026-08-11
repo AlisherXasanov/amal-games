@@ -36,6 +36,7 @@
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Ещё раз</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -45,6 +46,7 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(innerWidth, innerHeight);
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, { distance: 14, pitch: 0.38, lookOffsetY: 1 });
     window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
     const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5, 15, 5); scene.add(sun);
@@ -168,11 +170,7 @@
       }
 
       // Camera
-      camera.position.lerp(
-        new THREE.Vector3(boatGroup.position.x, 5.5, boatGroup.position.z + 12),
-        0.1
-      );
-      camera.lookAt(boatGroup.position.x, boatGroup.position.y + 1, boatGroup.position.z);
+      orbit.follow(boatGroup.position.x, boatGroup.position.y + 1, boatGroup.position.z);
 
       renderer.render(scene, camera);
     }

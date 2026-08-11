@@ -32,6 +32,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -43,6 +44,12 @@
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 18,
+      pitch: 0.5,
+      minDist: 8,
+      maxDist: 40,
+    });
     window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
     const sun = new THREE.DirectionalLight(0xffffff, 1);
@@ -117,6 +124,7 @@
       // Animate workers bobbing
       objects3d.forEach((o, i) => { o.position.y += Math.sin(now * 0.003 + i) * 0.001; });
 
+      orbit.lookAt(0, 1, 0);
       renderer.render(scene, camera);
     }
     animate();

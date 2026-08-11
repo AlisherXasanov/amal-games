@@ -31,7 +31,7 @@
     <div>Падения: <span id="deaths">0</span></div>
   </div>
   <a id="back" href="../">← Каталог</a>
-  <div id="controls">WASD — движение, Пробел — прыжок</div>
+  <div id="controls">WASD — ход · Пробел — прыжок · ПКМ — крутить камеру · Q/E</div>
   <div id="mobile-btns">
     <button id="m-left">←</button>
     <button id="m-jump">↑</button>
@@ -41,6 +41,7 @@
   <div id="win"><h1>Победа!</h1><p>Ты прошёл все уровни!</p><button id="replay">Играть заново</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -52,6 +53,11 @@
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 11,
+      pitch: 0.42,
+      lookOffsetY: 1.3,
+    });
 
     window.addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -254,14 +260,7 @@
         die();
       }
 
-      // Camera: удобный 3-й вид сзади (не сверху)
-      const camTarget = new THREE.Vector3(
-        player.position.x,
-        player.position.y + 4.2,
-        player.position.z + 10
-      );
-      camera.position.lerp(camTarget, 0.12);
-      camera.lookAt(player.position.x, player.position.y + 1.4, player.position.z);
+      orbit.follow(player.position);
 
       renderer.render(scene, camera);
     }

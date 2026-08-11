@@ -40,6 +40,7 @@
   <div id="hatch-popup" id="popup"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -50,6 +51,12 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(innerWidth, innerHeight);
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 12,
+      pitch: 0.4,
+      minDist: 5,
+      maxDist: 28,
+    });
     window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
     scene.add(new THREE.DirectionalLight(0xffffff, 1).copy(Object.assign(new THREE.DirectionalLight(0xffffff, 1), {})));
@@ -152,6 +159,7 @@
       // Egg float
       egg.position.y = 1.4 + Math.sin(now * 0.002) * 0.1;
       egg.rotation.y += 0.005;
+      orbit.lookAt(0, 1, 0);
       renderer.render(scene, camera);
     }
     animate();

@@ -40,6 +40,7 @@
   <div id="gameover"><h1>Поражение!</h1><p>Враги прорвались</p><button id="restart">Заново</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -51,6 +52,13 @@
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 28,
+      pitch: 0.55,
+      minDist: 10,
+      maxDist: 55,
+      yaw: 0,
+    });
     window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
     scene.add(new THREE.DirectionalLight(0xffffff, 0.9).copy(Object.assign(new THREE.DirectionalLight(0xffffff, 0.9), { position: new THREE.Vector3(10, 20, 5) })));
@@ -288,6 +296,7 @@
         spawning = true; // prevent double
       }
 
+      orbit.lookAt(0, 0.5, 0);
       renderer.render(scene, camera);
     }
     animate();

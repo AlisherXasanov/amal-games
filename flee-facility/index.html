@@ -26,11 +26,12 @@
     <span id="status">Взломай все ПК и выберись!</span>
   </div>
   <a id="back" href="../">← Каталог</a>
-  <div id="controls">WASD — движение | E — взломать (рядом с ПК)</div>
+  <div id="controls">WASD — ход · E — взлом · ПКМ — камера · Q/E поворот</div>
   <div id="hack-bar"><div id="hack-fill"></div></div>
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Ещё раз</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script>
   (function() {
     const scene = new THREE.Scene();
@@ -40,6 +41,7 @@
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(innerWidth, innerHeight);
     document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, { distance: 10, pitch: 0.4, lookOffsetY: 1.3 });
     window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
     scene.add(new THREE.AmbientLight(0x202030, 0.3));
@@ -204,12 +206,7 @@
         return;
       }
 
-      // Camera: сзади-сбоку, не сверху
-      camera.position.lerp(
-        new THREE.Vector3(player.position.x, 4.5, player.position.z + 10),
-        0.12
-      );
-      camera.lookAt(player.position.x, player.position.y + 1.3, player.position.z);
+      orbit.follow(player.position);
       playerLight.position.copy(player.position); playerLight.position.y = 3;
 
       renderer.render(scene, camera);
