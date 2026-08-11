@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Murder Mystery 3D</title>
+  <meta name="description" content="3D Murder Mystery — найди убийцу или убеги!" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #0f0f23; font-family: system-ui, sans-serif; }
+    #ui { position: fixed; top: 12px; left: 12px; z-index: 10; color: #fff; text-shadow: 1px 1px 3px #000; font-size: 14px; line-height: 1.6; }
+    #back { position: fixed; top: 12px; right: 12px; z-index: 10; padding: 8px 14px; background: rgba(0,0,0,.5); color: #fff; text-decoration: none; border-radius: 6px; font-size: 13px; }
+    #role-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 15; font-size: 24px; color: #fbbf24; text-shadow: 2px 2px 6px #000; padding: 20px 30px; background: rgba(0,0,0,.7); border-radius: 12px; display: none; text-align: center; }
+    #result { position: fixed; inset: 0; display: none; z-index: 20; background: rgba(0,0,0,.85); align-items: center; justify-content: center; flex-direction: column; color: #fff; }
+    #result.show { display: flex; }
+    #result h1 { font-size: 32px; }
+    #result button { margin-top: 16px; padding: 10px 24px; font-size: 16px; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
+    #controls { position: fixed; bottom: 12px; left: 12px; color: #fff; text-shadow: 1px 1px 2px #000; font-size: 12px; z-index: 10; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <b>Murder Mystery</b><br/>
+    Роль: <span id="role">—</span><br/>
+    Выжившие: <span id="alive">5</span><br/>
+    Время: <span id="timer">60</span>с
+  </div>
+  <a id="back" href="../">← Каталог</a>
+  <div id="controls">WASD — движение | Подойди к подозрительному — клик для действия</div>
+  <div id="role-msg" id="role-popup"></div>
+  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Играть ещё</button></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+  (function() {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x1a1a2e);
+    scene.fog = new THREE.Fog(0x1a1a2e, 10, 35);
+    const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+    scene.add(new THREE.AmbientLight(0x303050, 0.4));
+    const light = new THREE.PointLight(0xffeedd, 1, 20);
+    light.position.set(0, 5, 0); scene.add(light);
+
+    // Room
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(24, 24), new THREE.MeshLambertMaterial({ color: 0x3d3d3d }));
+    floor.rotation.x = -Math.PI / 2; scene.add(floor);
+    // Walls
+    const wallMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+    [[-12, 0], [12, 0], [0, -12], [0, 12]].forEach(([x, z], i) => {
+      const w = new THREE.Mesh(new THREE.BoxGeometry(i < 2 ? 0.5 : 24, 4, i < 2 ? 24 : 0.5), wallMat);
+      w.position.set(x, 2, z); scene.add(w);
+    });
+    // Furniture
+    for (let i = 0; i < 8; i++) {
+      const f = new THREE.Mesh(new THREE.BoxGeometry(1 + Math.random(), 1 + Math.random() * 2, 1 + Math.random()), new THREE.MeshLambertMaterial({ color: 0x8b6914 }));
+      f.position.set((Math.random() - 0.5) * 18, f.geometry.parameters.height / 2, (Math.random() - 0.5) * 18);
+      f.castShadow = true; scene.add(f);
+    }
+
+    // NPCs
+    const NPC_COUNT = 4;
+    const ROLES = ["sheriff", "innocent", "innocent", "innocent"];
+    let playerRole = "innocent";
+    let murdererIdx = -1;
+    let npcs = [];
+    let alive = NPC_COUNT + 1;
+    let timeLeft = 60;
+    let gameOver = false;
+
+    function randomRole() {
+      const roles = [...ROLES];
+      const r = Math.random();
+      if (r < 0.25) { playerRole = "murderer"; }
+      else if (r < 0.5) { playerRole = "sheriff"; roles[0] = "innocent"; }
+      else { playerRole = "innocent"; }
+
+      if (playerRole !== "murderer") {
+        murdererIdx = Math.floor(Math.random() * NPC_COUNT);
+        roles[murdererIdx] = "murderer";
+      }
+      return roles;
+    }
+
+    const npcColors = { innocent: 0x60a5fa, sheriff: 0xfbbf24, murderer: 0xe11d48 };
+
+    function spawnNPCs() {
+      npcs.forEach((n) => scene.remove(n.mesh));
+      npcs = [];
+      const roles = randomRole();
+      for (let i = 0; i < NPC_COUNT; i++) {
+        const mat = new THREE.MeshLambertMaterial({ color: roles[i] === "murderer" ? 0x60a5fa : npcColors[roles[i]] });
+        const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1, 4, 8), mat);
+        mesh.position.set((Math.random() - 0.5) * 16, 0.85, (Math.random() - 0.5) * 16);
+        mesh.castShadow = true; scene.add(mesh);
+        npcs.push({ mesh, role: roles[i], alive: true, vx: (Math.random() - 0.5) * 2, vz: (Math.random() - 0.5) * 2, timer: 0 });
+      }
+    }
+
+    // Player
+    const player = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1, 4, 8), new THREE.MeshLambertMaterial({ color: 0x4ade80 }));
+    player.position.set(0, 0.85, 0); player.castShadow = true; scene.add(player);
+
+    const keys = {};
+    window.addEventListener("keydown", (e) => keys[e.code] = true);
+    window.addEventListener("keyup", (e) => keys[e.code] = false);
+
+    function startGame() {
+      gameOver = false; timeLeft = 60; alive = NPC_COUNT + 1;
+      player.position.set(0, 0.85, 0);
+      spawnNPCs();
+      updateUI();
+      // Show role
+      const popup = document.getElementById("role-msg");
+      const roleNames = { innocent: "Невинный — выживи!", sheriff: "Шериф — найди убийцу!", murderer: "Убийца — убей всех!" };
+      popup.textContent = roleNames[playerRole];
+      popup.style.display = "block";
+      setTimeout(() => popup.style.display = "none", 2500);
+      document.getElementById("role").textContent = playerRole === "murderer" ? "Убийца" : playerRole === "sheriff" ? "Шериф" : "Невинный";
+    }
+
+    function updateUI() {
+      document.getElementById("alive").textContent = alive;
+      document.getElementById("timer").textContent = Math.ceil(timeLeft);
+    }
+
+    function endGame(win, msg) {
+      gameOver = true;
+      document.getElementById("res-title").textContent = win ? "Победа!" : "Поражение!";
+      document.getElementById("res-title").style.color = win ? "#4ade80" : "#ef4444";
+      document.getElementById("res-text").textContent = msg;
+      document.getElementById("result").classList.add("show");
+    }
+
+    document.getElementById("again").addEventListener("click", () => {
+      document.getElementById("result").classList.remove("show");
+      startGame();
+    });
+
+    // Click to interact
+    renderer.domElement.addEventListener("click", () => {
+      if (gameOver) return;
+      for (const npc of npcs) {
+        if (!npc.alive) continue;
+        const dist = player.position.distanceTo(npc.mesh.position);
+        if (dist < 2.5) {
+          if (playerRole === "murderer") {
+            npc.alive = false; npc.mesh.position.y = 0.2; npc.mesh.rotation.z = Math.PI / 2;
+            alive--;
+            updateUI();
+            if (alive <= 1) endGame(true, "Ты убил всех!");
+          } else if (playerRole === "sheriff") {
+            if (npc.role === "murderer") { endGame(true, "Ты нашёл убийцу!"); }
+            else { endGame(false, "Это был невинный!"); }
+          }
+          break;
+        }
+      }
+    });
+
+    startGame();
+
+    let lastTime = performance.now();
+    function animate() {
+      requestAnimationFrame(animate);
+      if (gameOver) { renderer.render(scene, camera); return; }
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        if (playerRole === "murderer") endGame(false, "Время вышло — тебя раскрыли!");
+        else endGame(true, "Ты выжил! Время вышло.");
+        return;
+      }
+      if (Math.floor(now / 1000) % 1 === 0) updateUI();
+
+      // Player movement
+      let mx = 0, mz = 0;
+      if (keys["KeyW"] || keys["ArrowUp"]) mz = -1;
+      if (keys["KeyS"] || keys["ArrowDown"]) mz = 1;
+      if (keys["KeyA"] || keys["ArrowLeft"]) mx = -1;
+      if (keys["KeyD"] || keys["ArrowRight"]) mx = 1;
+      player.position.x = Math.max(-11, Math.min(11, player.position.x + mx * 5 * dt));
+      player.position.z = Math.max(-11, Math.min(11, player.position.z + mz * 5 * dt));
+
+      // NPC AI
+      for (const npc of npcs) {
+        if (!npc.alive) continue;
+        npc.timer -= dt;
+        if (npc.timer <= 0) {
+          npc.vx = (Math.random() - 0.5) * 3;
+          npc.vz = (Math.random() - 0.5) * 3;
+          npc.timer = 1 + Math.random() * 2;
+        }
+        npc.mesh.position.x = Math.max(-11, Math.min(11, npc.mesh.position.x + npc.vx * dt));
+        npc.mesh.position.z = Math.max(-11, Math.min(11, npc.mesh.position.z + npc.vz * dt));
+
+        // Murderer NPC kills
+        if (npc.role === "murderer" && playerRole !== "murderer") {
+          const distToPlayer = npc.mesh.position.distanceTo(player.position);
+          if (distToPlayer < 1.5 && Math.random() < 0.01) {
+            endGame(false, "Убийца добрался до тебя!");
+            return;
+          }
+          // Kill other NPCs
+          for (const other of npcs) {
+            if (other === npc || !other.alive || other.role === "murderer") continue;
+            if (npc.mesh.position.distanceTo(other.mesh.position) < 1.5 && Math.random() < 0.005) {
+              other.alive = false; other.mesh.position.y = 0.2; other.mesh.rotation.z = Math.PI / 2;
+              alive--; updateUI();
+            }
+          }
+        }
+      }
+
+      // Camera: удобный угол сзади
+      camera.position.lerp(
+        new THREE.Vector3(player.position.x, 4.8, player.position.z + 11),
+        0.12
+      );
+      camera.lookAt(player.position.x, player.position.y + 1.3, player.position.z);
+      light.position.set(player.position.x, 5, player.position.z);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+  </script>
+  <script src="../shared/amal-hub.js" defer></script>
+</body>
+</html>

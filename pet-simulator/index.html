@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pet Simulator 3D</title>
+  <meta name="description" content="3D Pet Simulator — собирай питомцев, открывай яйца!" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #0f0f23; font-family: system-ui, sans-serif; }
+    #ui { position: fixed; top: 12px; left: 12px; z-index: 10; color: #fff; text-shadow: 1px 1px 3px #000; font-size: 14px; line-height: 1.6; }
+    #back { position: fixed; top: 12px; right: 12px; z-index: 10; padding: 8px 14px; background: rgba(0,0,0,.5); color: #fff; text-decoration: none; border-radius: 6px; font-size: 13px; }
+    #actions { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 8px; }
+    #actions button { padding: 10px 18px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; color: #fff; }
+    .btn-egg { background: #8b5cf6; }
+    .btn-sell { background: #ef4444; }
+    .btn-coin { background: #fbbf24; color: #000; }
+    #hatch-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 20; background: rgba(0,0,0,.85); color: #fff; padding: 24px 32px; border-radius: 12px; text-align: center; display: none; font-size: 18px; }
+    #pets-bar { position: fixed; top: 60px; left: 12px; z-index: 10; color: #fff; font-size: 11px; max-height: 200px; overflow: auto; }
+    #pets-bar div { padding: 2px 0; }
+    .rarity-common { color: #a3a3a3; }
+    .rarity-rare { color: #60a5fa; }
+    .rarity-epic { color: #a78bfa; }
+    .rarity-legendary { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <b>Pet Simulator</b><br/>
+    Монеты: <span id="coins">0</span><br/>
+    Питомцы: <span id="pet-count">0</span>
+  </div>
+  <a id="back" href="../">← Каталог</a>
+  <div id="pets-bar"></div>
+  <div id="actions">
+    <button class="btn-coin" id="btn-farm">Фармить монеты</button>
+    <button class="btn-egg" id="btn-egg">Открыть яйцо (100)</button>
+    <button class="btn-sell" id="btn-sell">Продать худшего</button>
+  </div>
+  <div id="hatch-popup" id="popup"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+  (function() {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x7dd3fc);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(0, 5.5, 11);
+    camera.lookAt(0, 1, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+    scene.add(new THREE.DirectionalLight(0xffffff, 1).copy(Object.assign(new THREE.DirectionalLight(0xffffff, 1), {})));
+    const sun = new THREE.DirectionalLight(0xffffff, 1); sun.position.set(5, 10, 5); scene.add(sun);
+    scene.add(new THREE.AmbientLight(0x808090, 0.5));
+
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshLambertMaterial({ color: 0x4ade80 }));
+    ground.rotation.x = -Math.PI / 2; scene.add(ground);
+
+    // Egg in center
+    const eggGeo = new THREE.SphereGeometry(1, 16, 16);
+    eggGeo.scale(1, 1.4, 1);
+    const egg = new THREE.Mesh(eggGeo, new THREE.MeshLambertMaterial({ color: 0xd8b4fe }));
+    egg.position.set(0, 1.4, 0); scene.add(egg);
+
+    const PETS = [
+      { name: "Кот", rarity: "common", color: 0xa3a3a3, value: 10 },
+      { name: "Собака", rarity: "common", color: 0x92400e, value: 10 },
+      { name: "Кролик", rarity: "common", color: 0xfecaca, value: 12 },
+      { name: "Лиса", rarity: "rare", color: 0xf97316, value: 30 },
+      { name: "Панда", rarity: "rare", color: 0x1f2937, value: 35 },
+      { name: "Дракон", rarity: "epic", color: 0x7c3aed, value: 80 },
+      { name: "Единорог", rarity: "epic", color: 0xf9a8d4, value: 90 },
+      { name: "Феникс", rarity: "legendary", color: 0xfbbf24, value: 200 },
+      { name: "Тёмный Дракон", rarity: "legendary", color: 0x1f1f1f, value: 300 },
+    ];
+
+    const RARITY_CHANCE = { common: 0.55, rare: 0.3, epic: 0.12, legendary: 0.03 };
+
+    let coins = 50, pets = [], petMeshes = [];
+
+    function rollPet() {
+      const r = Math.random();
+      let rarity;
+      if (r < RARITY_CHANCE.legendary) rarity = "legendary";
+      else if (r < RARITY_CHANCE.legendary + RARITY_CHANCE.epic) rarity = "epic";
+      else if (r < RARITY_CHANCE.legendary + RARITY_CHANCE.epic + RARITY_CHANCE.rare) rarity = "rare";
+      else rarity = "common";
+      const pool = PETS.filter((p) => p.rarity === rarity);
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function addPetMesh(pet) {
+      const geo = new THREE.SphereGeometry(0.4, 8, 8);
+      const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color: pet.color }));
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 3 + Math.random() * 4;
+      mesh.position.set(Math.cos(angle) * dist, 0.4, Math.sin(angle) * dist);
+      scene.add(mesh);
+      petMeshes.push(mesh);
+    }
+
+    function updateUI() {
+      document.getElementById("coins").textContent = Math.floor(coins);
+      document.getElementById("pet-count").textContent = pets.length;
+      document.getElementById("btn-egg").disabled = coins < 100;
+      const bar = document.getElementById("pets-bar");
+      bar.innerHTML = pets.slice(-10).reverse().map((p) => `<div class="rarity-${p.rarity}">${p.name} (${p.rarity})</div>`).join("");
+    }
+
+    document.getElementById("btn-farm").addEventListener("click", () => {
+      const bonus = pets.reduce((s, p) => s + p.value * 0.1, 1);
+      coins += bonus;
+      updateUI();
+    });
+
+    document.getElementById("btn-egg").addEventListener("click", () => {
+      if (coins < 100) return;
+      coins -= 100;
+      const pet = rollPet();
+      pets.push(pet);
+      addPetMesh(pet);
+      const popup = document.getElementById("hatch-popup");
+      popup.innerHTML = `<span class="rarity-${pet.rarity}" style="font-size:24px">${pet.name}!</span><br/><small>${pet.rarity}</small>`;
+      popup.style.display = "block";
+      setTimeout(() => popup.style.display = "none", 1800);
+      // Egg animation
+      egg.scale.set(1.3, 0.8, 1.3);
+      setTimeout(() => egg.scale.set(1, 1, 1), 200);
+      updateUI();
+    });
+
+    document.getElementById("btn-sell").addEventListener("click", () => {
+      if (!pets.length) return;
+      pets.sort((a, b) => a.value - b.value);
+      const sold = pets.shift();
+      coins += sold.value;
+      if (petMeshes.length) { scene.remove(petMeshes.shift()); }
+      updateUI();
+    });
+
+    updateUI();
+
+    let lastTime = performance.now();
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      // Pets bounce
+      petMeshes.forEach((m, i) => { m.position.y = 0.4 + Math.sin(now * 0.003 + i) * 0.15; });
+      // Egg float
+      egg.position.y = 1.4 + Math.sin(now * 0.002) * 0.1;
+      egg.rotation.y += 0.005;
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+  </script>
+  <script src="../shared/amal-hub.js" defer></script>
+</body>
+</html>

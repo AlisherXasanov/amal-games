@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tower Defense 3D</title>
+  <meta name="description" content="3D Tower Defense — строй башни, защищай базу!" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #1a1a2e; font-family: system-ui, sans-serif; }
+    #ui { position: fixed; top: 12px; left: 12px; z-index: 10; color: #fff; text-shadow: 1px 1px 3px #000; font-size: 14px; }
+    #shop { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 8px; }
+    #shop button { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; color: #fff; }
+    #shop button:disabled { opacity: .4; }
+    .btn-tower1 { background: #3b82f6; }
+    .btn-tower2 { background: #ef4444; }
+    .btn-tower3 { background: #8b5cf6; }
+    #back { position: fixed; top: 12px; right: 12px; z-index: 10; padding: 8px 14px; background: rgba(0,0,0,.5); color: #fff; text-decoration: none; border-radius: 6px; font-size: 13px; }
+    #wave-msg { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 15; font-size: 28px; color: #fbbf24; text-shadow: 2px 2px 6px #000; display: none; pointer-events: none; }
+    #gameover { position: fixed; inset: 0; display: none; z-index: 20; background: rgba(0,0,0,.8); align-items: center; justify-content: center; flex-direction: column; color: #fff; }
+    #gameover.show { display: flex; }
+    #gameover h1 { color: #ef4444; font-size: 32px; }
+    #gameover button { margin-top: 16px; padding: 10px 24px; font-size: 16px; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <div><b>Tower Defense</b></div>
+    <div>Волна: <span id="wave">1</span></div>
+    <div>Монеты: <span id="coins">100</span></div>
+    <div>Жизни: <span id="lives">10</span></div>
+  </div>
+  <a id="back" href="../">← Каталог</a>
+  <div id="shop">
+    <button class="btn-tower1" id="buy1">Башня (30)</button>
+    <button class="btn-tower2" id="buy2">Огненная (60)</button>
+    <button class="btn-tower3" id="buy3">Ледяная (80)</button>
+  </div>
+  <div id="wave-msg"></div>
+  <div id="gameover"><h1>Поражение!</h1><p>Враги прорвались</p><button id="restart">Заново</button></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+  (function() {
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x2d5016);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 200);
+    camera.position.set(0, 16, 22);
+    camera.lookAt(0, 0.5, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+    window.addEventListener("resize", () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+    scene.add(new THREE.DirectionalLight(0xffffff, 0.9).copy(Object.assign(new THREE.DirectionalLight(0xffffff, 0.9), { position: new THREE.Vector3(10, 20, 5) })));
+    scene.add(new THREE.AmbientLight(0x404060, 0.5));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+    sun.position.set(10, 20, 5);
+    scene.add(sun);
+
+    // Ground
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshLambertMaterial({ color: 0x3d7a1a }));
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Path
+    const PATH = [
+      new THREE.Vector3(-18, 0.1, 0),
+      new THREE.Vector3(-8, 0.1, 0),
+      new THREE.Vector3(-8, 0.1, -8),
+      new THREE.Vector3(4, 0.1, -8),
+      new THREE.Vector3(4, 0.1, 4),
+      new THREE.Vector3(14, 0.1, 4),
+      new THREE.Vector3(18, 0.1, 4),
+    ];
+
+    // Draw path
+    const pathMat = new THREE.MeshLambertMaterial({ color: 0x8b6914 });
+    for (let i = 0; i < PATH.length - 1; i++) {
+      const a = PATH[i], b = PATH[i + 1];
+      const dx = b.x - a.x, dz = b.z - a.z;
+      const len = Math.sqrt(dx * dx + dz * dz);
+      const mid = new THREE.Vector3((a.x + b.x) / 2, 0.05, (a.z + b.z) / 2);
+      const geo = new THREE.BoxGeometry(Math.abs(dx) > Math.abs(dz) ? len : 2, 0.1, Math.abs(dz) > Math.abs(dx) ? len : 2);
+      const m = new THREE.Mesh(geo, pathMat);
+      m.position.copy(mid);
+      scene.add(m);
+    }
+
+    let coins = 100, lives = 10, wave = 0;
+    let enemies = [], towers = [], bullets = [];
+    let placing = null;
+    let waveTimer = 0, spawnIdx = 0, spawning = false;
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    // Tower placement
+    const ghostGeo = new THREE.CylinderGeometry(0.3, 0.5, 2, 8);
+    const ghostMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.5 });
+    const ghost = new THREE.Mesh(ghostGeo, ghostMat);
+    ghost.visible = false;
+    scene.add(ghost);
+
+    document.getElementById("buy1").addEventListener("click", () => { if (coins >= 30) placing = { cost: 30, color: 0x3b82f6, range: 6, rate: 1, dmg: 1 }; });
+    document.getElementById("buy2").addEventListener("click", () => { if (coins >= 60) placing = { cost: 60, color: 0xef4444, range: 5, rate: 0.6, dmg: 3 }; });
+    document.getElementById("buy3").addEventListener("click", () => { if (coins >= 80) placing = { cost: 80, color: 0x8b5cf6, range: 7, rate: 1.5, dmg: 1.5 }; });
+
+    renderer.domElement.addEventListener("mousemove", (e) => {
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+      if (placing) {
+        raycaster.setFromCamera(mouse, camera);
+        const hits = raycaster.intersectObject(ground);
+        if (hits.length) {
+          ghost.visible = true;
+          ghost.position.set(Math.round(hits[0].point.x), 1, Math.round(hits[0].point.z));
+        }
+      }
+    });
+
+    renderer.domElement.addEventListener("click", (e) => {
+      if (!placing) return;
+      raycaster.setFromCamera(mouse, camera);
+      const hits = raycaster.intersectObject(ground);
+      if (hits.length) {
+        const pos = new THREE.Vector3(Math.round(hits[0].point.x), 1, Math.round(hits[0].point.z));
+        // Check not on path
+        let onPath = false;
+        for (let i = 0; i < PATH.length - 1; i++) {
+          const a = PATH[i], b = PATH[i + 1];
+          if (Math.abs(pos.x - (a.x + b.x) / 2) < (Math.abs(b.x - a.x) / 2 + 2) &&
+              Math.abs(pos.z - (a.z + b.z) / 2) < (Math.abs(b.z - a.z) / 2 + 2)) {
+            onPath = true; break;
+          }
+        }
+        if (onPath) return;
+
+        coins -= placing.cost;
+        updateUI();
+        const tMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 2, 8), new THREE.MeshLambertMaterial({ color: placing.color }));
+        tMesh.position.copy(pos);
+        tMesh.castShadow = true;
+        scene.add(tMesh);
+        towers.push({ mesh: tMesh, range: placing.range, rate: placing.rate, dmg: placing.dmg, timer: 0 });
+        placing = null;
+        ghost.visible = false;
+      }
+    });
+
+    function updateUI() {
+      document.getElementById("coins").textContent = coins;
+      document.getElementById("lives").textContent = lives;
+      document.getElementById("wave").textContent = wave;
+      document.getElementById("buy1").disabled = coins < 30;
+      document.getElementById("buy2").disabled = coins < 60;
+      document.getElementById("buy3").disabled = coins < 80;
+    }
+
+    function spawnWave() {
+      wave++;
+      spawning = true;
+      spawnIdx = 0;
+      waveTimer = 0;
+      const msg = document.getElementById("wave-msg");
+      msg.textContent = "Волна " + wave + "!";
+      msg.style.display = "block";
+      setTimeout(() => msg.style.display = "none", 1500);
+      updateUI();
+    }
+
+    function spawnEnemy() {
+      const hp = 3 + wave * 2;
+      const speed = 2 + wave * 0.3;
+      const geo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+      const mat = new THREE.MeshLambertMaterial({ color: 0xe11d48 });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(PATH[0]);
+      mesh.position.y = 0.5;
+      mesh.castShadow = true;
+      scene.add(mesh);
+      enemies.push({ mesh, hp, maxHp: hp, speed, pathIdx: 0, dist: 0 });
+    }
+
+    function startGame() {
+      coins = 100; lives = 10; wave = 0;
+      enemies.forEach((e) => scene.remove(e.mesh));
+      towers.forEach((t) => scene.remove(t.mesh));
+      bullets.forEach((b) => scene.remove(b.mesh));
+      enemies = []; towers = []; bullets = [];
+      updateUI();
+      setTimeout(spawnWave, 1500);
+    }
+
+    document.getElementById("restart").addEventListener("click", () => {
+      document.getElementById("gameover").classList.remove("show");
+      startGame();
+    });
+
+    startGame();
+
+    let lastTime = performance.now();
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      // Spawning
+      if (spawning) {
+        waveTimer += dt;
+        const count = 3 + wave * 2;
+        if (waveTimer > 0.8 && spawnIdx < count) {
+          waveTimer = 0;
+          spawnEnemy();
+          spawnIdx++;
+          if (spawnIdx >= count) spawning = false;
+        }
+      }
+
+      // Move enemies
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        if (e.pathIdx >= PATH.length - 1) {
+          lives--;
+          scene.remove(e.mesh);
+          enemies.splice(i, 1);
+          updateUI();
+          if (lives <= 0) { document.getElementById("gameover").classList.add("show"); return; }
+          continue;
+        }
+        const target = PATH[e.pathIdx + 1];
+        const dir = new THREE.Vector3(target.x - e.mesh.position.x, 0, target.z - e.mesh.position.z);
+        const dist = dir.length();
+        if (dist < 0.3) { e.pathIdx++; continue; }
+        dir.normalize().multiplyScalar(e.speed * dt);
+        e.mesh.position.add(dir);
+        e.mesh.position.y = 0.5;
+      }
+
+      // Towers shoot
+      for (const t of towers) {
+        t.timer -= dt;
+        if (t.timer > 0) continue;
+        let closest = null, minDist = t.range;
+        for (const e of enemies) {
+          const d = t.mesh.position.distanceTo(e.mesh.position);
+          if (d < minDist) { minDist = d; closest = e; }
+        }
+        if (closest) {
+          t.timer = t.rate;
+          const bGeo = new THREE.SphereGeometry(0.15);
+          const bMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+          const bMesh = new THREE.Mesh(bGeo, bMat);
+          bMesh.position.copy(t.mesh.position);
+          scene.add(bMesh);
+          bullets.push({ mesh: bMesh, target: closest, dmg: t.dmg, speed: 15 });
+        }
+      }
+
+      // Move bullets
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const b = bullets[i];
+        if (!enemies.includes(b.target)) { scene.remove(b.mesh); bullets.splice(i, 1); continue; }
+        const dir = new THREE.Vector3().subVectors(b.target.mesh.position, b.mesh.position);
+        const dist = dir.length();
+        if (dist < 0.5) {
+          b.target.hp -= b.dmg;
+          scene.remove(b.mesh);
+          bullets.splice(i, 1);
+          if (b.target.hp <= 0) {
+            coins += 5;
+            scene.remove(b.target.mesh);
+            enemies.splice(enemies.indexOf(b.target), 1);
+            updateUI();
+          }
+        } else {
+          dir.normalize().multiplyScalar(b.speed * dt);
+          b.mesh.position.add(dir);
+        }
+      }
+
+      // Next wave
+      if (!spawning && enemies.length === 0 && lives > 0) {
+        setTimeout(spawnWave, 2000);
+        spawning = true; // prevent double
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+  </script>
+  <script src="../shared/amal-hub.js" defer></script>
+</body>
+</html>
