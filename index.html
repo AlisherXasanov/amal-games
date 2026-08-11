@@ -115,6 +115,7 @@
     .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #3d2a18 60%, #0c1612); }
     .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #143a3f 55%, #3a8f88); }
     .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #e25a3c 55%, #f0b429); }
+    .card-img.echo { background: linear-gradient(135deg, #152238, #2a1830 55%, #0b1020); }
     .card-body {
       padding: 1.25rem;
       flex: 1;
@@ -171,6 +172,7 @@
     .play-btn.hideout { background: #e8c547; color: #0c1612; }
     .play-btn.hospital { background: #7ed9b8; color: #0c2a28; }
     .play-btn.createlab { background: #0d6e5f; color: #f3efe6; }
+    .play-btn.echo { background: #7ec8ff; color: #081018; }
     footer {
       text-align: center;
       padding: 1rem;
@@ -196,6 +198,16 @@
 
   <p class="section-title">Все игры</p>
   <div class="grid all">
+    <a class="card featured" href="echo-postman/">
+      <div class="card-img echo">✉️</div>
+      <div class="card-body">
+        <span class="badge new">Новое</span>
+        <h2>Эхо-почтальон</h2>
+        <p>Доставляй чужие воспоминания. Верный адрес — район яснее. Чужой — мир смешивается.</p>
+        <span class="play-btn echo">Играть</span>
+      </div>
+    </a>
+
     <a class="card featured" href="create-lab/">
       <div class="card-img createlab">👂</div>
       <div class="card-body">

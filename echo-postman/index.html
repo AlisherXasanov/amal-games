@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Эхо-почтальон</title>
+  <meta name="description" content="Доставляй чужие воспоминания по адресам. Правильный адресат — город яснее. Чужой — мир смешивается." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Literata:opsz,wght@7..72,500;7..72,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=2" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+  <div id="app">
+    <canvas id="game" width="960" height="540" aria-label="Эхо-почтальон"></canvas>
+    <div id="hud" class="hud hidden">
+      <div class="hud-row">
+        <span id="orb-label">Воспоминание: нет</span>
+        <span id="integrity">Целость: —</span>
+        <span id="strange">Странность: 0%</span>
+      </div>
+      <p id="hint" class="hint">A/D — ходьба · Пробел — прыжок · E — взять / отдать</p>
+    </div>
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <p class="brand">Эхо-почтальон</p>
+        <h1 id="title">Ночная доставка памяти</h1>
+        <p id="blurb" class="blurb">
+          Ты несёшь чужие моменты в хрупких шарах. Отдай нужному дому — район прояснится.
+          Отдай чужому — мир начнёт помнить не своё.
+        </p>
+        <button type="button" id="start-btn" class="btn">Начать смену</button>
+        <p class="controls">Клавиатура: A/D, Пробел, E · На телефоне — кнопки внизу</p>
+      </div>
+    </div>
+    <div id="touch" class="touch hidden" aria-hidden="true">
+      <button type="button" data-act="left">←</button>
+      <button type="button" data-act="jump">⬆</button>
+      <button type="button" data-act="right">→</button>
+      <button type="button" data-act="use">E</button>
+    </div>
+  </div>
+  <script src="../shared/amal-owner-powers.js?v=11"></script>
+  <script src="./game.js?v=2"></script>
+  <script src="../shared/amal-hub.js?v=21"></script>
+</body>
+</html>
