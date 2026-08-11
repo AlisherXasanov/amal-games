@@ -42,9 +42,38 @@
     { id: "zombie-vs-plants-2", name: "Зомби vs растения 2" },
     { id: "globe-battle", name: "Globe Battle" },
     { id: "animal-hospital", name: "Animal Hospital" },
+    { id: "ghost-lesson", name: "Несуществующий урок" },
+    { id: "lift-void", name: "Лифт без цифр" },
+    { id: "roof-house", name: "Дом под крышей" },
+    { id: "echo-postman", name: "Эхо-почтальон" },
+    { id: "night-stitch", name: "Нить сна" },
+    { id: "create-lab", name: "Create Lab" },
+    { id: "old-pc", name: "Старый компьютер" },
+    { id: "obby", name: "Obby" },
+    { id: "tower-defense", name: "Tower Defense" },
+    { id: "tycoon", name: "Pizza Tycoon" },
+    { id: "murder-mystery", name: "Murder Mystery" },
+    { id: "pet-simulator", name: "Pet Simulator" },
+    { id: "flee-facility", name: "Flee the Facility" },
+    { id: "build-boat", name: "Build a Boat" },
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-11-admin-team-all",
+      title: "Админ-команда · все игры сайта",
+      body: "Выдача админки теперь покрывает Obby, Tycoon, Tower Defense, Murder Mystery, Pet Simulator, Flee и Build a Boat. В Pizza Tycoon у админов — свои эксклюзивные вещи в магазине (не команды).",
+    },
+    {
+      id: "2026-08-11-old-pc",
+      title: "Старый компьютер",
+      body: "Рабочий стол Windows 95: игры, проигрыватель, сапёр, блокнот, рисовалка и чат с Амалем по-русски.",
+    },
+    {
+      id: "2026-08-11-ghost-lesson",
+      title: "Несуществующий урок",
+      body: "Новая игра: ночная школа без расписания. Собери мел-ответы, отдай призракам-ученикам, успей до звонка-фантома.",
+    },
     {
       id: "2026-08-10-owner-gifts",
       title: "Подарки от хозяина",
@@ -446,6 +475,12 @@
       terraverse: "Пиксель-Террариум",
       "globe-battle": "Globe Battle",
       "animal-hospital": "Animal Hospital",
+      "ghost-lesson": "Несуществующий урок",
+      "lift-void": "Лифт без цифр",
+      "roof-house": "Дом под крышей",
+      "echo-postman": "Эхо-почтальон",
+      "night-stitch": "Нить сна",
+      "create-lab": "Create Lab",
     };
     return map[id] || id;
   }

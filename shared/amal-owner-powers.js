@@ -372,6 +372,97 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    tycoon: {
+      title: "Pizza Tycoon",
+      subtitle: "∞ деньги · эксклюзив в магазине",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ деньги" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ деньги", cls: "primary" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "tower-defense": {
+      title: "Tower Defense",
+      subtitle: "Монеты · жизнь · волны",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ монеты" },
+        { id: "heal", label: "💚 Жизни", toast: "Жизни" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ монеты", cls: "primary" },
+        { id: "heal", label: "💚 Полные жизни" },
+        { id: "god", label: "🛡️ База нерушима" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "murder-mystery": {
+      title: "Murder Mystery",
+      subtitle: "Роль · бессмертие · победа",
+      quick: [
+        { id: "god", label: "🛡 ∞", toast: "Бессмертие" },
+        { id: "mm-sheriff", label: "🔫 Шериф", toast: "Ты шериф" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "god", label: "🛡️ Бессмертие", cls: "primary" },
+        { id: "mm-sheriff", label: "🔫 Стать шерифом" },
+        { id: "mm-murderer", label: "🔪 Стать убийцей" },
+        { id: "mm-win", label: "🏆 Победа" },
+        { id: "speed", label: "⚡ Скорость" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "pet-simulator": {
+      title: "Pet Simulator",
+      subtitle: "Монеты · яйца · питомцы",
+      quick: [
+        { id: "coins", label: "💰 ∞", toast: "∞ монеты" },
+        { id: "ps-egg", label: "🥚 Яйцо", toast: "Мега-яйцо" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "💰 ∞ монеты", cls: "primary" },
+        { id: "ps-egg", label: "🥚 Открыть мега-яйцо" },
+        { id: "unlock", label: "🔓 Все питомцы" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "flee-facility": {
+      title: "Flee the Facility",
+      subtitle: "Бессмертие · взлом · побег",
+      quick: [
+        { id: "god", label: "🛡 ∞", toast: "Бессмертие" },
+        { id: "ff-hack", label: "💻 Взлом", toast: "Все ПК" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "god", label: "🛡️ Бессмертие", cls: "primary" },
+        { id: "ff-hack", label: "💻 Взломать все ПК" },
+        { id: "ff-escape", label: "🚪 Мгновенный побег" },
+        { id: "speed", label: "⚡ Скорость" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
+    "build-boat": {
+      title: "Build a Boat",
+      subtitle: "Блоки · HP · финиш",
+      quick: [
+        { id: "coins", label: "🧱 Блоки", toast: "∞ блоки" },
+        { id: "heal", label: "💚 HP", toast: "HP" },
+        { id: "max", label: "⚡ Макс", toast: "Макс" },
+      ],
+      buttons: [
+        { id: "coins", label: "🧱 ∞ блоки", cls: "primary" },
+        { id: "heal", label: "💚 Полный HP" },
+        { id: "god", label: "🛡️ Неуязвимость" },
+        { id: "bb-finish", label: "🏁 Далеко вперёд" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
   };
 
   const DEFAULT_PACK = {
