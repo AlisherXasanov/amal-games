@@ -78,7 +78,7 @@
   (function () {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a1040);
-    scene.fog = new THREE.Fog(0x1a1040, 35, 110);
+    scene.fog = new THREE.Fog(0x1a1040, 45, 160);
 
     const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.1, 300);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -108,50 +108,82 @@
     scene.add(sun);
     scene.add(new THREE.AmbientLight(0x5060a0, 0.55));
 
-    // ——— курс: одна длинная трасса вдоль +Z ———
+    // ——— длинная лёгкая трасса: разные формы платформ ———
     const platforms = [];
     const lasers = [];
-    const checkpoints = []; // { z, mesh, name, unlocked }
+    const checkpoints = [];
     let activeCp = 0;
     let deaths = 0;
     let finished = false;
-    const FINISH_Z = 148;
+    let FINISH_Z = 280;
 
-    function addPlatform(x, y, z, w, h, d, color) {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, d),
-        new THREE.MeshLambertMaterial({ color })
-      );
+    function addShape(opts) {
+      const {
+        x, y, z,
+        w = 3, h = 0.4, d = 3,
+        color = 0x60a5fa,
+        shape = "box", // box | cylinder | sphere | cone | torus | beam | diamond
+        rotX = 0, rotZ = 0, rotY = 0,
+      } = opts;
+
+      let geo;
+      if (shape === "cylinder") {
+        geo = new THREE.CylinderGeometry(Math.max(w, d) / 2, Math.max(w, d) / 2, h, 20);
+      } else if (shape === "sphere") {
+        geo = new THREE.SphereGeometry(Math.max(w, d) / 2, 16, 12);
+      } else if (shape === "cone") {
+        geo = new THREE.ConeGeometry(Math.max(w, d) / 2, h * 2.2, 16);
+      } else if (shape === "torus") {
+        geo = new THREE.TorusGeometry(Math.max(w, d) / 2.4, h * 0.7, 10, 24);
+      } else if (shape === "diamond") {
+        geo = new THREE.OctahedronGeometry(Math.max(w, d) / 2, 0);
+      } else if (shape === "beam") {
+        geo = new THREE.BoxGeometry(w, h, d);
+      } else {
+        geo = new THREE.BoxGeometry(w, h, d);
+      }
+
+      const mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ color }));
       mesh.position.set(x, y, z);
+      mesh.rotation.set(rotX, rotY, rotZ);
+      if (shape === "torus") mesh.rotation.x = Math.PI / 2;
       mesh.receiveShadow = true;
       mesh.castShadow = true;
-      mesh.userData = { w, h, d };
+      // AABB для коллизии (чуть щедрее для лёгкости)
+      const bw = shape === "sphere" || shape === "diamond" ? Math.max(w, d) * 0.95 : w;
+      const bh = shape === "sphere" ? Math.max(w, d) * 0.7 : shape === "torus" ? h * 1.6 : h;
+      const bd = shape === "sphere" || shape === "diamond" ? Math.max(w, d) * 0.95 : d;
+      mesh.userData = { w: bw * 1.05, h: Math.max(bh, 0.35), d: bd * 1.05, shape };
       scene.add(mesh);
       platforms.push(mesh);
       return mesh;
     }
 
+    function addPlatform(x, y, z, w, h, d, color) {
+      return addShape({ x, y, z, w, h, d, color, shape: "box" });
+    }
+
     function addCheckpoint(x, y, z, name) {
-      const pad = addPlatform(x, y, z, 3.2, 0.45, 3.2, 0x22d3ee);
+      const pad = addShape({ x, y, z, w: 4, h: 0.45, d: 4, color: 0x22d3ee, shape: "cylinder" });
       const flag = new THREE.Mesh(
         new THREE.BoxGeometry(0.15, 2.2, 0.15),
         new THREE.MeshLambertMaterial({ color: 0xfbbf24 })
       );
-      flag.position.set(x + 1.2, y + 1.3, z);
+      flag.position.set(x + 1.4, y + 1.3, z);
       scene.add(flag);
       const banner = new THREE.Mesh(
         new THREE.PlaneGeometry(0.9, 0.55),
         new THREE.MeshBasicMaterial({ color: 0xfbbf24, side: THREE.DoubleSide })
       );
-      banner.position.set(x + 0.7, y + 2.0, z);
+      banner.position.set(x + 0.9, y + 2.0, z);
       scene.add(banner);
       checkpoints.push({ x, y: y + 1.4, z, name, unlocked: false, pad });
     }
 
     function addLaser(opts) {
       const {
-        x, y, z, len = 4, axis = "x", // beam along x or z
-        mode = "static", // static | sweep | blink | spin
+        x, y, z, len = 4, axis = "x",
+        mode = "static",
         color = 0xff2255,
         speed = 1,
         amp = 2,
@@ -174,112 +206,154 @@
       glow.position.copy(beam.position);
       scene.add(glow);
       lasers.push({
-        beam,
-        glow,
-        base: { x, y, z },
-        len,
-        axis,
-        mode,
-        speed,
-        amp,
-        period,
-        phase,
-        color,
-        active: true,
+        beam, glow, base: { x, y, z }, len, axis, mode, speed, amp, period, phase, color, active: true,
       });
     }
 
-    // Старт
-    addPlatform(0, 0, 0, 7, 0.5, 7, 0x4ade80);
+    // === СТАРТ ===
+    addShape({ x: 0, y: 0, z: 0, w: 8, h: 0.5, d: 8, color: 0x4ade80, shape: "cylinder" });
     addCheckpoint(0, 0, 0, "Старт");
 
-    // Секция 1 — широкая разминка, почти без прыжков в сторону
-    for (let i = 1; i <= 6; i++) {
-      addPlatform((i % 2 === 0 ? 0.6 : -0.6), i * 0.2, 5 + i * 3.5, 3.2, 0.4, 3.0, 0x60a5fa);
+    // Секция 1 — кубы + диски, почти ровно
+    let z = 8;
+    for (let i = 0; i < 8; i++) {
+      const shapes = ["box", "cylinder", "box", "cylinder"];
+      addShape({
+        x: (i % 2 ? 0.5 : -0.5),
+        y: i * 0.12,
+        z: z,
+        w: 3.6, h: 0.4, d: 3.4,
+        color: 0x60a5fa,
+        shape: shapes[i % shapes.length],
+      });
+      z += 3.8;
     }
-    addPlatform(0, 1.4, 28, 5, 0.45, 5, 0x818cf8);
-    addCheckpoint(0, 1.4, 28, "Чек 1");
+    addCheckpoint(0, 1.0, z, "Чек 1");
+    z += 6;
 
-    // Секция 2 — широкие плиты, редкие медленные мигающие лазеры
-    for (let i = 0; i < 7; i++) {
-      addPlatform((i % 2) * 0.8 - 0.4, 1.5 + i * 0.15, 33 + i * 3.0, 2.6, 0.4, 2.6, 0xa78bfa);
-      if (i === 2 || i === 5) {
+    // Секция 2 — сферы и «блинчики», редкий мягкий лазер
+    for (let i = 0; i < 9; i++) {
+      addShape({
+        x: (i % 3 - 1) * 0.7,
+        y: 1.1 + i * 0.1,
+        z: z,
+        w: 3.2, h: 0.45, d: 3.2,
+        color: i % 2 ? 0xa78bfa : 0xc4b5fd,
+        shape: i % 2 ? "sphere" : "cylinder",
+      });
+      if (i === 3 || i === 7) {
         addLaser({
-          x: 0,
-          y: 3.0,
-          z: 33 + i * 3.0,
-          len: 4,
-          axis: "x",
-          mode: "blink",
-          period: 2.4,
-          phase: i * 0.8,
-          color: 0xff3366,
+          x: 0, y: 2.6 + i * 0.1, z, len: 3.5, axis: "x",
+          mode: "blink", period: 3.0, phase: i, color: 0xff5588,
         });
       }
+      z += 3.6;
     }
-    addPlatform(0, 2.6, 56, 5, 0.45, 5, 0x818cf8);
-    addCheckpoint(0, 2.6, 56, "Чек 2");
+    addCheckpoint(0, 2.0, z, "Чек 2");
+    z += 6;
 
-    // Секция 3 — широкая дорожка, медленные лазеры с малой амплитудой
-    for (let i = 0; i < 6; i++) {
-      addPlatform(0, 2.7, 61 + i * 4.0, 4.2, 0.4, 3.0, 0x34d399);
-      addLaser({
-        x: 0,
-        y: 4.0,
-        z: 61 + i * 4.0,
-        len: 5,
-        axis: "x",
-        mode: "sweep",
-        speed: 0.55,
-        amp: 1.1,
-        phase: i * 1.1,
-        color: 0xff0044,
+    // Секция 3 — длинные балки (beam) как мостики
+    for (let i = 0; i < 7; i++) {
+      addShape({
+        x: 0, y: 2.1, z: z,
+        w: 2.2, h: 0.35, d: 5.5,
+        color: 0x34d399,
+        shape: "beam",
       });
+      if (i % 3 === 1) {
+        addLaser({
+          x: 0, y: 3.3, z, len: 4, axis: "x",
+          mode: "sweep", speed: 0.4, amp: 0.8, phase: i, color: 0xff3355,
+        });
+      }
+      z += 5.2;
     }
-    addPlatform(0, 3.0, 88, 5.5, 0.45, 5, 0x818cf8);
-    addCheckpoint(0, 3.0, 88, "Чек 3");
+    addCheckpoint(0, 2.2, z, "Чек 3");
+    z += 6;
 
-    // Секция 4 — спокойные ступени, почти без спина (один медленный)
-    for (let i = 0; i < 6; i++) {
-      addPlatform((i % 2 ? 0.8 : -0.8), 3.2 + i * 0.35, 94 + i * 3.5, 2.8, 0.4, 2.8, 0xf472b6);
+    // Секция 4 — кольца (torus) + конусы-пьедесталы
+    for (let i = 0; i < 8; i++) {
+      if (i % 2 === 0) {
+        addShape({
+          x: (i % 4 < 2 ? -0.6 : 0.6), y: 2.3 + i * 0.12, z,
+          w: 3.8, h: 0.35, d: 3.8, color: 0xf472b6, shape: "torus",
+        });
+      } else {
+        addShape({
+          x: 0, y: 2.0 + i * 0.12, z,
+          w: 2.8, h: 0.9, d: 2.8, color: 0xfb7185, shape: "cone",
+        });
+        // плоская шапка на конусе
+        addShape({
+          x: 0, y: 2.7 + i * 0.12, z,
+          w: 2.6, h: 0.3, d: 2.6, color: 0xfda4af, shape: "cylinder",
+        });
+      }
+      z += 4.0;
     }
-    addLaser({
-      x: 0,
-      y: 5.0,
-      z: 104,
-      len: 2.8,
-      axis: "x",
-      mode: "spin",
-      speed: 0.7,
-      phase: 0,
-      color: 0xff66aa,
-    });
-    addPlatform(0, 5.2, 116, 5, 0.45, 5, 0x818cf8);
-    addCheckpoint(0, 5.2, 116, "Чек 4");
+    addCheckpoint(0, 3.2, z, "Чек 4");
+    z += 6;
 
-    // Секция 5 — широкий коридор, редкие медленные лазеры
-    addPlatform(0, 5.2, 123, 4.5, 0.4, 10, 0x38bdf8);
-    for (let i = 0; i < 3; i++) {
-      addLaser({
-        x: -1.6 + (i % 2) * 3.2,
-        y: 6.2,
-        z: 121 + i * 2.5,
-        len: 2.2,
-        axis: "z",
-        mode: "blink",
-        period: 2.6,
-        phase: i * 0.9,
-        color: 0xff2200,
+    // Секция 5 — ромбы (diamond) и широкие плиты
+    for (let i = 0; i < 8; i++) {
+      addShape({
+        x: (i % 2 ? 1.0 : -1.0) * 0.5,
+        y: 3.2 + i * 0.15,
+        z,
+        w: 3.0, h: 1.2, d: 3.0,
+        color: 0x38bdf8,
+        shape: i % 2 ? "diamond" : "box",
       });
+      z += 3.7;
     }
-    for (let i = 0; i < 4; i++) {
-      addPlatform((i % 2 ? 1.0 : -1.0), 5.4 + i * 0.15, 132 + i * 2.8, 2.4, 0.4, 2.4, 0xc084fc);
+    addCheckpoint(0, 4.2, z, "Чек 5");
+    z += 6;
+
+    // Секция 6 — чередование всего, очень широко, почти без лазеров
+    const mix = ["box", "cylinder", "sphere", "torus", "beam", "diamond"];
+    for (let i = 0; i < 12; i++) {
+      const sh = mix[i % mix.length];
+      addShape({
+        x: Math.sin(i * 0.7) * 0.8,
+        y: 4.3 + i * 0.1,
+        z,
+        w: sh === "beam" ? 2.4 : 3.4,
+        h: sh === "beam" ? 0.35 : 0.45,
+        d: sh === "beam" ? 4.8 : 3.4,
+        color: [0x818cf8, 0xa78bfa, 0x67e8f9, 0x86efac, 0xfcd34d, 0xf9a8d4][i % 6],
+        shape: sh,
+      });
+      if (i === 5) {
+        addLaser({
+          x: 0, y: 5.6, z, len: 3.2, axis: "x",
+          mode: "blink", period: 3.2, phase: 0, color: 0xff6644,
+        });
+      }
+      z += sh === "beam" ? 4.6 : 3.8;
+    }
+    addCheckpoint(0, 5.4, z, "Чек 6");
+    z += 6;
+
+    // Секция 7 — широкий коридор из цилиндров + лёгкий финал
+    addShape({ x: 0, y: 5.4, z: z, w: 5, h: 0.4, d: 12, color: 0x7dd3fc, shape: "box" });
+    z += 8;
+    for (let i = 0; i < 6; i++) {
+      addShape({
+        x: (i % 2 ? 1.2 : -1.2) * 0.4,
+        y: 5.5 + i * 0.08,
+        z,
+        w: 3.5, h: 0.4, d: 3.5,
+        color: 0xc084fc,
+        shape: "cylinder",
+      });
+      z += 3.5;
     }
 
     // Финиш
-    addPlatform(0, 6.2, FINISH_Z, 7, 0.5, 7, 0xfbbf24);
+    FINISH_Z = z + 2;
+    addShape({ x: 0, y: 6.0, z: FINISH_Z, w: 9, h: 0.55, d: 9, color: 0xfbbf24, shape: "cylinder" });
     const finishRing = new THREE.Mesh(
-      new THREE.TorusGeometry(1.6, 0.12, 8, 24),
+      new THREE.TorusGeometry(2.0, 0.14, 8, 28),
       new THREE.MeshBasicMaterial({ color: 0xfde68a })
     );
     finishRing.position.set(0, 8.0, FINISH_Z);
