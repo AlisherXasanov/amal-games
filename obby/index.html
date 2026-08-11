@@ -87,11 +87,11 @@
     document.body.appendChild(renderer.domElement);
 
     const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
-      distance: 10,
-      pitch: 0.38,
+      distance: 6.5,
+      pitch: 0.34,
       yaw: Math.PI, // вперёд по трассе (+Z)
-      lookOffsetY: 1.25,
-      minDist: 5,
+      lookOffsetY: 1.15,
+      minDist: 3.5,
       maxDist: 22,
       bootstrap: false,
     });
