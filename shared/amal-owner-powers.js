@@ -356,6 +356,22 @@
         { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
       ],
     },
+    "roof-house": {
+      title: "Дом под крышей",
+      subtitle: "Этажи · крыша · хозяин",
+      quick: [
+        { id: "rh-all", label: "🔓 Все", toast: "Все этажи" },
+        { id: "rh-roof", label: "🏠 Крыша", toast: "На крышу" },
+        { id: "god", label: "🛡", toast: "Режим хозяина" },
+      ],
+      buttons: [
+        { id: "rh-all", label: "🔓 Открыть все этажи", cls: "primary" },
+        { id: "rh-roof", label: "🏠 Телепорт на крышу" },
+        { id: "rh-next", label: "↑ Следующий этаж" },
+        { id: "god", label: "🛡️ Режим хозяина" },
+        { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+      ],
+    },
   };
 
   const DEFAULT_PACK = {

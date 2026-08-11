@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Дом под крышей</title>
+  <meta name="description" content="Дом с крышей и странными этажами: заходи на каждый — там свой прикол." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,600;7..72,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=2" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+
+  <div id="app">
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Дом под крышей"></canvas>
+
+    <div id="hud" class="hud hidden">
+      <div class="hud-row">
+        <span id="floor">Этаж: подвал</span>
+        <span id="found">Открыто: 0/10</span>
+        <span id="roof">Крыша: закрыта</span>
+      </div>
+      <p id="hint" class="hint">←→ — ходьба · ↑↓ у лестницы — этаж · E — странность</p>
+      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <p class="brand">Дом под крышей</p>
+        <h1 id="title">Крыша есть — этажей слишком много</h1>
+        <p id="blurb" class="blurb">
+          Разрез дома: поднимайся по лестнице, заходи в комнаты. На каждом этаже — что-то смешное и странное.
+          Открой все десять — и доберись до крыши.
+        </p>
+        <button type="button" id="start-btn" class="btn">Войти в дом</button>
+        <p class="controls">Стрелки или WASD · E — взаимодействие · админ ⚡</p>
+      </div>
+    </div>
+
+    <div id="touch" class="touch hidden" aria-hidden="true">
+      <div class="pad">
+        <button type="button" data-dir="up">↑</button>
+        <div class="row">
+          <button type="button" data-dir="left">←</button>
+          <button type="button" data-dir="down">↓</button>
+          <button type="button" data-dir="right">→</button>
+        </div>
+      </div>
+      <button type="button" id="use-btn" class="act use">E</button>
+    </div>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=14"></script>
+  <script src="./game.js?v=2"></script>
+  <script src="../shared/amal-hub.js?v=21"></script>
+</body>
+</html>
