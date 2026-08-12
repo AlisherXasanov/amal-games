@@ -248,10 +248,11 @@
 
   function visibleShifts() {
     const secretsOk = canUseSecretShifts() && !!(meta && meta.secretShifts67);
-    return SHIFTS.filter((s) => {
-      if (!s.secret) return true;
-      return secretsOk;
-    });
+    const list = SHIFTS.filter((s) => !s.secret || secretsOk);
+    if (!secretsOk) return list;
+    const secrets = list.filter((s) => s.secret);
+    const normals = list.filter((s) => !s.secret);
+    return secrets.concat(normals);
   }
 
   function applySecretDeathCode(raw) {
@@ -260,20 +261,23 @@
       return false;
     }
     const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52") {
+    const n = Number(code);
+    const unlockAll = code === "67";
+    const pick = SHIFTS.find((s) => s.secret && s.id === n);
+    if (!unlockAll && !pick) {
       toast("Неверный код");
       return false;
     }
     meta.secretShifts67 = true;
     storeSet(SAVE, meta);
-    if (code === "52") {
-      selectedShift = SHIFTS.find((s) => s.id === 52) || SHIFTS.find((s) => s.lesha) || selectedShift;
-      toast("✦ Смена 52 · Леша");
-      showEvent("Смена Леши · ∞ кофе", 2.8);
+    if (pick) {
+      selectedShift = pick;
+      toast("✦ Смена " + pick.id + (pick.lesha ? " · Леша" : ""));
+      showEvent(pick.name, 2.8);
     } else {
       selectedShift = SHIFTS.find((s) => s.lesha) || SHIFTS.find((s) => s.id === 52) || selectedShift;
       toast("✦ Секретные смены открыты");
-      showEvent("Секретные смены в списке · 41–52", 2.8);
+      showEvent("Секретные смены сверху списка · 41–52", 2.8);
     }
     refreshLobbyUI();
     persistLobby();
