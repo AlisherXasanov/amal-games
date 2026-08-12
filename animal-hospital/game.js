@@ -198,26 +198,28 @@
       time: 999,
       anomaly: 0.12,
       eventRate: 0.05,
-      tag: "Только Леша / админ-команда · день не тратится",
+      tag: "Всё в золоте · день не тратится",
       color: "#ffd76a",
       special: "lesha",
       secret: true,
       lesha: true,
       endlessCoffee: true,
       noDayDrain: true,
+      theme: "gold",
     });
     list.push({
       id: 67,
-      name: "✦ Смена 67 · Золотая ночь",
+      name: "✦ Смена 67 · Алмазная ночь",
       time: 180,
       anomaly: 0.1,
       eventRate: 0.04,
-      tag: "Секрет · +67 · золотой халат",
-      color: "#ffd76a",
-      special: "golden67",
+      tag: "Секрет · всё в алмазе · +67",
+      color: "#b8f0ff",
+      special: "diamond67",
       secret: true,
-      goldenNight: true,
+      diamondNight: true,
       bonusCoins: 67,
+      theme: "diamond",
     });
     return list;
   })();
@@ -967,6 +969,7 @@
       },
       policeman: null, // { x, y, t, answered }
       requests: [], // бесконечная лента заявок (имена в очереди)
+      theme: shift.theme || null,
     };
 
     coffeeCd = { coffee: 0, coffee2: 0 };
@@ -992,30 +995,38 @@
     showEl(shiftTag);
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
     toast(`Ресепшен · ∞ время · очередь ∞` + (g.players[0].weapon ? " · F по аномалии сразу" : ""));
-    if (shift.lesha || shift.endlessCoffee) {
+    if (shift.lesha || shift.endlessCoffee || shift.theme === "gold") {
       meta.coffee2 = true;
       storeSet(SAVE, meta);
       g.sanity = g.maxSanity;
       g.immortal = true;
       coffeeCd = { coffee: 0, coffee2: 0 };
-      showEvent("✦ Смена Леши · ∞ кофе · день не тратится", 3.4);
-      toast("∞ кофе · рассудок не тает от дня");
-    }
-    if (shift.goldenNight || shift.id === 67) {
-      g.coins += shift.bonusCoins || 67;
-      g.sanity = g.maxSanity;
-      g.immortal = true;
       const gold = SKINS.find((s) => s.id === "secret-gold");
       if (gold) {
         selectedSkin = gold;
         meta.skinId = gold.id;
-        if (!meta.skins) meta.skins = [];
-        if (!meta.skins.includes(gold.id)) meta.skins.push(gold.id);
         storeSet(SAVE, meta);
-        if (g.players[0]) g.players[0].coat = gold.color;
+        if (g.players[0]) g.players[0].color = gold.color;
       }
-      showEvent("✦ Смена 67 · Золотая ночь", 3.4);
-      toast("+67 · золотой халат · полный рассудок");
+      g.theme = "gold";
+      showEvent("✦ Смена Леши · всё в золоте · ∞ кофе", 3.4);
+      toast("∞ кофе · золотой халат · день не тает");
+    }
+    if (shift.diamondNight || shift.id === 67 || shift.theme === "diamond") {
+      g.coins += shift.bonusCoins || 67;
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      const diamondCoat = "#c8f4ff";
+      if (g.players[0]) g.players[0].color = diamondCoat;
+      const voidSkin = SKINS.find((s) => s.id === "secret-void");
+      if (voidSkin) {
+        selectedSkin = voidSkin;
+        meta.skinId = voidSkin.id;
+        storeSet(SAVE, meta);
+      }
+      g.theme = "diamond";
+      showEvent("✦ Смена 67 · Алмазная ночь", 3.4);
+      toast("+67 · всё в алмазе · полный рассудок");
     }
     updateNeedUI();
     renderInv();
@@ -1971,13 +1982,19 @@
       }
     }
 
-    // P1
+    // P1 — WASD и стрелки (стрелки свободны, если нет 2-го игрока на стрелках)
     let mx = 0;
     let my = 0;
     if (keys.KeyW) my -= 1;
     if (keys.KeyS) my += 1;
     if (keys.KeyA) mx -= 1;
     if (keys.KeyD) mx += 1;
+    if (mode !== "local2") {
+      if (keys.ArrowUp) my -= 1;
+      if (keys.ArrowDown) my += 1;
+      if (keys.ArrowLeft) mx -= 1;
+      if (keys.ArrowRight) mx += 1;
+    }
     if (stick.active) {
       mx += stick.x;
       my += stick.y;
@@ -2055,7 +2072,8 @@
       (eHint ? `<br><span style="color:#7ed9b8">${eHint}</span>` : "") +
       (g.players[0].weapon
         ? `<br><span style="color:#ffd36a">${g.players[0].weapon.icon} F — аномалию сразу · R зарядка · C кофе</span>`
-        : `<br><span style="color:#ffd36a">C — выпить кофе из инвентаря</span>`);
+        : `<br><span style="color:#ffd36a">C — выпить кофе из инвентаря</span>`) +
+      `<br><span style="color:#9aa8c0">Ход: WASD или стрелки</span>`;
 
     sanityFill.style.width = (g.sanity / g.maxSanity) * 100 + "%";
     sanityText.textContent = `🧠 ${Math.ceil(g.sanity)}`;
@@ -2077,19 +2095,30 @@
   }
 
   function drawActor(pl, label) {
+    const theme = g && g.theme;
+    const body =
+      theme === "gold" ? "#ffd76a" : theme === "diamond" ? "#c8f4ff" : pl.color;
+    const sash =
+      theme === "gold" ? "#fff3b0" : theme === "diamond" ? "#7ad7ff" : "#7ed9b8";
     ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.beginPath();
     ctx.ellipse(pl.x, pl.y + 18, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = pl.color;
+    ctx.fillStyle = body;
     roundRect(pl.x - 12, pl.y - 20, 24, 34, 8);
     ctx.fill();
-    ctx.fillStyle = "#7ed9b8";
+    ctx.fillStyle = sash;
     ctx.fillRect(pl.x - 12, pl.y - 2, 24, 6);
     ctx.fillStyle = "#e8b890";
     ctx.beginPath();
     ctx.arc(pl.x, pl.y - 26, 11, 0, Math.PI * 2);
     ctx.fill();
+    if (theme === "gold" || theme === "diamond") {
+      ctx.fillStyle = theme === "gold" ? "rgba(255,215,100,0.9)" : "rgba(180,240,255,0.95)";
+      ctx.beginPath();
+      ctx.arc(pl.x + 8, pl.y - 30, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.fillStyle = "#fff";
     ctx.font = "700 11px Nunito";
     ctx.textAlign = "center";
@@ -2104,6 +2133,12 @@
     }
   }
 
+  function tintRoom(base, theme) {
+    if (theme === "gold") return "#5a4020";
+    if (theme === "diamond") return "#1a3550";
+    return base;
+  }
+
   function draw() {
     ctx.clearRect(0, 0, VW, VH);
     if (!g) {
@@ -2115,19 +2150,27 @@
       return;
     }
 
+    const theme = g.theme || (g.shift && g.shift.theme) || null;
+
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
-    ctx.fillStyle = "#101624";
+    ctx.fillStyle = theme === "gold" ? "#2a1c08" : theme === "diamond" ? "#081820" : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
-      ctx.fillStyle = room.color;
+      ctx.fillStyle = tintRoom(room.color, theme);
       roundRect(room.x, room.y, room.w, room.h, 14);
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.1)";
+      ctx.strokeStyle =
+        theme === "gold"
+          ? "rgba(255, 215, 106, 0.45)"
+          : theme === "diamond"
+            ? "rgba(160, 230, 255, 0.45)"
+            : "rgba(255,255,255,0.1)";
       ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.fillStyle =
+        theme === "gold" ? "#ffe08a" : theme === "diamond" ? "#d8f6ff" : "rgba(255,255,255,0.7)";
       ctx.font = "800 15px Fredoka, Nunito, sans-serif";
       ctx.fillText(room.name, room.x + 12, room.y + 24);
     }
@@ -2387,6 +2430,32 @@
     }
 
     ctx.restore();
+
+    if (theme === "gold") {
+      ctx.fillStyle = "rgba(255, 190, 60, 0.12)";
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(255, 230, 140, 0.55)";
+      for (let i = 0; i < 18; i++) {
+        const x = ((Math.sin(g.t * 0.7 + i * 1.7) * 0.5 + 0.5) * VW);
+        const y = ((Math.cos(g.t * 0.9 + i * 2.1) * 0.5 + 0.5) * VH);
+        ctx.fillRect(x, y, 2, 2);
+      }
+    } else if (theme === "diamond") {
+      ctx.fillStyle = "rgba(120, 210, 255, 0.14)";
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(220, 250, 255, 0.7)";
+      for (let i = 0; i < 22; i++) {
+        const x = ((Math.sin(g.t * 1.1 + i * 1.3) * 0.5 + 0.5) * VW);
+        const y = ((Math.cos(g.t * 1.4 + i * 1.9) * 0.5 + 0.5) * VH);
+        ctx.beginPath();
+        ctx.moveTo(x, y - 3);
+        ctx.lineTo(x + 2, y);
+        ctx.lineTo(x, y + 3);
+        ctx.lineTo(x - 2, y);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
 
     if (g.sanity < 35) {
       ctx.fillStyle = `rgba(80,0,20,${((35 - g.sanity) / 35) * 0.5})`;
