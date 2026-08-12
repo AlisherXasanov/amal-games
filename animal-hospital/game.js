@@ -151,13 +151,126 @@
     { id: "fire", name: "Огонёк", classId: "firefighter", desc: "Тушит пожары" },
   ];
 
-  const SHIFTS = [
-    { id: 1, name: "Смена 1 · Тихая", time: 140, anomaly: 0.2, eventRate: 0.0, tag: "Обучение: спокойная ночь", color: "#7ed9b8" },
-    { id: 2, name: "Смена 2 · Очередь", time: 150, anomaly: 0.28, eventRate: 0.12, tag: "Больше клиентов у окна", color: "#8ecfff" },
-    { id: 3, name: "Смена 3 · Не смотри вверх", time: 155, anomaly: 0.34, eventRate: 0.2, tag: "Потолок опасен", color: "#ffd36a", special: "ceiling" },
-    { id: 4, name: "Смена 4 · Массовые", time: 160, anomaly: 0.38, eventRate: 0.28, tag: "Волны пациентов", color: "#ff8f6b", special: "mass" },
-    { id: 5, name: "Смена 5 · Сталкер", time: 165, anomaly: 0.45, eventRate: 0.32, tag: "Кто-то ходит по коридорам", color: "#ef4d5a", special: "stalker" },
+  const SHIFT_TEMPLATES = [
+    { key: "quiet", name: "Тихая", tag: "Спокойная ночь", color: "#7ed9b8", anomaly: 0.18, eventRate: 0.02 },
+    { key: "queue", name: "Очередь", tag: "Больше клиентов у окна", color: "#8ecfff", anomaly: 0.26, eventRate: 0.1 },
+    { key: "ceiling", name: "Не смотри вверх", tag: "Потолок опасен", color: "#ffd36a", anomaly: 0.32, eventRate: 0.18, special: "ceiling" },
+    { key: "mass", name: "Массовые", tag: "Волны пациентов", color: "#ff8f6b", anomaly: 0.36, eventRate: 0.26, special: "mass" },
+    { key: "stalker", name: "Сталкер", tag: "Кто-то ходит по коридорам", color: "#ef4d5a", anomaly: 0.42, eventRate: 0.3, special: "stalker" },
+    { key: "fog", name: "Туман", tag: "Плохо видно лица", color: "#9aa8c8", anomaly: 0.3, eventRate: 0.14 },
+    { key: "night", name: "Глубокая ночь", tag: "Тише, но страннее", color: "#6a7cff", anomaly: 0.35, eventRate: 0.16 },
+    { key: "rush", name: "Час пик", tag: "Очередь не кончается", color: "#ffb060", anomaly: 0.33, eventRate: 0.22, special: "mass" },
   ];
+
+  const SHIFT_FLAVORS = [
+    "",
+    " · эхо",
+    " · повтор",
+    " · тень",
+    " · блик",
+    " · шёпот",
+    " · вторая волна",
+  ];
+
+  /** 52 смены: 1–40 обычные, 41–51 секретные (код 67), 52 — смена Леши */
+  const SHIFTS = (() => {
+    const list = [];
+    for (let id = 1; id <= 40; id++) {
+      const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
+      const flavor = SHIFT_FLAVORS[Math.floor((id - 1) / SHIFT_TEMPLATES.length) % SHIFT_FLAVORS.length];
+      const twist = ((id * 7) % 9) * 0.01;
+      list.push({
+        id,
+        name: `Смена ${id} · ${t.name}${flavor}`,
+        time: 140 + (id % 8) * 4,
+        anomaly: Math.min(0.55, t.anomaly + twist),
+        eventRate: Math.min(0.4, (t.eventRate || 0) + twist * 0.5),
+        tag: t.tag + (flavor ? " (почти как раньше)" : ""),
+        color: t.color,
+        special: t.special || null,
+        secret: false,
+      });
+    }
+    for (let id = 41; id <= 51; id++) {
+      const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
+      const flavor = SHIFT_FLAVORS[(id + 2) % SHIFT_FLAVORS.length];
+      list.push({
+        id,
+        name: `✦ Смена ${id} · ${t.name}${flavor}`,
+        time: 160 + (id % 5) * 5,
+        anomaly: Math.min(0.5, t.anomaly + 0.04),
+        eventRate: Math.min(0.38, (t.eventRate || 0) + 0.04),
+        tag: "Секретная · почти та же, но другая",
+        color: "#e8b4ff",
+        special: t.special || null,
+        secret: true,
+      });
+    }
+    list.push({
+      id: 52,
+      name: "✦ Смена Леши · ∞ кофе",
+      time: 999,
+      anomaly: 0.12,
+      eventRate: 0.05,
+      tag: "Только Леша / админ-команда · день не тратится",
+      color: "#ffd76a",
+      special: "lesha",
+      secret: true,
+      lesha: true,
+      endlessCoffee: true,
+      noDayDrain: true,
+    });
+    return list;
+  })();
+
+  function canUseSecretShifts() {
+    try {
+      const g = new URLSearchParams(location.search).get("guest");
+      if (g === "1" || g === "true" || g === "yes") return false;
+    } catch (_) {}
+    try {
+      if (window.AmalHub) {
+        if (typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+        if (typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
+        const nick = (typeof AmalHub.getNick === "function" && AmalHub.getNick()) || "";
+        if (/^(лёша|леша|lesha|lyosha|amal)$/i.test(String(nick).trim())) return true;
+      }
+    } catch (_) {}
+    try {
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (localStorage.getItem("animal-hospital-owner-god") === "1") return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function visibleShifts() {
+    const secretsOk = canUseSecretShifts() && !!(meta && meta.secretShifts67);
+    const leshaOk = canUseSecretShifts();
+    return SHIFTS.filter((s) => {
+      if (!s.secret) return true;
+      if (s.lesha) return leshaOk;
+      return secretsOk;
+    });
+  }
+
+  function unlockSecretShifts67() {
+    if (!canUseSecretShifts()) return false;
+    if (meta.secretShifts67) {
+      toast("Секретные смены уже открыты");
+      return true;
+    }
+    meta.secretShifts67 = true;
+    storeSet(SAVE, meta);
+    const lesha = SHIFTS.find((s) => s.lesha) || SHIFTS[SHIFTS.length - 1];
+    selectedShift = lesha;
+    refreshLobbyUI();
+    persistLobby();
+    toast("✦ Секретные смены открыты · для команды");
+    showEvent("Смена Леши и ещё секретные смены в списке", 3.2);
+    return true;
+  }
 
   const ROOMS = [
     { id: "wait", name: "Зал ожидания", x: 40, y: 40, w: 360, h: 280, color: "#243048" },
@@ -262,6 +375,7 @@
   let reload1 = false;
   let shoot2 = false;
   let reload2 = false;
+  let secretDigitBuf = "";
 
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
@@ -274,6 +388,25 @@
     if (e.code === "KeyR") reload1 = true;
     if (e.code === "ShiftRight") shoot2 = true;
     if (e.code === "ControlRight") reload2 = true;
+
+    // секретный код — без подсказок обычным игрокам
+    if ((state === "menu" || !g) && canUseSecretShifts()) {
+      const digit =
+        e.code === "Digit6" || e.code === "Numpad6"
+          ? "6"
+          : e.code === "Digit7" || e.code === "Numpad7"
+            ? "7"
+            : "";
+      if (digit) {
+        secretDigitBuf = (secretDigitBuf + digit).slice(-2);
+        if (secretDigitBuf === "67") {
+          secretDigitBuf = "";
+          unlockSecretShifts67();
+        }
+      } else if (e.key && e.key.length === 1) {
+        secretDigitBuf = "";
+      }
+    }
   });
   window.addEventListener("keyup", (e) => {
     keys[e.code] = false;
@@ -378,6 +511,10 @@
   let selectedClass = CLASSES.find((c) => c.id === meta.classId && hasClass(c.id)) || CLASSES[0];
   let selectedBuddy = BUDDIES.find((b) => b.id === meta.buddyId) || BUDDIES[0];
   let selectedShift = SHIFTS.find((s) => s.id === meta.shiftId) || SHIFTS[0];
+  if (selectedShift.secret) {
+    const ok = selectedShift.lesha ? canUseSecretShifts() : canUseSecretShifts() && meta.secretShifts67;
+    if (!ok) selectedShift = SHIFTS[0];
+  }
   let selectedSkin = SKINS.find((s) => s.id === meta.skinId && hasSkin(s.id)) || SKINS[0];
   let mode = meta.mode || "solo";
   let state = "menu";
@@ -402,9 +539,12 @@
     buddySelect.innerHTML = BUDDIES.map(
       (b) => `<option value="${b.id}" ${b.id === selectedBuddy.id ? "selected" : ""}>${b.name} — ${b.desc}</option>`
     ).join("");
-    shiftSelect.innerHTML = SHIFTS.map(
-      (s) => `<option value="${s.id}" ${s.id === selectedShift.id ? "selected" : ""}>${s.name} — ${s.tag}</option>`
-    ).join("");
+    shiftSelect.innerHTML = visibleShifts()
+      .map(
+        (s) =>
+          `<option value="${s.id}" ${s.id === selectedShift.id ? "selected" : ""}>${s.name} — ${s.tag}</option>`
+      )
+      .join("");
     skinSelect.innerHTML = SKINS.map(
       (s) => `<option value="${s.id}" ${s.id === selectedSkin.id ? "selected" : ""}>${s.name}</option>`
     ).join("");
@@ -868,6 +1008,15 @@
     showEl(shiftTag);
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
     toast(`Ресепшен · ∞ время · очередь ∞` + (g.players[0].weapon ? " · F по аномалии сразу" : ""));
+    if (shift.lesha || shift.endlessCoffee) {
+      meta.coffee2 = true;
+      storeSet(SAVE, meta);
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      coffeeCd = { coffee: 0, coffee2: 0 };
+      showEvent("✦ Смена Леши · ∞ кофе · день не тратится", 3.4);
+      toast("∞ кофе · рассудок не тает от дня");
+    }
     updateNeedUI();
     renderInv();
   }
@@ -1391,7 +1540,8 @@
 
   function takeCoffee(player, station) {
     const id = station.id;
-    const cd = coffeeCd[id] || 0;
+    const endless = g && g.shift && g.shift.endlessCoffee;
+    const cd = endless ? 0 : coffeeCd[id] || 0;
     if (cd > 0) {
       toast(`Кофемашина перезаряжается… ${Math.ceil(cd)}с`);
       return;
@@ -1399,13 +1549,13 @@
     // стакан в инвентарь; если полон — выпить сразу
     if (player.inv.length >= invMax(player)) {
       healSanity(18);
-      coffeeCd[id] = 14;
-      toast("☕ Выпил на месте (инвентарь полон) · перезарядка");
+      if (!endless) coffeeCd[id] = 14;
+      toast(endless ? "☕ ∞ кофе · выпил сразу" : "☕ Выпил на месте (инвентарь полон) · перезарядка");
       return;
     }
     player.inv.push("coffee_cup");
-    coffeeCd[id] = 14;
-    toast("☕ Взял стакан кофе · отнеси бармену или выпей (E у кофе ещё раз с пустым слотом…)");
+    if (!endless) coffeeCd[id] = 14;
+    toast(endless ? "☕ ∞ кофе · стакан готов сразу" : "☕ Взял стакан кофе · отнеси бармену или выпей (E у кофе ещё раз с пустым слотом…)");
     renderInv();
   }
 
@@ -1757,7 +1907,11 @@
       }
     }
 
-    hurtSanity(dt * (0.55 + g.shift.id * 0.12 + (g.monsters.length ? 1.2 + g.monsters.length * 0.35 : 0)));
+    hurtSanity(
+      g.shift && g.shift.noDayDrain
+        ? 0
+        : dt * (0.55 + g.shift.id * 0.12 + (g.monsters.length ? 1.2 + g.monsters.length * 0.35 : 0))
+    );
     if (state === "end") return;
 
     if (!g.endless && g.left <= 0) {
