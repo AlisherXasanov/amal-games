@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pizza Tycoon 3D</title>
-  <meta name="description" content="3D Tycoon вЂ” СЃС‚СЂРѕР№ СЃРІРѕСЋ РїРёС†С†РµСЂРёСЋ Рё Р·Р°СЂР°Р±Р°С‚С‹РІР°Р№!" />
+  <meta name="description" content="3D Tycoon РІР‚вЂќ РЎРѓРЎвЂљРЎР‚Р С•Р в„– РЎРѓР Р†Р С•РЎР‹ Р С—Р С‘РЎвЂ РЎвЂ Р ВµРЎР‚Р С‘РЎР‹ Р С‘ Р В·Р В°РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р в„–!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #1a1a2e; font-family: system-ui, sans-serif; }
@@ -28,27 +28,27 @@
 <body>
   <div id="ui">
     <b>Pizza Tycoon</b><br/>
-    Р”РµРЅСЊРіРё: $<span id="money">0</span><br/>
-    РџРёС†С†С‹/СЃРµРє: <span id="pps">0</span><br/>
-    РЈСЂРѕРІРµРЅСЊ: <span id="level">1</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
+    Р вЂќР ВµР Р…РЎРЉР С–Р С‘: $<span id="money">0</span><br/>
+    Р СџР С‘РЎвЂ РЎвЂ РЎвЂ№/РЎРѓР ВµР С”: <span id="pps">0</span><br/>
+    Р Р€РЎР‚Р С•Р Р†Р ВµР Р…РЎРЉ: <span id="level">1</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">СЂСџвЂвЂ Р С’Р Т‘Р СР С‘Р Р… Р’В· РЎРЊР С”РЎРѓР С”Р В»РЎР‹Р В·Р С‘Р Р† Р Р† Р СР В°Р С–Р В°Р В·Р С‘Р Р…Р Вµ</div>
   </div>
-  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
+  <a id="back" href="../">РІвЂ С’ Р С™Р В°РЎвЂљР В°Р В»Р С•Р С–</a>
   <div id="admin-shop">
-    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ-РєРѕРјР°РЅРґР° В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
-    <button id="ex-crown" type="button">РљРѕСЂРѕРЅР° Amal ($0)</button>
-    <button id="ex-sign" type="button">РќРµРѕРЅ AMAL ($0)</button>
-    <button id="ex-vault" type="button">Р—РѕР»РѕС‚РѕР№ СЃРµР№С„ ($0)</button>
-    <button id="ex-statue" type="button">Р Р°РґСѓРіР°-РїРёС†С†Р° ($0)</button>
-    <button id="ex-terrace" type="button">VIP-С‚РµСЂСЂР°СЃР° ($0)</button>
+    <div class="label">СЂСџвЂвЂ Р СћР С•Р В»РЎРЉР С”Р С• Р В°Р Т‘Р СР С‘Р Р…-Р С”Р С•Р СР В°Р Р…Р Т‘Р В° Р’В· Р Р†Р ВµРЎвЂ°Р С‘, Р Р…Р Вµ Р С”Р С•Р СР В°Р Р…Р Т‘РЎвЂ№</div>
+    <button id="ex-crown" type="button">Р С™Р С•РЎР‚Р С•Р Р…Р В° Amal ($0)</button>
+    <button id="ex-sign" type="button">Р СњР ВµР С•Р Р… AMAL ($0)</button>
+    <button id="ex-vault" type="button">Р вЂ”Р С•Р В»Р С•РЎвЂљР С•Р в„– РЎРѓР ВµР в„–РЎвЂћ ($0)</button>
+    <button id="ex-statue" type="button">Р В Р В°Р Т‘РЎС“Р С–Р В°-Р С—Р С‘РЎвЂ РЎвЂ Р В° ($0)</button>
+    <button id="ex-terrace" type="button">VIP-РЎвЂљР ВµРЎР‚РЎР‚Р В°РЎРѓР В° ($0)</button>
   </div>
   <div id="shop">
-    <button id="b-table">РЎС‚РѕР» ($5)</button>
-    <button id="b-oven">РџРµС‡СЊ ($25)</button>
-    <button id="b-worker">Р Р°Р±РѕС‚РЅРёРє ($100)</button>
-    <button id="b-delivery">Р”РѕСЃС‚Р°РІРєР° ($200)</button>
-    <button id="b-advert">Р РµРєР»Р°РјР° ($500)</button>
-    <button id="b-expand">Р Р°СЃС€РёСЂРёС‚СЊ ($1000)</button>
+    <button id="b-table">Р РЋРЎвЂљР С•Р В» ($5)</button>
+    <button id="b-oven">Р СџР ВµРЎвЂЎРЎРЉ ($25)</button>
+    <button id="b-worker">Р В Р В°Р В±Р С•РЎвЂљР Р…Р С‘Р С” ($100)</button>
+    <button id="b-delivery">Р вЂќР С•РЎРѓРЎвЂљР В°Р Р†Р С”Р В° ($200)</button>
+    <button id="b-advert">Р В Р ВµР С”Р В»Р В°Р СР В° ($500)</button>
+    <button id="b-expand">Р В Р В°РЎРѓРЎв‚¬Р С‘РЎР‚Р С‘РЎвЂљРЎРЉ ($1000)</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -311,7 +311,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " РІСљвЂњ";
         }
       });
     }
@@ -400,7 +400,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=16"></script>
-  <script src="../shared/amal-hub.js?v=23"></script>
+  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
 </body>
 </html>
