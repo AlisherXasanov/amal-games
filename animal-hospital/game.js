@@ -173,7 +173,7 @@
     " · вторая волна",
   ];
 
-  /** 52 смены: 1–40 обычные, 41–51 секретные (код 67), 52 — смена Леши */
+  /** 1–40 обычные; 52 — Леша; 67 — Золотая ночь (коды в secret death) */
   const SHIFTS = (() => {
     const list = [];
     for (let id = 1; id <= 40; id++) {
@@ -192,21 +192,6 @@
         secret: false,
       });
     }
-    for (let id = 41; id <= 51; id++) {
-      const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
-      const flavor = SHIFT_FLAVORS[(id + 2) % SHIFT_FLAVORS.length];
-      list.push({
-        id,
-        name: `✦ Смена ${id} · ${t.name}${flavor}`,
-        time: 160 + (id % 5) * 5,
-        anomaly: Math.min(0.5, t.anomaly + 0.04),
-        eventRate: Math.min(0.38, (t.eventRate || 0) + 0.04),
-        tag: "Секретная · почти та же, но другая",
-        color: "#e8b4ff",
-        special: t.special || null,
-        secret: true,
-      });
-    }
     list.push({
       id: 52,
       name: "✦ Смена Леши · ∞ кофе",
@@ -220,6 +205,19 @@
       lesha: true,
       endlessCoffee: true,
       noDayDrain: true,
+    });
+    list.push({
+      id: 67,
+      name: "✦ Смена 67 · Золотая ночь",
+      time: 180,
+      anomaly: 0.1,
+      eventRate: 0.04,
+      tag: "Секрет · +67 · золотой халат",
+      color: "#ffd76a",
+      special: "golden67",
+      secret: true,
+      goldenNight: true,
+      bonusCoins: 67,
     });
     return list;
   })();
@@ -256,29 +254,13 @@
   }
 
   function applySecretDeathCode(raw) {
-    if (!canUseSecretShifts()) {
-      toast("…");
-      return false;
-    }
+    if (!canUseSecretShifts()) return false;
     const code = String(raw || "").trim();
-    const n = Number(code);
-    const unlockAll = code === "67";
-    const pick = SHIFTS.find((s) => s.secret && s.id === n);
-    if (!unlockAll && !pick) {
-      toast("Неверный код");
-      return false;
-    }
+    if (code !== "67" && code !== "52") return false;
     meta.secretShifts67 = true;
     storeSet(SAVE, meta);
-    if (pick) {
-      selectedShift = pick;
-      toast("✦ Смена " + pick.id + (pick.lesha ? " · Леша" : ""));
-      showEvent(pick.name, 2.8);
-    } else {
-      selectedShift = SHIFTS.find((s) => s.lesha) || SHIFTS.find((s) => s.id === 52) || selectedShift;
-      toast("✦ Секретные смены открыты");
-      showEvent("Секретные смены сверху списка · 41–52", 2.8);
-    }
+    const pick = SHIFTS.find((s) => s.id === Number(code));
+    if (pick) selectedShift = pick;
     refreshLobbyUI();
     persistLobby();
     return true;
@@ -1018,6 +1000,22 @@
       coffeeCd = { coffee: 0, coffee2: 0 };
       showEvent("✦ Смена Леши · ∞ кофе · день не тратится", 3.4);
       toast("∞ кофе · рассудок не тает от дня");
+    }
+    if (shift.goldenNight || shift.id === 67) {
+      g.coins += shift.bonusCoins || 67;
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      const gold = SKINS.find((s) => s.id === "secret-gold");
+      if (gold) {
+        selectedSkin = gold;
+        meta.skinId = gold.id;
+        if (!meta.skins) meta.skins = [];
+        if (!meta.skins.includes(gold.id)) meta.skins.push(gold.id);
+        storeSet(SAVE, meta);
+        if (g.players[0]) g.players[0].coat = gold.color;
+      }
+      showEvent("✦ Смена 67 · Золотая ночь", 3.4);
+      toast("+67 · золотой халат · полный рассудок");
     }
     updateNeedUI();
     renderInv();
@@ -2444,11 +2442,6 @@
         submitSecretDeath();
       }
     });
-    secretDeathInput.addEventListener("input", () => {
-      const v = String(secretDeathInput.value || "").trim();
-      if (v.length >= 2) submitSecretDeath();
-    });
-    secretDeathInput.addEventListener("change", submitSecretDeath);
     if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
   }
 
