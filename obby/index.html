@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Obby вЂ” РґР»РёРЅРЅС‹Р№ Р»Р°Р·РµСЂРЅС‹Р№ РїР°СЂРєСѓСЂ</title>
-  <meta name="description" content="РћРґРёРЅ РґР»РёРЅРЅС‹Р№ 3D-РїР°СЂРєСѓСЂ: С‡РµРєРїРѕРёРЅС‚С‹, Р»Р°Р·РµСЂС‹, РєР°РјРµСЂР° РєСЂСѓС‚РёС‚СЃСЏ вЂ” Р±РµР¶РёС€СЊ РєСѓРґР° СЃРјРѕС‚СЂРёС€СЊ." />
+  <title>Obby — длинный лазерный паркур</title>
+  <meta name="description" content="Один длинный 3D-паркур: чекпоинты, лазеры, камера крутится — бежишь куда смотришь." />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #1a1040; font-family: system-ui, sans-serif; }
@@ -62,31 +62,31 @@
 </head>
 <body>
   <div id="ui">
-    <h2>Obby В· Р›Р°Р·РµСЂРЅС‹Р№ РїР°СЂРєСѓСЂ</h2>
-    <div>Р§РµРєРїРѕРёРЅС‚: <span id="cp">СЃС‚Р°СЂС‚</span></div>
-    <div>РџСЂРѕРіСЂРµСЃСЃ: <span id="prog">0</span>%</div>
-    <div>РЎРјРµСЂС‚Рё: <span id="deaths">0</span></div>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
+    <h2>Obby · Лазерный паркур</h2>
+    <div>Чекпоинт: <span id="cp">старт</span></div>
+    <div>Прогресс: <span id="prog">0</span>%</div>
+    <div>Смерти: <span id="deaths">0</span></div>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
   <div id="toast"></div>
-  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
+  <a id="back" href="../">← Каталог</a>
   <div id="admin-shop">
-    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
-    <button id="ex-orb" type="button">Р—РѕР»РѕС‚Р°СЏ СЃС„РµСЂР° С‡РµРєРїРѕРёРЅС‚Р° ($0)</button>
-    <button id="ex-rainbow" type="button">VIP-СЂР°РґСѓРіР° РїР»РѕС‰Р°РґРєР° ($0)</button>
-    <button id="ex-crown" type="button">РЎС‚Р°С‚СѓСЏ РєРѕСЂРѕРЅС‹ ($0)</button>
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-orb" type="button">Золотая сфера чекпоинта ($0)</button>
+    <button id="ex-rainbow" type="button">VIP-радуга площадка ($0)</button>
+    <button id="ex-crown" type="button">Статуя короны ($0)</button>
   </div>
-  <div id="controls">W вЂ” РІРїРµСЂС‘Рґ РїРѕ РєР°РјРµСЂРµ В· РџСЂРѕР±РµР» РїСЂС‹Р¶РѕРє/РїРѕР»С‘С‚в†‘ В· Shift РїРѕР»С‘С‚в†“ В· РџРљРњ РєР°РјРµСЂР° В· Р°РґРјРёРЅ вљЎ</div>
+  <div id="controls">W — вперёд по камере · Пробел прыжок/полёт↑ · Shift полёт↓ · ПКМ камера · админ ⚡</div>
   <div id="mobile-btns">
-    <button type="button" id="m-left">в†ђ</button>
-    <button type="button" id="m-jump">в†‘</button>
-    <button type="button" id="m-fwd">в–І</button>
-    <button type="button" id="m-right">в†’</button>
+    <button type="button" id="m-left">←</button>
+    <button type="button" id="m-jump">↑</button>
+    <button type="button" id="m-fwd">▲</button>
+    <button type="button" id="m-right">→</button>
   </div>
   <div id="win">
-    <h1>Р¤РёРЅРёС€!</h1>
-    <p>РўС‹ РїСЂРѕС€С‘Р» РІРµСЃСЊ РґР»РёРЅРЅС‹Р№ РїР°СЂРєСѓСЂ Р±РµР· С‚РµР»РµРїРѕСЂС‚РѕРІ РјРµР¶РґСѓ СѓСЂРѕРІРЅСЏРјРё.</p>
-    <button type="button" id="replay">РЎ РЅР°С‡Р°Р»Р°</button>
+    <h1>Финиш!</h1>
+    <p>Ты прошёл весь длинный паркур без телепортов между уровнями.</p>
+    <button type="button" id="replay">С начала</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -106,7 +106,7 @@
     const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
       distance: 6.5,
       pitch: 0.34,
-      yaw: Math.PI, // РІРїРµСЂС‘Рґ РїРѕ С‚СЂР°СЃСЃРµ (+Z)
+      yaw: Math.PI, // вперёд по трассе (+Z)
       lookOffsetY: 1.15,
       minDist: 3.5,
       maxDist: 22,
@@ -125,7 +125,7 @@
     scene.add(sun);
     scene.add(new THREE.AmbientLight(0x5060a0, 0.55));
 
-    // вЂ”вЂ”вЂ” РґР»РёРЅРЅР°СЏ Р»С‘РіРєР°СЏ С‚СЂР°СЃСЃР°: СЂР°Р·РЅС‹Рµ С„РѕСЂРјС‹ РїР»Р°С‚С„РѕСЂРј вЂ”вЂ”вЂ”
+    // ——— длинная лёгкая трасса: разные формы платформ ———
     const platforms = [];
     const lasers = [];
     const checkpoints = [];
@@ -166,7 +166,7 @@
       if (shape === "torus") mesh.rotation.x = Math.PI / 2;
       mesh.receiveShadow = true;
       mesh.castShadow = true;
-      // AABB РґР»СЏ РєРѕР»Р»РёР·РёРё (С‡СѓС‚СЊ С‰РµРґСЂРµРµ РґР»СЏ Р»С‘РіРєРѕСЃС‚Рё)
+      // AABB для коллизии (чуть щедрее для лёгкости)
       const bw = shape === "sphere" || shape === "diamond" ? Math.max(w, d) * 0.95 : w;
       const bh = shape === "sphere" ? Math.max(w, d) * 0.7 : shape === "torus" ? h * 1.6 : h;
       const bd = shape === "sphere" || shape === "diamond" ? Math.max(w, d) * 0.95 : d;
@@ -227,11 +227,11 @@
       });
     }
 
-    // === РЎРўРђР Рў ===
+    // === СТАРТ ===
     addShape({ x: 0, y: 0, z: 0, w: 8, h: 0.5, d: 8, color: 0x4ade80, shape: "cylinder" });
-    addCheckpoint(0, 0, 0, "РЎС‚Р°СЂС‚");
+    addCheckpoint(0, 0, 0, "Старт");
 
-    // Admin-only visual props (NOT in platforms[] вЂ” no parkour collision)
+    // Admin-only visual props (NOT in platforms[] — no parkour collision)
     const exclusiveOwned = { orb: false, rainbow: false, crown: false };
     const exclusiveMeshes = [];
 
@@ -252,7 +252,7 @@
     }
 
     function placeOrb() {
-      // Side of start pad вЂ” decorative only
+      // Side of start pad — decorative only
       const orb = new THREE.Mesh(
         new THREE.SphereGeometry(0.55, 16, 16),
         new THREE.MeshLambertMaterial({ color: 0xfbbf24, emissive: 0xb45309, transparent: true, opacity: 0.92 })
@@ -328,12 +328,12 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
         }
       });
     }
 
-    // РЎРµРєС†РёСЏ 1 вЂ” РєСѓР±С‹ + РґРёСЃРєРё, РїРѕС‡С‚Рё СЂРѕРІРЅРѕ
+    // Секция 1 — кубы + диски, почти ровно
     let z = 8;
     for (let i = 0; i < 8; i++) {
       const shapes = ["box", "cylinder", "box", "cylinder"];
@@ -347,10 +347,10 @@
       });
       z += 3.8;
     }
-    addCheckpoint(0, 1.0, z, "Р§РµРє 1");
+    addCheckpoint(0, 1.0, z, "Чек 1");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 2 вЂ” СЃС„РµСЂС‹ Рё В«Р±Р»РёРЅС‡РёРєРёВ», СЂРµРґРєРёР№ РјСЏРіРєРёР№ Р»Р°Р·РµСЂ
+    // Секция 2 — сферы и «блинчики», редкий мягкий лазер
     for (let i = 0; i < 9; i++) {
       addShape({
         x: (i % 3 - 1) * 0.7,
@@ -368,10 +368,10 @@
       }
       z += 3.6;
     }
-    addCheckpoint(0, 2.0, z, "Р§РµРє 2");
+    addCheckpoint(0, 2.0, z, "Чек 2");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 3 вЂ” РґР»РёРЅРЅС‹Рµ Р±Р°Р»РєРё (beam) РєР°Рє РјРѕСЃС‚РёРєРё
+    // Секция 3 — длинные балки (beam) как мостики
     for (let i = 0; i < 7; i++) {
       addShape({
         x: 0, y: 2.1, z: z,
@@ -387,10 +387,10 @@
       }
       z += 5.2;
     }
-    addCheckpoint(0, 2.2, z, "Р§РµРє 3");
+    addCheckpoint(0, 2.2, z, "Чек 3");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 4 вЂ” РєРѕР»СЊС†Р° (torus) + РєРѕРЅСѓСЃС‹-РїСЊРµРґРµСЃС‚Р°Р»С‹
+    // Секция 4 — кольца (torus) + конусы-пьедесталы
     for (let i = 0; i < 8; i++) {
       if (i % 2 === 0) {
         addShape({
@@ -402,7 +402,7 @@
           x: 0, y: 2.0 + i * 0.12, z,
           w: 2.8, h: 0.9, d: 2.8, color: 0xfb7185, shape: "cone",
         });
-        // РїР»РѕСЃРєР°СЏ С€Р°РїРєР° РЅР° РєРѕРЅСѓСЃРµ
+        // плоская шапка на конусе
         addShape({
           x: 0, y: 2.7 + i * 0.12, z,
           w: 2.6, h: 0.3, d: 2.6, color: 0xfda4af, shape: "cylinder",
@@ -410,10 +410,10 @@
       }
       z += 4.0;
     }
-    addCheckpoint(0, 3.2, z, "Р§РµРє 4");
+    addCheckpoint(0, 3.2, z, "Чек 4");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 5 вЂ” СЂРѕРјР±С‹ (diamond) Рё С€РёСЂРѕРєРёРµ РїР»РёС‚С‹
+    // Секция 5 — ромбы (diamond) и широкие плиты
     for (let i = 0; i < 8; i++) {
       addShape({
         x: (i % 2 ? 1.0 : -1.0) * 0.5,
@@ -425,10 +425,10 @@
       });
       z += 3.7;
     }
-    addCheckpoint(0, 4.2, z, "Р§РµРє 5");
+    addCheckpoint(0, 4.2, z, "Чек 5");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 6 вЂ” С‡РµСЂРµРґРѕРІР°РЅРёРµ РІСЃРµРіРѕ, РѕС‡РµРЅСЊ С€РёСЂРѕРєРѕ, РїРѕС‡С‚Рё Р±РµР· Р»Р°Р·РµСЂРѕРІ
+    // Секция 6 — чередование всего, очень широко, почти без лазеров
     const mix = ["box", "cylinder", "sphere", "torus", "beam", "diamond"];
     for (let i = 0; i < 12; i++) {
       const sh = mix[i % mix.length];
@@ -450,10 +450,10 @@
       }
       z += sh === "beam" ? 4.6 : 3.8;
     }
-    addCheckpoint(0, 5.4, z, "Р§РµРє 6");
+    addCheckpoint(0, 5.4, z, "Чек 6");
     z += 6;
 
-    // РЎРµРєС†РёСЏ 7 вЂ” С€РёСЂРѕРєРёР№ РєРѕСЂРёРґРѕСЂ РёР· С†РёР»РёРЅРґСЂРѕРІ + Р»С‘РіРєРёР№ С„РёРЅР°Р»
+    // Секция 7 — широкий коридор из цилиндров + лёгкий финал
     addShape({ x: 0, y: 5.4, z: z, w: 5, h: 0.4, d: 12, color: 0x7dd3fc, shape: "box" });
     z += 8;
     for (let i = 0; i < 6; i++) {
@@ -468,7 +468,7 @@
       z += 3.5;
     }
 
-    // Р¤РёРЅРёС€
+    // Финиш
     FINISH_Z = z + 2;
     addShape({ x: 0, y: 6.0, z: FINISH_Z, w: 9, h: 0.55, d: 9, color: 0xfbbf24, shape: "cylinder" });
     const finishRing = new THREE.Mesh(
@@ -479,7 +479,7 @@
     finishRing.rotation.x = Math.PI / 2;
     scene.add(finishRing);
 
-    // РРіСЂРѕРє
+    // Игрок
     const player = new THREE.Mesh(
       new THREE.BoxGeometry(0.75, 1.5, 0.75),
       new THREE.MeshLambertMaterial({ color: 0x3b82f6 })
@@ -487,7 +487,7 @@
     player.castShadow = true;
     scene.add(player);
 
-    // РќРµРІРёРґРёРјС‹Р№ РїРѕР» С‚РѕР»СЊРєРѕ РґР»СЏ С…РѕР·СЏРёРЅР° (РґСЂСѓРіРёРµ РµРіРѕ РЅРµ РІРёРґСЏС‚ Рё РЅРµ РёРјРµСЋС‚)
+    // Невидимый пол только для хозяина (другие его не видят и не имеют)
     const safetyFloor = new THREE.Mesh(
       new THREE.BoxGeometry(3.2, 0.25, 3.2),
       new THREE.MeshBasicMaterial({
@@ -529,7 +529,7 @@
       admin.floor = true;
       admin.speed = true;
       moveSpeed = 13;
-      toast("РђРґРјРёРЅ Obby: РїРѕР»С‘С‚ В· в€ћ В· РЅРµРІРёРґРёРјС‹Р№ РїРѕР»");
+      toast("Админ Obby: полёт · ∞ · невидимый пол");
     }
 
     function handlePower(detail) {
@@ -537,31 +537,31 @@
       if (!type) return;
       if (type === "god" || type === "owner-legend") {
         admin.god = true;
-        toast("рџ›Ў Р‘РµСЃСЃРјРµСЂС‚РёРµ");
+        toast("🛡 Бессмертие");
       }
       if (type === "obby-fly") {
         admin.fly = !admin.fly;
-        toast(admin.fly ? "рџ•Љ РџРѕР»С‘С‚ Р’РљР›" : "РџРѕР»С‘С‚ Р’Р«РљР›");
+        toast(admin.fly ? "🕊 Полёт ВКЛ" : "Полёт ВЫКЛ");
       }
       if (type === "obby-floor") {
         admin.floor = !admin.floor;
         if (!admin.floor) safetyFloor.visible = false;
-        toast(admin.floor ? "в¬› РќРµРІРёРґРёРјС‹Р№ РїРѕР» Р’РљР› (С‚РѕР»СЊРєРѕ С‚С‹)" : "РќРµРІРёРґРёРјС‹Р№ РїРѕР» Р’Р«РљР›");
+        toast(admin.floor ? "⬛ Невидимый пол ВКЛ (только ты)" : "Невидимый пол ВЫКЛ");
       }
       if (type === "speed") {
         admin.speed = true;
         moveSpeed = 13;
-        toast("вљЎ РЎСѓРїРµСЂ-Р±РµРі");
+        toast("⚡ Супер-бег");
       }
       if (type === "obby-cp") {
         activeCp = Math.min(activeCp + 1, checkpoints.length - 1);
         spawnAtCheckpoint();
-        toast("Р§РµРє: " + checkpoints[activeCp].name);
+        toast("Чек: " + checkpoints[activeCp].name);
       }
       if (type === "obby-finish") {
         player.position.set(0, 8, FINISH_Z);
         vx = vy = vz = 0;
-        toast("рџЏЃ Р¤РёРЅРёС€");
+        toast("🏁 Финиш");
       }
       if (type === "max") {
         admin.god = true;
@@ -569,7 +569,7 @@
         admin.floor = true;
         admin.speed = true;
         moveSpeed = 14;
-        toast("вљЎ Р’РЎРЃ РќРђ РњРђРљРЎ");
+        toast("⚡ ВСЁ НА МАКС");
       }
     }
 
@@ -646,23 +646,23 @@
     function die(reason) {
       if (finished) return;
       if (admin.god || window.__AMAL_GOD__) {
-        // Р‘РµСЃСЃРјРµСЂС‚РёРµ: РЅРµ СѓРјРёСЂР°РµРј РѕС‚ Р»Р°Р·РµСЂРѕРІ
-        toast("рџ›Ў " + (reason || "Р±Р»РѕРє") + " вЂ” Р±РµСЃСЃРјРµСЂС‚РёРµ");
+        // Бессмертие: не умираем от лазеров
+        toast("🛡 " + (reason || "блок") + " — бессмертие");
         return;
       }
       deaths++;
-      toast(reason || "РђР№!");
+      toast(reason || "Ай!");
       spawnAtCheckpoint();
     }
 
     function updateSafetyFloor() {
-      // РўРѕР»СЊРєРѕ С…РѕР·СЏРёРЅ СЃ РІРєР»СЋС‡С‘РЅРЅС‹Рј РїРѕР»РѕРј вЂ” РјР°Р»РµРЅСЊРєРёР№ РЅРµРІРёРґРёРјС‹Р№ РїРѕР» РїРѕРґ РЅРѕРіР°РјРё РїСЂРё РїР°РґРµРЅРёРё
+      // Только хозяин с включённым полом — маленький невидимый пол под ногами при падении
       const ownerFloor = admin.floor && isSiteOwner();
       if (!ownerFloor) {
         safetyFloor.visible = false;
         return;
       }
-      // РџРѕСЏРІР»СЏРµС‚СЃСЏ, РєРѕРіРґР° РїР°РґР°РµС€СЊ РЅРёР¶Рµ С‚СЂР°СЃСЃС‹; СЃР»РµРґСѓРµС‚ Р·Р° С‚РѕР±РѕР№
+      // Появляется, когда падаешь ниже трассы; следует за тобой
       if (player.position.y < 2.5 || vy < -2) {
         safetyFloor.visible = true;
         safetyFloor.position.set(player.position.x, Math.min(player.position.y - 0.9, -0.5), player.position.z);
@@ -734,7 +734,7 @@
             Math.abs(player.position.y - cp.y) < 2.5) {
           activeCp = i;
           cp.unlocked = true;
-          toast("Р§РµРєРїРѕРёРЅС‚: " + cp.name);
+          toast("Чекпоинт: " + cp.name);
           updateHud();
         }
       }
@@ -778,11 +778,11 @@
         const dz = Math.abs(player.position.z - L.beam.position.z);
         if (L.mode === "spin") {
           if (Math.hypot(dx, dz) < spinPad * 0.75 + 0.2 && dy < 0.75) {
-            die("Р›Р°Р·РµСЂ!");
+            die("Лазер!");
             return;
           }
         } else if (dx < hw * 0.85 + 0.2 && dy < 0.7 && dz < hd * 0.85 + 0.2) {
-          die("Р›Р°Р·РµСЂ!");
+          die("Лазер!");
           return;
         }
       }
@@ -840,7 +840,7 @@
         const spd = admin.speed ? moveSpeed : 9.5;
 
         if (admin.fly) {
-          // РџРѕР»С‘С‚: РџСЂРѕР±РµР» РІРІРµСЂС…, Shift РІРЅРёР·, Р±РµР· РіСЂР°РІРёС‚Р°С†РёРё
+          // Полёт: Пробел вверх, Shift вниз, без гравитации
           vy = 0;
           if (keys.Space || mJump) vy = 10;
           if (keys.ShiftLeft || keys.ShiftRight || keys.ControlLeft) vy = -10;
@@ -867,7 +867,7 @@
 
         if (player.position.y < -8) {
           if (admin.floor && isSiteOwner()) {
-            // РќРµРІРёРґРёРјС‹Р№ РїРѕР» Р»РѕРІРёС‚ РїР°РґРµРЅРёРµ вЂ” РЅРµ СѓРјРёСЂР°РµС€СЊ
+            // Невидимый пол ловит падение — не умираешь
             safetyFloor.visible = true;
             safetyFloor.position.set(player.position.x, -1, player.position.z);
             player.position.y = -1 + 0.125 + 0.75;
@@ -877,14 +877,14 @@
             player.position.y = checkpoints[activeCp].y;
             vy = 0;
           } else {
-            die("РЈРїР°Р»!");
+            die("Упал!");
           }
         }
 
         if (!finished && player.position.z > FINISH_Z - 1.5 && Math.abs(player.position.x) < 3.2) {
           finished = true;
           document.getElementById("win").classList.add("show");
-          toast("Р¤РёРЅРёС€!");
+          toast("Финиш!");
         }
 
         updateHud();

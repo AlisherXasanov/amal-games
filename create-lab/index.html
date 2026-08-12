@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Lab вЂ” Р°РЅРёРјР°С†РёРё, РёРіСЂС‹ Рё РЈС€Р°СЃС‚РёРє</title>
-  <meta name="description" content="РЎРѕР·РґР°РІР°Р№ Р°РЅРёРјР°С†РёРё Рё РёРіСЂС‹. РЈС€Р°СЃС‚РёРє: РїРёС€Рё С‚РµРєСЃС‚РѕРј РёР»Рё РіРѕРІРѕСЂРё РІ РјРёРєСЂРѕС„РѕРЅ." />
+  <title>Create Lab — анимации, игры и Ушастик</title>
+  <meta name="description" content="Создавай анимации и игры. Ушастик: пиши текстом или говори в микрофон." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
@@ -16,9 +16,9 @@
     <header class="topbar">
       <a class="brand" href="./">Create <span>Lab</span></a>
       <nav class="nav" aria-label="Nav">
-        <a class="is-active" href="./" data-i18n="navHome">Р“Р»Р°РІРЅР°СЏ</a>
-        <a href="./animate.html" data-i18n="navAnim">РђРЅРёРјР°С†РёРё</a>
-        <a href="./game.html" data-i18n="navGames">РРіСЂС‹</a>
+        <a class="is-active" href="./" data-i18n="navHome">Главная</a>
+        <a href="./animate.html" data-i18n="navAnim">Анимации</a>
+        <a href="./game.html" data-i18n="navGames">Игры</a>
         <a href="../" data-i18n="navCatalog">Amal's Games</a>
       </nav>
     </header>
@@ -27,18 +27,18 @@
 
     <section class="hero">
       <div class="hero-copy">
-        <p class="eyebrow" data-i18n="eyebrow">РўРІРѕСЏ РјР°СЃС‚РµСЂСЃРєР°СЏ</p>
+        <p class="eyebrow" data-i18n="eyebrow">Твоя мастерская</p>
         <h1>Create Lab</h1>
         <p class="lede" data-i18n="lede">
-          Р РёСЃСѓР№ Р°РЅРёРјР°С†РёРё, СЃРѕР±РёСЂР°Р№ РёРіСЂС‹ Рё РїРёС€Рё РЈС€Р°СЃС‚РёРєСѓ С‚РµРєСЃС‚РѕРј вЂ” РёР»Рё РіРѕРІРѕСЂРё РІ РјРёРєСЂРѕС„РѕРЅ (РЅР°Р¶Р°Р» в†’ РіРѕРІРѕСЂРёС€СЊ в†’ РЎС‚РѕРї).
+          Рисуй анимации, собирай игры и пиши Ушастику текстом — или говори в микрофон (нажал → говоришь → Стоп).
         </p>
         <div class="cta-row">
-          <a class="btn primary" href="./animate.html" data-i18n="ctaAnim">РЎРґРµР»Р°С‚СЊ Р°РЅРёРјР°С†РёСЋ</a>
-          <a class="btn coral" href="./game.html" data-i18n="ctaGame">РЎРґРµР»Р°С‚СЊ РёРіСЂСѓ</a>
+          <a class="btn primary" href="./animate.html" data-i18n="ctaAnim">Сделать анимацию</a>
+          <a class="btn coral" href="./game.html" data-i18n="ctaGame">Сделать игру</a>
         </div>
       </div>
 
-      <aside class="panel ai-stage" aria-label="РЈС€Р°СЃС‚РёРє">
+      <aside class="panel ai-stage" aria-label="Ушастик">
         <div class="ai-buddy" id="ai-buddy">
           <div class="rings" aria-hidden="true"></div>
           <div class="ear left" aria-hidden="true"></div>
@@ -52,57 +52,57 @@
           </div>
         </div>
         <div class="ai-status">
-          <strong>РЈС€Р°СЃС‚РёРє</strong>
-          <p id="ai-status-text">РќР°Р¶РјРё РјРёРєСЂРѕС„РѕРЅ Рё СЃРєР°Р¶Рё С‡С‘С‚РєРѕ, С‡С‚Рѕ РІРєР»СЋС‡РёС‚СЊ. РР»Рё РЅР°РїРёС€Рё РЅРёР¶Рµ.</p>
+          <strong>Ушастик</strong>
+          <p id="ai-status-text">Нажми микрофон и скажи чётко, что включить. Или напиши ниже.</p>
         </div>
         <div class="mic-row">
-          <button type="button" class="mic-btn" id="btn-mic" aria-pressed="false" aria-label="РЎРєР°Р·Р°С‚СЊ">
-            <span class="mic-ico">рџЋ¤</span>
-            <span class="mic-txt">РЎРєР°Р·Р°С‚СЊ</span>
+          <button type="button" class="mic-btn" id="btn-mic" aria-pressed="false" aria-label="Сказать">
+            <span class="mic-ico">🎤</span>
+            <span class="mic-txt">Сказать</span>
           </button>
-          <button type="button" class="btn" id="btn-greet">РџРѕР·РґРѕСЂРѕРІР°С‚СЊСЃСЏ</button>
+          <button type="button" class="btn" id="btn-greet">Поздороваться</button>
         </div>
-        <p id="mic-label" class="mic-hint-line" data-label-start="РЎРєР°Р·Р°С‚СЊ" data-label-stop="РЎРўРћРџ">
-          РћСЂР°РЅР¶РµРІР°СЏ РєРЅРѕРїРєР° = СЃРєР°Р·Р°С‚СЊ. РљРѕРіРґР° СЃР»СѓС€Р°СЋ вЂ” СЃС‚Р°РЅРµС‚ Р·РµР»С‘РЅРѕР№ В«РЎРўРћРџВ»: РЅР°Р¶РјРё, С‡С‚РѕР±С‹ РІС‹РєР»СЋС‡РёС‚СЊ.
+        <p id="mic-label" class="mic-hint-line" data-label-start="Сказать" data-label-stop="СТОП">
+          Оранжевая кнопка = сказать. Когда слушаю — станет зелёной «СТОП»: нажми, чтобы выключить.
         </p>
       </aside>
     </section>
 
     <section class="grid-2">
       <a class="card" href="./animate.html">
-        <div class="icon">рџЋ¬</div>
-        <h2 data-i18n="cardAnimTitle">РђРЅРёРјР°С†РёРё</h2>
-        <p data-i18n="cardAnimBody">РљР°РґСЂС‹ РЅР° С…РѕР»СЃС‚Рµ, Р»СѓРє, СЃРєРѕСЂРѕСЃС‚СЊ, СЃРѕС…СЂР°РЅРµРЅРёРµ.</p>
+        <div class="icon">🎬</div>
+        <h2 data-i18n="cardAnimTitle">Анимации</h2>
+        <p data-i18n="cardAnimBody">Кадры на холсте, лук, скорость, сохранение.</p>
       </a>
       <a class="card" href="./game.html">
-        <div class="icon">рџ•№пёЏ</div>
-        <h2 data-i18n="cardGameTitle">РРіСЂС‹</h2>
-        <p data-i18n="cardGameBody">Р—РјРµР№РєР°, Р»РѕРІРёР»РєР°, РїСЂС‹Р¶РєРё РёР»Рё РіРѕРЅРєР° вЂ” РіРѕР»РѕСЃРѕРј РёР»Рё С‚РµРєСЃС‚РѕРј.</p>
+        <div class="icon">🕹️</div>
+        <h2 data-i18n="cardGameTitle">Игры</h2>
+        <p data-i18n="cardGameBody">Змейка, ловилка, прыжки или гонка — голосом или текстом.</p>
       </a>
     </section>
 
     <section class="panel chat-box" style="margin-top:1rem">
-      <h2 data-i18n="chatTitle">Р”РёР°Р»РѕРі СЃ РЈС€Р°СЃС‚РёРєРѕРј</h2>
-      <p class="lede" style="margin:0">РЎРєР°Р¶Рё РёР»Рё РЅР°РїРёС€Рё С‡С‘С‚РєРѕ: В«Р±Р°СЃРєРµС‚Р±РѕР»В», В«РїР»РѕС‰Р°РґРєР°В», В«Р·РјРµР№РєР°В»вЂ¦</p>
+      <h2 data-i18n="chatTitle">Диалог с Ушастиком</h2>
+      <p class="lede" style="margin:0">Скажи или напиши чётко: «баскетбол», «площадка», «змейка»…</p>
       <div class="chat-log" id="chat-log" aria-live="polite"></div>
       <form class="chat-form" id="text-form">
-        <input type="text" id="text-input" placeholder="РќР°РїРёС€Рё РёРґРµСЋвЂ¦ РЅР°РїСЂРёРјРµСЂ: Р±Р°СЃРєРµС‚Р±РѕР»" autocomplete="off" />
-        <button class="btn primary" type="submit">РЎРєР°Р·Р°С‚СЊ</button>
+        <input type="text" id="text-input" placeholder="Напиши идею… например: баскетбол" autocomplete="off" />
+        <button class="btn primary" type="submit">Сказать</button>
       </form>
     </section>
 
     <section class="grid-2" style="margin-top:1rem">
       <div class="panel">
-        <h3 data-i18n="yourAnims">РўРІРѕРё Р°РЅРёРјР°С†РёРё</h3>
+        <h3 data-i18n="yourAnims">Твои анимации</h3>
         <div class="list" id="anim-list"></div>
       </div>
       <div class="panel">
-        <h3 data-i18n="yourGames">РўРІРѕРё РёРіСЂС‹</h3>
+        <h3 data-i18n="yourGames">Твои игры</h3>
         <div class="list" id="game-list"></div>
       </div>
     </section>
 
-    <p class="footer-note" data-i18n="footer">РњРёРєСЂРѕС„РѕРЅ: Chrome / Edge. РњРѕР¶РЅРѕ РІСЃРµРіРґР° РїРёСЃР°С‚СЊ С‚РµРєСЃС‚РѕРј. РЎРѕС…СЂР°РЅРµРЅРёСЏ вЂ” РІ СЌС‚РѕРј Р±СЂР°СѓР·РµСЂРµ.</p>
+    <p class="footer-note" data-i18n="footer">Микрофон: Chrome / Edge. Можно всегда писать текстом. Сохранения — в этом браузере.</p>
   </div>
 
   <script src="./catalog.js"></script>
@@ -134,14 +134,14 @@
         const games = CreateLabStore.listGames();
         const animList = document.getElementById("anim-list");
         const gameList = document.getElementById("game-list");
-        const kindRu = { catch: "Р»РѕРІРёР»РєР°", snake: "Р·РјРµР№РєР°", jump: "РїСЂС‹Р¶РєРё", race: "РіРѕРЅРєР°", playground: "РїР»РѕС‰Р°РґРєР°" };
+        const kindRu = { catch: "ловилка", snake: "змейка", jump: "прыжки", race: "гонка", playground: "площадка" };
 
         animList.innerHTML = anims.length
           ? anims.slice(0, 6).map((a) => `
               <div class="list-item">
                 <div>
                   <h4>${escapeHtml(a.name)}</h4>
-                  <p>${a.frames?.length || 0} В· ${a.fps || 8} FPS</p>
+                  <p>${a.frames?.length || 0} · ${a.fps || 8} FPS</p>
                 </div>
                 <a class="btn" href="./animate.html?id=${encodeURIComponent(a.id)}">${escapeHtml(d.open)}</a>
               </div>
@@ -153,7 +153,7 @@
               <div class="list-item">
                 <div>
                   <h4>${escapeHtml(g.name)}</h4>
-                  <p>${escapeHtml(kindRu[g.kind] || "РёРіСЂР°")}</p>
+                  <p>${escapeHtml(kindRu[g.kind] || "игра")}</p>
                 </div>
                 <a class="btn primary" href="./play.html?id=${encodeURIComponent(g.id)}">${escapeHtml(d.play)}</a>
               </div>

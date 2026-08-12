@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Murder Mystery 3D</title>
-  <meta name="description" content="3D Murder Mystery вЂ” РЅР°Р№РґРё СѓР±РёР№С†Сѓ РёР»Рё СѓР±РµРіРё!" />
+  <meta name="description" content="3D Murder Mystery — найди убийцу или убеги!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #0f0f23; font-family: system-ui, sans-serif; }
@@ -31,21 +31,21 @@
 <body>
   <div id="ui">
     <b>Murder Mystery</b><br/>
-    Р РѕР»СЊ: <span id="role">вЂ”</span><br/>
-    Р’С‹Р¶РёРІС€РёРµ: <span id="alive">5</span><br/>
-    Р’СЂРµРјСЏ: <span id="timer">60</span>СЃ
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
+    Роль: <span id="role">—</span><br/>
+    Выжившие: <span id="alive">5</span><br/>
+    Время: <span id="timer">60</span>с
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
-  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
+  <a id="back" href="../">← Каталог</a>
   <div id="admin-shop">
-    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
-    <button id="ex-knife" type="button">Р—РѕР»РѕС‚РѕР№ РЅРѕР¶-РІРёС‚СЂРёРЅР° ($0)</button>
-    <button id="ex-badge" type="button">РџРѕРґРёСѓРј С€РµСЂРёС„Р° ($0)</button>
-    <button id="ex-chair" type="button">VIP-РєСЂРµСЃР»Рѕ ($0)</button>
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-knife" type="button">Золотой нож-витрина ($0)</button>
+    <button id="ex-badge" type="button">Подиум шерифа ($0)</button>
+    <button id="ex-chair" type="button">VIP-кресло ($0)</button>
   </div>
-  <div id="controls">WASD вЂ” С…РѕРґ В· РєР»РёРє вЂ” РґРµР№СЃС‚РІРёРµ В· РџРљРњ вЂ” РєР°РјРµСЂР° В· Q/E</div>
+  <div id="controls">WASD — ход · клик — действие · ПКМ — камера · Q/E</div>
   <div id="role-msg" id="role-popup"></div>
-  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">РРіСЂР°С‚СЊ РµС‰С‘</button></div>
+  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Играть ещё</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
@@ -162,7 +162,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
         }
       });
     }
@@ -221,11 +221,11 @@
       updateUI();
       // Show role
       const popup = document.getElementById("role-msg");
-      const roleNames = { innocent: "РќРµРІРёРЅРЅС‹Р№ вЂ” РІС‹Р¶РёРІРё!", sheriff: "РЁРµСЂРёС„ вЂ” РЅР°Р№РґРё СѓР±РёР№С†Сѓ!", murderer: "РЈР±РёР№С†Р° вЂ” СѓР±РµР№ РІСЃРµС…!" };
+      const roleNames = { innocent: "Невинный — выживи!", sheriff: "Шериф — найди убийцу!", murderer: "Убийца — убей всех!" };
       popup.textContent = roleNames[playerRole];
       popup.style.display = "block";
       setTimeout(() => popup.style.display = "none", 2500);
-      document.getElementById("role").textContent = playerRole === "murderer" ? "РЈР±РёР№С†Р°" : playerRole === "sheriff" ? "РЁРµСЂРёС„" : "РќРµРІРёРЅРЅС‹Р№";
+      document.getElementById("role").textContent = playerRole === "murderer" ? "Убийца" : playerRole === "sheriff" ? "Шериф" : "Невинный";
     }
 
     function updateUI() {
@@ -235,7 +235,7 @@
 
     function endGame(win, msg) {
       gameOver = true;
-      document.getElementById("res-title").textContent = win ? "РџРѕР±РµРґР°!" : "РџРѕСЂР°Р¶РµРЅРёРµ!";
+      document.getElementById("res-title").textContent = win ? "Победа!" : "Поражение!";
       document.getElementById("res-title").style.color = win ? "#4ade80" : "#ef4444";
       document.getElementById("res-text").textContent = msg;
       document.getElementById("result").classList.add("show");
@@ -257,10 +257,10 @@
             npc.alive = false; npc.mesh.position.y = 0.2; npc.mesh.rotation.z = Math.PI / 2;
             alive--;
             updateUI();
-            if (alive <= 1) endGame(true, "РўС‹ СѓР±РёР» РІСЃРµС…!");
+            if (alive <= 1) endGame(true, "Ты убил всех!");
           } else if (playerRole === "sheriff") {
-            if (npc.role === "murderer") { endGame(true, "РўС‹ РЅР°С€С‘Р» СѓР±РёР№С†Сѓ!"); }
-            else { endGame(false, "Р­С‚Рѕ Р±С‹Р» РЅРµРІРёРЅРЅС‹Р№!"); }
+            if (npc.role === "murderer") { endGame(true, "Ты нашёл убийцу!"); }
+            else { endGame(false, "Это был невинный!"); }
           }
           break;
         }
@@ -293,8 +293,8 @@
 
       timeLeft -= dt;
       if (timeLeft <= 0) {
-        if (playerRole === "murderer") endGame(false, "Р’СЂРµРјСЏ РІС‹С€Р»Рѕ вЂ” С‚РµР±СЏ СЂР°СЃРєСЂС‹Р»Рё!");
-        else endGame(true, "РўС‹ РІС‹Р¶РёР»! Р’СЂРµРјСЏ РІС‹С€Р»Рѕ.");
+        if (playerRole === "murderer") endGame(false, "Время вышло — тебя раскрыли!");
+        else endGame(true, "Ты выжил! Время вышло.");
         return;
       }
       if (Math.floor(now / 1000) % 1 === 0) updateUI();
@@ -324,7 +324,7 @@
         if (npc.role === "murderer" && playerRole !== "murderer") {
           const distToPlayer = npc.mesh.position.distanceTo(player.position);
           if (distToPlayer < 1.5 && Math.random() < 0.01) {
-            endGame(false, "РЈР±РёР№С†Р° РґРѕР±СЂР°Р»СЃСЏ РґРѕ С‚РµР±СЏ!");
+            endGame(false, "Убийца добрался до тебя!");
             return;
           }
           // Kill other NPCs

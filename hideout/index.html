@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>РЈРєСЂС‹С‚РёРµ вЂ” Hideout</title>
-  <meta name="description" content="РџСЂСЏС‚РєРё: 10 РєР°СЂС‚, 5 СЌС‚Р°Р¶РµР№ РІ РґРѕРјРµ, 10 РїСЂСЏС‡СѓС‰РёС…СЃСЏ Рё 2 РёСЃРєР°С‚РµР»СЏ." />
+  <title>Укрытие — Hideout</title>
+  <meta name="description" content="Прятки: 10 карт, 5 этажей в доме, 10 прячущихся и 2 искателя." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css?v=11" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+  <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
     <div class="screen" id="screen">
@@ -19,35 +19,35 @@
 
       <div class="hud" id="hud" hidden>
         <div class="hud-row" id="hudInfo"></div>
-        <button type="button" class="btn-menu" id="btnMenu">Р’ РјРµРЅСЋ</button>
+        <button type="button" class="btn-menu" id="btnMenu">В меню</button>
       </div>
       <div class="toast" id="toast"></div>
 
       <div class="touch" id="touch" hidden>
         <div class="pad left" id="stick"></div>
-        <div class="pad right" id="actBtn">E<br>РґРµР№СЃС‚РІРёРµ</div>
+        <div class="pad right" id="actBtn">E<br>действие</div>
       </div>
 
       <div class="panel menu" id="menu">
-        <h1>РЈРєСЂС‹С‚РёРµ</h1>
-        <p class="sub">Р’С‹Р±РµСЂРё СЂРѕР»СЊ. РџРѕС‚РѕРј РІС‹Р±РµСЂРµС€СЊ РєР°СЂС‚Сѓ.</p>
+        <h1>Укрытие</h1>
+        <p class="sub">Выбери роль. Потом выберешь карту.</p>
         <div class="roles">
-          <button type="button" class="btn seeker" data-role="seeker">РСЃРєР°С‚РµР»СЊ</button>
-          <button type="button" class="btn hider" data-role="hider">РџСЂСЏС‡СѓС‰РёР№СЃСЏ</button>
+          <button type="button" class="btn seeker" data-role="seeker">Искатель</button>
+          <button type="button" class="btn hider" data-role="hider">Прячущийся</button>
         </div>
         <p class="hints">
-          10 РїСЂСЏС‡СѓС‰РёС…СЃСЏ В· 2 РёСЃРєР°С‚РµР»СЏ В· 10 РєР°СЂС‚<br>
-          РџРѕР№РјР°РЅРЅС‹Р№ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РёСЃРєР°С‚РµР»РµРј.<br>
-          Р’Рѕ РІСЂРµРјСЏ РїСЂСЏС‚РѕРє РёСЃРєР°С‚РµР»Рё РЅРёС‡РµРіРѕ РЅРµ РІРёРґСЏС‚.<br>
-          РСЃРєР°С‚РµР»СЊ РјРѕР¶РµС‚ РїСЂРѕРїСѓСЃС‚РёС‚СЊ РѕР¶РёРґР°РЅРёРµ (E / РџСЂРѕР±РµР» / РєРЅРѕРїРєР°).
+          10 прячущихся · 2 искателя · 10 карт<br>
+          Пойманный становится искателем.<br>
+          Во время пряток искатели ничего не видят.<br>
+          Искатель может пропустить ожидание (E / Пробел / кнопка).
         </p>
       </div>
 
       <div class="panel maps" id="mapSelect" hidden>
-        <h1>РљР°СЂС‚С‹</h1>
-        <p class="sub">Р’С‹Р±РµСЂРё РјРµСЃС‚Рѕ РґР»СЏ РїСЂСЏС‚РѕРє</p>
+        <h1>Карты</h1>
+        <p class="sub">Выбери место для пряток</p>
         <div class="map-grid" id="mapGrid"></div>
-        <button type="button" class="btn ghost" id="btnBackRole">в†ђ РќР°Р·Р°Рґ</button>
+        <button type="button" class="btn ghost" id="btnBackRole">← Назад</button>
       </div>
 
       <div id="endPanel" class="panel" hidden style="display:none" aria-hidden="true"></div>
