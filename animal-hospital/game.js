@@ -268,9 +268,56 @@
   }
 
   function visibleShifts() {
-    // один и тот же список «СМЕНА»: обычные + секреты хозяину сразу
-    if (!canUseSecretShifts()) return SHIFTS.filter((s) => !s.secret);
-    return SHIFTS.slice().sort((a, b) => a.id - b.id);
+    const normals = SHIFTS.filter((s) => !s.secret);
+    if (!canUseSecretShifts()) return normals;
+    // в основном списке — обычные; выбранный секрет тоже, чтобы было видно в «СМЕНА»
+    if (selectedShift && selectedShift.secret) {
+      return normals.concat([selectedShift]);
+    }
+    return normals;
+  }
+
+  function openSecretShiftsPanel() {
+    if (!canUseSecretShifts()) return;
+    const list = document.getElementById("secretShiftsList");
+    const panel = document.getElementById("secretShiftsPanel");
+    if (!list || !panel) return;
+    const secrets = SHIFTS.filter((s) => s.secret);
+    list.innerHTML = secrets
+      .map(
+        (s) =>
+          `<button type="button" class="btn secret-pick" data-shift="${s.id}">${s.name}<small>${s.tag}</small></button>`
+      )
+      .join("");
+    list.querySelectorAll(".secret-pick").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = Number(btn.getAttribute("data-shift"));
+        const pick = SHIFTS.find((s) => s.id === id);
+        if (!pick) return;
+        selectedShift = pick;
+        meta.secretShifts67 = true;
+        meta.secretShift7 = true;
+        storeSet(SAVE, meta);
+        persistLobby();
+        hideEl(panel);
+        refreshLobbyUI();
+        showEl(menu);
+        showEl(secretDeathWrap);
+        toast("Смена: " + pick.name);
+      });
+    });
+    hideEl(menu);
+    hideEl(secretDeathWrap);
+    hideEl(shopPanel);
+    hideEl(exchangePanel);
+    showEl(panel);
+  }
+
+  function closeSecretShiftsPanel() {
+    hideEl(document.getElementById("secretShiftsPanel"));
+    refreshLobbyUI();
+    showEl(menu);
+    showEl(secretDeathWrap);
   }
 
   function applySecretDeathCode(raw) {
@@ -574,6 +621,8 @@
 
     const hint = document.getElementById("menuHints");
     if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
+    const btnAll = document.getElementById("btnAllSecrets");
+    if (btnAll) btnAll.hidden = !canUseSecretShifts();
   }
 
   function persistLobby() {
@@ -1151,6 +1200,7 @@
     hideEl(queueStrip);
     hideEl(shopPanel);
     hideEl(exchangePanel);
+    hideEl(document.getElementById("secretShiftsPanel"));
     refreshLobbyUI();
     showEl(menu);
     showEl(secretDeathWrap);
@@ -2611,6 +2661,11 @@
   });
   document.getElementById("btnSpin").addEventListener("click", spinExchange);
 
+  const btnAllSecrets = document.getElementById("btnAllSecrets");
+  if (btnAllSecrets) btnAllSecrets.addEventListener("click", openSecretShiftsPanel);
+  const btnCloseSecrets = document.getElementById("btnCloseSecrets");
+  if (btnCloseSecrets) btnCloseSecrets.addEventListener("click", closeSecretShiftsPanel);
+
   const secretDeathInput = document.getElementById("secretDeathInput");
   const secretDeathGo = document.getElementById("secretDeathGo");
   if (secretDeathInput) {
@@ -2638,6 +2693,7 @@
   hideEl(queueStrip);
   hideEl(shopPanel);
   hideEl(exchangePanel);
+  hideEl(document.getElementById("secretShiftsPanel"));
   showEl(menu);
   showEl(secretDeathWrap);
   requestAnimationFrame(frame);

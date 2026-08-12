@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=117" />
+  <link rel="stylesheet" href="./style.css?v=118" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -88,6 +88,9 @@
           <button type="button" class="btn" id="btnStart">Открыть ресепшен</button>
           <button type="button" class="btn ghost" id="btnOpenShop">Магазин классов</button>
           <button type="button" class="btn ghost" id="btnOpenExchange">∞ Случайный обмен</button>
+          <button type="button" class="btn secret-shifts-btn" id="btnAllSecrets" hidden>
+            ✦ Все секретные смены
+          </button>
         </div>
         <p class="hints" id="menuHints">
           👑 Ты админ команды · ∞ монеты · жёлтые стрелки к автоматам · новые комнаты
@@ -107,6 +110,14 @@
             <button type="button" class="secret-death-go" id="secretDeathGo">OK</button>
           </div>
         </div>
+      </div>
+
+      <!-- СЕКРЕТНЫЕ СМЕНЫ (тот же стиль панели, только секреты) -->
+      <div class="panel secret-shifts" id="secretShiftsPanel" hidden>
+        <h2>✦ Все секретные смены</h2>
+        <p class="sub">Выбери смену — она станет активной в «СМЕНА»</p>
+        <div class="secret-shifts-list" id="secretShiftsList"></div>
+        <button type="button" class="btn ghost" id="btnCloseSecrets">Назад</button>
       </div>
 
       <!-- МАГАЗИН КЛАССОВ -->
@@ -163,7 +174,7 @@
   </div>
 
   <script src="../shared/amal-owner-powers.js?v=16"></script>
-  <script src="./game.js?v=117"></script>
+  <script src="./game.js?v=118"></script>
   <script src="../shared/amal-hub.js?v=27"></script>
   <script src="../shared/amal-surprises.js?v=4"></script>
 </body>

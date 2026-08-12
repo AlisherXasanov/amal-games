@@ -266,8 +266,34 @@ body.theme-lucky7 #app {
   font-size: 0.9rem;
   border-radius: 12px;
 }
-.panel.menu .lobby-actions {
-  gap: 0.45rem;
+.lobby-actions .secret-shifts-btn {
+  background: linear-gradient(135deg, #ffe08a, #f59e0b);
+  color: #1a1408;
+  border: 0;
+}
+.panel.secret-shifts .secret-shifts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: min(420px, 94%);
+  margin: 0.5rem auto 1rem;
+}
+.panel.secret-shifts .secret-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  text-align: left;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 215, 106, 0.4);
+  color: #f3efe6;
+}
+.panel.secret-shifts .secret-pick small {
+  font-weight: 600;
+  opacity: 0.75;
+  font-size: 0.78rem;
 }
 .panel.menu .btn {
   padding: 0.7rem 1.1rem;
