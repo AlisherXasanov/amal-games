@@ -173,26 +173,24 @@
     " · вторая волна",
   ];
 
-  /** 1–40 без публичной 7; секреты: 7, 52, 67 */
+  /** Мало обычных смен; секреты 7/52/67 — в том же списке «СМЕНА» */
   const SHIFTS = (() => {
     const list = [];
-    for (let id = 1; id <= 40; id++) {
-      if (id === 7) continue;
-      const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
-      const flavor = SHIFT_FLAVORS[Math.floor((id - 1) / SHIFT_TEMPLATES.length) % SHIFT_FLAVORS.length];
-      const twist = ((id * 7) % 9) * 0.01;
+    const publicIds = [1, 2, 3, 4, 5, 6, 8, 9];
+    publicIds.forEach((id, i) => {
+      const t = SHIFT_TEMPLATES[i % SHIFT_TEMPLATES.length];
       list.push({
         id,
-        name: `Смена ${id} · ${t.name}${flavor}`,
+        name: `Смена ${id} · ${t.name}`,
         time: 140 + (id % 8) * 4,
-        anomaly: Math.min(0.55, t.anomaly + twist),
-        eventRate: Math.min(0.4, (t.eventRate || 0) + twist * 0.5),
-        tag: t.tag + (flavor ? " (почти как раньше)" : ""),
+        anomaly: Math.min(0.45, t.anomaly),
+        eventRate: Math.min(0.3, t.eventRate || 0),
+        tag: t.tag,
         color: t.color,
         special: t.special || null,
         secret: false,
       });
-    }
+    });
     list.push({
       id: 7,
       name: "✦ Смена 7 · Суперсекрет",
@@ -269,27 +267,10 @@
     return false;
   }
 
-  function secretsUnlocked() {
-    return canUseSecretShifts() && !!(meta && meta.secretShifts67);
-  }
-
   function visibleShifts() {
-    const unlocked = secretsUnlocked();
-    const normals = SHIFTS.filter((s) => !s.secret);
-    if (!unlocked) return normals;
-    const secrets = SHIFTS.filter((s) => s.secret);
-    return normals.concat(secrets);
-  }
-
-  function unlockAllSecretShifts() {
-    if (!canUseSecretShifts()) return false;
-    meta.secretShifts67 = true;
-    meta.secretShift7 = true;
-    storeSet(SAVE, meta);
-    refreshLobbyUI();
-    persistLobby();
-    toast("✦ Все секретные смены в списке");
-    return true;
+    // один и тот же список «СМЕНА»: обычные + секреты хозяину сразу
+    if (!canUseSecretShifts()) return SHIFTS.filter((s) => !s.secret);
+    return SHIFTS.slice().sort((a, b) => a.id - b.id);
   }
 
   function applySecretDeathCode(raw) {
@@ -297,7 +278,7 @@
     const code = String(raw || "").trim();
     if (code !== "67" && code !== "52" && code !== "7") return false;
     meta.secretShifts67 = true;
-    if (code === "7") meta.secretShift7 = true;
+    meta.secretShift7 = true;
     storeSet(SAVE, meta);
     const pick = SHIFTS.find((s) => s.id === Number(code));
     if (pick) selectedShift = pick;
@@ -554,9 +535,8 @@
   let selectedClass = CLASSES.find((c) => c.id === meta.classId && hasClass(c.id)) || CLASSES[0];
   let selectedBuddy = BUDDIES.find((b) => b.id === meta.buddyId) || BUDDIES[0];
   let selectedShift = SHIFTS.find((s) => s.id === meta.shiftId) || SHIFTS[0];
-  if (selectedShift.secret) {
-    const ok = canUseSecretShifts() && meta.secretShifts67;
-    if (!ok) selectedShift = SHIFTS[0];
+  if (selectedShift.secret && !canUseSecretShifts()) {
+    selectedShift = SHIFTS.find((s) => !s.secret) || SHIFTS[0];
   }
   let selectedSkin = SKINS.find((s) => s.id === meta.skinId && hasSkin(s.id)) || SKINS[0];
   let mode = meta.mode || "solo";
@@ -594,18 +574,6 @@
 
     const hint = document.getElementById("menuHints");
     if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
-    const btnAll = document.getElementById("btnAllSecrets");
-    if (btnAll) {
-      if (canUseSecretShifts()) {
-        btnAll.hidden = false;
-        btnAll.textContent = secretsUnlocked()
-          ? "✦ Секретные смены открыты"
-          : "✦ Все секретные смены";
-        btnAll.disabled = secretsUnlocked();
-      } else {
-        btnAll.hidden = true;
-      }
-    }
   }
 
   function persistLobby() {
@@ -2658,12 +2626,6 @@
       }
     });
     if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
-  }
-  const btnAllSecrets = document.getElementById("btnAllSecrets");
-  if (btnAllSecrets) {
-    btnAllSecrets.addEventListener("click", () => {
-      unlockAllSecretShifts();
-    });
   }
 
   hideEl(hud);

@@ -366,24 +366,6 @@ body.theme-lucky7 #app {
   color: #1a1020;
   background: linear-gradient(135deg, #e8b4ff, #c084fc);
 }
-.secret-death .btn-secret-all {
-  margin-top: 0.35rem;
-  width: 100%;
-  border: 1px solid rgba(255, 215, 106, 0.55);
-  border-radius: 8px;
-  padding: 0.45rem 0.55rem;
-  font: 800 0.78rem Nunito, system-ui;
-  cursor: pointer;
-  color: #1a1408;
-  background: linear-gradient(135deg, #ffe08a, #f59e0b);
-}
-.secret-death .btn-secret-all:disabled {
-  opacity: 0.7;
-  cursor: default;
-  background: linear-gradient(135deg, #86efac, #22c55e);
-  border-color: rgba(134, 239, 172, 0.55);
-  color: #052e16;
-}
 
 .brand {
   font-family: Fredoka, Nunito, sans-serif;
