@@ -173,11 +173,10 @@
     " · вторая волна",
   ];
 
-  /** 1–40 без публичной 7; секреты: 7, 52, 67 */
+  /** 1–40 обычные; секреты только 52 и 67 (через secret death) */
   const SHIFTS = (() => {
     const list = [];
     for (let id = 1; id <= 40; id++) {
-      if (id === 7) continue; // семёрка только суперсекретная
       const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
       const flavor = SHIFT_FLAVORS[Math.floor((id - 1) / SHIFT_TEMPLATES.length) % SHIFT_FLAVORS.length];
       const twist = ((id * 7) % 9) * 0.01;
@@ -193,22 +192,6 @@
         secret: false,
       });
     }
-    list.push({
-      id: 7,
-      name: "✦ Смена 7 · Суперсекрет",
-      time: 777,
-      anomaly: 0,
-      eventRate: 0,
-      tag: "Любимая семёрка · без аномалий · ∞ вещи",
-      color: "#ff6ad5",
-      special: "lucky7",
-      secret: true,
-      lucky7: true,
-      noAnomalies: true,
-      vipKit: true,
-      coffeeGift: 7,
-      theme: "lucky7",
-    });
     list.push({
       id: 52,
       name: "✦ Смена Леши · ∞ кофе",
@@ -270,26 +253,16 @@
   }
 
   function visibleShifts() {
-    if (!canUseSecretShifts()) return SHIFTS.filter((s) => !s.secret);
-    const unlock7 = !!(meta && meta.secretShift7);
-    return SHIFTS.filter((s) => {
-      if (!s.secret) return true;
-      if (s.id === 7) return unlock7;
-      return true; // 52 и 67 хозяину сразу в списке (для роликов)
-    }).sort((a, b) => {
-      const as = a.secret ? 0 : 1;
-      const bs = b.secret ? 0 : 1;
-      if (as !== bs) return as - bs;
-      return a.id - b.id;
-    });
+    const unlocked = canUseSecretShifts() && !!(meta && meta.secretShifts67);
+    // обычные смены как всегда; 52/67 только после кода — без отдельной «панели секретов»
+    return SHIFTS.filter((s) => !s.secret || unlocked);
   }
 
   function applySecretDeathCode(raw) {
     if (!canUseSecretShifts()) return false;
     const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52" && code !== "7") return false;
+    if (code !== "67" && code !== "52") return false;
     meta.secretShifts67 = true;
-    if (code === "7") meta.secretShift7 = true;
     storeSet(SAVE, meta);
     const pick = SHIFTS.find((s) => s.id === Number(code));
     if (pick) selectedShift = pick;
@@ -303,7 +276,7 @@
   }
 
   function isVipShift(shift) {
-    return !!(shift && (shift.vipKit || shift.noAnomalies || shift.lesha || shift.diamondNight || shift.lucky7));
+    return !!(shift && (shift.vipKit || shift.noAnomalies || shift.lesha || shift.diamondNight));
   }
 
   function applyThemeClass(theme) {
@@ -547,8 +520,8 @@
   let selectedBuddy = BUDDIES.find((b) => b.id === meta.buddyId) || BUDDIES[0];
   let selectedShift = SHIFTS.find((s) => s.id === meta.shiftId) || SHIFTS[0];
   if (selectedShift.secret) {
-    if (!canUseSecretShifts()) selectedShift = SHIFTS[0];
-    else if (selectedShift.id === 7 && !meta.secretShift7) selectedShift = SHIFTS[0];
+    const ok = canUseSecretShifts() && meta.secretShifts67;
+    if (!ok) selectedShift = SHIFTS[0];
   }
   let selectedSkin = SKINS.find((s) => s.id === meta.skinId && hasSkin(s.id)) || SKINS[0];
   let mode = meta.mode || "solo";
@@ -1091,15 +1064,6 @@
       applyThemeClass("diamond");
       showEvent("✦ Смена 67 · Алмазная ночь · ☕×67", 3.4);
       toast("+67 · алмаз · 67 кофе · без аномалий");
-    }
-    if (shift.lucky7 || shift.id === 7 || shift.theme === "lucky7") {
-      g.sanity = g.maxSanity;
-      g.immortal = true;
-      if (g.players[0]) g.players[0].color = "#ff6ad5";
-      g.theme = "lucky7";
-      applyThemeClass("lucky7");
-      showEvent("✦ Смена 7 · Суперсекрет", 3.4);
-      toast("Семёрка · ∞ вещи · без аномалий");
     }
     updateNeedUI();
     renderInv();
@@ -2200,21 +2164,9 @@
   function drawActor(pl, label) {
     const theme = g && g.theme;
     const body =
-      theme === "gold"
-        ? "#ffd76a"
-        : theme === "diamond"
-          ? "#c8f4ff"
-          : theme === "lucky7"
-            ? "#ff6ad5"
-            : pl.color;
+      theme === "gold" ? "#ffd76a" : theme === "diamond" ? "#c8f4ff" : pl.color;
     const sash =
-      theme === "gold"
-        ? "#fff3b0"
-        : theme === "diamond"
-          ? "#7ad7ff"
-          : theme === "lucky7"
-            ? "#ffd0f0"
-            : "#7ed9b8";
+      theme === "gold" ? "#fff3b0" : theme === "diamond" ? "#7ad7ff" : "#7ed9b8";
     ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.beginPath();
     ctx.ellipse(pl.x, pl.y + 18, 14, 6, 0, 0, Math.PI * 2);
@@ -2228,9 +2180,8 @@
     ctx.beginPath();
     ctx.arc(pl.x, pl.y - 26, 11, 0, Math.PI * 2);
     ctx.fill();
-    if (theme === "gold" || theme === "diamond" || theme === "lucky7") {
-      ctx.fillStyle =
-        theme === "gold" ? "rgba(255,215,100,0.9)" : theme === "diamond" ? "rgba(180,240,255,0.95)" : "rgba(255,120,220,0.95)";
+    if (theme === "gold" || theme === "diamond") {
+      ctx.fillStyle = theme === "gold" ? "rgba(255,215,100,0.9)" : "rgba(180,240,255,0.95)";
       ctx.beginPath();
       ctx.arc(pl.x + 8, pl.y - 30, 3.2, 0, Math.PI * 2);
       ctx.fill();
@@ -2252,7 +2203,6 @@
   function tintRoom(base, theme) {
     if (theme === "gold") return "#6a4820";
     if (theme === "diamond") return "#1a4060";
-    if (theme === "lucky7") return "#4a1840";
     return base;
   }
 
@@ -2271,7 +2221,7 @@
 
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
-    ctx.fillStyle = theme === "gold" ? "#3a2808" : theme === "diamond" ? "#062030" : theme === "lucky7" ? "#2a0820" : "#101624";
+    ctx.fillStyle = theme === "gold" ? "#3a2808" : theme === "diamond" ? "#062030" : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -2283,13 +2233,11 @@
           ? "rgba(255, 215, 106, 0.55)"
           : theme === "diamond"
             ? "rgba(160, 230, 255, 0.55)"
-            : theme === "lucky7"
-              ? "rgba(255, 120, 220, 0.5)"
-              : "rgba(255,255,255,0.1)";
+            : "rgba(255,255,255,0.1)";
       ctx.lineWidth = theme ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle =
-        theme === "gold" ? "#ffe08a" : theme === "diamond" ? "#d8f6ff" : theme === "lucky7" ? "#ffb0e8" : "rgba(255,255,255,0.7)";
+        theme === "gold" ? "#ffe08a" : theme === "diamond" ? "#d8f6ff" : "rgba(255,255,255,0.7)";
       ctx.font = "800 15px Fredoka, Nunito, sans-serif";
       ctx.fillText(room.name, room.x + 12, room.y + 24);
     }
@@ -2597,20 +2545,6 @@
         ctx.closePath();
         ctx.fill();
       }
-    } else if (theme === "lucky7") {
-      ctx.fillStyle = "rgba(255, 60, 180, 0.16)";
-      ctx.fillRect(0, 0, VW, VH);
-      ctx.fillStyle = "rgba(255, 180, 230, 0.7)";
-      ctx.font = "900 22px Fredoka, Nunito, sans-serif";
-      ctx.textAlign = "center";
-      for (let i = 0; i < 10; i++) {
-        const x = (Math.sin(g.t * 0.8 + i * 2.2) * 0.5 + 0.5) * VW;
-        const y = (Math.cos(g.t * 0.6 + i * 1.5) * 0.5 + 0.5) * VH;
-        ctx.globalAlpha = 0.35 + (i % 3) * 0.15;
-        ctx.fillText("7", x, y);
-      }
-      ctx.globalAlpha = 1;
-      ctx.textAlign = "left";
     }
 
     if (g.sanity < 35) {
