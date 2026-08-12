@@ -465,10 +465,82 @@
     } catch (_) {}
   }
 
+  const ANIME_FLAG = "amal-anime-world-v1";
+
+  function hasAnimeWorld() {
+    try {
+      return localStorage.getItem(ANIME_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function ensureAnimeStyle() {
+    if (document.getElementById("amal-anime-style")) return;
+    const s = document.createElement("style");
+    s.id = "amal-anime-style";
+    s.textContent =
+      "html.amal-anime-world body{filter:saturate(1.15) contrast(1.04)}" +
+      "#amal-anime-overlay{pointer-events:none;position:fixed;inset:0;z-index:9998;overflow:hidden}" +
+      "#amal-anime-overlay i{position:absolute;width:10px;height:6px;border-radius:60% 40%;" +
+      "background:#ffb7d5;opacity:.75;animation:amalSakura linear infinite}" +
+      "@keyframes amalSakura{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(110vh) rotate(360deg)}}" +
+      "#amal-anime-badge{position:fixed;top:10px;right:10px;z-index:9999;padding:6px 10px;" +
+      "border-radius:8px;font:700 12px/1.2 system-ui,sans-serif;color:#fff;" +
+      "background:rgba(180,60,140,.72);pointer-events:none}";
+    document.head.appendChild(s);
+  }
+
+  function applyAnimeDom(on) {
+    if (typeof document === "undefined") return;
+    ensureAnimeStyle();
+    document.documentElement.classList.toggle("amal-anime-world", !!on);
+    document.body.classList.toggle("theme-anime", !!on);
+    let overlay = document.getElementById("amal-anime-overlay");
+    let badge = document.getElementById("amal-anime-badge");
+    if (on) {
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "amal-anime-overlay";
+        for (let i = 0; i < 18; i++) {
+          const p = document.createElement("i");
+          p.style.left = Math.random() * 100 + "%";
+          p.style.animationDuration = 6 + Math.random() * 8 + "s";
+          p.style.animationDelay = Math.random() * 6 + "s";
+          p.style.opacity = String(0.35 + Math.random() * 0.45);
+          overlay.appendChild(p);
+        }
+        document.body.appendChild(overlay);
+      }
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "amal-anime-badge";
+        badge.textContent = "✦ anime";
+        document.body.appendChild(badge);
+      }
+    } else {
+      if (overlay) overlay.remove();
+      if (badge) badge.remove();
+    }
+  }
+
+  function setAnimeWorld(on) {
+    try {
+      localStorage.setItem(ANIME_FLAG, on ? "1" : "0");
+    } catch (_) {}
+    applyAnimeDom(!!on);
+    return !!on;
+  }
+
+  function bootAnimeWorld() {
+    if (hasAnimeWorld()) applyAnimeDom(true);
+  }
+
   if (typeof document !== "undefined") {
     const boot = () => {
       bootGameUpdate();
       bootQuietHere();
+      bootAnimeWorld();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);
@@ -520,6 +592,8 @@
     hasSecretUnlocked,
     bootGameUpdate,
     armQuietHere,
+    setAnimeWorld,
+    hasAnimeWorld,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);

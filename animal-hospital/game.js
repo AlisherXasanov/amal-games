@@ -66,6 +66,34 @@
     { id: "pig", name: "Свин", color: "#f0a0b0" },
   ];
 
+  const ANIME_SPECIES = {
+    cat: "Неко-тян",
+    dog: "Ину-кун",
+    bunny: "Усаги-тян",
+    fox: "Кицунэ",
+    bear: "Кума-сан",
+    duck: "Ахиру-тян",
+    pig: "Бута-кун",
+  };
+
+  const ANIME_ROOMS = {
+    wait: "Зал ожидания ♪",
+    reception: "Ресепшен · опенинг",
+    corridor: "Коридор школьного аниме",
+    pharmacy: "⭐ АПТЕКА (махо-зелья)",
+    herbs: "⭐ ТРАВЫ И СИРОПЫ",
+    treat1: "Кабинет 1 · сэмпай",
+    treat2: "Кабинет 2 · кохаи",
+    cardio: "Кардио · биение сердца",
+    lab: "Лаборатория / рентген",
+    surgery: "Операционная · драма",
+    quarantine: "Карантин · арка",
+    pedia: "Педиатрия · чиби",
+    break: "Отдых / бар · эндкард",
+    office: "Офис / полиция",
+    storage: "Склад бинтов",
+  };
+
   const ITEMS = {
     thermo: { id: "thermo", name: "Термометр", icon: "🌡", machine: "m_thermo" },
     bandage: { id: "bandage", name: "Бинты", icon: "🩹", machine: "m_bandage" },
@@ -299,13 +327,42 @@
     const panel = document.getElementById("secretShiftsPanel");
     if (!list || !panel) return;
     const secrets = SHIFTS.filter((s) => s.secret);
-    list.innerHTML = secrets
-      .map(
-        (s) =>
-          `<button type="button" class="btn secret-pick" data-shift="${s.id}">${s.name}<small>${s.tag}</small></button>`
-      )
-      .join("");
-    list.querySelectorAll(".secret-pick").forEach((btn) => {
+    const animeOn = !!meta.animeWorld;
+    list.innerHTML =
+      `<button type="button" class="btn secret-pick anime-world-btn" id="btnAnimeWorld">` +
+      `✦ Всё в аниме` +
+      `<small>${animeOn ? "Сейчас ВКЛ · нажми чтобы выключить" : "Мир больницы станет аниме · не смена 67"}</small>` +
+      `</button>` +
+      secrets
+        .map(
+          (s) =>
+            `<button type="button" class="btn secret-pick" data-shift="${s.id}">${s.name}<small>${s.tag}</small></button>`
+        )
+        .join("");
+    const animeBtn = document.getElementById("btnAnimeWorld");
+    if (animeBtn) {
+      animeBtn.addEventListener("click", () => {
+        meta.animeWorld = !meta.animeWorld;
+        storeSet(SAVE, meta);
+        try {
+          if (window.AmalSurprises && AmalSurprises.setAnimeWorld) {
+            AmalSurprises.setAnimeWorld(!!meta.animeWorld);
+          } else {
+            localStorage.setItem("amal-anime-world-v1", meta.animeWorld ? "1" : "0");
+          }
+        } catch (_) {}
+        if (meta.animeWorld) {
+          applyThemeClass("anime");
+          toast("✦ Аниме-мир ВКЛ");
+          showEvent("✦ Всё в аниме", 2.4);
+        } else {
+          applyThemeClass(null);
+          toast("Аниме-мир выкл");
+        }
+        openSecretShiftsPanel();
+      });
+    }
+    list.querySelectorAll(".secret-pick[data-shift]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = Number(btn.getAttribute("data-shift"));
         const pick = SHIFTS.find((s) => s.id === id);
@@ -359,13 +416,34 @@
   }
 
   function applyThemeClass(theme) {
-    document.body.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here");
+    document.body.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here", "theme-anime");
     const screen = document.getElementById("screen");
-    if (screen) screen.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here");
+    if (screen) screen.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here", "theme-anime");
     if (!theme) return;
     const cls = "theme-" + theme;
     document.body.classList.add(cls);
     if (screen) screen.classList.add(cls);
+  }
+
+  function animeWorldOn() {
+    return !!(meta && meta.animeWorld) || (g && g.theme === "anime");
+  }
+
+  function speciesLabel(sp) {
+    if (!sp) return "";
+    if (animeWorldOn() && ANIME_SPECIES[sp.id]) return ANIME_SPECIES[sp.id];
+    return sp.name;
+  }
+
+  function roomLabel(room) {
+    if (!room) return "";
+    if (animeWorldOn() && ANIME_ROOMS[room.id]) return ANIME_ROOMS[room.id];
+    return room.name;
+  }
+
+  function syncAnimeWorldTheme() {
+    if (meta && meta.animeWorld) applyThemeClass("anime");
+    else if (!g || !g.theme) applyThemeClass(null);
   }
 
   function giveVipKit(player, shift) {
@@ -571,6 +649,10 @@
     } catch (_) {}
   }
   forceInfinite();
+  try {
+    if (localStorage.getItem("amal-anime-world-v1") === "1") meta.animeWorld = true;
+  } catch (_) {}
+  if (meta.animeWorld) applyThemeClass("anime");
 
   function isOwner() {
     return true;
@@ -1163,6 +1245,11 @@
       showEvent("✦ Я здесь · с тобой", 3.6);
       toast("Тихо. Я рядом.");
     }
+    if (meta.animeWorld) {
+      g.theme = "anime";
+      applyThemeClass("anime");
+      showEvent("✦ Всё в аниме", 2.2);
+    }
     updateNeedUI();
     renderInv();
   }
@@ -1170,7 +1257,7 @@
   function refreshRequestsStrip() {
     if (!g) return;
     g.requests = g.queue.map((v) => ({
-      name: v.species.name,
+      name: speciesLabel(v.species),
       cond: v.condition.name,
       weird: v.isAnomaly,
     }));
@@ -1214,7 +1301,7 @@
     g = null;
     deskPatient = null;
     focusPatient = null;
-    applyThemeClass(null);
+    syncAnimeWorldTheme();
     hideEl(hud);
     hideEl(touch);
     hideEl(deskPanel);
@@ -1284,7 +1371,7 @@
       return;
     }
     const v = focusPatient;
-    needTitle.textContent = `${v.condition.icon} ${v.species.name}: ${v.condition.name}`;
+    needTitle.textContent = `${v.condition.icon} ${speciesLabel(v.species)}: ${v.condition.name}`;
     needList.innerHTML = v.needs
       .map((id) => {
         const def = ITEMS[id];
@@ -1378,6 +1465,27 @@
       c.ellipse(-6, -12, 5, 7, 0, 0, Math.PI * 2);
       c.ellipse(6, -12, 5, 7, 0, 0, Math.PI * 2);
       c.fill();
+    } else if (animeWorldOn()) {
+      c.fillStyle = "#fff";
+      c.beginPath();
+      c.ellipse(-6, -12, 7, 9, 0, 0, Math.PI * 2);
+      c.ellipse(6, -12, 7, 9, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#2a1810";
+      c.beginPath();
+      c.arc(-6, -11, 3.2, 0, Math.PI * 2);
+      c.arc(6, -11, 3.2, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "rgba(255,255,255,0.95)";
+      c.beginPath();
+      c.arc(-5, -13, 1.2, 0, Math.PI * 2);
+      c.arc(7, -13, 1.2, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = "rgba(255, 140, 200, 0.55)";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(0, 2, 5, 0.15 * Math.PI, 0.85 * Math.PI);
+      c.stroke();
     } else {
       c.fillStyle = "#1a2030";
       c.beginPath();
@@ -1471,7 +1579,7 @@
       return;
     }
     deskPatient = g.queue[0];
-    deskName.textContent = `${deskPatient.species.name} у окна`;
+    deskName.textContent = `${speciesLabel(deskPatient.species)} у окна`;
     deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
     deskClue.textContent = g.players[0].weapon
       ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить."
@@ -2212,8 +2320,26 @@
       pt.life -= dt;
       pt.x += pt.vx * dt;
       pt.y += pt.vy * dt;
+      if (pt.spin) pt.rot = (pt.rot || 0) + pt.spin * dt;
     }
     g.particles = g.particles.filter((p) => p.life > 0);
+
+    if (animeWorldOn()) {
+      for (let i = 0; i < 2; i++) {
+        if (Math.random() > 0.55) continue;
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y - 8 - Math.random() * 40,
+          vx: -35 + Math.random() * 50,
+          vy: 35 + Math.random() * 55,
+          life: 2.2 + Math.random() * 2,
+          color: Math.random() > 0.5 ? "#ffb7d5" : "#ffd0e8",
+          petal: true,
+          spin: -2 + Math.random() * 4,
+          rot: Math.random() * Math.PI,
+        });
+      }
+    }
 
     cam.x = Math.max(0, Math.min(MW - VW, g.players[0].x - VW / 2));
     cam.y = Math.max(0, Math.min(MH - VH, g.players[0].y - VH / 2));
@@ -2302,6 +2428,9 @@
   function tintRoom(base, theme) {
     if (theme === "gold") return "#6a4820";
     if (theme === "diamond") return "#1a4060";
+    if (theme === "anime" || animeWorldOn()) return "#3a2850";
+    if (theme === "here") return "#1a3550";
+    if (theme === "lucky7") return "#4a1840";
     return base;
   }
 
@@ -2316,11 +2445,23 @@
       return;
     }
 
-    const theme = g.theme || (g.shift && g.shift.theme) || null;
+    const theme =
+      (animeWorldOn() ? "anime" : null) || g.theme || (g.shift && g.shift.theme) || null;
 
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
-    ctx.fillStyle = theme === "gold" ? "#3a2808" : theme === "diamond" ? "#062030" : "#101624";
+    ctx.fillStyle =
+      theme === "gold"
+        ? "#3a2808"
+        : theme === "diamond"
+          ? "#062030"
+          : theme === "anime"
+            ? "#1a1028"
+            : theme === "lucky7"
+              ? "#2a0820"
+              : theme === "here"
+                ? "#0a1824"
+                : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -2332,13 +2473,21 @@
           ? "rgba(255, 215, 106, 0.55)"
           : theme === "diamond"
             ? "rgba(160, 230, 255, 0.55)"
-            : "rgba(255,255,255,0.1)";
+            : theme === "anime"
+              ? "rgba(255, 160, 220, 0.45)"
+              : "rgba(255,255,255,0.1)";
       ctx.lineWidth = theme ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle =
-        theme === "gold" ? "#ffe08a" : theme === "diamond" ? "#d8f6ff" : "rgba(255,255,255,0.7)";
+        theme === "gold"
+          ? "#ffe08a"
+          : theme === "diamond"
+            ? "#d8f6ff"
+            : theme === "anime"
+              ? "#ffd0f0"
+              : "rgba(255,255,255,0.7)";
       ctx.font = "800 15px Fredoka, Nunito, sans-serif";
-      ctx.fillText(room.name, room.x + 12, room.y + 24);
+      ctx.fillText(roomLabel(room), room.x + 12, room.y + 24);
     }
 
     // machines — крупные иконки + стрелки к нужным
@@ -2589,10 +2738,21 @@
 
     for (const pt of g.particles) {
       ctx.globalAlpha = Math.max(0, pt.life * 2);
-      ctx.fillStyle = pt.color;
-      ctx.beginPath();
-      ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-      ctx.fill();
+      if (pt.petal) {
+        ctx.save();
+        ctx.translate(pt.x, pt.y);
+        ctx.rotate(pt.rot || 0);
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else {
+        ctx.fillStyle = pt.color;
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.globalAlpha = 1;
     }
 
@@ -2644,6 +2804,17 @@
         ctx.closePath();
         ctx.fill();
       }
+    } else if (theme === "anime") {
+      ctx.fillStyle = "rgba(255, 140, 200, 0.14)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createRadialGradient(VW * 0.5, VH * 0.1, 20, VW * 0.5, VH * 0.4, VW * 0.8);
+      grd.addColorStop(0, "rgba(255, 200, 240, 0.28)");
+      grd.addColorStop(1, "rgba(160, 100, 220, 0)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(255, 220, 245, 0.7)";
+      ctx.font = "800 13px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ anime mode", 12, 22);
     }
 
     if (g.sanity < 35) {
