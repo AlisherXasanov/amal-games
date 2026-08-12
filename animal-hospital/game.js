@@ -2431,6 +2431,7 @@
   document.getElementById("btnSpin").addEventListener("click", spinExchange);
 
   const secretDeathInput = document.getElementById("secretDeathInput");
+  const secretDeathGo = document.getElementById("secretDeathGo");
   if (secretDeathInput) {
     const submitSecretDeath = () => {
       const ok = applySecretDeathCode(secretDeathInput.value);
@@ -2443,7 +2444,12 @@
         submitSecretDeath();
       }
     });
+    secretDeathInput.addEventListener("input", () => {
+      const v = String(secretDeathInput.value || "").trim();
+      if (v.length >= 2) submitSecretDeath();
+    });
     secretDeathInput.addEventListener("change", submitSecretDeath);
+    if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
   }
 
   hideEl(hud);
