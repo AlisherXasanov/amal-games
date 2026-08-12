@@ -31,6 +31,7 @@
   const touch = document.getElementById("touch");
   const menu = document.getElementById("menu");
   const menuWallet = document.getElementById("menuWallet");
+  const secretDeathWrap = document.getElementById("secretDeathWrap");
   const modeSelect = document.getElementById("modeSelect");
   const classSelect = document.getElementById("classSelect");
   const buddySelect = document.getElementById("buddySelect");
@@ -579,6 +580,7 @@
   });
 
   function openShop() {
+    hideEl(secretDeathWrap);
     forceInfinite();
     shopWallet.textContent = "Монеты: ∞";
     shopList.innerHTML = CLASSES.map((c) => {
@@ -607,6 +609,7 @@
     exWallet.textContent = "🪙 ∞";
     exResult.textContent = "Крути бесплатно — класс или секретный скин";
     hideEl(menu);
+    hideEl(secretDeathWrap);
     showEl(exchangePanel);
   }
 
@@ -992,6 +995,7 @@
     deskPatient = null;
     state = "play";
     hideEl(menu);
+    hideEl(secretDeathWrap);
     hideEl(deskPanel);
     hideEl(endPanel);
     hideEl(eventBanner);
@@ -1074,6 +1078,7 @@
     hideEl(exchangePanel);
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   }
 
   function hurtSanity(_n) {
@@ -2410,12 +2415,14 @@
     hideEl(shopPanel);
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   });
   document.getElementById("btnOpenExchange").addEventListener("click", openExchange);
   document.getElementById("btnCloseExchange").addEventListener("click", () => {
     hideEl(exchangePanel);
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   });
   document.getElementById("btnSpin").addEventListener("click", spinExchange);
 
@@ -2446,6 +2453,7 @@
   hideEl(shopPanel);
   hideEl(exchangePanel);
   showEl(menu);
+  showEl(secretDeathWrap);
   requestAnimationFrame(frame);
 
   try {

@@ -205,8 +205,118 @@ html, body {
 
 .panel.menu {
   justify-content: flex-start;
-  padding-top: 0.7rem;
-  gap: 0.45rem;
+  padding-top: 0.45rem;
+  padding-bottom: 4.2rem;
+  gap: 0.32rem;
+}
+
+.panel.menu .brand {
+  font-size: clamp(1.05rem, 3.2vw, 1.45rem);
+}
+.panel.menu h1 {
+  font-size: clamp(0.95rem, 2.8vw, 1.25rem);
+}
+.panel.menu .wallet {
+  font-size: 0.95rem;
+}
+.panel.menu .lobby-row,
+.panel.menu .field-wide {
+  width: min(440px, 96%);
+}
+.panel.menu .field {
+  min-width: 160px;
+}
+.panel.menu .field span {
+  font-size: 0.62rem;
+}
+.panel.menu .field select {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.82rem;
+  border-radius: 10px;
+}
+.panel.menu .lobby-actions {
+  gap: 0.35rem;
+}
+.panel.menu .btn {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.88rem;
+}
+.panel.menu .hints {
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+
+/* админ-вещи: компактно сверху — низ свободен под secret death */
+#amal-admin-things {
+  bottom: auto !important;
+  top: 4px !important;
+  left: 50% !important;
+  transform: translateX(-50%) scale(0.62) !important;
+  transform-origin: top center !important;
+  padding: 3px 6px !important;
+  gap: 3px !important;
+  max-width: min(420px, 86vw) !important;
+  border-radius: 8px !important;
+  z-index: 10900 !important;
+}
+#amal-admin-things .aat-label {
+  font-size: 8px !important;
+  margin: 0 0 1px !important;
+}
+#amal-admin-things button {
+  padding: 3px 6px !important;
+  font-size: 9px !important;
+  border-radius: 5px !important;
+}
+#amal-admin-stickers {
+  top: 10% !important;
+  transform: scale(0.72);
+  transform-origin: top left;
+  z-index: 10890 !important;
+}
+
+.secret-death {
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 12000;
+  width: min(168px, 52vw);
+  margin-top: 0;
+  padding: 4px 7px 5px;
+  border-radius: 9px;
+  border: 1px solid rgba(232, 180, 255, 0.5);
+  background: rgba(6, 8, 16, 0.97);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.12rem;
+  pointer-events: auto;
+}
+.secret-death[hidden] {
+  display: none !important;
+}
+.secret-death label {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: lowercase;
+  color: rgba(232, 180, 255, 0.7);
+  text-align: left;
+}
+.secret-death input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.4);
+  color: #f3efe6;
+  border-radius: 7px;
+  padding: 0.32rem 0.5rem;
+  font: 700 0.8rem/1.2 Nunito, system-ui;
+  outline: none;
+}
+.secret-death input:focus {
+  border-color: rgba(232, 180, 255, 0.65);
 }
 
 .brand {
@@ -237,38 +347,6 @@ html, body {
   font-size: 0.72rem;
   line-height: 1.4;
   max-width: min(420px, 94%);
-}
-
-.secret-death {
-  margin-top: auto;
-  width: min(280px, 92%);
-  padding-top: 0.35rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.2rem;
-}
-.secret-death label {
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: lowercase;
-  color: rgba(154, 168, 192, 0.55);
-  text-align: left;
-}
-.secret-death input {
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.28);
-  color: rgba(243, 239, 230, 0.85);
-  border-radius: 8px;
-  padding: 0.35rem 0.55rem;
-  font: 700 0.78rem/1.2 Nunito, system-ui;
-  outline: none;
-}
-.secret-death input:focus {
-  border-color: rgba(232, 180, 255, 0.45);
 }
 
 .wallet {
