@@ -173,10 +173,11 @@
     " · вторая волна",
   ];
 
-  /** 1–40 обычные; секреты только 52 и 67 (через secret death) */
+  /** 1–40 без публичной 7; секреты: 7, 52, 67 */
   const SHIFTS = (() => {
     const list = [];
     for (let id = 1; id <= 40; id++) {
+      if (id === 7) continue;
       const t = SHIFT_TEMPLATES[(id - 1) % SHIFT_TEMPLATES.length];
       const flavor = SHIFT_FLAVORS[Math.floor((id - 1) / SHIFT_TEMPLATES.length) % SHIFT_FLAVORS.length];
       const twist = ((id * 7) % 9) * 0.01;
@@ -192,6 +193,22 @@
         secret: false,
       });
     }
+    list.push({
+      id: 7,
+      name: "✦ Смена 7 · Суперсекрет",
+      time: 777,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Любимая семёрка · без аномалий · ∞ вещи",
+      color: "#ff6ad5",
+      special: "lucky7",
+      secret: true,
+      lucky7: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 7,
+      theme: "lucky7",
+    });
     list.push({
       id: 52,
       name: "✦ Смена Леши · ∞ кофе",
@@ -252,17 +269,35 @@
     return false;
   }
 
+  function secretsUnlocked() {
+    return canUseSecretShifts() && !!(meta && meta.secretShifts67);
+  }
+
   function visibleShifts() {
-    const unlocked = canUseSecretShifts() && !!(meta && meta.secretShifts67);
-    // обычные смены как всегда; 52/67 только после кода — без отдельной «панели секретов»
-    return SHIFTS.filter((s) => !s.secret || unlocked);
+    const unlocked = secretsUnlocked();
+    const normals = SHIFTS.filter((s) => !s.secret);
+    if (!unlocked) return normals;
+    const secrets = SHIFTS.filter((s) => s.secret);
+    return normals.concat(secrets);
+  }
+
+  function unlockAllSecretShifts() {
+    if (!canUseSecretShifts()) return false;
+    meta.secretShifts67 = true;
+    meta.secretShift7 = true;
+    storeSet(SAVE, meta);
+    refreshLobbyUI();
+    persistLobby();
+    toast("✦ Все секретные смены в списке");
+    return true;
   }
 
   function applySecretDeathCode(raw) {
     if (!canUseSecretShifts()) return false;
     const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52") return false;
+    if (code !== "67" && code !== "52" && code !== "7") return false;
     meta.secretShifts67 = true;
+    if (code === "7") meta.secretShift7 = true;
     storeSet(SAVE, meta);
     const pick = SHIFTS.find((s) => s.id === Number(code));
     if (pick) selectedShift = pick;
@@ -276,7 +311,7 @@
   }
 
   function isVipShift(shift) {
-    return !!(shift && (shift.vipKit || shift.noAnomalies || shift.lesha || shift.diamondNight));
+    return !!(shift && (shift.vipKit || shift.noAnomalies || shift.lesha || shift.diamondNight || shift.lucky7));
   }
 
   function applyThemeClass(theme) {
@@ -559,6 +594,18 @@
 
     const hint = document.getElementById("menuHints");
     if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
+    const btnAll = document.getElementById("btnAllSecrets");
+    if (btnAll) {
+      if (canUseSecretShifts()) {
+        btnAll.hidden = false;
+        btnAll.textContent = secretsUnlocked()
+          ? "✦ Секретные смены открыты"
+          : "✦ Все секретные смены";
+        btnAll.disabled = secretsUnlocked();
+      } else {
+        btnAll.hidden = true;
+      }
+    }
   }
 
   function persistLobby() {
@@ -1064,6 +1111,15 @@
       applyThemeClass("diamond");
       showEvent("✦ Смена 67 · Алмазная ночь · ☕×67", 3.4);
       toast("+67 · алмаз · 67 кофе · без аномалий");
+    }
+    if (shift.lucky7 || shift.id === 7 || shift.theme === "lucky7") {
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      if (g.players[0]) g.players[0].color = "#ff6ad5";
+      g.theme = "lucky7";
+      applyThemeClass("lucky7");
+      showEvent("✦ Смена 7 · Суперсекрет", 3.4);
+      toast("Семёрка · ∞ вещи · без аномалий");
     }
     updateNeedUI();
     renderInv();
@@ -2602,6 +2658,12 @@
       }
     });
     if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
+  }
+  const btnAllSecrets = document.getElementById("btnAllSecrets");
+  if (btnAllSecrets) {
+    btnAllSecrets.addEventListener("click", () => {
+      unlockAllSecretShifts();
+    });
   }
 
   hideEl(hud);
