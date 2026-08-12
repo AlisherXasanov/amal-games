@@ -247,29 +247,40 @@
 
   function visibleShifts() {
     const secretsOk = canUseSecretShifts() && !!(meta && meta.secretShifts67);
-    const leshaOk = canUseSecretShifts();
     return SHIFTS.filter((s) => {
       if (!s.secret) return true;
-      if (s.lesha) return leshaOk;
       return secretsOk;
     });
   }
 
-  function unlockSecretShifts67() {
-    if (!canUseSecretShifts()) return false;
-    if (meta.secretShifts67) {
-      toast("Секретные смены уже открыты");
-      return true;
+  function applySecretDeathCode(raw) {
+    if (!canUseSecretShifts()) {
+      toast("…");
+      return false;
+    }
+    const code = String(raw || "").trim();
+    if (code !== "67" && code !== "52") {
+      toast("Неверный код");
+      return false;
     }
     meta.secretShifts67 = true;
     storeSet(SAVE, meta);
-    const lesha = SHIFTS.find((s) => s.lesha) || SHIFTS[SHIFTS.length - 1];
-    selectedShift = lesha;
+    if (code === "52") {
+      selectedShift = SHIFTS.find((s) => s.id === 52) || SHIFTS.find((s) => s.lesha) || selectedShift;
+      toast("✦ Смена 52 · Леша");
+      showEvent("Смена Леши · ∞ кофе", 2.8);
+    } else {
+      selectedShift = SHIFTS.find((s) => s.lesha) || SHIFTS.find((s) => s.id === 52) || selectedShift;
+      toast("✦ Секретные смены открыты");
+      showEvent("Секретные смены в списке · 41–52", 2.8);
+    }
     refreshLobbyUI();
     persistLobby();
-    toast("✦ Секретные смены открыты · для команды");
-    showEvent("Смена Леши и ещё секретные смены в списке", 3.2);
     return true;
+  }
+
+  function unlockSecretShifts67() {
+    return applySecretDeathCode("67");
   }
 
   const ROOMS = [
@@ -375,11 +386,13 @@
   let reload1 = false;
   let shoot2 = false;
   let reload2 = false;
-  let secretDigitBuf = "";
 
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) e.preventDefault();
+    // не перехватывать ввод в поле secret death
+    const tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
     if (e.code === "KeyE" || e.code === "Space") act1 = true;
     if (e.code === "Enter") act2 = true;
     if (e.code === "KeyQ" && g) dropItem(g.players[0]);
@@ -388,25 +401,6 @@
     if (e.code === "KeyR") reload1 = true;
     if (e.code === "ShiftRight") shoot2 = true;
     if (e.code === "ControlRight") reload2 = true;
-
-    // секретный код — без подсказок обычным игрокам
-    if ((state === "menu" || !g) && canUseSecretShifts()) {
-      const digit =
-        e.code === "Digit6" || e.code === "Numpad6"
-          ? "6"
-          : e.code === "Digit7" || e.code === "Numpad7"
-            ? "7"
-            : "";
-      if (digit) {
-        secretDigitBuf = (secretDigitBuf + digit).slice(-2);
-        if (secretDigitBuf === "67") {
-          secretDigitBuf = "";
-          unlockSecretShifts67();
-        }
-      } else if (e.key && e.key.length === 1) {
-        secretDigitBuf = "";
-      }
-    }
   });
   window.addEventListener("keyup", (e) => {
     keys[e.code] = false;
@@ -512,7 +506,7 @@
   let selectedBuddy = BUDDIES.find((b) => b.id === meta.buddyId) || BUDDIES[0];
   let selectedShift = SHIFTS.find((s) => s.id === meta.shiftId) || SHIFTS[0];
   if (selectedShift.secret) {
-    const ok = selectedShift.lesha ? canUseSecretShifts() : canUseSecretShifts() && meta.secretShifts67;
+    const ok = canUseSecretShifts() && meta.secretShifts67;
     if (!ok) selectedShift = SHIFTS[0];
   }
   let selectedSkin = SKINS.find((s) => s.id === meta.skinId && hasSkin(s.id)) || SKINS[0];
@@ -2424,6 +2418,22 @@
     showEl(menu);
   });
   document.getElementById("btnSpin").addEventListener("click", spinExchange);
+
+  const secretDeathInput = document.getElementById("secretDeathInput");
+  if (secretDeathInput) {
+    const submitSecretDeath = () => {
+      const ok = applySecretDeathCode(secretDeathInput.value);
+      if (ok) secretDeathInput.value = "";
+    };
+    secretDeathInput.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.code === "Enter" || e.key === "Enter") {
+        e.preventDefault();
+        submitSecretDeath();
+      }
+    });
+    secretDeathInput.addEventListener("change", submitSecretDeath);
+  }
 
   hideEl(hud);
   hideEl(touch);

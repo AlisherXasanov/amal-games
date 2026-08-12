@@ -196,16 +196,22 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  padding: 1.25rem;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem 1rem;
   text-align: center;
   background: linear-gradient(180deg, rgba(18, 24, 42, 0.96), rgba(8, 10, 18, 0.98));
   overflow: auto;
 }
 
+.panel.menu {
+  justify-content: flex-start;
+  padding-top: 0.7rem;
+  gap: 0.45rem;
+}
+
 .brand {
   font-family: Fredoka, Nunito, sans-serif;
-  font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+  font-size: clamp(1.2rem, 3.6vw, 1.75rem);
   font-weight: 700;
   color: var(--mint);
   animation: brand-pop 1.8s ease-in-out infinite;
@@ -217,7 +223,7 @@ html, body {
 
 .panel h1, .panel h2 {
   font-family: Fredoka, Nunito, sans-serif;
-  font-size: clamp(1.25rem, 3.8vw, 1.85rem);
+  font-size: clamp(1.05rem, 3.2vw, 1.45rem);
   color: var(--cream);
 }
 .panel .sub {
@@ -228,8 +234,41 @@ html, body {
 }
 .hints {
   color: #7a889e;
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  max-width: min(420px, 94%);
+}
+
+.secret-death {
+  margin-top: auto;
+  width: min(280px, 92%);
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+}
+.secret-death label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: rgba(154, 168, 192, 0.55);
+  text-align: left;
+}
+.secret-death input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(243, 239, 230, 0.85);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  font: 700 0.78rem/1.2 Nunito, system-ui;
+  outline: none;
+}
+.secret-death input:focus {
+  border-color: rgba(232, 180, 255, 0.45);
 }
 
 .wallet {
