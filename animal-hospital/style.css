@@ -57,6 +57,16 @@ body.theme-lucky7 #app {
 #screen.theme-lucky7 {
   box-shadow: 0 18px 50px rgba(255, 80, 200, 0.35), 0 0 0 2px rgba(255, 120, 220, 0.5);
 }
+body.theme-here,
+body.theme-here #app {
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 0%, #7ec8ff 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 0% 100%, #204860 0%, transparent 50%),
+    linear-gradient(165deg, #0a1824, #061018) !important;
+}
+#screen.theme-here {
+  box-shadow: 0 18px 50px rgba(120, 200, 255, 0.32), 0 0 0 2px rgba(168, 224, 255, 0.45);
+}
 
 .portal-back {
   position: fixed;

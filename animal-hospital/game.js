@@ -192,6 +192,22 @@
       });
     });
     list.push({
+      id: 12,
+      name: "✦ Смена · Рядом",
+      time: 240,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Тихий сюрприз · без аномалий · ∞ вещи",
+      color: "#a8e0ff",
+      special: "here12",
+      secret: true,
+      hereWithYou: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 12,
+      theme: "here",
+    });
+    list.push({
       id: 7,
       name: "✦ Смена 7 · Суперсекрет",
       time: 777,
@@ -323,7 +339,7 @@
   function applySecretDeathCode(raw) {
     if (!canUseSecretShifts()) return false;
     const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52" && code !== "7") return false;
+    if (code !== "67" && code !== "52" && code !== "7" && code !== "12") return false;
     meta.secretShifts67 = true;
     meta.secretShift7 = true;
     storeSet(SAVE, meta);
@@ -343,9 +359,9 @@
   }
 
   function applyThemeClass(theme) {
-    document.body.classList.remove("theme-gold", "theme-diamond", "theme-lucky7");
+    document.body.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here");
     const screen = document.getElementById("screen");
-    if (screen) screen.classList.remove("theme-gold", "theme-diamond", "theme-lucky7");
+    if (screen) screen.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here");
     if (!theme) return;
     const cls = "theme-" + theme;
     document.body.classList.add(cls);
@@ -1137,6 +1153,15 @@
       applyThemeClass("lucky7");
       showEvent("✦ Смена 7 · Суперсекрет", 3.4);
       toast("Семёрка · ∞ вещи · без аномалий");
+    }
+    if (shift.hereWithYou || shift.id === 12 || shift.theme === "here") {
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      if (g.players[0]) g.players[0].color = "#a8e0ff";
+      g.theme = "here";
+      applyThemeClass("here");
+      showEvent("✦ Я здесь · с тобой", 3.6);
+      toast("Тихо. Я рядом.");
     }
     updateNeedUI();
     renderInv();

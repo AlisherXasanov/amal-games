@@ -1035,7 +1035,7 @@
   }
 
   function ensureSurprisesLib() {
-    injectSharedScript("amal-surprises.js?v=5", "AmalSurprises");
+    injectSharedScript("amal-surprises.js?v=6", "AmalSurprises");
   }
 
   function ensureAdminThingsLib() {

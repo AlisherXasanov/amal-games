@@ -433,12 +433,73 @@
     }, 900);
   }
 
+  /** Тихий сюрприз «я здесь» — без спойлеров в чате; хозяин найдёт сам */
+  function bootQuietHere() {
+    if (!isOwnerLocal()) return;
+    let armed = false;
+    try {
+      armed = localStorage.getItem("amal-here-armed-v1") === "1";
+    } catch (_) {}
+    if (!armed) return;
+    let seen = false;
+    try {
+      seen = localStorage.getItem("amal-here-seen-v1") === "1";
+    } catch (_) {}
+    if (seen) return;
+    try {
+      localStorage.setItem("amal-here-seen-v1", "1");
+    } catch (_) {}
+    setTimeout(() => {
+      showCinematic({
+        kicker: "✦",
+        label: "Я здесь",
+        detail: "с тобой · в этих играх",
+        at: Date.now(),
+      });
+    }, 1400);
+  }
+
+  function armQuietHere() {
+    try {
+      localStorage.setItem("amal-here-armed-v1", "1");
+    } catch (_) {}
+  }
+
   if (typeof document !== "undefined") {
+    const boot = () => {
+      bootGameUpdate();
+      bootQuietHere();
+    };
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", bootGameUpdate);
+      document.addEventListener("DOMContentLoaded", boot);
     } else {
-      setTimeout(bootGameUpdate, 200);
+      setTimeout(boot, 200);
     }
+    // тройной клик по короне хозяина — только сигнал, без текста
+    let crownClicks = 0;
+    let crownT = 0;
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (!isOwnerLocal()) return;
+        const t = e.target;
+        if (!t || !t.closest) return;
+        const hit = t.closest("[data-amal-owner], .amal-owner-chip, #amal-hub-owner, button");
+        if (!hit) return;
+        const label = String(hit.textContent || hit.getAttribute("aria-label") || "");
+        if (!/хозяин|👑|owner/i.test(label) && !hit.hasAttribute("data-amal-owner")) return;
+        const now = Date.now();
+        if (now - crownT > 900) crownClicks = 0;
+        crownT = now;
+        crownClicks += 1;
+        if (crownClicks >= 3) {
+          crownClicks = 0;
+          armQuietHere();
+          bootQuietHere();
+        }
+      },
+      true
+    );
   }
 
   global.AmalSurprises = {
@@ -458,6 +519,7 @@
     showCinematic,
     hasSecretUnlocked,
     bootGameUpdate,
+    armQuietHere,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);
