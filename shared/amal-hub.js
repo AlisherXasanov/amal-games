@@ -64,6 +64,11 @@
 
   const CHANGELOG = [
     {
+      id: "2026-08-12-owner-wave",
+      title: "Сюрпризы хозяина · волна по играм",
+      body: "Больше сюрпризов для хозяина и команды. Обновление отмечается во многих играх хаба — зайди в игру и увидишь приветствие.",
+    },
+    {
       id: "2026-08-12-utf8-team-pack",
       title: "Русский текст · сюрпризы команды",
       body: "Починена кодировка меню больницы. Сюрпризы команды теперь не только в одной игре — сразу пак на несколько игр.",
@@ -3046,7 +3051,7 @@
       }
     } catch (_) {}
 
-    // тихий командный код на любой игре (хозяин / админ команды)
+    // тихие коды хозяина / админ-команды на любой игре
     let teamDigitBuf = "";
     global.addEventListener("keydown", (e) => {
       if (!isOwner() && !isGameAdmin()) return;
@@ -3055,19 +3060,35 @@
           ? "6"
           : e.code === "Digit7" || e.code === "Numpad7"
             ? "7"
-            : "";
+            : e.code === "Digit5" || e.code === "Numpad5"
+              ? "5"
+              : e.code === "Digit2" || e.code === "Numpad2"
+                ? "2"
+                : "";
       if (!digit) {
         if (e.key && e.key.length === 1) teamDigitBuf = "";
         return;
       }
       teamDigitBuf = (teamDigitBuf + digit).slice(-2);
-      if (teamDigitBuf !== "67") return;
-      teamDigitBuf = "";
       try {
-        if (global.AmalSurprises && AmalSurprises.giveTeamPack) {
+        if (teamDigitBuf === "67" && global.AmalSurprises && AmalSurprises.giveTeamPack) {
+          teamDigitBuf = "";
           const res = AmalSurprises.giveTeamPack({ to: getNick() || "админ-команда" });
           if (res && res.already) showHubToast("Командный пак уже открыт");
           else if (res && res.ok) showHubToast("✨ Команде — сразу несколько сюрпризов");
+          return;
+        }
+        if (teamDigitBuf === "77" && isOwner() && global.AmalSurprises && AmalSurprises.giveOwnerWave) {
+          teamDigitBuf = "";
+          const res = AmalSurprises.giveOwnerWave({ to: getNick() || "хозяин" });
+          if (res && res.already) showHubToast("Волна обновлений уже активна");
+          else if (res && res.ok) showHubToast("👑 Волна сюрпризов по играм хаба");
+          return;
+        }
+        if (teamDigitBuf === "52" && isOwner() && global.AmalSurprises && AmalSurprises.giveOwnerWave) {
+          teamDigitBuf = "";
+          const res = AmalSurprises.giveOwnerWave({ to: getNick() || "хозяин", force: true });
+          if (res && res.ok) showHubToast("👑 Волна сюрпризов обновлена");
         }
       } catch {
         /* ignore */

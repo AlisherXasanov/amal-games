@@ -559,6 +559,7 @@
     const base = GAME_PACKS[id] || DEFAULT_PACK;
     const extra = [
       { id: "surprise-gift", label: "✦ Сюрприз игроку", toast: "Сюрприз выдан", cls: "primary" },
+      { id: "owner-wave", label: "👑 Волна по играм", toast: "Волна запущена", cls: "max" },
       { id: "owner-secret", label: "✦", toast: "…" },
       { id: "owner-legend", label: "👑 Режим легенды", toast: "Легенда ВКЛ", cls: "max" },
     ];
@@ -795,7 +796,7 @@
         (pack.buttons || []).forEach((b) => {
           if (
             b.id !== "max" &&
-            !["heal", "god", "coins", "dmg", "unlock", "speed", "surprise-gift", "owner-secret", "owner-legend"].includes(
+            !["heal", "god", "coins", "dmg", "unlock", "speed", "surprise-gift", "owner-wave", "owner-secret", "owner-legend"].includes(
               b.id
             )
           ) {
@@ -810,6 +811,14 @@
           AmalSurprises.giveLittle({ game: gameId(), to: "игроку" });
         }
         fire("surprise-gift");
+      },
+      "owner-wave"() {
+        if (global.AmalSurprises && AmalSurprises.giveOwnerWave) {
+          const res = AmalSurprises.giveOwnerWave({ to: "хозяин", force: true });
+          if (res && res.ok) toast("👑 Волна сюрпризов — зайди в другие игры");
+          else toast("Волна уже была — обновлено");
+        }
+        fire("owner-wave");
       },
       "owner-secret"() {
         if (global.AmalSurprises && AmalSurprises.giveSecretOwner) {
@@ -1026,7 +1035,7 @@
   }
 
   function ensureSurprisesLib() {
-    injectSharedScript("amal-surprises.js?v=4", "AmalSurprises");
+    injectSharedScript("amal-surprises.js?v=5", "AmalSurprises");
   }
 
   function ensureAdminThingsLib() {

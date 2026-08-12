@@ -1,6 +1,6 @@
 /**
  * Маленькие сюрпризы хозяина игрокам + журнал (день / кому / что).
- * Секрет хозяина — без спойлеров в UI.
+ * Командный пак и волна обновлений хозяина — сразу на много игр хаба.
  */
 (function (global) {
   "use strict";
@@ -8,15 +8,47 @@
   const STORAGE = "amal-surprise-log-v1";
   const SECRET_FLAG = "amal-owner-secret-v1";
   const TEAM_FLAG = "amal-team-pack-67-v1";
+  const WAVE_FLAG = "amal-owner-wave-77-v1";
+
   const TEAM_GAMES = [
     "animal-hospital",
     "zombie-vs-plants-2",
+    "zombie-vs-plants",
     "blockbust",
     "hideout",
     "minecraft",
     "x-buggy",
     "melon-playground",
     "kick-buddy",
+    "terraverse",
+    "space-courier",
+    "tower-defense",
+    "tycoon",
+    "obby",
+    "pet-simulator",
+    "murder-mystery",
+    "flee-facility",
+    "build-boat",
+    "adopt-me",
+    "blox-fruits",
+    "brookhaven-rp",
+    "nights-forest",
+    "steal-brainrot",
+    "grow-garden",
+    "bravol-stars",
+    "coin-arsenal",
+    "create-lab",
+    "ghost-lesson",
+    "night-stitch",
+    "lift-void",
+    "old-pc",
+    "roof-house",
+    "snake-game",
+    "globe-battle",
+    "echo-postman",
+    "ladder-climb",
+    "speed-escape",
+    "rivals-arena",
   ];
 
   const TEAM_PACK = [
@@ -25,11 +57,62 @@
     { id: "team-party", label: "Пати на троих", detail: "Сразу несколько сюрпризов подряд" },
     { id: "team-radar", label: "Радар гостей", detail: "Чуть яснее, кто рядом в играх" },
     { id: "team-spark", label: "Искры портала", detail: "Красивая вспышка на весь экран" },
+    { id: "team-coffee", label: "Бесконечный термос", detail: "Кофейный заряд для ночных смен" },
+    { id: "team-key", label: "Ключ от всех дверей", detail: "Быстрее открываются админ-штуки" },
+    { id: "team-star", label: "Звезда Amal", detail: "Знак хозяина виден команде" },
   ];
+
+  const OWNER_WAVE = [
+    { id: "wave-crown", label: "Корона обновления", detail: "Ты отмечен как хозяин волны во всех играх" },
+    { id: "wave-vault", label: "Сейф сюрпризов", detail: "Новые подарки ждут в каждой отмеченной игре" },
+    { id: "wave-night", label: "Ночной пропуск", detail: "Секретные штуки открываются проще" },
+    { id: "wave-gold", label: "Золотая нить", detail: "Сквозной бонус между играми хаба" },
+    { id: "wave-diamond", label: "Алмазный след", detail: "Особый блеск в играх с алмазной темой" },
+    { id: "wave-seven", label: "Семёрка удачи", detail: "Любимое число открывает скрытые слоты" },
+    { id: "wave-map", label: "Карта хаба", detail: "Обновление отмечено во всех твоих играх" },
+    { id: "wave-echo", label: "Эхо команды", detail: "Админ-команда чувствует волну вместе с тобой" },
+    { id: "wave-portal", label: "Портал Amal", detail: "Переход между играми с приветствием для тебя" },
+    { id: "wave-legend", label: "Легенда сайта", detail: "Режим хозяина усилен на этой волне" },
+  ];
+
+  function isOwnerLocal() {
+    try {
+      if (global.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      if (global.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
+    } catch (_) {}
+    try {
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (localStorage.getItem("animal-hospital-owner-god") === "1") return true;
+      if (global.__AMAL_OWNER__ || global.__AMAL_GOD__) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function pendingKey(game) {
+    return "amal-owner-pending-" + game + "-v1";
+  }
+
+  function markPendingAll(gamesIds) {
+    gameIds.forEach((g) => {
+      try {
+        localStorage.setItem(pendingKey(g), "1");
+      } catch (_) {}
+    });
+  }
 
   function hasTeamPack() {
     try {
       return localStorage.getItem(TEAM_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function hasOwnerWave() {
+    try {
+      return localStorage.getItem(WAVE_FLAG) === "1";
     } catch (_) {
       return false;
     }
@@ -42,9 +125,7 @@
     }
     try {
       localStorage.setItem(TEAM_FLAG, "1");
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
     const to = (opts && opts.to) || "админ-команда";
     const entries = [];
     TEAM_PACK.forEach((pack, i) => {
@@ -59,11 +140,11 @@
       });
       entries.push(entry);
     });
-    // несколько вспышек подряд
+    markPendingAll(TEAM_GAMES);
     let delay = 0;
-    entries.slice(0, 3).forEach((entry) => {
+    entries.slice(0, 4).forEach((entry) => {
       setTimeout(() => showCinematic(entry), delay);
-      delay += 900;
+      delay += 850;
     });
     global.dispatchEvent(
       new CustomEvent("amal-surprise", {
@@ -78,6 +159,50 @@
     return { ok: true, entries, games: TEAM_GAMES.slice() };
   }
 
+  /** Большая волна обновлений хозяина — по многим играм хаба */
+  function giveOwnerWave(opts) {
+    const force = !!(opts && opts.force);
+    if (hasOwnerWave() && !force) {
+      return { ok: false, already: true, entries: [] };
+    }
+    try {
+      localStorage.setItem(WAVE_FLAG, "1");
+      localStorage.setItem("amal-owner-boost-fx", "1");
+      localStorage.setItem("amal-owner-boost-legend", "1");
+    } catch (_) {}
+    const to = (opts && opts.to) || "хозяин";
+    const entries = [];
+    OWNER_WAVE.forEach((pack, i) => {
+      const game = TEAM_GAMES[i % TEAM_GAMES.length];
+      const entry = record({
+        game,
+        to,
+        kind: pack.id,
+        label: pack.label,
+        detail: pack.detail + " · игра: " + game,
+        secret: false,
+      });
+      entries.push(entry);
+    });
+    markPendingAll(TEAM_GAMES);
+    let delay = 0;
+    entries.slice(0, 5).forEach((entry) => {
+      setTimeout(() => showCinematic(entry), delay);
+      delay += 800;
+    });
+    global.dispatchEvent(
+      new CustomEvent("amal-surprise", {
+        detail: { type: "owner-wave", entries, games: TEAM_GAMES.slice() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "owner-wave-77", games: TEAM_GAMES.slice(), at: Date.now() },
+      })
+    );
+    return { ok: true, entries, games: TEAM_GAMES.slice() };
+  }
+
   const LITTLE = [
     { id: "sun-kiss", label: "Поцелуй солнца", detail: "+75 солнца и тёплый блеск" },
     { id: "nut-hug", label: "Ореховый подарок", detail: "Бесплатный стенорех на поле" },
@@ -85,6 +210,10 @@
     { id: "green-heal", label: "Зелёный шёпот", detail: "Все растения подлечены" },
     { id: "lucky-seed", label: "Удачное семя", detail: "Случайное сильное растение" },
     { id: "sparkle", label: "Искры удачи", detail: "Красивая вспышка + немного солнца" },
+    { id: "night-coin", label: "Ночная монета", detail: "Маленький бонус в кармане" },
+    { id: "soft-shield", label: "Мягкий щит", detail: "Чуть меньше урона на минуту" },
+    { id: "portal-wink", label: "Миг портала", detail: "Короткая вспышка между мирами" },
+    { id: "admin-candy", label: "Конфета админа", detail: "Сладкий сюрприз только своим" },
   ];
 
   function readLog() {
@@ -101,9 +230,7 @@
   function writeLog(arr) {
     try {
       localStorage.setItem(STORAGE, JSON.stringify(arr.slice(0, 80)));
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
   }
 
   function formatDay(ts) {
@@ -153,10 +280,10 @@
 
   function showCinematic(entry) {
     const el = ensureOverlay();
-    el.querySelector(".asfx-kicker").textContent = "Маленький сюрприз";
+    el.querySelector(".asfx-kicker").textContent = entry.kicker || "Маленький сюрприз";
     el.querySelector(".asfx-title").textContent = entry.label || "Сюрприз";
     el.querySelector(".asfx-detail").textContent = entry.detail || "";
-    el.querySelector(".asfx-when").textContent = "Выдано: " + formatDay(entry.at);
+    el.querySelector(".asfx-when").textContent = "Выдано: " + formatDay(entry.at || Date.now());
     el.classList.add("on");
     clearTimeout(showCinematic._t);
     showCinematic._t = setTimeout(() => el.classList.remove("on"), 2800);
@@ -202,7 +329,6 @@
     return entry;
   }
 
-  /** Секрет хозяина — без расшифровки в интерфейсе */
   function giveSecretOwner(opts) {
     const entry = record({
       game: (opts && opts.game) || detectGame(),
@@ -222,9 +348,7 @@
     giveSecretOwner._t = setTimeout(() => el.classList.remove("on"), 2200);
     try {
       localStorage.setItem(SECRET_FLAG, "1");
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
     global.dispatchEvent(
       new CustomEvent("amal-surprise", {
         detail: { type: "owner-secret", entry },
@@ -278,19 +402,62 @@
     }
   }
 
+  /** При входе в игру — показать «обновление для тебя», если волна/пак активны */
+  function bootGameUpdate() {
+    if (!isOwnerLocal()) return;
+    if (!hasOwnerWave() && !hasTeamPack()) return;
+    const game = detectGame();
+    if (!game || game === "hub" || game === "shared" || game === "amal-games") return;
+    let pending = false;
+    try {
+      pending = localStorage.getItem(pendingKey(game)) === "1";
+    } catch (_) {}
+    if (!pending) return;
+    try {
+      localStorage.removeItem(pendingKey(game));
+    } catch (_) {}
+    const entry = {
+      kicker: "Обновление для тебя",
+      label: "Эта игра обновлена",
+      detail: "Сюрпризы хозяина и команды действуют и здесь",
+      at: Date.now(),
+      game,
+    };
+    setTimeout(() => {
+      showCinematic(entry);
+      global.dispatchEvent(
+        new CustomEvent("amal-power", {
+          detail: { type: "owner-game-update", game, at: Date.now() },
+        })
+      );
+    }, 900);
+  }
+
+  if (typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bootGameUpdate);
+    } else {
+      setTimeout(bootGameUpdate, 200);
+    }
+  }
+
   global.AmalSurprises = {
     LITTLE,
     TEAM_PACK,
     TEAM_GAMES,
+    OWNER_WAVE,
     giveLittle,
     giveSecretOwner,
     giveTeamPack,
+    giveOwnerWave,
     hasTeamPack,
+    hasOwnerWave,
     history,
     historyHtml,
     formatDay,
     showCinematic,
     hasSecretUnlocked,
+    bootGameUpdate,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);
