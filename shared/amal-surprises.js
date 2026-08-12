@@ -7,6 +7,76 @@
 
   const STORAGE = "amal-surprise-log-v1";
   const SECRET_FLAG = "amal-owner-secret-v1";
+  const TEAM_FLAG = "amal-team-pack-67-v1";
+  const TEAM_GAMES = [
+    "animal-hospital",
+    "zombie-vs-plants-2",
+    "blockbust",
+    "hideout",
+    "minecraft",
+    "x-buggy",
+    "melon-playground",
+    "kick-buddy",
+  ];
+
+  const TEAM_PACK = [
+    { id: "team-gold", label: "Золото команды", detail: "Блеск и бонус для админ-команды" },
+    { id: "team-shield", label: "Щит отряда", detail: "Мягкая защита во всех отмеченных играх" },
+    { id: "team-party", label: "Пати на троих", detail: "Сразу несколько сюрпризов подряд" },
+    { id: "team-radar", label: "Радар гостей", detail: "Чуть яснее, кто рядом в играх" },
+    { id: "team-spark", label: "Искры портала", detail: "Красивая вспышка на весь экран" },
+  ];
+
+  function hasTeamPack() {
+    try {
+      return localStorage.getItem(TEAM_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function giveTeamPack(opts) {
+    const force = !!(opts && opts.force);
+    if (hasTeamPack() && !force) {
+      return { ok: false, already: true, entries: [] };
+    }
+    try {
+      localStorage.setItem(TEAM_FLAG, "1");
+    } catch (_) {
+      /* ignore */
+    }
+    const to = (opts && opts.to) || "админ-команда";
+    const entries = [];
+    TEAM_PACK.forEach((pack, i) => {
+      const game = TEAM_GAMES[i % TEAM_GAMES.length];
+      const entry = record({
+        game,
+        to,
+        kind: pack.id,
+        label: pack.label,
+        detail: pack.detail + " · игра: " + game,
+        secret: false,
+      });
+      entries.push(entry);
+    });
+    // несколько вспышек подряд
+    let delay = 0;
+    entries.slice(0, 3).forEach((entry) => {
+      setTimeout(() => showCinematic(entry), delay);
+      delay += 900;
+    });
+    global.dispatchEvent(
+      new CustomEvent("amal-surprise", {
+        detail: { type: "team-pack", entries, games: TEAM_GAMES.slice() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "team-pack-67", games: TEAM_GAMES.slice(), at: Date.now() },
+      })
+    );
+    return { ok: true, entries, games: TEAM_GAMES.slice() };
+  }
 
   const LITTLE = [
     { id: "sun-kiss", label: "Поцелуй солнца", detail: "+75 солнца и тёплый блеск" },
@@ -210,8 +280,12 @@
 
   global.AmalSurprises = {
     LITTLE,
+    TEAM_PACK,
+    TEAM_GAMES,
     giveLittle,
     giveSecretOwner,
+    giveTeamPack,
+    hasTeamPack,
     history,
     historyHtml,
     formatDay,
