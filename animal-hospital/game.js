@@ -3784,14 +3784,14 @@
         return;
       }
     } else {
-      for (const needId of still.slice()) {
-        const idx = player.inv.indexOf(needId);
-        if (idx >= 0) {
-          player.inv.splice(idx, 1);
+    for (const needId of still.slice()) {
+      const idx = player.inv.indexOf(needId);
+      if (idx >= 0) {
+        player.inv.splice(idx, 1);
           if (player.selInv === idx) player.selInv = Math.min(idx, player.inv.length - 1);
           else if (player.selInv > idx) player.selInv -= 1;
-          patient.delivered.push(needId);
-          applied += 1;
+        patient.delivered.push(needId);
+        applied += 1;
         }
       }
     }
@@ -3820,7 +3820,7 @@
       } else if (patient.rareKind) {
         toast(`${guestLabel(patient)} · ${guestKindTag(patient)} вылечен!`);
       } else {
-        toast(`Пациент вылечен! (${patient.condition.name})`);
+      toast(`Пациент вылечен! (${patient.condition.name})`);
       }
       for (let i = 0; i < 10; i++) {
         g.particles.push({
@@ -3974,7 +3974,7 @@
     if (player.infiniteItems || endless || (player.coffeeLeft && player.coffeeLeft > 0)) {
       player.coffeeLeft = Math.max(player.coffeeLeft || 0, endless ? 9999 : 99);
       if (!player.inv.includes("coffee_cup") && player.inv.length < invMax(player)) {
-        player.inv.push("coffee_cup");
+    player.inv.push("coffee_cup");
       }
       if (!endless) coffeeCd[id] = 6;
       toast(endless ? "☕ Кофе · без перезарядки" : "☕ Кофе готов · отнеси Барни (E рядом с ним)");
@@ -4026,7 +4026,7 @@
           showEvent("Барни в укрытии: «Держи вторую кофемашину»", 3.5);
           toast("☕☕ Кофемашина 2 открыта");
         } else if (b.state === "idle") {
-          b.state = "hint";
+        b.state = "hint";
           showEvent("Барни: «Подожди меня в кабинете (офис)…»", 4);
           toast("Иди в кабинет (офис)");
         }
@@ -4299,9 +4299,9 @@
       hurtSanity(5);
     } else if (g.shift.special === "mass") {
       if (!g.noAnimals) {
-        for (let i = 0; i < 3; i++) g.queue.push(makeVisitor());
-        layoutQueue();
-        showEvent("🚑 Массовое поступление!", 3);
+      for (let i = 0; i < 3; i++) g.queue.push(makeVisitor());
+      layoutQueue();
+      showEvent("🚑 Массовое поступление!", 3);
       }
     } else {
       g.monsters.push(spawnMonster("stalker", 400, 160, 8));
@@ -5150,7 +5150,7 @@
     for (const m of wantedMachines) {
       if (softGuide) {
         // у хозяина с ∞ — только маленькая метка у автомата, без длинных линий
-        ctx.save();
+      ctx.save();
         ctx.fillStyle = "rgba(255, 211, 106, 0.9)";
         ctx.beginPath();
         ctx.arc(m.x, m.y - 48, 5 + Math.sin(g.t * 6) * 1.5, 0, Math.PI * 2);
@@ -5192,9 +5192,9 @@
         ctx.lineWidth = soft ? 2 : 3;
         ctx.stroke();
         if (!soft) {
-          ctx.fillStyle = "rgba(255, 211, 106, 0.92)";
+        ctx.fillStyle = "rgba(255, 211, 106, 0.92)";
           ctx.font = "900 14px Nunito";
-          ctx.textAlign = "center";
+        ctx.textAlign = "center";
           ctx.fillText("⬇", m.x, m.y - 48 - pulse);
         }
       } else {
@@ -5486,10 +5486,10 @@
         ctx.lineTo(pt.x + pt.vx * 0.04, pt.y + 14);
         ctx.stroke();
       } else {
-        ctx.fillStyle = pt.color;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
-        ctx.fill();
+      ctx.fillStyle = pt.color;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+      ctx.fill();
       }
       ctx.globalAlpha = 1;
     }

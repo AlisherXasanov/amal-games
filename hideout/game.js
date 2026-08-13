@@ -1451,6 +1451,106 @@
     ctx.restore();
   }
 
+  function seekerArrowsOn() {
+    try {
+      if (window.__AMAL_ARROWS__ === false) return false;
+      if (window.__AMAL_ARROWS__ === true) return true;
+    } catch (_) {}
+    return amalGod();
+  }
+
+  function drawEdgeArrow(ax, ay, ang, color, label) {
+    ctx.save();
+    ctx.translate(ax, ay);
+    ctx.rotate(ang);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(16, 0);
+    ctx.lineTo(-10, 11);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(-10, -11);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+    if (label) {
+      ctx.font = "800 11px Outfit, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      const tw = ctx.measureText(label).width;
+      roundRect(ax - tw / 2 - 6, ay + 16, tw + 12, 18, 8);
+      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.fillText(label, ax, ay + 29);
+    }
+  }
+
+  function drawSeekerArrows() {
+    if (!g || g.phase !== "seek" || g.player.role !== "seeker" || !seekerArrowsOn()) return;
+    const p = g.player;
+    const margin = 42;
+    const cx = VW / 2;
+    const cy = VH / 2;
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    let count = 0;
+    for (const a of g.actors) {
+      if (a.role !== "hider" || a.caught) continue;
+      count++;
+      const sameFloor = a.floor === p.floor;
+      const sx = a.x - cam.x;
+      const sy = a.y - cam.y;
+      const dist = Math.max(1, Math.round(Math.hypot(a.x - p.x, a.y - p.y)));
+      const floorLabel = typeof floorName === "function" ? floorName(a.floor) : "эт." + (a.floor + 1);
+      const label = (sameFloor ? "" : floorLabel + " · ") + dist + "м";
+      const color = sameFloor ? "#fbbf24" : "#38bdf8";
+      const onScreen =
+        sameFloor && sx > margin && sx < VW - margin && sy > margin && sy < VH - margin;
+
+      if (onScreen) {
+        // Маркер над прячущимся (даже в тумане)
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        roundRect(sx - 28, sy - 58, 56, 22, 10);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.font = "800 12px Outfit, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("⬇ " + dist, sx, sy - 43);
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 4]);
+        ctx.arc(sx, sy, 22 + Math.sin(performance.now() / 200) * 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else {
+        let dirX = a.x - p.x;
+        let dirY = a.y - p.y;
+        if (!sameFloor) dirY += (a.floor - p.floor) * 160;
+        const ang = Math.atan2(dirY, dirX);
+        const rx = VW / 2 - margin;
+        const ry = VH / 2 - margin;
+        // эллипс по краю экрана
+        const cos = Math.cos(ang);
+        const sin = Math.sin(ang);
+        const t = 1 / Math.sqrt((cos * cos) / (rx * rx) + (sin * sin) / (ry * ry));
+        const ax = cx + cos * t;
+        const ay = cy + sin * t;
+        drawEdgeArrow(ax, ay, ang, color, label);
+      }
+    }
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    roundRect(VW / 2 - 70, 10, 140, 26, 12);
+    ctx.fill();
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "800 12px Outfit, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("➡ Прячущихся: " + count, VW / 2, 28);
+    ctx.restore();
+  }
+
   function drawPrompt() {
     const p = g.player;
     let tip = "";
@@ -1490,6 +1590,7 @@
     drawFog();
     drawPrompt();
     ctx.restore();
+    drawSeekerArrows();
   }
 
   function loop(now) {
@@ -1506,6 +1607,11 @@
   window.addEventListener("amal-power", (e) => {
     const t = e.detail && e.detail.type;
     if (!g || !g.player) return;
+    if (t === "ho-arrows" || t === "max" || t === "god") {
+      window.__AMAL_ARROWS__ = true;
+      window.__AMAL_GOD__ = true;
+      if (typeof toast === "function") toast("➡ Стрелки к прячущимся");
+    }
     if (t === "ho-skip" || (t === "max" && g.phase === "hide")) {
       if (g.phase === "hide") {
         if (g.player.role !== "seeker") {
