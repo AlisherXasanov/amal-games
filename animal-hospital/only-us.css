@@ -113,15 +113,95 @@ html, body {
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 1rem;
-  background: rgba(6, 8, 16, 0.55);
-  backdrop-filter: blur(6px);
+  padding: 0.75rem;
+  background: rgba(6, 8, 16, 0.62);
+  backdrop-filter: blur(8px);
   z-index: 5;
+  overflow: auto;
 }
 
-.overlay > * {
+.menu-card {
+  width: min(560px, 100%);
+  text-align: center;
+  padding: 1rem 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(14, 12, 28, 0.88);
+  border: 1px solid rgba(126, 200, 255, 0.25);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.overlay > .brand,
+.overlay > .sub,
+.overlay > .modes,
+.overlay > .code,
+.overlay > .btn {
   width: min(420px, 100%);
   text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.skin-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin: 0.75rem 0 0.5rem;
+  text-align: left;
+}
+
+.skin-panel h3 {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+  color: #d8e8ff;
+}
+
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  max-height: 168px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.skin-btn {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.4rem 0.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--cream);
+  cursor: pointer;
+  font: 700 0.68rem Nunito, sans-serif;
+  line-height: 1.2;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.skin-btn span {
+  display: block;
+  font-size: 1.25rem;
+  margin-bottom: 0.15rem;
+}
+
+.skin-btn:hover {
+  border-color: rgba(232, 180, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.skin-btn.on {
+  border-color: rgba(126, 200, 255, 0.75);
+  box-shadow: 0 0 14px rgba(126, 200, 255, 0.25);
+  background: rgba(60, 100, 140, 0.35);
+}
+
+.skin-panel:first-child .skin-btn.on {
+  border-color: rgba(255, 215, 106, 0.8);
+  box-shadow: 0 0 14px rgba(255, 215, 106, 0.25);
+}
+
+@media (max-width: 560px) {
+  .skin-panels { grid-template-columns: 1fr; }
+  .skin-grid { max-height: 120px; }
 }
 
 .brand {

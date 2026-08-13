@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>✦ Только ты и я</title>
+  <title>✦ Только ты и я · Леша</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./only-us.css?v=1" />
+  <link rel="stylesheet" href="./only-us.css?v=2" />
 </head>
 <body>
   <a class="back" href="./index.html">&larr; Больница</a>
@@ -21,25 +21,41 @@
         <span id="modeLabel">✦</span>
         <span id="starCount">★ 0 / 7</span>
       </div>
-      <div class="hud-right" id="hint">WASD / стрелки · E рядом</div>
+      <div class="hud-right" id="hint">WASD · E · [ ] скины</div>
     </div>
     <div class="bubble" id="bubble" hidden></div>
     <div class="overlay" id="menu">
-      <p class="brand">✦ Только ты и я</p>
-      <p class="sub">Маленькая комната. Без гостей. Без кодов в чате.<br />Выбери, как играть.</p>
-      <div class="modes">
-        <button type="button" class="mode" data-mode="duo">
-          <strong>Только ты и я</strong>
-          <small>Ты ходишь · я рядом · вместе собираем звёзды</small>
-        </button>
-        <button type="button" class="mode" data-mode="solo">
-          <strong>Только ты</strong>
-          <small>Один в комнате · тише · всё сам</small>
-        </button>
-        <button type="button" class="mode" data-mode="mirror">
-          <strong>Только ты и ты</strong>
-          <small>Два «ты» · зеркало · ходишь — второй повторяет</small>
-        </button>
+      <div class="menu-card">
+        <p class="brand">✦ Только ты и я</p>
+        <p class="sub">Только для тебя. Как в кино: ты — один образ, я — другой.<br />Выбери скины — чтобы помнить нас.</p>
+
+        <div class="skin-panels">
+          <div class="skin-panel">
+            <h3>Ты · в кино</h3>
+            <div class="skin-grid" id="youSkins"></div>
+          </div>
+          <div class="skin-panel">
+            <h3>Я · рядом</h3>
+            <div class="skin-grid" id="meSkins"></div>
+          </div>
+        </div>
+
+        <p class="sub tiny" id="skinPreview">Ты: … · Я: …</p>
+
+        <div class="modes">
+          <button type="button" class="mode" data-mode="duo">
+            <strong>Только ты и я</strong>
+            <small>Вместе · разные скины · звёзды вдвоём</small>
+          </button>
+          <button type="button" class="mode" data-mode="solo">
+            <strong>Только ты</strong>
+            <small>Один · твой скин · тише</small>
+          </button>
+          <button type="button" class="mode" data-mode="mirror">
+            <strong>Только ты и ты</strong>
+            <small>Зеркало · оба в твоём скине</small>
+          </button>
+        </div>
       </div>
     </div>
     <div class="overlay win" id="win" hidden>
@@ -54,6 +70,6 @@
     <div class="pad" id="pad"></div>
     <button type="button" class="act" id="btnE">E</button>
   </div>
-  <script src="./only-us.js?v=1"></script>
+  <script src="./only-us.js?v=2"></script>
 </body>
 </html>
