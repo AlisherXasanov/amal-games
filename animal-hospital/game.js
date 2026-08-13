@@ -215,26 +215,52 @@
         time: 140 + (id % 8) * 4,
         anomaly: Math.min(0.45, t.anomaly),
         eventRate: Math.min(0.3, t.eventRate || 0),
-        tag: t.tag,
+        tag: t.tag + " · ждут лечения",
         color: t.color,
         special: t.special || null,
         secret: false,
+        patientDeath: true,
       });
+    });
+    list.push({
+      id: 10,
+      name: "Смена 10 · Самообслуживание",
+      time: 160,
+      anomaly: 0.28,
+      eventRate: 0.12,
+      tag: "Клиенты сами покупают · могут умереть",
+      color: "#8ecfff",
+      special: "selfserve",
+      secret: false,
+      selfServe: true,
+      patientDeath: true,
+    });
+    list.push({
+      id: 11,
+      name: "Смена 11 · Тихий зал",
+      time: 160,
+      anomaly: 0,
+      eventRate: 0.04,
+      tag: "Сами покупают · без аномалий · ждут лечения",
+      color: "#7ed9b8",
+      special: "selfserveQuiet",
+      secret: false,
+      selfServe: true,
+      noAnomalies: true,
+      patientDeath: true,
     });
     list.push({
       id: 33,
       name: "✦ Смена · Попугай",
       time: 200,
-      anomaly: 0,
-      eventRate: 0,
-      tag: "Тропики · Кеша рядом · без аномалий",
+      anomaly: 0.3,
+      eventRate: 0.14,
+      tag: "Тропики · как обычная смена · смерть при ошибке",
       color: "#ff6a4a",
       special: "parrot33",
       secret: true,
       parrotShift: true,
-      noAnomalies: true,
-      vipKit: true,
-      coffeeGift: 3,
+      patientDeath: true,
       theme: "parrot",
     });
     list.push({
@@ -531,16 +557,87 @@
   }
 
   function isVipShift(shift) {
+    if (!shift || shift.patientDeath) return false;
     return !!(
-      shift &&
-      (shift.vipKit ||
-        shift.noAnomalies ||
-        shift.lesha ||
-        shift.diamondNight ||
-        shift.lucky7 ||
-        shift.rainNight ||
-        shift.parrotShift)
+      shift.vipKit ||
+      shift.lesha ||
+      shift.diamondNight ||
+      shift.lucky7 ||
+      shift.rainNight ||
+      shift.hereWithYou
     );
+  }
+
+  function shiftAllowsDeath(shift) {
+    return !!(shift && shift.patientDeath);
+  }
+
+  function patientDie(v, reason) {
+    if (!g || !v) return;
+    g.died = (g.died || 0) + 1;
+    g.leaked += 1;
+    g.inside = g.inside.filter((p) => p.id !== v.id);
+    if (focusPatient && focusPatient.id === v.id) {
+      focusPatient = null;
+      updateNeedUI();
+    }
+    if (g.firePatient && g.firePatient.id === v.id) g.firePatient = null;
+    for (let i = 0; i < 12; i++) {
+      g.particles.push({
+        x: v.x,
+        y: v.y,
+        vx: (Math.random() - 0.5) * 140,
+        vy: (Math.random() - 0.5) * 140,
+        life: 0.6,
+        color: "#ef4d5a",
+      });
+    }
+    hurtSanity(10);
+    showEvent(reason || "✗ Пациент умер", 2.4);
+    toast(reason || "Пациент умер");
+  }
+
+  function placePatientInside(v) {
+    const beds = getStations().filter((s) => s.kind === "treat");
+    const taken = new Set(g.inside.map((p) => p.bed));
+    const free = beds.find((b) => !taken.has(b.id));
+    v.phase = "treating";
+    v.diagnosed = false;
+    v.delivered = [];
+    v.wrongHits = 0;
+    if (shiftAllowsDeath(g.shift)) {
+      v.life = 48 + Math.random() * 22;
+      v.maxLife = v.life;
+    } else {
+      v.life = null;
+    }
+    if (free) {
+      v.bed = free.id;
+      v.x = free.x;
+      v.y = free.y;
+    } else {
+      v.x = 700 + (Math.random() * 80 - 40);
+      v.y = 560;
+    }
+    g.inside.push(v);
+  }
+
+  function autoAdmitSelfServe() {
+    if (!g || !g.shift || !g.shift.selfServe) return;
+    if (!g.queue.length) return;
+    const beds = getStations().filter((s) => s.kind === "treat");
+    const freeCount = Math.max(0, beds.length - g.inside.length);
+    if (freeCount <= 0) return;
+    const v = g.queue[0];
+    if (v.isAnomaly) return;
+    g.queue.shift();
+    layoutQueue();
+    placePatientInside(v);
+    v.selfServe = true;
+    v.diagnosed = true;
+    v.selfBuyCd = 1.2 + Math.random() * 1.4;
+    g.coins += 2;
+    toast("Клиент сам пошёл за лекарствами");
   }
 
   function applyThemeClass(theme) {
@@ -1286,10 +1383,11 @@
       treated: 0,
       blocked: 0,
       leaked: 0,
+      died: 0,
       wrongReject: 0,
       sanity: selectedClass.sanity,
       maxSanity: selectedClass.sanity,
-      immortal: true,
+      immortal: isVipShift(shift),
       players,
       queue: [],
       inside: [],
@@ -1314,6 +1412,8 @@
       requests: [], // бесконечная лента заявок (имена в очереди)
       theme: shift.theme || null,
       noAnomalies: !!(shift.noAnomalies || shift.anomaly <= 0),
+      patientDeath: shiftAllowsDeath(shift),
+      selfServe: !!shift.selfServe,
     };
 
     coffeeCd = { coffee: 0, coffee2: 0 };
@@ -1341,9 +1441,14 @@
     shiftTag.style.borderColor = shift.color;
     showEl(shiftTag);
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
-    toast(`Ресепшен · ∞ время · очередь ∞` + (g.players[0].weapon ? " · F по аномалии сразу" : ""));
+    toast(
+      (shift.selfServe ? "Самообслуживание · " : "Ресепшен · ") +
+        (g.patientDeath ? "не тяни — умрут · " : "") +
+        "∞ время · очередь ∞" +
+        (g.players[0].weapon ? " · F по аномалии сразу" : "")
+    );
     applyThemeClass(shift.theme || null);
-    giveVipKit(g.players[0], shift);
+    if (isVipShift(shift)) giveVipKit(g.players[0], shift);
     if (shift.lesha || shift.endlessCoffee || shift.theme === "gold") {
       meta.coffee2 = true;
       storeSet(SAVE, meta);
@@ -1407,9 +1512,6 @@
       toast("Я тоже на смене.");
     }
     if (shift.parrotShift || shift.id === 33 || shift.theme === "parrot") {
-      g.sanity = g.maxSanity;
-      g.immortal = true;
-      meta.secretParrot = true;
       const parrotSkin = SKINS.find((s) => s.id === "secret-parrot");
       if (parrotSkin) {
         selectedSkin = parrotSkin;
@@ -1423,14 +1525,16 @@
       }
       storeSet(SAVE, meta);
       g.theme = "parrot";
+      g.immortal = false;
+      g.patientDeath = true;
       applyThemeClass("parrot");
-      showEvent("✦ Кеша на смене · тропики", 3.2);
-      toast("Попугай с тобой.");
+      showEvent("✦ Попугай · обычная смена · лечи вовремя", 3.0);
+      toast("Не те вещи / долго ждёт = смерть");
     }
-    if (meta.rainNight) {
+    if (meta.rainNight && !(shift.parrotShift || shift.theme === "parrot")) {
       g.theme = "rain";
       applyThemeClass("rain");
-    } else if (meta.animeWorld) {
+    } else if (meta.animeWorld && !(shift.parrotShift || shift.theme === "parrot")) {
       g.theme = "anime";
       applyThemeClass("anime");
       showEvent("✦ Всё в аниме", 2.2);
@@ -1476,8 +1580,9 @@
     hideEl(queueStrip);
     endTitle.textContent = reason === "insanity" ? "Рассудок 0 — провал" : "Смена окончена";
     endSub.innerHTML =
-      `${g.shift.name}<br>Вылечено: ${g.treated} · Аномалий: ${g.blocked} · Пропущено: ${g.leaked}<br>` +
-      `Монеты: ∞`;
+      `${g.shift.name}<br>Вылечено: ${g.treated} · Аномалий: ${g.blocked} · Пропущено: ${g.leaked}` +
+      (g.died ? ` · Умерло: ${g.died}` : "") +
+      `<br>Монеты: ∞`;
     showEl(endPanel);
   }
 
@@ -1791,21 +1896,7 @@
         toast("Ты впустил аномалию…");
       }
     } else {
-      const beds = getStations().filter((s) => s.kind === "treat");
-      const taken = new Set(g.inside.map((p) => p.bed));
-      const free = beds.find((b) => !taken.has(b.id));
-      v.phase = "treating";
-      v.diagnosed = false;
-      v.delivered = [];
-      if (free) {
-        v.bed = free.id;
-        v.x = free.x;
-        v.y = free.y;
-      } else {
-        v.x = 700;
-        v.y = 560;
-      }
-      g.inside.push(v);
+      placePatientInside(v);
       healSanity(g.players[0].cls.checkSanity);
       g.coins += 4;
       toast("Клиент принят → кабинет");
@@ -1877,6 +1968,28 @@
     // применить предметы из инвентаря
     let applied = 0;
     const still = patient.needs.filter((id) => !patient.delivered.includes(id));
+
+    // не те вещи → рана / смерть (только если нечем лечить правильно)
+    if (g.patientDeath && !player.infiniteItems) {
+      const wrong = player.inv.filter((id) => !patient.needs.includes(id));
+      const canApply = still.some((id) => player.inv.includes(id));
+      if (wrong.length && still.length && !canApply) {
+        const bad = wrong[0];
+        const widx = player.inv.indexOf(bad);
+        if (widx >= 0) player.inv.splice(widx, 1);
+        patient.wrongHits = (patient.wrongHits || 0) + 1;
+        renderInv();
+        if (patient.wrongHits >= 2) {
+          patientDie(patient, "✗ Не те лекарства — пациент умер");
+          return;
+        }
+        hurtSanity(5);
+        toast("Не та вещь! Ещё ошибка — умрёт");
+        updateNeedUI();
+        return;
+      }
+    }
+
     for (const needId of still.slice()) {
       if (player.infiniteItems) {
         patient.delivered.push(needId);
@@ -2417,6 +2530,36 @@
       g.spawnCd = Math.max(2.2, 5.5 - g.shift.id * 0.35);
     }
 
+    if (g.selfServe) autoAdmitSelfServe();
+
+    // пациенты: таймер жизни + самообслуживание
+    for (const v of g.inside.slice()) {
+      if (g.patientDeath && v.life != null) {
+        v.life -= dt;
+        if (v.life <= 0) {
+          patientDie(v, "✗ Слишком долго ждал — умер");
+          continue;
+        }
+      }
+      if (v.selfServe && v.diagnosed) {
+        v.selfBuyCd = (v.selfBuyCd || 1) - dt;
+        if (v.selfBuyCd <= 0) {
+          const need = v.needs.find((id) => !v.delivered.includes(id));
+          if (need) {
+            v.delivered.push(need);
+            v.selfBuyCd = 1.4 + Math.random() * 1.8;
+          }
+          const left = v.needs.filter((id) => !v.delivered.includes(id));
+          if (!left.length) {
+            g.treated += 1;
+            g.coins += 12;
+            g.inside = g.inside.filter((p) => p.id !== v.id);
+            toast("Клиент сам купил и ушёл");
+          }
+        }
+      }
+    }
+
     g.eventCd -= dt;
     if (g.eventCd <= 0 && g.shift.eventRate > 0) {
       if (Math.random() < g.shift.eventRate + 0.15) spawnEvent();
@@ -2575,7 +2718,9 @@
     }
     hudStats.innerHTML =
       `${g.shift.name.split("·")[0].trim()} · ⏱ ∞ · 🪙 ∞` +
-      `<br>❤️ ${g.treated} · 🚫 ${g.blocked} · ⚠ ${g.leaked} · 👾 ${g.monsters.length} · ∞очередь ${g.queue.length}` +
+      `<br>❤️ ${g.treated} · 🚫 ${g.blocked} · ⚠ ${g.leaked}` +
+      (g.died ? ` · 💀 ${g.died}` : "") +
+      ` · 👾 ${g.monsters.length} · ∞очередь ${g.queue.length}` +
       (eHint ? `<br><span style="color:#7ed9b8">${eHint}</span>` : "") +
       (g.players[0].weapon
         ? `<br><span style="color:#ffd36a">${g.players[0].weapon.icon} F — аномалию сразу · R зарядка · C кофе</span>`
@@ -2922,6 +3067,13 @@
           ctx.font = "700 11px Nunito";
           ctx.fillText("готов", v.x, v.y + 38);
         }
+      }
+      if (g.patientDeath && v.life != null && v.maxLife) {
+        const pct = Math.max(0, v.life / v.maxLife);
+        ctx.fillStyle = "rgba(0,0,0,0.45)";
+        ctx.fillRect(v.x - 18, v.y + 28, 36, 5);
+        ctx.fillStyle = pct < 0.35 ? "#ef4d5a" : pct < 0.65 ? "#ffd36a" : "#7ed9b8";
+        ctx.fillRect(v.x - 18, v.y + 28, 36 * pct, 5);
       }
       ctx.textAlign = "left";
     }
