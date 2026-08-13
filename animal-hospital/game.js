@@ -946,12 +946,6 @@
     return room.name;
   }
 
-  function syncAnimeWorldTheme() {
-    if (meta && meta.rainNight) applyThemeClass("rain");
-    else if (meta && meta.animeWorld) applyThemeClass("anime");
-    else if (!g || !g.theme) applyThemeClass(null);
-  }
-
   function giveVipKit(player, shift) {
     if (!player) return;
     const meds = Object.keys(ITEMS).filter((id) => id !== "coffee_cup" && id !== "juice_cup");
@@ -1190,7 +1184,34 @@
   } catch (_) {}
   meta.animeWorld = false;
   meta.rainNight = false;
-  applyThemeClass(null);
+
+  function applyLobbyTheme() {
+    if (g && g.theme) {
+      applyThemeClass(g.theme);
+      return;
+    }
+    if (meta && meta.rainNight) {
+      applyThemeClass("rain");
+      return;
+    }
+    if (meta && meta.animeWorld) {
+      applyThemeClass("anime");
+      return;
+    }
+    const th = selectedShift && selectedShift.theme;
+    applyThemeClass(th || null);
+  }
+
+  function syncAnimeWorldTheme() {
+    applyLobbyTheme();
+  }
+
+  function pulseShiftTag() {
+    if (!shiftTag) return;
+    shiftTag.classList.remove("shift-tag-pop");
+    void shiftTag.offsetWidth;
+    shiftTag.classList.add("shift-tag-pop");
+  }
 
   function isOwner() {
     return true;
@@ -1266,6 +1287,7 @@
     }
     syncSecretTray();
     renderSpawnActiveList();
+    applyLobbyTheme();
   }
 
   function syncSecretTray() {
@@ -1741,6 +1763,7 @@
   shiftSelect.addEventListener("change", () => {
     selectedShift = SHIFTS.find((s) => String(s.id) === shiftSelect.value) || SHIFTS[0];
     persistLobby();
+    applyLobbyTheme();
   });
   skinSelect.addEventListener("change", () => {
     selectedSkin = SKINS.find((s) => s.id === skinSelect.value) || SKINS[0];
@@ -2446,6 +2469,7 @@
       policeman: null, // { x, y, t, answered }
       requests: [], // бесконечная лента заявок (имена в очереди)
       theme: shift.theme || null,
+      shiftIntro: 0,
       noAnomalies: !!(shift.noAnomalies || shift.anomaly <= 0),
       ownerQuiet: false,
       noAnimals: !!(meta && meta.noAnimals),
@@ -2489,6 +2513,8 @@
     shiftTag.textContent = shift.name + " — " + shift.tag;
     shiftTag.style.borderColor = shift.color;
     showEl(shiftTag);
+    pulseShiftTag();
+    if (shift.theme) g.shiftIntro = 3.2;
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
     syncQuietFab();
     syncAnimalsFab();
@@ -4061,6 +4087,20 @@
         });
       }
     }
+    if (g.theme === "iskra") {
+      for (let i = 0; i < 4; i++) {
+        if (Math.random() > 0.42) continue;
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y + Math.random() * VH * 0.55,
+          vx: (Math.random() - 0.5) * 160,
+          vy: -50 - Math.random() * 130,
+          life: 0.45 + Math.random() * 0.55,
+          color: i % 3 === 0 ? "#fff0a0" : i % 3 === 1 ? "#ff8040" : "#ff4ec8",
+        });
+      }
+    }
+    if (g.shiftIntro > 0) g.shiftIntro -= dt;
     if (g.coolFreeze > 0) {
       g.coolFreeze -= dt;
       if (g.monsters && g.monsters.length) g.monsters = [];
@@ -4696,7 +4736,11 @@
                   ? "#2a0820"
                   : theme === "here"
                     ? "#0a1824"
-                    : "#101624";
+                    : theme === "cool"
+                      ? "#0a2030"
+                      : theme === "iskra"
+                        ? "#281008"
+                        : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -4714,7 +4758,11 @@
                 ? "rgba(120, 200, 255, 0.4)"
                 : theme === "parrot"
                   ? "rgba(255, 140, 60, 0.45)"
-                  : "rgba(255,255,255,0.1)";
+                  : theme === "cool"
+                    ? "rgba(120, 240, 255, 0.45)"
+                    : theme === "iskra"
+                      ? "rgba(255, 180, 60, 0.5)"
+                      : "rgba(255,255,255,0.1)";
       ctx.lineWidth = theme ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle =
@@ -5262,6 +5310,21 @@
       }
     }
 
+    if (g.shiftIntro > 0 && theme) {
+      const a = Math.min(0.28, g.shiftIntro / 3.2) * 0.35;
+      ctx.fillStyle =
+        theme === "iskra"
+          ? `rgba(255, 140, 40, ${a})`
+          : theme === "cool"
+            ? `rgba(120, 240, 255, ${a})`
+            : theme === "gold"
+              ? `rgba(255, 200, 60, ${a})`
+              : theme === "diamond"
+                ? `rgba(120, 220, 255, ${a})`
+                : `rgba(255, 255, 255, ${a * 0.6})`;
+      ctx.fillRect(0, 0, VW, VH);
+    }
+
     if (g.sanity < 35) {
       ctx.fillStyle = `rgba(80,0,20,${((35 - g.sanity) / 35) * 0.5})`;
       ctx.fillRect(0, 0, VW, VH);
@@ -5414,6 +5477,7 @@
   hideEl(document.getElementById("secretShiftsPanel"));
   showEl(menu);
   showEl(secretDeathWrap);
+  applyLobbyTheme();
   requestAnimationFrame(frame);
 
   try {

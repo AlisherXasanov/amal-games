@@ -50,9 +50,19 @@ body.theme-lucky7 #app {
 }
 #screen.theme-gold {
   box-shadow: 0 18px 50px rgba(255, 180, 40, 0.35), 0 0 0 2px rgba(255, 215, 106, 0.45);
+  animation: goldPulse 2.2s ease-in-out infinite;
 }
 #screen.theme-diamond {
   box-shadow: 0 18px 50px rgba(80, 200, 255, 0.35), 0 0 0 2px rgba(160, 230, 255, 0.5);
+  animation: diamondPulse 2.2s ease-in-out infinite;
+}
+@keyframes goldPulse {
+  0%, 100% { filter: saturate(1.05) brightness(1); }
+  50% { filter: saturate(1.25) brightness(1.07); }
+}
+@keyframes diamondPulse {
+  0%, 100% { filter: saturate(1.05) brightness(1); }
+  50% { filter: saturate(1.2) brightness(1.08); }
 }
 body.theme-cool,
 body.theme-cool #app {
@@ -1037,6 +1047,25 @@ button.inv-slot {
   font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
+}
+.shift-tag.shift-tag-pop {
+  animation: shiftTagPop 2.8s ease-out;
+}
+@keyframes shiftTagPop {
+  0% {
+    transform: translateX(-50%) scale(0.55);
+    opacity: 0;
+    filter: brightness(1.6);
+  }
+  18% {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 1;
+    filter: brightness(1);
+  }
 }
 
 .queue-strip {
