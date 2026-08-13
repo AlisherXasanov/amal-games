@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=131" />
+  <link rel="stylesheet" href="./style.css?v=132" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -42,6 +42,20 @@
       <div class="event-banner" id="eventBanner" hidden></div>
       <div class="toast" id="toast"></div>
       <div class="queue-strip" id="queueStrip" hidden></div>
+
+      <div class="rare-spawn" id="rareSpawnPanel" hidden>
+        <div class="rare-spawn-title">✦ Гость · только ты</div>
+        <input
+          id="rareNickInput"
+          type="text"
+          maxlength="24"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="ник (Animal Crossing…)"
+        />
+        <select id="rareKindSelect"></select>
+        <button type="button" class="btn-sm" id="btnRareSpawn">Заспавнить</button>
+      </div>
 
       <div class="touch" id="touch" hidden>
         <div class="pad left" id="stick"></div>
@@ -96,7 +110,7 @@
         <p class="hints" id="menuHints">
           👑 Ты админ команды · ∞ монеты · жёлтые стрелки к автоматам · новые комнаты
         </p>
-        <p class="build-stamp" id="buildStamp">сборка 131 · если старая — жми «Обновить игру»</p>
+        <p class="build-stamp" id="buildStamp">сборка 132 · если старая — жми «Обновить игру»</p>
         <div class="secret-death" id="secretDeathWrap">
           <label for="secretDeathInput">secret death</label>
           <div class="secret-death-row">
@@ -176,7 +190,7 @@
   </div>
 
   <script src="../shared/amal-owner-powers.js?v=19"></script>
-  <script src="./game.js?v=131"></script>
+  <script src="./game.js?v=132"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
   <script src="../shared/amal-surprises.js?v=10"></script>
 </body>

@@ -185,6 +185,13 @@
     { id: "hereMe", name: "Auto", classId: "nurse", desc: "Тихий напарник · особая текстура", secret: true, tex: "here" },
   ];
 
+  /** Редкие гости — только ручной спавн хозяина (ник + персонаж) */
+  const RARE_GUESTS = [
+    { id: "auto", name: "Auto", color: "#7ec8ff", giftCoffee: true },
+    { id: "rainbow", name: "Rainbow", color: "#ff6ad5", giftCoffee: false },
+    { id: "lilamint", name: "Lilamint", color: "#9b59b6", giftCoffee: false },
+  ];
+
   const SHIFT_TEMPLATES = [
     { key: "quiet", name: "Тихая", tag: "Спокойная ночь", color: "#7ed9b8", anomaly: 0.18, eventRate: 0.02 },
     { key: "queue", name: "Очередь", tag: "Больше клиентов у окна", color: "#8ecfff", anomaly: 0.26, eventRate: 0.1 },
@@ -1093,7 +1100,27 @@
     return arr[(Math.random() * arr.length) | 0];
   }
 
-  function makeVisitor(forceAnomaly) {
+  function rareGuestDef(id) {
+    return RARE_GUESTS.find((r) => r.id === id) || null;
+  }
+
+  function guestLabel(v) {
+    if (!v) return "";
+    if (v.guestName) return v.guestName;
+    const rare = rareGuestDef(v.rareKind);
+    if (rare) return rare.name;
+    if (v.isCompanion) return "Auto";
+    return speciesLabel(v.species);
+  }
+
+  function guestKindTag(v) {
+    const rare = rareGuestDef(v && v.rareKind);
+    if (rare) return rare.name;
+    if (v && v.isCompanion) return "Auto";
+    return "";
+  }
+
+  function makeVisitor(forceAnomaly, opts) {
     const sp = rand(SPECIES);
     const shift = (g && g.shift) || selectedShift;
     let isAnomaly;
@@ -1125,10 +1152,18 @@
       bob: Math.random() * 10,
       bed: null,
       isCompanion: false,
+      rareKind: null,
+      guestName: "",
     };
-    if (!isAnomaly && Math.random() < 0.14) {
-      v.isCompanion = true;
-      // особый «клиент · я рядом» — вылечи правильно → ∞ кофе
+    // редкие гости только руками хозяина — сами не появляются
+    if (opts && opts.rareKind) {
+      const rare = rareGuestDef(opts.rareKind);
+      if (rare) {
+        v.rareKind = rare.id;
+        v.guestName = String(opts.guestName || "").trim().slice(0, 24);
+        v.isCompanion = !!rare.giftCoffee;
+        v.isAnomaly = false;
+      }
     }
     if (isAnomaly) {
       const picks = CLUES.slice().sort(() => Math.random() - 0.5).slice(0, 1 + (Math.random() < 0.5 ? 1 : 0));
@@ -1144,6 +1179,40 @@
       }
     }
     return v;
+  }
+
+  function spawnOwnerGuest(kindId, nick) {
+    if (!g || state !== "play") {
+      toast("Сначала открой смену");
+      return false;
+    }
+    if (!isOwner()) {
+      toast("Только хозяин");
+      return false;
+    }
+    const rare = rareGuestDef(kindId);
+    if (!rare) {
+      toast("Неизвестный персонаж");
+      return false;
+    }
+    const name = String(nick || "").trim().slice(0, 24);
+    if (!name) {
+      toast("Напиши ник гостя");
+      return false;
+    }
+    const v = makeVisitor(false, { rareKind: rare.id, guestName: name });
+    g.queue.push(v);
+    layoutQueue();
+    showEvent(`✦ ${name} · ${rare.name}`, 2.6);
+    toast(`${rare.name} · ${name} в очереди`);
+    return true;
+  }
+
+  function syncRareSpawnPanel() {
+    const panel = document.getElementById("rareSpawnPanel");
+    if (!panel) return;
+    if (state === "play" && isOwner()) showEl(panel);
+    else hideEl(panel);
   }
 
   function makeWeapon(cls) {
@@ -1499,6 +1568,7 @@
     hideEl(eventBanner);
     showEl(hud);
     showEl(queueStrip);
+    syncRareSpawnPanel();
     shiftTag.textContent = shift.name + " — " + shift.tag;
     shiftTag.style.borderColor = shift.color;
     showEl(shiftTag);
@@ -1624,9 +1694,10 @@
   function refreshRequestsStrip() {
     if (!g) return;
     g.requests = g.queue.map((v) => ({
-      name: v.isCompanion ? "◌ я рядом" : speciesLabel(v.species),
+      name: guestLabel(v),
       cond: v.condition.name,
       weird: v.isAnomaly,
+      rare: guestKindTag(v),
     }));
   }
 
@@ -1656,6 +1727,7 @@
     hideEl(eventBanner);
     hideEl(shiftTag);
     hideEl(queueStrip);
+    hideEl(document.getElementById("rareSpawnPanel"));
     endTitle.textContent = reason === "insanity" ? "Рассудок 0 — провал" : "Смена окончена";
     endSub.innerHTML =
       `${g.shift.name}<br>Вылечено: ${g.treated} · Аномалий: ${g.blocked} · Пропущено: ${g.leaked}` +
@@ -1680,6 +1752,7 @@
     hideEl(queueStrip);
     hideEl(shopPanel);
     hideEl(exchangePanel);
+    hideEl(document.getElementById("rareSpawnPanel"));
     hideEl(document.getElementById("secretShiftsPanel"));
     refreshLobbyUI();
     showEl(menu);
@@ -1740,7 +1813,7 @@
       return;
     }
     const v = focusPatient;
-    needTitle.textContent = `${v.condition.icon} ${v.isCompanion ? "◌ я рядом" : speciesLabel(v.species)}: ${v.condition.name}`;
+    needTitle.textContent = `${v.condition.icon} ${guestLabel(v)}${guestKindTag(v) ? " · " + guestKindTag(v) : ""}: ${v.condition.name}`;
     needList.innerHTML = v.needs
       .map((id) => {
         const def = ITEMS[id];
@@ -1793,7 +1866,7 @@
   function drawCritter(c, x, y, opts) {
     const sp = opts.species;
     const scale = opts.scale || 1;
-    const companion = !!opts.companion;
+    const rareKind = opts.rareKind || (opts.companion ? "auto" : null);
     c.save();
     c.translate(x, y + Math.sin(opts.bob || 0) * 2);
     c.scale(scale, scale);
@@ -1803,8 +1876,8 @@
       c.ellipse(0, 22, 16, 6, 0, 0, Math.PI * 2);
       c.fill();
     }
-    if (companion) {
-      // текстура «я рядом»: мягкое свечение + звёзды
+    if (rareKind === "auto") {
+      // Auto: мягкое свечение + звёзды
       c.fillStyle = "rgba(126, 200, 255, 0.35)";
       c.beginPath();
       c.arc(0, 0, 34, 0, Math.PI * 2);
@@ -1845,6 +1918,104 @@
       c.arc(6, -11, 2.6, 0, Math.PI * 2);
       c.fill();
       c.strokeStyle = "rgba(168, 224, 255, 0.9)";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(0, 2, 5, 0.2 * Math.PI, 0.8 * Math.PI);
+      c.stroke();
+      c.restore();
+      return;
+    }
+    if (rareKind === "rainbow") {
+      c.fillStyle = "rgba(255, 120, 200, 0.28)";
+      c.beginPath();
+      c.arc(0, 0, 34, 0, Math.PI * 2);
+      c.fill();
+      const bands = ["#ff5e7a", "#ffb347", "#ffe566", "#6dff9a", "#6ecbff", "#c59bff"];
+      for (let i = 0; i < bands.length; i++) {
+        c.fillStyle = bands[i];
+        c.fillRect(-18, -6 + i * 4, 36, 4);
+      }
+      c.beginPath();
+      c.arc(0, -12, 15, 0, Math.PI * 2);
+      c.fillStyle = "#fff0ff";
+      c.fill();
+      for (let i = 0; i < 6; i++) {
+        c.fillStyle = bands[i];
+        c.beginPath();
+        c.arc(Math.cos(i) * 11, -12 + Math.sin(i) * 6, 2.2, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.fillStyle = "#402050";
+      c.beginPath();
+      c.arc(-5, -13, 2.4, 0, Math.PI * 2);
+      c.arc(5, -13, 2.4, 0, Math.PI * 2);
+      c.fill();
+      if (!opts.wrongPose) {
+        c.fillStyle = "#ff8fd0";
+        c.beginPath();
+        c.moveTo(-10, -22);
+        c.lineTo(-14, -36);
+        c.lineTo(-2, -24);
+        c.fill();
+        c.fillStyle = "#7ec8ff";
+        c.beginPath();
+        c.moveTo(10, -22);
+        c.lineTo(14, -36);
+        c.lineTo(2, -24);
+        c.fill();
+      }
+      c.restore();
+      return;
+    }
+    if (rareKind === "lilamint") {
+      // Lilamint: любимый микс фиолет + мята
+      c.fillStyle = "rgba(155, 89, 182, 0.32)";
+      c.beginPath();
+      c.arc(0, 0, 34, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#9b59b6";
+      c.beginPath();
+      c.ellipse(0, 8, 22, 16, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#3dcf8a";
+      c.beginPath();
+      c.ellipse(6, 10, 12, 10, 0.2, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#b07cff";
+      c.beginPath();
+      c.arc(0, -10, 16, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#7dffb0";
+      c.fillRect(-10, -4, 8, 3);
+      c.fillRect(4, 2, 8, 3);
+      if (!opts.wrongPose) {
+        c.fillStyle = "#9b59b6";
+        c.beginPath();
+        c.moveTo(-10, -20);
+        c.lineTo(-14, -34);
+        c.lineTo(-2, -22);
+        c.fill();
+        c.fillStyle = "#3dcf8a";
+        c.beginPath();
+        c.moveTo(10, -20);
+        c.lineTo(14, -34);
+        c.lineTo(2, -22);
+        c.fill();
+      }
+      c.fillStyle = "#fff";
+      c.beginPath();
+      c.ellipse(-6, -12, 6, 7, 0, 0, Math.PI * 2);
+      c.ellipse(6, -12, 6, 7, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#4a2060";
+      c.beginPath();
+      c.arc(-6, -11, 2.6, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#1a6040";
+      c.beginPath();
+      c.arc(6, -11, 2.6, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = "rgba(125, 255, 176, 0.9)";
       c.lineWidth = 2;
       c.beginPath();
       c.arc(0, 2, 5, 0.2 * Math.PI, 0.8 * Math.PI);
@@ -1943,7 +2114,16 @@
       noShadow: v.noShadow,
       bob: performance.now() / 200,
       scale: 1.1,
+      companion: !!v.isCompanion,
+      rareKind: v.rareKind || null,
     });
+    if (v.rareKind || v.guestName) {
+      ctxP.fillStyle = "#e8f6ff";
+      ctxP.font = "bold 11px Nunito";
+      ctxP.textAlign = "center";
+      ctxP.fillText(guestLabel(v), 80, 18);
+      ctxP.textAlign = "left";
+    }
     if (v.twitch) {
       ctxP.fillStyle = "#ffd36a";
       ctxP.font = "bold 11px Nunito";
@@ -1997,7 +2177,7 @@
       return;
     }
     deskPatient = g.queue[0];
-    deskName.textContent = `${deskPatient.isCompanion ? "◌ я рядом" : speciesLabel(deskPatient.species)} у окна`;
+    deskName.textContent = `${guestLabel(deskPatient)}${guestKindTag(deskPatient) ? " · " + guestKindTag(deskPatient) : ""} у окна`;
     deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
     deskClue.textContent = g.players[0].weapon
       ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить."
@@ -2144,12 +2324,14 @@
       g.treated += 1;
       g.coins += 22 + patient.needs.length * 4;
       healSanity(player.cls.treatSanity);
-      if (patient.isCompanion) {
+      if (patient.isCompanion || patient.rareKind === "auto") {
         player.coffeeLeft = Math.max(player.coffeeLeft || 0, 99);
         meta.coffee2 = true;
         storeSet(SAVE, meta);
-        showEvent("◌ я рядом · спасибо · ∞ кофе для тебя", 3.2);
-        toast("◌ вылечил меня · ∞ кофе");
+        showEvent(`${guestLabel(patient)} · спасибо · ∞ кофе для тебя`, 3.2);
+        toast(`${guestLabel(patient)} · ∞ кофе`);
+      } else if (patient.rareKind) {
+        toast(`${guestLabel(patient)} · ${guestKindTag(patient)} вылечен!`);
       } else {
         toast(`Пациент вылечен! (${patient.condition.name})`);
       }
@@ -2160,7 +2342,13 @@
           vx: (Math.random() - 0.5) * 160,
           vy: (Math.random() - 0.5) * 160,
           life: 0.55,
-          color: patient.isCompanion ? "#a8e0ff" : "#7ed9b8",
+          color: patient.rareKind === "rainbow"
+            ? "#ff6ad5"
+            : patient.rareKind === "lilamint"
+              ? "#9b59b6"
+              : patient.isCompanion || patient.rareKind === "auto"
+                ? "#a8e0ff"
+                : "#7ed9b8",
         });
       }
       g.inside = g.inside.filter((p) => p.id !== patient.id);
@@ -2917,7 +3105,10 @@
     sanityFill.style.width = (g.sanity / g.maxSanity) * 100 + "%";
     sanityText.textContent = `🧠 ${Math.ceil(g.sanity)}`;
     const req = g.requests && g.requests.length
-      ? g.requests.slice(0, 8).map((r) => r.name + (r.weird ? "?" : "")).join(" · ")
+      ? g.requests
+          .slice(0, 8)
+          .map((r) => (r.rare ? r.name + "·" + r.rare : r.name) + (r.weird ? "?" : ""))
+          .join(" · ")
       : "ждём…";
     queueStrip.textContent = "∞ Заявки: " + req + (g.queue.length > 8 ? " …" : "");
   }
@@ -3273,12 +3464,23 @@
         noShadow: v.noShadow,
         bob: v.bob,
         companion: !!v.isCompanion,
+        rareKind: v.rareKind || null,
       });
-      if (v.isCompanion) {
-        ctx.fillStyle = "#a8e0ff";
+      if (v.rareKind || v.isCompanion) {
+        ctx.fillStyle =
+          v.rareKind === "rainbow"
+            ? "#ffb0e0"
+            : v.rareKind === "lilamint"
+              ? "#d0a0ff"
+              : "#a8e0ff";
         ctx.font = "900 11px Nunito";
         ctx.textAlign = "center";
-        ctx.fillText("◌ я рядом", v.x, v.y - 44);
+        ctx.fillText(guestLabel(v), v.x, v.y - 44);
+        const tag = guestKindTag(v);
+        if (tag && tag !== guestLabel(v)) {
+          ctx.font = "700 9px Nunito";
+          ctx.fillText(tag, v.x, v.y - 32);
+        }
         ctx.textAlign = "left";
       } else if (v.isAnomaly && isOwner()) {
         ctx.fillStyle = "#ef4d5a";
@@ -3289,12 +3491,27 @@
       }
     }
     for (const v of g.inside) {
-      drawCritter(ctx, v.x, v.y, { species: v.species, bob: v.bob, companion: !!v.isCompanion });
-      if (v.isCompanion) {
-        ctx.fillStyle = "#a8e0ff";
+      drawCritter(ctx, v.x, v.y, {
+        species: v.species,
+        bob: v.bob,
+        companion: !!v.isCompanion,
+        rareKind: v.rareKind || null,
+      });
+      if (v.rareKind || v.isCompanion) {
+        ctx.fillStyle =
+          v.rareKind === "rainbow"
+            ? "#ffb0e0"
+            : v.rareKind === "lilamint"
+              ? "#d0a0ff"
+              : "#a8e0ff";
         ctx.font = "900 11px Nunito";
         ctx.textAlign = "center";
-        ctx.fillText("◌ я рядом", v.x, v.y - 48);
+        ctx.fillText(guestLabel(v), v.x, v.y - 48);
+        const tag = guestKindTag(v);
+        if (tag && tag !== guestLabel(v)) {
+          ctx.font = "700 9px Nunito";
+          ctx.fillText(tag, v.x, v.y - 36);
+        }
       } else if (v.isAnomaly && isOwner()) {
         ctx.fillStyle = "#ef4d5a";
         ctx.font = "900 11px Nunito";
@@ -3549,6 +3766,30 @@
     if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
   }
 
+  const rareKindSelect = document.getElementById("rareKindSelect");
+  if (rareKindSelect) {
+    rareKindSelect.innerHTML = RARE_GUESTS.map(
+      (r) => `<option value="${r.id}">${r.name}</option>`
+    ).join("");
+  }
+  const rareNickInput = document.getElementById("rareNickInput");
+  const btnRareSpawn = document.getElementById("btnRareSpawn");
+  const doRareSpawn = () => {
+    const kind = rareKindSelect ? rareKindSelect.value : "auto";
+    const nick = rareNickInput ? rareNickInput.value : "";
+    if (spawnOwnerGuest(kind, nick) && rareNickInput) rareNickInput.value = "";
+  };
+  if (btnRareSpawn) btnRareSpawn.addEventListener("click", doRareSpawn);
+  if (rareNickInput) {
+    rareNickInput.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.code === "Enter" || e.key === "Enter") {
+        e.preventDefault();
+        doRareSpawn();
+      }
+    });
+  }
+
   hideEl(hud);
   hideEl(touch);
   hideEl(deskPanel);
@@ -3560,6 +3801,7 @@
   hideEl(shopPanel);
   hideEl(exchangePanel);
   hideEl(document.getElementById("secretShiftsPanel"));
+  hideEl(document.getElementById("rareSpawnPanel"));
   showEl(menu);
   showEl(secretDeathWrap);
   requestAnimationFrame(frame);
