@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Батырский Миш · лес · школа · эмоции ∞</title>
+  <meta name="description" content="Батырский Миш: другой вид, собака в лесу, школа, бесконечные эмоции." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./batyr-mish.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+
+  <div id="menu" class="screen">
+    <p class="brand">Батырский Миш</p>
+    <p class="sub">Другой вид · под ним собака · лес · школа · эмоции ∞</p>
+    <div class="modes">
+      <button type="button" class="mode" data-mode="forest">🌲 Лес · уход</button>
+      <button type="button" class="mode" data-mode="school">🏫 Школа</button>
+      <button type="button" class="mode" data-mode="both">🌲🏫 Вместе</button>
+    </div>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+      <span id="placeLabel">Лес</span>
+      <span id="love">❤ 0</span>
+      <span id="emoInf">эмоции ∞</span>
+    </div>
+    <canvas id="c" width="960" height="500"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <div class="stats" id="stats"></div>
+    <div class="actions" id="actions"></div>
+    <div class="emotions" id="emotions"></div>
+  </div>
+
+  <script src="./batyr-mish.js?v=1"></script>
+</body>
+</html>

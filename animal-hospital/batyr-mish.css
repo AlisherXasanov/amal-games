@@ -1,0 +1,197 @@
+:root {
+  --cream: #f5efe4;
+  --pine: #2a5038;
+  --gold: #e8b050;
+  --sky: #7eb8e0;
+  --muted: #7a8898;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  color: #1e2830;
+  font-family: Nunito, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 70% 45% at 40% 0%, #c8e0c0 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 80%, #e8d0a0 0%, transparent 50%),
+    linear-gradient(165deg, #d8ebe0, #e8f0f8);
+  touch-action: none;
+  user-select: none;
+}
+
+.back {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 40;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #304040;
+  font: 700 13px Nunito, sans-serif;
+  text-decoration: none;
+}
+
+.screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  align-content: center;
+  gap: 0.7rem;
+}
+.screen[hidden] { display: none !important; }
+
+.brand {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #e8b050, #c05030, #2a5038);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.45;
+  max-width: 30rem;
+}
+
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: min(560px, 100%);
+}
+.mode, .btn, .act, .emo {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  font: 700 14px Nunito, sans-serif;
+}
+.mode {
+  flex: 1 1 140px;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(42, 80, 56, 0.15);
+  color: #1e2830;
+}
+.mode:hover { border-color: #e8b050; }
+
+.btn {
+  padding: 8px 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #e8b050, #c06020);
+  margin: 3px;
+}
+.btn.ghost {
+  color: #304040;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+#play.screen {
+  padding: 0.5rem;
+  gap: 8px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.topbar {
+  width: min(960px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  font: 700 14px Nunito, sans-serif;
+}
+#love { margin-left: auto; color: #c05060; }
+#emoInf { color: #8060c0; font-size: 12px; }
+
+canvas {
+  display: block;
+  width: min(100vw - 1rem, 960px);
+  height: auto;
+  aspect-ratio: 960 / 500;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(30, 50, 40, 0.18);
+  background: #6a9e78;
+}
+
+.bubble {
+  position: fixed;
+  left: 50%;
+  bottom: 140px;
+  transform: translateX(-50%);
+  z-index: 25;
+  max-width: min(480px, 90vw);
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(232, 176, 80, 0.4);
+  text-align: center;
+  font: 700 14px/1.4 Nunito, sans-serif;
+  pointer-events: none;
+}
+
+.stats {
+  width: min(960px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: 600 12px Nunito, sans-serif;
+  color: #405060;
+}
+.stat-card h3 {
+  font: 700 13px Fredoka, Nunito, sans-serif;
+  margin-bottom: 6px;
+  color: #1e2830;
+}
+.bar {
+  height: 7px;
+  border-radius: 999px;
+  background: #e4e8ec;
+  overflow: hidden;
+  margin: 3px 0 6px;
+}
+.bar > i { display: block; height: 100%; border-radius: 999px; }
+
+.actions, .emotions {
+  width: min(960px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.act {
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(42, 80, 56, 0.12);
+  color: #304040;
+}
+.act:hover { border-color: #e8b050; }
+.emo {
+  padding: 10px 12px;
+  background: linear-gradient(145deg, #fff0ff, #e8e0ff);
+  border: 2px solid rgba(128, 96, 192, 0.25);
+  color: #504070;
+  font-size: 13px;
+}
+.emo:hover { transform: translateY(-1px); border-color: #a070ff; }
+
+@media (max-width: 560px) {
+  .stats { grid-template-columns: 1fr; }
+}
