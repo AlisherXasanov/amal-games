@@ -75,13 +75,15 @@ html, body {
 
 .progress {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.2rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .dot {
   flex: 1;
-  height: 6px;
+  min-width: 8px;
+  height: 5px;
   border-radius: 99px;
   background: rgba(255, 255, 255, 0.08);
   transition: background 0.3s, box-shadow 0.3s;
