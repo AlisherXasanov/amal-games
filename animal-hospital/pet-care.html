@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Питомцы · кот и корги</title>
+  <meta name="description" content="Ухаживай за сильным котом и корги. Корми, мой, выбирай одного или обоих." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./pet-care.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="menu" class="screen">
+    <p class="brand">Питомцы</p>
+    <p class="sub">Сильный кот · корги (taxi dog).<br />Корми, мой, играй. Один или оба.</p>
+    <div class="pick">
+      <button type="button" class="pick-card" data-mode="cat">
+        <span class="emoji">🐱</span>
+        <strong>Только кот</strong>
+        <small>Сильный · любит еду и ванну</small>
+      </button>
+      <button type="button" class="pick-card" data-mode="dog">
+        <span class="emoji">🐕</span>
+        <strong>Только корги</strong>
+        <small>Taxi dog · короткие лапки</small>
+      </button>
+      <button type="button" class="pick-card both" data-mode="both">
+        <span class="emoji">🐱🐕</span>
+        <strong>Оба вместе</strong>
+        <small>Ухаживай за двумя</small>
+      </button>
+    </div>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+      <span id="dayLabel">День 1</span>
+      <span id="loveLabel">❤ 0</span>
+    </div>
+    <canvas id="c" width="960" height="480"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <div class="panel" id="panel"></div>
+    <div class="actions" id="actions">
+      <button type="button" class="act" data-act="feed">🍽 Кормить</button>
+      <button type="button" class="act" data-act="wash">🛁 Мыть</button>
+      <button type="button" class="act" data-act="play">🎾 Играть</button>
+      <button type="button" class="act" data-act="sleep">😴 Спать</button>
+    </div>
+  </div>
+
+  <div id="win" class="screen overlay" hidden>
+    <div class="win-card">
+      <p class="brand">✦ Хороший хозяин</p>
+      <p class="sub" id="winText"></p>
+      <p class="code" id="winCode"></p>
+      <button type="button" class="btn" id="btnWinMenu">В меню</button>
+    </div>
+  </div>
+
+  <script src="./pet-care.js?v=1"></script>
+</body>
+</html>

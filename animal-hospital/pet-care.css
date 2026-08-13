@@ -1,0 +1,266 @@
+:root {
+  --cream: #fff8f0;
+  --muted: #8a90a8;
+  --cat: #ff9a4a;
+  --dog: #d0a070;
+  --love: #ff6a9a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  color: #2a2838;
+  font-family: Nunito, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 70% 45% at 30% 0%, #ffe0c8 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 20%, #d8f0ff 0%, transparent 50%),
+    linear-gradient(165deg, #fff4e8, #e8f0ff);
+  touch-action: none;
+  user-select: none;
+}
+
+.glow {
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 40% 30% at 20% 50%, rgba(255, 154, 74, 0.15), transparent 60%),
+    radial-gradient(ellipse 35% 30% at 80% 40%, rgba(208, 160, 112, 0.14), transparent 55%);
+  filter: blur(40px);
+}
+
+.back {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 40;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #404060;
+  font: 700 13px/1 Nunito, sans-serif;
+  text-decoration: none;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  align-content: center;
+  gap: 0.75rem;
+}
+
+.brand {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #ff9a4a, #ff6a9a, #7ec8ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sub {
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.pick {
+  width: min(720px, 100%);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 0.5rem;
+}
+.pick-card.both { grid-column: 1 / -1; }
+
+@media (max-width: 520px) {
+  .pick { grid-template-columns: 1fr; }
+  .pick-card.both { grid-column: auto; }
+}
+
+.pick-card {
+  appearance: none;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: 18px;
+  padding: 1.2rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 30px rgba(80, 60, 40, 0.08);
+  transition: transform 0.12s, border-color 0.12s;
+}
+.pick-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 154, 74, 0.5);
+}
+.pick-card .emoji { font-size: 2rem; display: block; margin-bottom: 8px; }
+.pick-card strong { display: block; font: 700 1.05rem/1.3 Fredoka, Nunito, sans-serif; margin-bottom: 4px; color: #2a2838; }
+.pick-card small { color: var(--muted); font: 600 12px/1.35 Nunito, sans-serif; }
+
+#play.screen {
+  padding: 0.5rem;
+  gap: 8px;
+}
+
+.topbar {
+  width: min(960px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font: 700 13px/1 Nunito, sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, #ff9a4a, #ff6a9a);
+  margin: 3px;
+}
+.btn.ghost {
+  color: #404060;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+#dayLabel, #loveLabel {
+  font: 700 14px Nunito, sans-serif;
+  color: #504860;
+}
+#loveLabel { margin-left: auto; color: var(--love); }
+
+canvas {
+  display: block;
+  width: min(100vw - 1rem, 960px);
+  height: auto;
+  aspect-ratio: 2 / 1;
+  border-radius: 16px;
+  background: #c8e8ff;
+  box-shadow: 0 16px 40px rgba(60, 80, 120, 0.15);
+}
+
+.bubble {
+  position: fixed;
+  left: 50%;
+  bottom: 120px;
+  transform: translateX(-50%);
+  z-index: 25;
+  max-width: min(480px, 90vw);
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 154, 74, 0.35);
+  text-align: center;
+  font: 700 14px/1.4 Nunito, sans-serif;
+  color: #404060;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.panel {
+  width: min(960px, 100%);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.pet-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.pet-card.active { border-color: #ff9a4a; box-shadow: 0 0 0 2px rgba(255, 154, 74, 0.2); }
+.pet-card h3 {
+  font: 700 14px Fredoka, Nunito, sans-serif;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.bar {
+  display: grid;
+  grid-template-columns: 52px 1fr 28px;
+  gap: 6px;
+  align-items: center;
+  margin: 3px 0;
+  font: 600 11px Nunito, sans-serif;
+  color: #706880;
+}
+.bar .track {
+  height: 8px;
+  border-radius: 999px;
+  background: #e8e4f0;
+  overflow: hidden;
+}
+.bar .fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s;
+}
+.bar .fill.hunger { background: linear-gradient(90deg, #ffb040, #ff7040); }
+.bar .fill.clean { background: linear-gradient(90deg, #7ec8ff, #40a0ff); }
+.bar .fill.happy { background: linear-gradient(90deg, #ff90b8, #ff6a9a); }
+.bar .fill.energy { background: linear-gradient(90deg, #a0e070, #50c060); }
+.bar .fill.power { background: linear-gradient(90deg, #c080ff, #8060ff); }
+
+.actions {
+  width: min(960px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.act {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font: 800 14px/1 Nunito, sans-serif;
+  color: #404060;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+.act:active { transform: translateY(1px); }
+.act:hover { border-color: rgba(255, 154, 74, 0.45); }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: rgba(40, 30, 50, 0.45);
+  backdrop-filter: blur(6px);
+}
+.overlay[hidden] { display: none !important; }
+
+.win-card {
+  width: min(400px, 92vw);
+  padding: 1.5rem;
+  border-radius: 18px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+.code {
+  margin: 0.75rem 0 1rem;
+  font: 700 1.1rem Fredoka, Nunito, sans-serif;
+  color: #ff6a9a;
+}
