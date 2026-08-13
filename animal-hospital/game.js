@@ -162,6 +162,8 @@
     { id: "secret-agent", name: "⭐ Скин агента", color: "#304050", secret: true },
     { id: "secret-neon", name: "⭐ Неон-аномалия", color: "#40ffc0", secret: true },
     { id: "secret-parrot", name: "⭐ Халат попугая", color: "#ff6a4a", secret: true },
+    { id: "secret-lesha", name: "⭐ Халат Леши", color: "#ffc857", secret: true, tex: "lesha" },
+    { id: "secret-here", name: "⭐ Халат Auto", color: "#7ec8ff", secret: true, tex: "here" },
   ];
 
   const WEAPONS = {
@@ -180,6 +182,7 @@
     { id: "sec", name: "Секретарь Боб", classId: "secretary", desc: "Помогает у окна" },
     { id: "fire", name: "Огонёк", classId: "firefighter", desc: "Тушит пожары" },
     { id: "parrot", name: "Попугай Кеша", classId: "secretary", desc: "Кричит подсказки у окна · секрет", secret: true },
+    { id: "hereMe", name: "Auto", classId: "nurse", desc: "Тихий напарник · особая текстура", secret: true, tex: "here" },
   ];
 
   const SHIFT_TEMPLATES = [
@@ -1195,6 +1198,7 @@
       isAi: !!isAi,
       name: name || cls.name,
       color: color || "#f0f4ff",
+      tex: null,
       aiCd: 0.5,
       aiTarget: null,
       weapon: makeWeapon(cls),
@@ -1414,10 +1418,15 @@
     const shift = selectedShift;
     const coat = (selectedSkin && selectedSkin.color) || "#f0f4ff";
     const p1 = makePlayer(selectedClass, 300, 200, false, "Ты", coat);
+    if (selectedSkin && selectedSkin.tex) p1.tex = selectedSkin.tex;
     const players = [p1];
     if (mode === "pair") {
       const bCls = CLASSES.find((c) => c.id === selectedBuddy.classId) || CLASSES[1];
-      players.push(makePlayer(bCls, 360, 220, true, selectedBuddy.name, "#ffb48a"));
+      const buddyColor =
+        selectedBuddy && selectedBuddy.tex === "here" ? "#7ec8ff" : "#ffb48a";
+      const p2 = makePlayer(bCls, 360, 220, true, selectedBuddy.name, buddyColor);
+      if (selectedBuddy && selectedBuddy.tex) p2.tex = selectedBuddy.tex;
+      players.push(p2);
     } else if (mode === "local2") {
       players.push(makePlayer(CLASSES.find((c) => c.id === "nurse") || CLASSES[1], 360, 220, false, "Игрок 2", "#a0d8ff"));
     }
@@ -1506,6 +1515,21 @@
     applyThemeClass(shift.theme || null);
     // на ВСЕХ сменах: полный набор уже с собой + ∞ патроны
     giveOwnerLoadoutAll(shift);
+    // секретные халаты доступны, но скин/имя — только то, что выбрал в лобби
+    if (!meta.skins.includes("secret-lesha")) meta.skins.push("secret-lesha");
+    if (!meta.skins.includes("secret-here")) meta.skins.push("secret-here");
+    storeSet(SAVE, meta);
+    if (g.players[0] && selectedSkin && selectedSkin.tex) {
+      g.players[0].tex = selectedSkin.tex;
+      g.players[0].color = selectedSkin.color;
+    }
+    if (mode === "pair" && g.players[1] && selectedBuddy && selectedBuddy.tex) {
+      g.players[1].tex = selectedBuddy.tex;
+      if (selectedBuddy.tex === "here") {
+        g.players[1].color = "#7ec8ff";
+        g.players[1].name = selectedBuddy.name || "Auto";
+      }
+    }
     if (shift.lesha || shift.endlessCoffee || shift.theme === "gold") {
       meta.coffee2 = true;
       storeSet(SAVE, meta);
@@ -1573,7 +1597,10 @@
       if (parrotSkin) {
         selectedSkin = parrotSkin;
         meta.skinId = parrotSkin.id;
-        if (g.players[0]) g.players[0].color = parrotSkin.color;
+        if (g.players[0]) {
+          g.players[0].color = parrotSkin.color;
+          g.players[0].tex = parrotSkin.tex || null;
+        }
       }
       const parrotBuddy = BUDDIES.find((b) => b.id === "parrot");
       if (parrotBuddy) {
@@ -1766,6 +1793,7 @@
   function drawCritter(c, x, y, opts) {
     const sp = opts.species;
     const scale = opts.scale || 1;
+    const companion = !!opts.companion;
     c.save();
     c.translate(x, y + Math.sin(opts.bob || 0) * 2);
     c.scale(scale, scale);
@@ -1774,6 +1802,55 @@
       c.beginPath();
       c.ellipse(0, 22, 16, 6, 0, 0, Math.PI * 2);
       c.fill();
+    }
+    if (companion) {
+      // текстура «я рядом»: мягкое свечение + звёзды
+      c.fillStyle = "rgba(126, 200, 255, 0.35)";
+      c.beginPath();
+      c.arc(0, 0, 34, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#9ad8ff";
+      c.beginPath();
+      c.ellipse(0, 8, 22, 16, 0, 0, Math.PI * 2);
+      c.fill();
+      c.beginPath();
+      c.arc(0, -10, 16, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#e8f6ff";
+      for (let i = 0; i < 5; i++) {
+        const ang = i * 1.25;
+        c.fillRect(Math.cos(ang) * 12 - 1.5, Math.sin(ang) * 10 - 2, 3, 3);
+      }
+      if (!opts.wrongPose) {
+        c.fillStyle = "#7ec8ff";
+        c.beginPath();
+        c.moveTo(-10, -20);
+        c.lineTo(-14, -34);
+        c.lineTo(-2, -22);
+        c.fill();
+        c.beginPath();
+        c.moveTo(10, -20);
+        c.lineTo(14, -34);
+        c.lineTo(2, -22);
+        c.fill();
+      }
+      c.fillStyle = "#fff";
+      c.beginPath();
+      c.ellipse(-6, -12, 6, 7, 0, 0, Math.PI * 2);
+      c.ellipse(6, -12, 6, 7, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#2a5080";
+      c.beginPath();
+      c.arc(-6, -11, 2.6, 0, Math.PI * 2);
+      c.arc(6, -11, 2.6, 0, Math.PI * 2);
+      c.fill();
+      c.strokeStyle = "rgba(168, 224, 255, 0.9)";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(0, 2, 5, 0.2 * Math.PI, 0.8 * Math.PI);
+      c.stroke();
+      c.restore();
+      return;
     }
     c.fillStyle = sp.color;
     c.beginPath();
@@ -1794,7 +1871,6 @@
       c.lineTo(2, -22);
       c.fill();
     } else {
-      // странная поза — уши вниз
       c.beginPath();
       c.moveTo(-8, -8);
       c.lineTo(-18, 4);
@@ -2857,27 +2933,80 @@
     ctx.closePath();
   }
 
+  // Fix isLesha - only use tex flag, not all P1
   function drawActor(pl, label) {
     const theme = g && g.theme;
-    const body =
+    const tex = pl.tex || null;
+    const isLesha = tex === "lesha";
+    const isHere = tex === "here";
+    let body =
       theme === "gold" ? "#ffd76a" : theme === "diamond" ? "#c8f4ff" : pl.color;
-    const sash =
+    let sash =
       theme === "gold" ? "#fff3b0" : theme === "diamond" ? "#7ad7ff" : "#7ed9b8";
+    if (isLesha && theme !== "gold" && theme !== "diamond") {
+      body = "#ffc857";
+      sash = "#fff1b0";
+    }
+    if (isHere && theme !== "gold" && theme !== "diamond") {
+      body = "#7ec8ff";
+      sash = "#d8f0ff";
+    }
     ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.beginPath();
     ctx.ellipse(pl.x, pl.y + 18, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
+    if (isLesha) {
+      ctx.fillStyle = "rgba(255, 200, 80, 0.28)";
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 8, 28, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (isHere) {
+      ctx.fillStyle = "rgba(120, 200, 255, 0.3)";
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 8, 28, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.fillStyle = body;
     roundRect(pl.x - 12, pl.y - 20, 24, 34, 8);
     ctx.fill();
+    if (isLesha) {
+      ctx.strokeStyle = "rgba(160, 80, 10, 0.45)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(pl.x - 10, pl.y - 14 + i * 8);
+        ctx.lineTo(pl.x + 10, pl.y - 10 + i * 8);
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#ffe08a";
+      ctx.beginPath();
+      ctx.moveTo(pl.x - 8, pl.y - 34);
+      ctx.lineTo(pl.x - 5, pl.y - 42);
+      ctx.lineTo(pl.x, pl.y - 36);
+      ctx.lineTo(pl.x + 5, pl.y - 42);
+      ctx.lineTo(pl.x + 8, pl.y - 34);
+      ctx.closePath();
+      ctx.fill();
+    }
+    if (isHere) {
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      for (let i = 0; i < 3; i++) {
+        ctx.fillRect(pl.x - 8 + i * 7, pl.y - 12 + (i % 2) * 6, 3, 3);
+      }
+    }
     ctx.fillStyle = sash;
     ctx.fillRect(pl.x - 12, pl.y - 2, 24, 6);
-    ctx.fillStyle = "#e8b890";
+    ctx.fillStyle = isLesha ? "#f0d0a0" : isHere ? "#d8ecff" : "#e8b890";
     ctx.beginPath();
     ctx.arc(pl.x, pl.y - 26, 11, 0, Math.PI * 2);
     ctx.fill();
-    if (theme === "gold" || theme === "diamond") {
-      ctx.fillStyle = theme === "gold" ? "rgba(255,215,100,0.9)" : "rgba(180,240,255,0.95)";
+    if (theme === "gold" || theme === "diamond" || isLesha) {
+      ctx.fillStyle = isLesha
+        ? "rgba(255,215,100,0.95)"
+        : theme === "gold"
+          ? "rgba(255,215,100,0.9)"
+          : "rgba(180,240,255,0.95)";
       ctx.beginPath();
       ctx.arc(pl.x + 8, pl.y - 30, 3.2, 0, Math.PI * 2);
       ctx.fill();
@@ -2885,7 +3014,8 @@
     ctx.fillStyle = "#fff";
     ctx.font = "700 11px Nunito";
     ctx.textAlign = "center";
-    ctx.fillText(label || pl.name, pl.x, pl.y - 42);
+    const tag = isLesha ? "✦ Леша" : isHere ? "Auto" : label || pl.name;
+    ctx.fillText(tag, pl.x, pl.y - 46);
     ctx.textAlign = "left";
     if (pl.inv.length) {
       ctx.font = "16px Nunito";
@@ -3142,6 +3272,7 @@
         hollow: v.hollow,
         noShadow: v.noShadow,
         bob: v.bob,
+        companion: !!v.isCompanion,
       });
       if (v.isCompanion) {
         ctx.fillStyle = "#a8e0ff";
@@ -3158,7 +3289,7 @@
       }
     }
     for (const v of g.inside) {
-      drawCritter(ctx, v.x, v.y, { species: v.species, bob: v.bob });
+      drawCritter(ctx, v.x, v.y, { species: v.species, bob: v.bob, companion: !!v.isCompanion });
       if (v.isCompanion) {
         ctx.fillStyle = "#a8e0ff";
         ctx.font = "900 11px Nunito";
