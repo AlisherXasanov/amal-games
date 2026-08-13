@@ -478,30 +478,49 @@
     return list;
   })();
 
-  function canUseSecretShifts() {
+  function isGuestModeLocal() {
     try {
+      if (window.__AMAL_GUEST__ === true) return true;
       const g = new URLSearchParams(location.search).get("guest");
-      if (g === "1" || g === "true" || g === "yes") return false;
+      if (g === "1" || g === "true" || g === "yes") {
+        window.__AMAL_GUEST__ = true;
+        window.__AMAL_OWNER__ = false;
+        window.__AMAL_GOD__ = false;
+        return true;
+      }
     } catch (_) {}
-    // в этой игре хозяин всегда может секреты (локальный Amal)
+    return false;
+  }
+
+  /** Только настоящий хозяин — не всем игрокам. */
+  function isOwner() {
+    if (isGuestModeLocal()) return false;
     try {
-      if (typeof isOwner === "function" && isOwner()) return true;
+      if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
+    } catch (_) {}
+    try {
+      if (window.AmalOwner && typeof AmalOwner.isOwner === "function" && AmalOwner.isOwner()) return true;
     } catch (_) {}
     try {
       if (window.AmalHub) {
         if (typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
         if (typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
-        const nick = (typeof AmalHub.getNick === "function" && AmalHub.getNick()) || "";
-        if (/^(лёша|леша|lesha|lyosha|amal)$/i.test(String(nick).trim())) return true;
       }
     } catch (_) {}
     try {
       if (localStorage.getItem("amal-owner-v1") === "1") return true;
       if (localStorage.getItem("amal-owner-v2") === "1") return true;
       if (localStorage.getItem("amal-owner-v3") === "1") return true;
-      if (localStorage.getItem("animal-hospital-owner-god") === "1") return true;
     } catch (_) {}
     return false;
+  }
+
+  function ownerGod() {
+    return isOwner();
+  }
+
+  function canUseSecretShifts() {
+    return isOwner();
   }
 
   function discoveredSurpriseShifts() {
@@ -1392,23 +1411,22 @@
     };
   }
 
-  // ∞ монеты ВСЕГДА — без проверки хозяина (иначе снова 20 монет)
+  // ∞ монеты в этой игре — для всех. НЕ выдавать права хозяина сайта.
   function forceInfinite() {
     meta.infCoins = true;
     meta.immortal = true;
     meta.coins = INF;
     meta.unlocked = CLASSES.map((c) => c.id);
     meta.skins = SKINS.map((s) => s.id);
-    if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
+    if (isOwner()) {
+      if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
+    } else if (meta.classId === "admin") {
+      meta.classId = "intern";
+    }
     if (!meta.skinId) meta.skinId = "default";
     storeSet(SAVE, meta);
     try {
-      localStorage.setItem("animal-hospital-owner-god", "1");
-      localStorage.setItem("amal-owner-v1", "1");
-      localStorage.setItem("amal-owner-v2", "1");
-      localStorage.setItem("amal-owner-v3", "1");
-      window.__AMAL_OWNER__ = true;
-      window.__AMAL_GOD__ = true;
+      localStorage.removeItem("animal-hospital-owner-god");
     } catch (_) {}
   }
   forceInfinite();
@@ -1448,12 +1466,6 @@
     shiftTag.classList.add("shift-tag-pop");
   }
 
-  function isOwner() {
-    return true;
-  }
-  function ownerGod() {
-    return true;
-  }
   function ensureOwnerPerks() {
     forceInfinite();
   }
@@ -1512,7 +1524,11 @@
     ).join("");
 
     const hint = document.getElementById("menuHints");
-    if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
+    if (hint) {
+      hint.textContent = canUseSecretShifts()
+        ? "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время"
+        : "🪙 ∞ монеты · лечи животных · смотри на аномалии у окна";
+    }
     const btnAll = document.getElementById("btnAllSecrets");
     if (btnAll) btnAll.hidden = !canUseSecretShifts();
     const spawnPanel = document.getElementById("spawnPlayersPanel");
@@ -1520,7 +1536,13 @@
       if (canUseSecretShifts()) showEl(spawnPanel);
       else hideEl(spawnPanel);
     }
+    if (secretDeathWrap) {
+      if (canUseSecretShifts()) showEl(secretDeathWrap);
+      else hideEl(secretDeathWrap);
+    }
     syncSecretTray();
+    syncQuietFab();
+    syncAnimalsFab();
     renderSpawnActiveList();
     applyLobbyTheme();
   }
@@ -1529,7 +1551,11 @@
     const tray = document.getElementById("secretTray");
     if (!tray) return;
     if (canUseSecretShifts()) showEl(tray);
-    else hideEl(tray);
+    else {
+      hideEl(tray);
+      const panel = document.getElementById("secretTrayPanel");
+      if (panel) hideEl(panel);
+    }
   }
 
   function ensureShiftPlaying() {
@@ -2070,6 +2096,10 @@
   }
 
   function applySiteOwnerBoost() {
+    if (!isOwner()) {
+      refreshLobbyUI();
+      return;
+    }
     forceInfinite();
     if (g) {
       g.immortal = true;
@@ -5915,7 +5945,9 @@
   hideEl(exchangePanel);
   hideEl(document.getElementById("secretShiftsPanel"));
   showEl(menu);
-  showEl(secretDeathWrap);
+  if (canUseSecretShifts()) showEl(secretDeathWrap);
+  else hideEl(secretDeathWrap);
+  syncSecretTray();
   applyLobbyTheme();
   const buildStampEl = document.getElementById("buildStamp");
   if (buildStampEl) {
