@@ -3,56 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Butterscotch · бездомный пёс</title>
-  <meta name="description" content="Butterscotch — бездомный пёс. Молли так назвала. Взять домой или нет — всё равно забота." />
+  <title>Butterscotch · ириска-питомец</title>
+  <meta name="description" content="Butterscotch — как ириска на псе или коте. Ухаживай." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./butterscotch.css?v=2" />
+  <link rel="stylesheet" href="./butterscotch.css?v=3" />
 </head>
 <body>
   <a class="back" href="./index.html">&larr; Больница</a>
 
   <div id="menu" class="screen">
     <p class="brand">Butterscotch</p>
-    <p class="sub">Бездомный пёс. Молли назвала его Butterscotch.<br />Выбор: взять домой или оставить на улице — заботиться всё равно придётся.</p>
-    <button type="button" class="btn" id="btnStart">Встретить пса</button>
-  </div>
-
-  <div id="choice" class="screen" hidden>
-    <p class="brand">Он дрожит на улице</p>
-    <p class="sub" id="choiceSub">Молли шепчет: «Его зовут Butterscotch…»</p>
-    <canvas id="cChoice" width="720" height="280"></canvas>
-    <div class="choice-row">
-      <button type="button" class="btn home" id="btnTake">🏠 Взять домой</button>
-      <button type="button" class="btn street" id="btnLeave">🌧 Не брать</button>
+    <p class="sub">Не просто пёс — <b>ириска</b> в виде питомца.<br />Выбери: пёс или кот. Потом ухаживай.</p>
+    <div class="pick">
+      <button type="button" class="pick-card" data-kind="dog">
+        <span class="big">🐕🍬</span>
+        <strong>Пёс-ириска</strong>
+        <small>Butterscotch dog</small>
+      </button>
+      <button type="button" class="pick-card" data-kind="cat">
+        <span class="big">🐱🍬</span>
+        <strong>Кот-ириска</strong>
+        <small>Butterscotch cat</small>
+      </button>
     </div>
-    <p class="tiny">Если не взять — всё равно нужно ухаживать за ним на улице.</p>
   </div>
 
   <div id="play" class="screen" hidden>
     <div class="topbar">
       <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
-      <span id="placeLabel">Улица</span>
+      <span id="who">Butterscotch</span>
       <span id="love">❤ 0</span>
     </div>
-    <canvas id="c" width="960" height="440"></canvas>
+    <canvas id="c" width="960" height="460"></canvas>
     <div class="bubble" id="bubble" hidden></div>
     <div class="stats" id="stats"></div>
-    <div class="actions" id="actions"></div>
-  </div>
-
-  <div id="end" class="screen overlay" hidden>
-    <div class="card">
-      <p class="brand" id="endBrand">✦</p>
-      <p class="sub" id="endText"></p>
-      <p class="code" id="endCode"></p>
-      <button type="button" class="btn" id="btnAgain">Ещё раз</button>
-      <button type="button" class="btn ghost" id="btnEndMenu">В меню</button>
+    <div class="actions">
+      <button type="button" class="act" data-act="feed">🍖 Кормить</button>
+      <button type="button" class="act" data-act="wash">🛁 Мыть</button>
+      <button type="button" class="act" data-act="pet">🤚 Гладить</button>
+      <button type="button" class="act" data-act="play">🎾 Играть</button>
+      <button type="button" class="act" data-act="sweet">🍬 Ириска</button>
+      <button type="button" class="act" data-act="sleep">😴 Спать</button>
     </div>
   </div>
 
-  <script src="./butterscotch.js?v=2"></script>
+  <div id="win" class="screen overlay" hidden>
+    <div class="card">
+      <p class="brand">✦ Сладкий друг</p>
+      <p class="sub" id="winText"></p>
+      <p class="code" id="winCode"></p>
+      <button type="button" class="btn" id="btnAgain">Ещё раз</button>
+      <button type="button" class="btn ghost" id="btnWinMenu">В меню</button>
+    </div>
+  </div>
+
+  <script src="./butterscotch.js?v=3"></script>
 </body>
 </html>
