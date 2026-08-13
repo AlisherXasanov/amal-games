@@ -193,9 +193,13 @@
     { id: "auto", name: "Auto", tex: "here", color: "#7ec8ff" },
     { id: "rainbow", name: "Rainbow", tex: "rainbow", color: "#ff6ad5" },
     { id: "lilamint", name: "Lilamint", tex: "lilamint", color: "#9b59b6" },
-    { id: "sammy", name: "Sammy", tex: "sammy", color: "#e23b3b" },
-    { id: "jen", name: "Jen", tex: "jen", color: "#f2a0d8" },
     { id: "builder", name: "Builderman", tex: "builder", color: "#3dcf7a" },
+  ];
+  /** Roblox-создатели — отдельно от «мира/аномалий»; Sammy и Jendel — соперники */
+  const ROBOX_CREATORS = [
+    { id: "sammy", name: "Sammy", tex: "sammy", color: "#e23b3b", rival: "jendel" },
+    { id: "jendel", name: "Jendel", tex: "jendel", color: "#2563eb", rival: "sammy" },
+    { id: "woodstock", name: "Woodstock", tex: "woodstock", color: "#ffd700" },
   ];
   const SPAWN_PERKS = [
     { id: "noAnomaly", label: "Без аномалий" },
@@ -1057,6 +1061,7 @@
       if (ch && ch.tex === "here") v.rareKind = "auto";
       else if (ch && ch.tex) v.rareKind = ch.tex;
       else v.rareKind = id;
+      if (v.rareKind === "jen") v.rareKind = "jendel";
       v.guestName = opts.name || (ch && ch.name) || String(id);
       v.isAnomaly = false;
       v.isCompanion = v.rareKind === "auto";
@@ -1087,6 +1092,7 @@
     }
     layoutQueue();
     refreshDeskIfOpen();
+    onCreatorSpawned(v);
     return v;
   }
 
@@ -1310,6 +1316,7 @@
 
   function bootSecretTray() {
     const chars = document.getElementById("secretTrayChars");
+    const creators = document.getElementById("secretTrayCreators");
     const items = document.getElementById("secretTrayItems");
     const spawnRow = document.getElementById("secretTraySpawn");
     const fab = document.getElementById("btnSecretTray");
@@ -1322,6 +1329,16 @@
           `<button type="button" class="secret-tray-chip char-${c.id}" data-char="${c.id}">${c.name}</button>`
       ).join("");
       chars.querySelectorAll("[data-char]").forEach((btn) => {
+        btn.addEventListener("click", () => applyTrayCharacter(btn.getAttribute("data-char")));
+      });
+    }
+    if (creators && !creators.dataset.ready) {
+      creators.dataset.ready = "1";
+      creators.innerHTML = ROBOX_CREATORS.map(
+        (c) =>
+          `<button type="button" class="secret-tray-chip char-${c.id}" data-char="${c.id}">${c.name}</button>`
+      ).join("");
+      creators.querySelectorAll("[data-char]").forEach((btn) => {
         btn.addEventListener("click", () => applyTrayCharacter(btn.getAttribute("data-char")));
       });
     }
@@ -1536,7 +1553,48 @@
   }
 
   function spawnCharacterDef(id) {
-    return SPAWN_CHARACTERS.find((r) => r.id === id) || null;
+    if (id === "jen") id = "jendel";
+    return SPAWN_CHARACTERS.find((r) => r.id === id) || ROBOX_CREATORS.find((r) => r.id === id) || null;
+  }
+
+  function isJendelKind(v) {
+    return v && (v.rareKind === "jendel" || v.rareKind === "jen");
+  }
+
+  function queueHasCreatorRivals() {
+    if (!g || !g.queue) return false;
+    const hasSammy = g.queue.some((v) => v.rareKind === "sammy");
+    const hasJendel = g.queue.some((v) => isJendelKind(v));
+    return hasSammy && hasJendel;
+  }
+
+  function onCreatorSpawned(v) {
+    if (!v || !g) return;
+    if (v.rareKind !== "sammy" && !isJendelKind(v)) return;
+    if (!queueHasCreatorRivals()) return;
+    g.rivalryFlash = 2.2;
+    showEvent("⚔ Sammy vs Jendel — враги мира · конфликт в очереди!", 3.2);
+    toast("Sammy и Jendel не мирятся в одной линии");
+  }
+
+  function tickCreatorRivalry(dt) {
+    if (!g || !g.queue || !queueHasCreatorRivals()) return;
+    g.rivalryCd = (g.rivalryCd || 0) - dt;
+    if (g.rivalryCd > 0) return;
+    g.rivalryCd = 3.5;
+    const s = g.queue.find((v) => v.rareKind === "sammy");
+    const j = g.queue.find((v) => isJendelKind(v));
+    if (!s || !j) return;
+    for (let i = 0; i < 8; i++) {
+      g.particles.push({
+        x: (s.x + j.x) / 2 + (Math.random() - 0.5) * 30,
+        y: (s.y + j.y) / 2 + (Math.random() - 0.5) * 20,
+        vx: (Math.random() - 0.5) * 140,
+        vy: (Math.random() - 0.5) * 140,
+        life: 0.45,
+        color: Math.random() < 0.5 ? "#ef4d5a" : "#3b82f6",
+      });
+    }
   }
 
   function applySpawnPerksOnLoad() {
@@ -1663,7 +1721,8 @@
     if (v.rareKind === "rainbow") return "Rainbow";
     if (v.rareKind === "lilamint") return "Lilamint";
     if (v.rareKind === "sammy") return "Sammy";
-    if (v.rareKind === "jen") return "Jen";
+    if (isJendelKind(v)) return "Jendel";
+    if (v.rareKind === "woodstock") return "Woodstock";
     if (v.rareKind === "builder") return "Builderman";
     if (v.rareKind === "auto" || v.isCompanion) return "Auto";
     return "";
@@ -2244,13 +2303,24 @@
   }
 
   function layoutQueue() {
-    // шире шаг — имена не наезжают в толпе
+    // шире шаг — имена не наезжают в толпе; соперники дальше друг от друга
+    let sammyIdx = -1;
+    let jendelIdx = -1;
     g.queue.forEach((v, i) => {
-      const col = i % 5;
+      if (v.rareKind === "sammy") sammyIdx = i;
+      if (isJendelKind(v)) jendelIdx = i;
+    });
+    g.queue.forEach((v, i) => {
+      let col = i % 5;
       const row = Math.floor(i / 5);
+      if (sammyIdx >= 0 && jendelIdx >= 0 && Math.abs(sammyIdx - jendelIdx) === 1) {
+        if (i === jendelIdx && jendelIdx > sammyIdx) col += 0.6;
+        if (i === sammyIdx && jendelIdx > sammyIdx) col -= 0.15;
+      }
       v.x = 450 + col * 58;
       v.y = 248 + row * 54;
       v.labelLift = (col % 2) * 10 + (row % 2) * 6;
+      v.rivalGlow = queueHasCreatorRivals() && (v.rareKind === "sammy" || isJendelKind(v));
     });
     refreshRequestsStrip();
   }
@@ -2530,46 +2600,72 @@
       c.restore();
       return;
     }
-    if (rareKind === "jen") {
-      c.fillStyle = "rgba(242,160,216,0.22)";
+    if (rareKind === "jendel" || rareKind === "jen") {
+      c.fillStyle = "rgba(59,130,246,0.22)";
       c.beginPath();
       c.arc(0, 0, 32, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#f2a0d8";
+      c.fillStyle = "#2563eb";
       c.beginPath();
-      c.ellipse(0, 12, 15, 16, 0, 0, Math.PI * 2);
+      c.ellipse(0, 12, 16, 17, 0, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#ffe0f2";
-      c.fillRect(-15, 4, 30, 6);
-      c.fillStyle = "#ffe8f5";
+      c.fillStyle = "#22c55e";
+      c.fillRect(-16, 4, 32, 7);
+      c.fillStyle = "#d4a574";
       c.beginPath();
-      c.arc(0, -10, 12, 0, Math.PI * 2);
+      c.arc(0, -10, 13, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#c45a9a";
+      c.fillStyle = "#8b6914";
       c.beginPath();
-      c.moveTo(-13, -6);
-      c.quadraticCurveTo(-18, -30, 0, -28);
-      c.quadraticCurveTo(18, -30, 13, -6);
+      c.arc(-12, -16, 5, 0, Math.PI * 2);
+      c.arc(12, -16, 5, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#fff";
+      c.fillStyle = "#222";
       c.beginPath();
-      c.ellipse(-4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
-      c.ellipse(4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
+      c.arc(-4.5, -11, 2.2, 0, Math.PI * 2);
+      c.arc(4.5, -11, 2.2, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#5a2048";
-      c.beginPath();
-      c.arc(-4.5, -10, 1.7, 0, Math.PI * 2);
-      c.arc(4.5, -10, 1.7, 0, Math.PI * 2);
-      c.fill();
-      c.strokeStyle = "#c45a9a";
-      c.lineWidth = 2;
-      c.beginPath();
-      c.arc(0, 0, 4, 0.15 * Math.PI, 0.85 * Math.PI);
-      c.stroke();
-      c.fillStyle = "#5a2048";
-      c.font = "900 9px Nunito";
+      c.fillStyle = "#111";
+      c.font = "900 8px Nunito";
       c.textAlign = "center";
-      c.fillText("Jen", 0, 28);
+      c.fillText("Jendel", 0, 28);
+      c.textAlign = "left";
+      c.restore();
+      return;
+    }
+    if (rareKind === "woodstock") {
+      c.fillStyle = "rgba(255,215,0,0.2)";
+      c.beginPath();
+      c.arc(0, 0, 26, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffd700";
+      c.beginPath();
+      c.ellipse(0, 10, 11, 13, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffb020";
+      c.beginPath();
+      c.ellipse(-8, 8, 5, 7, -0.4, 0, Math.PI * 2);
+      c.ellipse(8, 8, 5, 7, 0.4, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffe566";
+      c.beginPath();
+      c.arc(0, -2, 9, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ff8c00";
+      c.beginPath();
+      c.moveTo(0, -2);
+      c.lineTo(6, 2);
+      c.lineTo(0, 4);
+      c.closePath();
+      c.fill();
+      c.fillStyle = "#222";
+      c.beginPath();
+      c.arc(-2.5, -3, 1.5, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#111";
+      c.font = "900 7px Nunito";
+      c.textAlign = "center";
+      c.fillText("Woodstock", 0, 26);
       c.textAlign = "left";
       c.restore();
       return;
@@ -3515,6 +3611,8 @@
     if (state !== "play" || !g) return;
 
     g.t += dt;
+    tickCreatorRivalry(dt);
+    if (g.rivalryFlash > 0) g.rivalryFlash -= dt;
     if (!g.endless) g.left -= dt;
     for (const k of Object.keys(coffeeCd)) {
       if (coffeeCd[k] > 0) coffeeCd[k] -= dt;
@@ -3879,7 +3977,8 @@
     const isLesha = tex === "lesha";
     const isHere = tex === "here";
     const isSammy = tex === "sammy";
-    const isJen = tex === "jen";
+    const isJendel = tex === "jendel" || tex === "jen";
+    const isWoodstock = tex === "woodstock";
     const isBuilder = tex === "builder";
     const isRainbow = tex === "rainbow";
     const isLilamint = tex === "lilamint";
@@ -3903,10 +4002,15 @@
       sash = "#fff";
       head = "#f5d76a";
     }
-    if (isJen) {
-      body = "#f2a0d8";
-      sash = "#ffe0f2";
-      head = "#ffe8f5";
+    if (isJendel) {
+      body = "#2563eb";
+      sash = "#22c55e";
+      head = "#d4a574";
+    }
+    if (isWoodstock) {
+      body = "#ffd700";
+      sash = "#ffb020";
+      head = "#ffe566";
     }
     if (isBuilder) {
       body = "#3dcf7a";
@@ -3973,12 +4077,25 @@
       ctx.arc(pl.x, pl.y - 26, 13, Math.PI * 1.15, Math.PI * 1.85);
       ctx.stroke();
     }
-    if (isJen) {
-      ctx.fillStyle = "#c45a9a";
+    if (isJendel) {
+      ctx.fillStyle = "#8b6914";
       ctx.beginPath();
-      ctx.moveTo(pl.x - 12, pl.y - 24);
-      ctx.quadraticCurveTo(pl.x - 16, pl.y - 44, pl.x, pl.y - 42);
-      ctx.quadraticCurveTo(pl.x + 16, pl.y - 44, pl.x + 12, pl.y - 24);
+      ctx.arc(pl.x - 11, pl.y - 32, 4, 0, Math.PI * 2);
+      ctx.arc(pl.x + 11, pl.y - 32, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (isWoodstock) {
+      ctx.fillStyle = "#ffb020";
+      ctx.beginPath();
+      ctx.ellipse(pl.x - 9, pl.y - 6, 4, 6, -0.3, 0, Math.PI * 2);
+      ctx.ellipse(pl.x + 9, pl.y - 6, 4, 6, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ff8c00";
+      ctx.beginPath();
+      ctx.moveTo(pl.x + 8, pl.y - 24);
+      ctx.lineTo(pl.x + 14, pl.y - 20);
+      ctx.lineTo(pl.x + 8, pl.y - 18);
+      ctx.closePath();
       ctx.fill();
     }
     if (isBuilder) {
@@ -4290,6 +4407,13 @@
         companion: !!v.isCompanion,
         rareKind: v.rareKind || null,
       });
+      if (v.rivalGlow) {
+        ctx.strokeStyle = `rgba(255, 80, 80, ${0.35 + Math.sin(g.t * 8) * 0.15})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(v.x, v.y, 28, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       const lift = v.labelLift || 0;
       const labelY = v.y - 44 - lift;
       if (v.rareKind || v.isCompanion || v.luckyDrop) {
@@ -4300,9 +4424,11 @@
               ? "#d0a0ff"
               : v.rareKind === "sammy"
                 ? "#ffb0b0"
-                : v.rareKind === "jen"
-                  ? "#ffd0ef"
-                  : v.rareKind === "gift"
+                : isJendelKind(v)
+                  ? "#9ec5ff"
+                  : v.rareKind === "woodstock"
+                    ? "#ffe566"
+                    : v.rareKind === "gift"
                     ? "#ffe08a"
                     : "#a8e0ff";
         drawNamePlate(v.x, labelY, guestLabel(v), col);
@@ -4332,9 +4458,11 @@
               ? "#d0a0ff"
               : v.rareKind === "sammy"
                 ? "#ffb0b0"
-                : v.rareKind === "jen"
-                  ? "#ffd0ef"
-                  : v.rareKind === "gift"
+                : isJendelKind(v)
+                  ? "#9ec5ff"
+                  : v.rareKind === "woodstock"
+                    ? "#ffe566"
+                    : v.rareKind === "gift"
                     ? "#ffe08a"
                     : "#a8e0ff";
         drawNamePlate(v.x, v.y - 50, guestLabel(v), col);

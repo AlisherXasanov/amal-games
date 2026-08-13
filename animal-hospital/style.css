@@ -379,7 +379,9 @@ body.theme-parrot #app {
   cursor: pointer;
 }
 .secret-tray-chip.char-sammy { border-color: rgba(226, 59, 59, 0.5); color: #ffb0b0; }
-.secret-tray-chip.char-jen { border-color: rgba(242, 160, 216, 0.5); color: #ffd0ef; }
+.secret-tray-chip.char-jendel { border-color: rgba(59, 130, 246, 0.5); color: #9ec5ff; }
+.secret-tray-chip.char-jen { border-color: rgba(59, 130, 246, 0.5); color: #9ec5ff; }
+.secret-tray-chip.char-woodstock { border-color: rgba(255, 215, 0, 0.5); color: #ffe566; }
 .secret-tray-chip.char-auto { border-color: rgba(126, 200, 255, 0.5); color: #a8e0ff; }
 .secret-tray-chip.char-rainbow { border-color: rgba(255, 106, 213, 0.5); color: #ffb0e0; }
 .secret-tray-chip.char-lilamint { border-color: rgba(155, 89, 182, 0.5); color: #d0a0ff; }
