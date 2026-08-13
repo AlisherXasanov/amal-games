@@ -1,18 +1,18 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Animal Hospital (Anomaly) вЂ” 2D</title>
-  <meta name="description" content="Animal Hospital 2D: РєР»Р°СЃСЃС‹, РјР°РіР°Р·РёРЅ, РѕР±РјРµРЅ, Р°РЅРѕРјР°Р»РёРё." />
+  <title>Animal Hospital (Anomaly) — 2D</title>
+  <meta name="description" content="Animal Hospital 2D: классы, магазин, обмен, аномалии." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=103" />
+  <link rel="stylesheet" href="./style.css?v=148" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+  <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
     <div class="screen" id="screen">
@@ -21,20 +21,23 @@
       <div class="hud" id="hud" hidden>
         <div class="hud-stats" id="hudStats"></div>
         <div class="inv-wrap" id="invWrap">
-          <div class="inv-label">РРЅРІРµРЅС‚Р°СЂСЊ</div>
+          <div class="inv-label">Инвентарь</div>
           <div class="inv-slots" id="invSlots"></div>
         </div>
-        <div class="sanity-wrap" title="Р Р°СЃСЃСѓРґРѕРє">
+        <div class="sanity-wrap" title="Рассудок">
           <div class="sanity-bar"><div class="sanity-fill" id="sanityFill"></div></div>
-          <span id="sanityText">рџ§  100</span>
+          <span id="sanityText">🧠 100</span>
         </div>
         <div class="hud-actions">
-          <button type="button" class="btn-sm ghost" id="btnMenu">РњРµРЅСЋ</button>
+          <button type="button" class="btn-sm ghost" id="btnMenu">Меню</button>
         </div>
       </div>
 
       <div class="need-panel" id="needPanel" hidden>
-        <div class="need-title" id="needTitle">РќСѓР¶РЅРѕ РїСЂРёРЅРµСЃС‚Рё</div>
+        <div class="need-head">
+          <div class="need-title" id="needTitle">Нужно</div>
+          <button type="button" class="need-x" id="btnNeedClose" title="Скрыть">×</button>
+        </div>
         <div class="need-list" id="needList"></div>
       </div>
 
@@ -43,112 +46,184 @@
       <div class="toast" id="toast"></div>
       <div class="queue-strip" id="queueStrip" hidden></div>
 
-      <div class="touch" id="touch" hidden>
-        <div class="pad left" id="stick"></div>
-        <div class="pad right" id="actBtn">E<br>РґРµР№СЃС‚РІРёРµ</div>
+      <button type="button" class="quiet-fab" id="btnQuietShift" hidden title="Без аномалий">⚠ ВКЛ</button>
+      <button type="button" class="animals-fab" id="btnAnimalsShift" hidden title="Животные">🐾 ВЫКЛ</button>
+
+      <div class="secret-tray" id="secretTray" hidden>
+        <button type="button" class="secret-tray-fab" id="btnSecretTray" title="Секреты">✦</button>
+        <div class="secret-tray-panel" id="secretTrayPanel" hidden>
+          <div class="secret-tray-head">
+            <strong>✦ Секреты</strong>
+            <button type="button" class="secret-tray-x" id="btnSecretTrayClose">×</button>
+          </div>
+          <div class="secret-tray-sec">Мы</div>
+          <div class="secret-tray-row" id="amal-us-eggs-host"></div>
+          <div class="secret-tray-sec">Спавн</div>
+          <div class="secret-tray-row" id="secretTraySpawn"></div>
+          <div class="secret-tray-sec">Кукус</div>
+          <div class="secret-tray-row" id="secretTrayKukus"></div>
+          <div class="secret-tray-sec">Персонажи · в очередь</div>
+          <div class="secret-tray-row" id="secretTrayChars"></div>
+          <div class="secret-tray-sec">Roblox · создатели</div>
+          <div class="secret-tray-row" id="secretTrayCreators"></div>
+          <div class="secret-tray-sec">Вещи</div>
+          <div class="secret-tray-row" id="secretTrayItems"></div>
+        </div>
       </div>
 
-      <!-- Р›РћР‘Р‘Р -->
+      <div class="touch" id="touch" hidden>
+        <div class="pad left" id="stick"></div>
+        <div class="pad right" id="actBtn">E<br>действие</div>
+      </div>
+
+      <!-- ЛОББИ -->
       <div class="panel menu" id="menu">
         <p class="brand">Animal Hospital</p>
-        <h1>(Anomaly) рџ§Є</h1>
-        <p class="wallet" id="menuWallet">рџЄ™ 0</p>
+        <h1>(Anomaly) 🧪</h1>
+        <p class="wallet" id="menuWallet">🪙 0</p>
 
         <div class="lobby-row">
           <label class="field">
-            <span>Р РµР¶РёРј</span>
+            <span>Режим</span>
             <select id="modeSelect">
-              <option value="solo">РЎРѕР»Рѕ</option>
-              <option value="pair">РџР°СЂР° + Р±Р°РґРґРё</option>
-              <option value="local2">2 РёРіСЂРѕРєР°</option>
+              <option value="solo">Соло</option>
+              <option value="pair">Пара + бадди</option>
+              <option value="local2">2 игрока</option>
             </select>
           </label>
           <label class="field">
-            <span>РЎРјРµРЅР°</span>
+            <span>Смена</span>
             <select id="shiftSelect"></select>
           </label>
         </div>
 
         <label class="field field-wide">
-          <span>РљР»Р°СЃСЃ (С‚РѕР»СЊРєРѕ РѕС‚РєСЂС‹С‚С‹Рµ)</span>
+          <span>Класс (только открытые)</span>
           <select id="classSelect"></select>
         </label>
 
         <label class="field field-wide" id="buddyField" hidden>
-          <span>Р‘Р°РґРґРё</span>
+          <span>Бадди</span>
           <select id="buddySelect"></select>
         </label>
 
         <label class="field field-wide">
-          <span>РЎРєРёРЅ</span>
+          <span>Скин</span>
           <select id="skinSelect"></select>
         </label>
 
         <div class="lobby-actions">
-          <button type="button" class="btn" id="btnStart">РћС‚РєСЂС‹С‚СЊ СЂРµСЃРµРїС€РµРЅ</button>
-          <button type="button" class="btn ghost" id="btnOpenShop">РњР°РіР°Р·РёРЅ РєР»Р°СЃСЃРѕРІ</button>
-          <button type="button" class="btn ghost" id="btnOpenExchange">в€ћ РЎР»СѓС‡Р°Р№РЅС‹Р№ РѕР±РјРµРЅ</button>
+          <button type="button" class="btn" id="btnStart">Открыть ресепшен</button>
+          <button type="button" class="btn ghost" id="btnOpenShop">Магазин классов</button>
+          <button type="button" class="btn ghost" id="btnOpenExchange">∞ Случайный обмен</button>
+          <button type="button" class="btn secret-shifts-btn" id="btnAllSecrets" hidden>
+            ✦ Все секретные смены
+          </button>
+          <button type="button" class="btn ghost" id="btnHardReload">↻ Обновить игру</button>
         </div>
         <p class="hints" id="menuHints">
-          рџ‘‘ РўС‹ Р°РґРјРёРЅ РєРѕРјР°РЅРґС‹ В· в€ћ РјРѕРЅРµС‚С‹ В· Р¶С‘Р»С‚С‹Рµ СЃС‚СЂРµР»РєРё Рє Р°РІС‚РѕРјР°С‚Р°Рј В· РЅРѕРІС‹Рµ РєРѕРјРЅР°С‚С‹
+          🪙 ∞ монеты · лечи животных · смотри на аномалии у окна
         </p>
+        <p class="build-stamp" id="buildStamp">сборка 150 · если старая — жми «Обновить игру»</p>
+        <p class="build-stamp"><a href="./lab-group.html" style="color:#0d6e5f">🧪 Группа · Лаборатория (все игры)</a></p>
+        <p class="build-stamp"><a href="./lab.html" style="color:#0d6e5f">Лаборатория</a> · <a href="./butterscotch.html" style="color:#1e3a6e">Buttersquish</a> · <a href="./batyr-mish.html" style="color:#1a6058">Батырский Миш</a> · <a href="./dumplings.html" style="color:#c05040">Пельмени</a> · <a href="./pet-care.html" style="color:#ff9a4a">Питомцы</a> · <a href="./best-console.html" style="color:#6366f1">Best Console</a></p>
+        <div class="spawn-players" id="spawnPlayersPanel" hidden>
+          <h3>✦ Спавн игрока · 24 ч</h3>
+          <p class="sub">Только ты спавнишь · ник игрока · персонаж · перки на 24 ч</p>
+          <label class="field field-wide">
+            <span>Ник</span>
+            <input id="spawnNickInput" type="text" maxlength="24" autocomplete="off" spellcheck="false" placeholder="ник игрока" />
+          </label>
+          <label class="field field-wide">
+            <span>Персонаж</span>
+            <select id="spawnCharSelect"></select>
+          </label>
+          <div class="spawn-perks" id="spawnPerksBox"></div>
+          <button type="button" class="btn" id="btnSpawnPlayer">Заспавнить на 24 ч</button>
+          <ul class="spawn-active" id="spawnActiveList"></ul>
+        </div>
+        <div class="secret-death" id="secretDeathWrap">
+          <label for="secretDeathInput">secret death</label>
+          <div class="secret-death-row">
+            <input
+              id="secretDeathInput"
+              type="text"
+              inputmode="text"
+              maxlength="16"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="код → OK"
+            />
+            <button type="button" class="secret-death-go" id="secretDeathGo">OK</button>
+          </div>
+        </div>
       </div>
 
-      <!-- РњРђР“РђР—РРќ РљР›РђРЎРЎРћР’ -->
+      <!-- СЕКРЕТНЫЕ СМЕНЫ (тот же стиль панели, только секреты) -->
+      <div class="panel secret-shifts" id="secretShiftsPanel" hidden>
+        <h2>✦ Все секретные смены</h2>
+        <p class="sub">Аниме-мир или секретная смена — без кодов 67</p>
+        <div class="secret-shifts-list" id="secretShiftsList"></div>
+        <button type="button" class="btn ghost" id="btnCloseSecrets">Назад</button>
+      </div>
+
+      <!-- МАГАЗИН КЛАССОВ -->
       <div class="panel shop" id="shopPanel" hidden>
-        <h2>РњР°РіР°Р·РёРЅ РєР»Р°СЃСЃРѕРІ</h2>
-        <p class="sub" id="shopWallet">РњРѕРЅРµС‚С‹: 0</p>
+        <h2>Магазин классов</h2>
+        <p class="sub" id="shopWallet">Монеты: 0</p>
         <div class="shop-list" id="shopList"></div>
-        <button type="button" class="btn ghost" id="btnCloseShop">РќР°Р·Р°Рґ</button>
+        <button type="button" class="btn ghost" id="btnCloseShop">Назад</button>
       </div>
 
-      <!-- РћР‘РњР•Рќ -->
+      <!-- ОБМЕН -->
       <div class="panel exchange" id="exchangePanel" hidden>
-        <h2>в€ћ РЎР»СѓС‡Р°Р№РЅС‹Р№ РѕР±РјРµРЅ</h2>
-        <p class="sub">РўСЂР°С‚РёС€СЊ РјРѕРЅРµС‚С‹ вЂ” РїРѕР»СѓС‡Р°РµС€СЊ СЃР»СѓС‡Р°Р№РЅС‹Р№ РєР»Р°СЃСЃ РёР»Рё СЃРµРєСЂРµС‚РЅС‹Р№ СЃРєРёРЅ. РњРѕР¶РЅРѕ РєСЂСѓС‚РёС‚СЊ СЃРєРѕР»СЊРєРѕ СѓРіРѕРґРЅРѕ.</p>
-        <p class="wallet" id="exWallet">рџЄ™ 0</p>
-        <p class="ex-cost">Р¦РµРЅР° РєСЂСѓС‚РєРё: <strong id="exCost">40</strong> рџЄ™</p>
-        <div class="ex-result" id="exResult">РќР°Р¶РјРё В«РљСЂСѓС‚РёС‚СЊВ»</div>
-        <button type="button" class="btn" id="btnSpin">РљСЂСѓС‚РёС‚СЊ РѕР±РјРµРЅ</button>
-        <button type="button" class="btn ghost" id="btnCloseExchange">РќР°Р·Р°Рґ</button>
+        <h2>∞ Случайный обмен</h2>
+        <p class="sub">Тратишь монеты — получаешь случайный класс или секретный скин. Можно крутить сколько угодно.</p>
+        <p class="wallet" id="exWallet">🪙 0</p>
+        <p class="ex-cost">Цена крутки: <strong id="exCost">40</strong> 🪙</p>
+        <div class="ex-result" id="exResult">Нажми «Крутить»</div>
+        <button type="button" class="btn" id="btnSpin">Крутить обмен</button>
+        <button type="button" class="btn ghost" id="btnCloseExchange">Назад</button>
       </div>
 
       <div class="panel desk" id="deskPanel" hidden>
-        <h2>рџЏҐ Р РµСЃРµРїС€РµРЅ</h2>
-        <p class="sub" id="deskName">РљР»РёРµРЅС‚ Сѓ РѕРєРЅР°</p>
+        <h2>🏥 Ресепшен</h2>
+        <p class="sub" id="deskName">Клиент у окна</p>
         <p class="queue-note" id="deskQueueNote"></p>
         <div class="inspect-grid">
           <div class="inspect-card">
-            <div class="inspect-label">РљР»РёРµРЅС‚</div>
+            <div class="inspect-label">Клиент</div>
             <canvas id="viewPatient" width="160" height="140"></canvas>
           </div>
           <div class="inspect-card">
-            <div class="inspect-label">РЈРґРѕСЃС‚РѕРІРµСЂРµРЅРёРµ</div>
+            <div class="inspect-label">Удостоверение</div>
             <canvas id="viewPhoto" width="160" height="140"></canvas>
           </div>
           <div class="inspect-card">
-            <div class="inspect-label">РљР°РјРµСЂР°</div>
+            <div class="inspect-label">Камера</div>
             <canvas id="viewCctv" width="160" height="140"></canvas>
           </div>
         </div>
-        <p class="clue" id="deskClue">РЎСЂР°РІРЅРё С‚СЂРё РїР°РЅРµР»Рё. Р Р°СЃС…РѕР¶РґРµРЅРёРµ = Р°РЅРѕРјР°Р»РёСЏ.</p>
+        <p class="clue" id="deskClue">Сравни три панели. Расхождение = аномалия.</p>
         <div class="desk-actions">
-          <button type="button" class="btn good" id="btnAdmit">вњ“ Р’РїСѓСЃС‚РёС‚СЊ</button>
-          <button type="button" class="btn bad" id="btnReject">вњ• РЁС‚РѕСЂРєР°</button>
+          <button type="button" class="btn good" id="btnAdmit">✓ Впустить</button>
+          <button type="button" class="btn bad" id="btnReject">✕ Шторка</button>
+          <button type="button" class="btn juice" id="btnGiveJuice" hidden>🧃 Сок</button>
         </div>
       </div>
 
       <div class="panel end" id="endPanel" hidden>
-        <h2 id="endTitle">РЎРјРµРЅР° РѕРєРѕРЅС‡РµРЅР°</h2>
+        <h2 id="endTitle">Смена окончена</h2>
         <p class="sub" id="endSub"></p>
-        <button type="button" class="btn" id="btnAgain">Р•С‰С‘ СЃРјРµРЅР°</button>
-        <button type="button" class="btn ghost" id="btnToMenu">Р’ Р»РѕР±Р±Рё</button>
+        <button type="button" class="btn" id="btnAgain">Ещё смена</button>
+        <button type="button" class="btn ghost" id="btnToMenu">В лобби</button>
       </div>
     </div>
   </div>
 
-  <script src="../shared/amal-owner-powers.js?v=16"></script>
-  <script src="./game.js?v=103"></script>
-  <script src="../shared/amal-hub.js?v=23"></script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="./game.js?v=150"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-surprises.js?v=11"></script>
 </body>
 </html>
