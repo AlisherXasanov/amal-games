@@ -13,6 +13,19 @@
   const RARE_NAMES = ["Золотой", "Царский", "Алмазный", "Огненный", "Лунный"];
   const NAMES = ["Петя", "Варя", "Боря", "Лёля", "Тёма", "Миша", "Зоя", "Кира", "Стёпа", "Нюша"];
 
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const menu = document.getElementById("menu");
+  const play = document.getElementById("play");
+  const outro = document.getElementById("outro");
+  const panel = document.getElementById("panel");
+  const bubble = document.getElementById("bubble");
+  const moneyEl = document.getElementById("money");
+  const scoreEl = document.getElementById("score");
+  const outroText = document.getElementById("outroText");
+  const outroCode = document.getElementById("outroCode");
+  const outroHint = document.getElementById("outroHint");
+
   let money = 100;
   let score = 0;
   let dumplings = [];
@@ -628,29 +641,26 @@
   document.getElementById("btnStart").onclick = start;
   document.getElementById("btnMenu").onclick = showMenu;
   document.getElementById("btnOutroMenu").onclick = showMenu;
-  document.getElementById("moodToggle").onclick = () => {
-    const wrap = document.querySelector(".mood-wrap");
-    wrap.classList.toggle("collapsed");
-    document.getElementById("moodToggle").textContent = wrap.classList.contains("collapsed")
-      ? "Настроение ▸"
-      : "Настроение ▾";
-  };
+  const moodToggle = document.getElementById("moodToggle");
+  if (moodToggle) {
+    moodToggle.onclick = () => {
+      const wrap = document.querySelector(".mood-wrap");
+      if (!wrap) return;
+      wrap.classList.toggle("collapsed");
+      moodToggle.textContent = wrap.classList.contains("collapsed")
+        ? "Настроение ▸"
+        : "Настроение ▾";
+    };
+  }
   document.querySelectorAll(".act").forEach((btn) => {
     btn.addEventListener("click", () => doAct(btn.dataset.act));
   });
-  document.getElementById("btnLike").onclick = () => {
-    outroHint.textContent = "👍 Лайк! Спасибо!";
-    beep(520, 0.08);
-  };
-  document.getElementById("btnShare").onclick = () => {
-    money += 20;
-    outroHint.textContent = "↗ Поделились с друзьями!";
-    beep(440, 0.08);
-  };
-  document.getElementById("btnSub").onclick = () => {
-    outroHint.textContent = "🔔 Подписка! Спасибо за просмотр!";
-    beep(660, 0.1);
-  };
+  const btnLike = document.getElementById("btnLike");
+  const btnShare = document.getElementById("btnShare");
+  const btnSub = document.getElementById("btnSub");
+  if (btnLike) btnLike.onclick = () => { outroHint.textContent = "👍 Лайк! Спасибо!"; beep(520, 0.08); };
+  if (btnShare) btnShare.onclick = () => { money += 20; outroHint.textContent = "↗ Поделились с друзьями!"; beep(440, 0.08); };
+  if (btnSub) btnSub.onclick = () => { outroHint.textContent = "🔔 Подписка! Спасибо за просмотр!"; beep(660, 0.1); };
 
   requestAnimationFrame(frame);
 })();
