@@ -14,6 +14,7 @@
   const loveLabel = document.getElementById("loveLabel");
   const winText = document.getElementById("winText");
   const winCode = document.getElementById("winCode");
+  const winBrand = document.getElementById("winBrand");
 
   let mode = "both";
   let pets = [];
@@ -187,19 +188,55 @@
     draw();
   }
 
-  function finish(skyWin) {
+  function petsWellCared() {
+    return pets.length > 0 && pets.every((p) => avgCare(p) >= 70 && p.power >= 40);
+  }
+
+  function petsNeglected() {
+    return pets.length > 0 && pets.every((p) => avgCare(p) <= 20);
+  }
+
+  function finish(kind) {
     if (done) return;
+    if (kind === true) kind = "sky";
+    if (kind === false) kind = "good";
+    // never praise a host when pets are neglected
+    if (kind === "good" && !petsWellCared()) return;
+    if (kind === "sky" && !pets.every(isFull)) return;
+
     done = true;
-    if (skyWin) {
+    if (kind === "sky") {
+      winBrand.textContent = "✦ Небесный хозяин";
       winText.textContent =
         "Всё на максимуме! Питомцы улетели в небо. День " + day + " · ❤ " + love;
       winCode.textContent = "SKY · " + String(((Date.now() / 1000) | 0) % 100000);
-    } else {
+    } else if (kind === "bad") {
+      winBrand.textContent = "… Плохой хозяин";
       winText.textContent =
-        "Ты заботился " + day + " дн. · любовь " + love + ". Питомцы счастливы.";
+        "Всё на минимуме. Питомцам плохо. День " + day + " · ❤ " + love + ". Попробуй ещё раз с заботой.";
+      winCode.textContent = "MIN · " + String(((Date.now() / 1000) | 0) % 100000);
+    } else {
+      winBrand.textContent = "✦ Хороший хозяин";
+      winText.textContent =
+        "Ты заботился " + day + " дн. · любовь " + love + ". Питомцы в порядке.";
       winCode.textContent = "PET · " + String(((Date.now() / 1000) | 0) % 100000);
     }
     win.hidden = false;
+  }
+
+  function tryEndCheck() {
+    if (!pets.length || done) return;
+    if (pets.every(isFull)) {
+      checkSkyState();
+      return;
+    }
+    if (petsNeglected()) {
+      finish("bad");
+      return;
+    }
+    if (petsWellCared() && love >= 40 && day >= 3) {
+      finish("good");
+    }
   }
 
   function cur() {
@@ -305,7 +342,7 @@
     loveLabel.textContent = "❤ " + love;
     renderPanel();
     checkSkyState();
-    if (love >= 50 && day >= 3 && !pets.every(isFull)) finish(false);
+    tryEndCheck();
   }
 
   function setPetLevel(p, level) {
@@ -359,7 +396,7 @@
       skyTriggered = true;
       say("✦ Всё на максимуме! Небо открывается…", 4);
       setTimeout(() => {
-        if (!done && pets.every(isFull)) finish(true);
+        if (!done && pets.every(isFull)) finish("sky");
       }, 4500);
     }
   }
@@ -885,7 +922,7 @@
       loveLabel.textContent = "❤ " + love;
       renderPanel();
       checkSkyState();
-      if (love >= 50 && day >= 3 && !pets.every(isFull)) finish(false);
+      tryEndCheck();
     }
 
     for (const pt of particles) {
