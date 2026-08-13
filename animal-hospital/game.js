@@ -1013,7 +1013,117 @@
       if (canUseSecretShifts()) showEl(spawnPanel);
       else hideEl(spawnPanel);
     }
+    syncSecretTray();
     renderSpawnActiveList();
+  }
+
+  function syncSecretTray() {
+    const tray = document.getElementById("secretTray");
+    if (!tray) return;
+    if (canUseSecretShifts()) showEl(tray);
+    else hideEl(tray);
+  }
+
+  function applyTrayCharacter(charId) {
+    const ch = spawnCharacterDef(charId);
+    if (!ch) return;
+    if (g && g.players[0]) {
+      g.players[0].tex = ch.tex;
+      g.players[0].color = ch.color;
+      g.players[0].name = ch.name === "Auto" ? "Auto" : ch.name;
+    }
+    const skin =
+      SKINS.find((s) => s.tex === ch.tex) ||
+      (ch.id === "auto" ? SKINS.find((s) => s.id === "secret-here") : null) ||
+      (ch.id === "sammy" || ch.id === "jen" || ch.id === "builder"
+        ? null
+        : SKINS.find((s) => s.id === "secret-" + ch.id));
+    if (skin) {
+      selectedSkin = skin;
+      meta.skinId = skin.id;
+      if (!meta.skins.includes(skin.id)) meta.skins.push(skin.id);
+      storeSet(SAVE, meta);
+      refreshLobbyUI();
+    }
+    toast(`Персонаж · ${ch.name}`);
+    showEvent(`✦ ${ch.name}`, 1.8);
+  }
+
+  function giveTrayItem(itemId) {
+    if (!g || !g.players[0]) {
+      toast("Сначала открой смену");
+      return;
+    }
+    const p = g.players[0];
+    if (itemId === "coffee") {
+      p.coffeeLeft = Math.max(p.coffeeLeft || 0, 9999);
+      if (!p.inv.includes("coffee_cup") && p.inv.length < invMax(p)) p.inv.push("coffee_cup");
+      coffeeCd = { coffee: 0, coffee2: 0 };
+      meta.coffee2 = true;
+      storeSet(SAVE, meta);
+      renderInv();
+      toast("☕ Кофе · без перезарядки");
+      return;
+    }
+    if (itemId === "juice") {
+      if (!p.inv.includes("juice_cup") && p.inv.length < invMax(p)) p.inv.push("juice_cup");
+      healSanity(30);
+      renderInv();
+      toast("🧃 Сок");
+      return;
+    }
+    const def = ITEMS[itemId];
+    if (!def) return;
+    if (p.inv.length >= invMax(p) && !p.infiniteItems) {
+      toast("Инвентарь полон");
+      return;
+    }
+    p.inv.push(itemId);
+    renderInv();
+    toast(`${def.icon} ${def.name}`);
+  }
+
+  function bootSecretTray() {
+    const chars = document.getElementById("secretTrayChars");
+    const items = document.getElementById("secretTrayItems");
+    const fab = document.getElementById("btnSecretTray");
+    const panel = document.getElementById("secretTrayPanel");
+    const closeBtn = document.getElementById("btnSecretTrayClose");
+    if (chars && !chars.dataset.ready) {
+      chars.dataset.ready = "1";
+      chars.innerHTML = SPAWN_CHARACTERS.map(
+        (c) =>
+          `<button type="button" class="secret-tray-chip char-${c.id}" data-char="${c.id}">${c.name}</button>`
+      ).join("");
+      chars.querySelectorAll("[data-char]").forEach((btn) => {
+        btn.addEventListener("click", () => applyTrayCharacter(btn.getAttribute("data-char")));
+      });
+    }
+    if (items && !items.dataset.ready) {
+      items.dataset.ready = "1";
+      const pack = [
+        { id: "coffee", label: "☕ Кофе" },
+        { id: "juice", label: "🧃 Сок" },
+        { id: "medkit", label: "🧰 Аптечка" },
+        { id: "bandage", label: "🩹 Бинт" },
+        { id: "syringe", label: "💉 Шприц" },
+        { id: "thermo", label: "🌡 Термометр" },
+      ];
+      items.innerHTML = pack
+        .map((it) => `<button type="button" class="secret-tray-chip" data-item="${it.id}">${it.label}</button>`)
+        .join("");
+      items.querySelectorAll("[data-item]").forEach((btn) => {
+        btn.addEventListener("click", () => giveTrayItem(btn.getAttribute("data-item")));
+      });
+    }
+    const toggle = () => {
+      if (!panel) return;
+      if (panel.hidden) showEl(panel);
+      else hideEl(panel);
+    };
+    if (fab) fab.addEventListener("click", toggle);
+    if (closeBtn) closeBtn.addEventListener("click", () => hideEl(panel));
+    syncSecretTray();
   }
 
   function persistLobby() {
@@ -4172,6 +4282,8 @@
       }
     });
   }
+
+  bootSecretTray();
 
   hideEl(hud);
   hideEl(touch);

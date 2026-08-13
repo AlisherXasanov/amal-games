@@ -278,6 +278,85 @@ body.theme-parrot #app {
   opacity: 0.7;
   font: 600 0.78rem Nunito, system-ui;
 }
+.secret-tray {
+  position: absolute;
+  left: 0.55rem;
+  bottom: 5.4rem;
+  z-index: 8;
+  pointer-events: none;
+}
+.secret-tray-fab,
+.secret-tray-panel,
+.secret-tray-panel button,
+.secret-tray-x {
+  pointer-events: auto;
+}
+.secret-tray-fab {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 120, 0.45);
+  background: rgba(18, 14, 8, 0.88);
+  color: #ffd76a;
+  font: 800 1rem Nunito, system-ui;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+.secret-tray-panel {
+  position: absolute;
+  left: 0;
+  bottom: 46px;
+  width: min(230px, 72vw);
+  padding: 0.55rem 0.6rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 120, 0.28);
+  background: rgba(10, 14, 24, 0.94);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+}
+.secret-tray-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+  color: #ffd76a;
+  font: 800 0.82rem Nunito, system-ui;
+}
+.secret-tray-x {
+  border: 0;
+  background: transparent;
+  color: #9aa8c0;
+  font: 800 1rem Nunito, system-ui;
+  cursor: pointer;
+  line-height: 1;
+}
+.secret-tray-sec {
+  margin: 0.4rem 0 0.25rem;
+  font: 800 0.68rem Nunito, system-ui;
+  color: #9aa8c0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.secret-tray-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.secret-tray-row button,
+.secret-tray-chip {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--cream);
+  border-radius: 8px;
+  padding: 0.28rem 0.45rem;
+  font: 700 0.72rem Nunito, system-ui;
+  cursor: pointer;
+}
+.secret-tray-chip.char-sammy { border-color: rgba(226, 59, 59, 0.5); color: #ffb0b0; }
+.secret-tray-chip.char-jen { border-color: rgba(242, 160, 216, 0.5); color: #ffd0ef; }
+.secret-tray-chip.char-auto { border-color: rgba(126, 200, 255, 0.5); color: #a8e0ff; }
+.secret-tray-chip.char-rainbow { border-color: rgba(255, 106, 213, 0.5); color: #ffb0e0; }
+.secret-tray-chip.char-lilamint { border-color: rgba(155, 89, 182, 0.5); color: #d0a0ff; }
+.secret-tray-chip.char-builder { border-color: rgba(61, 207, 122, 0.5); color: #b8ffd0; }
 .btn-sm {
   border: 0;
   border-radius: 8px;

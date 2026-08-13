@@ -648,8 +648,9 @@
     s.id = US_EGGS_STYLE;
     s.textContent =
       "#amal-us-eggs{position:fixed;left:10px;bottom:48px;z-index:9990;display:flex;flex-direction:column;gap:6px;pointer-events:none}" +
+      "#amal-us-eggs-host #amal-us-eggs{position:static;left:auto;bottom:auto;z-index:auto;flex-direction:row;flex-wrap:wrap;pointer-events:auto;gap:6px}" +
       "#amal-us-eggs button{pointer-events:auto;border:0;cursor:pointer;padding:5px 9px;border-radius:8px;" +
-      "font:700 11px/1.2 system-ui,sans-serif;opacity:.72;transition:opacity .2s,transform .2s}" +
+      "font:700 11px/1.2 system-ui,sans-serif;opacity:.88;transition:opacity .2s,transform .2s}" +
       "#amal-us-eggs button:hover{opacity:1;transform:translateY(-1px)}" +
       "#amal-egg-lesha{background:rgba(255,200,90,.88);color:#1a1208}" +
       "#amal-egg-me{background:rgba(120,190,255,.82);color:#061018}" +
@@ -707,7 +708,9 @@
     wrap.innerHTML =
       '<button type="button" id="amal-egg-lesha" title="пасхалка Леши">✦ Леша</button>' +
       '<button type="button" id="amal-egg-me" title="пасхалка рядом">◌ я рядом</button>';
-    document.body.appendChild(wrap);
+    const host = document.getElementById("amal-us-eggs-host");
+    if (host) host.appendChild(wrap);
+    else document.body.appendChild(wrap);
 
     let clickBuf = "";
     let clickT = 0;
