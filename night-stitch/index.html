@@ -3,50 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>РќРёС‚СЊ СЃРЅР°</title>
+  <title>Р СњР С‘РЎвЂљРЎРЉ РЎРѓР Р…Р В°</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css?v=6" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+  <a class="portal-back" href="../">&larr; Р вЂ™РЎРѓР Вµ Р С‘Р С–РЎР‚РЎвЂ№</a>
 
   <div id="app">
     <canvas id="game" width="960" height="540" tabindex="0"></canvas>
 
     <div id="hud" class="hud hidden">
-      <span id="stitches">РќРёС‚Рё: 0/5</span>
-      <span id="msg">РўС‹ СѓРїСЂР°РІР»СЏРµС€СЊ В· СЃС‚СЂРµР»РєРё / WASD / РєР»РёРє</span>
-      <button type="button" id="menu-btn" class="menu-btn">РњРµРЅСЋ</button>
+      <span id="stitches">Р СњР С‘РЎвЂљР С‘: 0/5</span>
+      <span id="msg">Р СћРЎвЂ№ РЎС“Р С—РЎР‚Р В°Р Р†Р В»РЎРЏР ВµРЎв‚¬РЎРЉ Р’В· РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ / WASD / Р С”Р В»Р С‘Р С”</span>
+      <button type="button" id="menu-btn" class="menu-btn">Р СљР ВµР Р…РЎР‹</button>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="panel">
-        <h1 id="title">РќРёС‚СЊ СЃРЅР°</h1>
+        <h1 id="title">Р СњР С‘РЎвЂљРЎРЉ РЎРѓР Р…Р В°</h1>
         <p id="blurb">
-          <strong>РўС‹ С…РѕРґРёС€СЊ СЃР°Рј</strong> вЂ” СЃС‚СЂРµР»РєРё РІРЅРёР·Сѓ, WASD РёР»Рё РєР»РёРє РїРѕ РєР°СЂС‚Рµ.<br />
-          РЎРѕР±РµСЂРё С„РёРѕР»РµС‚РѕРІС‹Рµ РЅРёС‚Рё, РїРѕС‚РѕРј РєРѕСЃРЅРёСЃСЊ Р·РµР»С‘РЅРѕРіРѕ <strong>РЈРўР Рћ</strong>.<br />
-          РћС‚ С‚РµРЅРё вЂ” РєРЅРѕРїРєР° <strong>Р Р«Р’РћРљ</strong>.
+          <strong>Р СћРЎвЂ№ РЎвЂ¦Р С•Р Т‘Р С‘РЎв‚¬РЎРЉ РЎРѓР В°Р С</strong> РІР‚вЂќ РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ Р Р†Р Р…Р С‘Р В·РЎС“, WASD Р С‘Р В»Р С‘ Р С”Р В»Р С‘Р С” Р С—Р С• Р С”Р В°РЎР‚РЎвЂљР Вµ.<br />
+          Р РЋР С•Р В±Р ВµРЎР‚Р С‘ РЎвЂћР С‘Р С•Р В»Р ВµРЎвЂљР С•Р Р†РЎвЂ№Р Вµ Р Р…Р С‘РЎвЂљР С‘, Р С—Р С•РЎвЂљР С•Р С Р С”Р С•РЎРѓР Р…Р С‘РЎРѓРЎРЉ Р В·Р ВµР В»РЎвЂР Р…Р С•Р С–Р С• <strong>Р Р€Р СћР В Р С›</strong>.<br />
+          Р С›РЎвЂљ РЎвЂљР ВµР Р…Р С‘ РІР‚вЂќ Р С”Р Р…Р С•Р С—Р С”Р В° <strong>Р В Р В«Р вЂ™Р С›Р С™</strong>.
         </p>
-        <button type="button" id="start-btn" class="btn big">РќРђР§РђРўР¬</button>
-        <p class="alt">РђРґРјРёРЅ-СЃРёР»С‹ С…РѕР·СЏРёРЅР° В· РєРЅРѕРїРєР° <strong>РњРµРЅСЋ</strong> РІ РёРіСЂРµ</p>
+        <button type="button" id="start-btn" class="btn big">Р СњР С’Р В§Р С’Р СћР В¬</button>
+        <p class="alt">Р С’Р Т‘Р СР С‘Р Р…-РЎРѓР С‘Р В»РЎвЂ№ РЎвЂ¦Р С•Р В·РЎРЏР С‘Р Р…Р В° Р’В· Р С”Р Р…Р С•Р С—Р С”Р В° <strong>Р СљР ВµР Р…РЎР‹</strong> Р Р† Р С‘Р С–РЎР‚Р Вµ</p>
       </div>
     </div>
 
     <div id="controls" class="controls hidden">
       <div class="pad">
-        <button type="button" data-dir="up">в†‘</button>
+        <button type="button" data-dir="up">РІвЂ вЂ</button>
         <div class="row">
-          <button type="button" data-dir="left">в†ђ</button>
-          <button type="button" data-dir="down">в†“</button>
-          <button type="button" data-dir="right">в†’</button>
+          <button type="button" data-dir="left">РІвЂ С’</button>
+          <button type="button" data-dir="down">РІвЂ вЂњ</button>
+          <button type="button" data-dir="right">РІвЂ вЂ™</button>
         </div>
       </div>
-      <button type="button" id="dash-btn" class="dash-btn">Р Р«Р’РћРљ</button>
+      <button type="button" id="dash-btn" class="dash-btn">Р В Р В«Р вЂ™Р С›Р С™</button>
     </div>
   </div>
 
-  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-owner-powers.js?v=18"></script>
   <script src="./game.js?v=6"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
 </body>

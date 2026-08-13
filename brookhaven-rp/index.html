@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Брукхейвен RP — черновик</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#102018;font-family:Segoe UI,system-ui,sans-serif;color:#fff;user-select:none}
+    #draft{position:fixed;top:10px;right:10px;z-index:40;font-size:11px;opacity:.8;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:8px}
+    #tutorial{
+      position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:40;
+      width:min(560px,96vw);padding:14px 16px;border-radius:16px;
+      background:linear-gradient(135deg,rgba(15,23,42,.94),rgba(30,58,40,.92));
+      border:2px solid #fbbf24;box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    #tutorial h1{font-size:clamp(15px,3.2vw,20px);margin-bottom:8px;text-align:center;color:#fde68a}
+    #tutorial .steps{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    @media(max-width:520px){#tutorial .steps{grid-template-columns:1fr}}
+    #tutorial .step{
+      font-size:13px;font-weight:800;padding:8px 10px;border-radius:10px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);
+    }
+    #tutorial .step.done{opacity:.5;text-decoration:line-through;border-color:#4ade80}
+    #tutorial .step em{display:block;font-style:normal;font-weight:600;font-size:11px;color:#bbf7d0;margin-top:2px}
+    #hud{
+      position:fixed;top:138px;left:10px;z-index:30;max-width:280px;
+      background:rgba(0,0,0,.55);padding:10px 12px;border-radius:12px;
+      font-size:13px;line-height:1.45;text-shadow:0 1px 3px #000;
+    }
+    #hud h2{font-size:16px;margin-bottom:4px}
+    #loc,#house{color:#fde68a;font-weight:800}
+    #note{margin-top:6px;font-size:11px;opacity:.85;color:#bae6fd}
+    #toast{
+      position:fixed;top:48%;left:50%;transform:translate(-50%,-50%);z-index:50;
+      background:rgba(0,0,0,.88);padding:14px 22px;border-radius:14px;
+      font-size:18px;font-weight:900;opacity:0;transition:opacity .2s;
+      pointer-events:none;max-width:92vw;text-align:center;border:2px solid #fbbf24;
+    }
+    #toast.show{opacity:1}
+    #prompt{
+      position:fixed;bottom:78px;left:50%;transform:translateX(-50%);z-index:30;
+      font-size:14px;font-weight:900;background:rgba(0,0,0,.75);padding:8px 14px;
+      border-radius:10px;display:none;white-space:nowrap;border:1px solid rgba(255,255,255,.2);
+    }
+    #panel{
+      position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:35;
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:96vw;
+    }
+    #panel button{
+      border:0;border-radius:12px;padding:11px 16px;font:800 13px/1 system-ui,sans-serif;
+      cursor:pointer;color:#111;background:linear-gradient(135deg,#fde68a,#f59e0b);
+      box-shadow:0 4px 14px rgba(0,0,0,.3);
+    }
+    #panel button.blue{background:linear-gradient(135deg,#93c5fd,#3b82f6);color:#fff}
+    #panel button.green{background:linear-gradient(135deg,#86efac,#16a34a);color:#052e16}
+    #panel button.purple{background:linear-gradient(135deg,#d8b4fe,#7c3aed);color:#fff}
+    #sheet{
+      position:fixed;right:12px;bottom:70px;z-index:36;width:min(300px,92vw);
+      max-height:50vh;overflow:auto;display:none;padding:12px;border-radius:14px;
+      background:rgba(12,16,22,.95);border:1px solid rgba(255,255,255,.12);
+    }
+    #sheet.open{display:block}
+    #sheet h3{font-size:14px;margin-bottom:8px}
+    #sheet button{
+      display:block;width:100%;margin:0 0 6px;padding:10px;border:0;border-radius:10px;
+      background:rgba(255,255,255,.08);color:#fff;font:700 12px/1.2 system-ui,sans-serif;
+      cursor:pointer;text-align:left;
+    }
+    #sheet button:hover{background:rgba(251,191,36,.25)}
+  </style>
+</head>
+<body>
+  <div id="draft">черновик · не на сайте</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="tutorial">
+    <h1>Брукхейвен RP · как играть</h1>
+    <div class="steps">
+      <div class="step" id="s1">1) Спавн<em>ты уже здесь · жёлтая площадь</em></div>
+      <div class="step" id="s2">2) Возьми бесплатный дом<em>кнопка «Дома» или E у зелёного участка</em></div>
+      <div class="step" id="s3">3) Заспавнь машину<em>кнопка «Машины» → бесплатный седан</em></div>
+      <div class="step" id="s4">4) Зайди в дом<em>подойди к двери · E</em></div>
+    </div>
+  </div>
+  <div id="hud">
+    <h2>Город</h2>
+    Монеты: <b id="coins">120</b><br/>
+    Где ты: <span id="loc">спавн</span><br/>
+    Твой дом: <span id="house">нет</span>
+    <div id="note">Один ПК · NPC-жители ходят по городу (как «игроки»)</div>
+  </div>
+  <div id="toast"></div>
+  <div id="prompt"></div>
+  <div id="panel">
+    <button type="button" id="btnSpawn" class="blue">Спавн</button>
+    <button type="button" id="btnHome" class="green">Мой дом</button>
+    <button type="button" id="btnCars" class="purple">Машины</button>
+    <button type="button" id="btnPlots">Дома</button>
+  </div>
+  <div id="sheet"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
+  <script src="../shared/amal-walk-player.js?v=3"></script>
+  <script src="../shared/amal-draft-owner.js?v=2"></script>
+  <script>
+  (function () {
+    if (!THREE.CapsuleGeometry) {
+      THREE.CapsuleGeometry = function (r, len) {
+        return new THREE.CylinderGeometry(r, r, (len || 1) + r * 2, 8);
+      };
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87b8e8);
+    scene.fog = new THREE.Fog(0x87b8e8, 100, 280);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 420);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 11,
+      pitch: 0.4,
+      lookOffsetY: 1.4,
+      minDist: 4,
+      maxDist: 45,
+    });
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const sun = new THREE.DirectionalLight(0xfff3d6, 1.15);
+    sun.position.set(70, 90, 40);
+    sun.castShadow = true;
+    scene.add(sun);
+
+    const MAP = 280;
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(MAP, MAP),
+      new THREE.MeshLambertMaterial({ color: 0x4ade80 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    function mesh(geo, mat, x, y, z, parent) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      m.receiveShadow = true;
+      (parent || scene).add(m);
+      return m;
+    }
+    function box(w, h, d, color, x, y, z, parent) {
+      return mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color }), x, y, z, parent);
+    }
+
+    const asphalt = new THREE.MeshLambertMaterial({ color: 0x4b5563 });
+    function road(w, d, x, z) {
+      const r = mesh(new THREE.PlaneGeometry(w, d), asphalt, x, 0.04, z);
+      r.rotation.x = -Math.PI / 2;
+      return r;
+    }
+    road(16, MAP * 0.88, 0, 0);
+    road(MAP * 0.88, 14, 0, 0);
+    road(12, 160, -60, -10);
+    road(12, 160, 60, 20);
+    road(180, 12, -5, -60);
+    road(180, 12, 15, 60);
+    road(10, 100, -100, 40);
+    road(100, 10, 90, -40);
+
+    const walkMat = new THREE.MeshLambertMaterial({ color: 0xe5e7eb });
+    [[-10, 0], [10, 0]].forEach(([x]) => {
+      const s = mesh(new THREE.PlaneGeometry(2.6, MAP * 0.7), walkMat, x, 0.05, 0);
+      s.rotation.x = -Math.PI / 2;
+    });
+
+    // Spawn plaza
+    const CITY_SPAWN = { x: 0, z: 20 };
+    const spawnPad = mesh(
+      new THREE.CircleGeometry(9, 40),
+      new THREE.MeshLambertMaterial({ color: 0xfbbf24 }),
+      CITY_SPAWN.x, 0.06, CITY_SPAWN.z - 4
+    );
+    spawnPad.rotation.x = -Math.PI / 2;
+    box(1.4, 5, 1.4, 0xf59e0b, CITY_SPAWN.x, 2.5, CITY_SPAWN.z - 4);
+    box(3.5, 1.2, 0.2, 0xfef3c7, CITY_SPAWN.x, 5.2, CITY_SPAWN.z - 4);
+
+    // Park
+    const park = mesh(
+      new THREE.CircleGeometry(20, 40),
+      new THREE.MeshLambertMaterial({ color: 0x65a30d }),
+      -75, 0.05, 45
+    );
+    park.rotation.x = -Math.PI / 2;
+    for (let i = 0; i < 18; i++) {
+      const a = (i / 18) * Math.PI * 2;
+      const tx = -75 + Math.cos(a) * 14;
+      const tz = 45 + Math.sin(a) * 14;
+      box(0.45, 3.2, 0.45, 0x6d4c41, tx, 1.6, tz);
+      mesh(new THREE.SphereGeometry(1.8, 10, 10), new THREE.MeshLambertMaterial({ color: 0x166534 }), tx, 3.6, tz);
+    }
+
+    // Shop
+    box(12, 5.5, 9, 0xfcd34d, 78, 2.75, -12);
+    box(12.5, 0.5, 9.5, 0xb45309, 78, 5.6, -12);
+    const shopPos = { x: 78, z: -6 };
+
+    // Pond
+    const pond = mesh(
+      new THREE.CircleGeometry(11, 40),
+      new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 }),
+      85, 0.07, 75
+    );
+    pond.rotation.x = -Math.PI / 2;
+    const pondCenter = { x: 85, z: 75, r: 9 };
+
+    for (let z = -110; z <= 110; z += 22) {
+      box(0.22, 4.2, 0.22, 0x374151, -11, 2.1, z);
+      const l = new THREE.PointLight(0xffe4c4, 0.22, 15);
+      l.position.set(-11, 4.4, z);
+      scene.add(l);
+    }
+
+    function makeHumanoid(skin, shirt, pants) {
+      const g = new THREE.Group();
+      const hipsY = 0.55;
+      const torso = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.65, 0.32),
+        new THREE.MeshLambertMaterial({ color: shirt })
+      );
+      torso.position.y = hipsY + 0.45;
+      g.add(torso);
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 12, 12),
+        new THREE.MeshLambertMaterial({ color: skin })
+      );
+      head.position.y = hipsY + 0.95;
+      g.add(head);
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(0.23, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55),
+        new THREE.MeshLambertMaterial({ color: 0x3f2a1a })
+      );
+      hair.position.y = hipsY + 1.05;
+      g.add(hair);
+      [[-0.38], [0.38]].forEach(([x]) => {
+        const arm = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.08, 0.35, 3, 6),
+          new THREE.MeshLambertMaterial({ color: skin })
+        );
+        arm.position.set(x, hipsY + 0.5, 0);
+        g.add(arm);
+      });
+      [[-0.16], [0.16]].forEach(([x]) => {
+        const leg = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.1, 0.4, 3, 6),
+          new THREE.MeshLambertMaterial({ color: pants })
+        );
+        leg.position.set(x, hipsY - 0.15, 0);
+        g.add(leg);
+      });
+      return g;
+    }
+
+    // NPC "players"
+    const NPC_NAMES = ["Артём", "Лиза", "Макс", "Соня", "Кирилл", "Ника", "Даня", "Мира"];
+    const NPC_SHIRTS = [0xf87171, 0x60a5fa, 0xfbbf24, 0xc084fc, 0x4ade80, 0xfb923c, 0xf472b6, 0x22d3ee];
+    const npcs = [];
+    for (let i = 0; i < 8; i++) {
+      const meshH = makeHumanoid(0xffcc99, NPC_SHIRTS[i], 0x1e3a5f);
+      const a = (i / 8) * Math.PI * 2;
+      meshH.position.set(Math.cos(a) * 28, 0, Math.sin(a) * 22 + 8);
+      scene.add(meshH);
+      npcs.push({
+        mesh: meshH,
+        name: NPC_NAMES[i],
+        tx: meshH.position.x,
+        tz: meshH.position.z,
+        wait: Math.random() * 2,
+        speed: 2.2 + Math.random() * 1.5,
+      });
+    }
+
+    const COLORS = [0xf87171, 0x60a5fa, 0xfbbf24, 0xc084fc, 0x4ade80, 0xfb923c, 0xf472b6, 0x22d3ee];
+    const plots = [];
+    const exteriorRoot = new THREE.Group();
+    scene.add(exteriorRoot);
+
+    const lotSpots = [];
+    for (let gx = -5; gx <= 5; gx++) {
+      for (let gz = -4; gz <= 4; gz++) {
+        if (Math.abs(gx) <= 1 && Math.abs(gz) <= 1) continue;
+        lotSpots.push({ x: gx * 30, z: gz * 34 });
+      }
+    }
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      lotSpots.push({ x: Math.cos(a) * 115, z: Math.sin(a) * 105 });
+    }
+
+    function buildHouse(def, idx) {
+      const free = idx % 3 !== 0;
+      const price = free ? 0 : 40 + (idx % 5) * 20;
+      const color = COLORS[idx % COLORS.length];
+      const name = (free ? "Бесплатный дом #" : "Дом за монеты #") + (idx + 1);
+
+      const group = new THREE.Group();
+      group.position.set(def.x, 0, def.z);
+
+      const lot = mesh(
+        new THREE.PlaneGeometry(16, 14),
+        new THREE.MeshLambertMaterial({ color: free ? 0x86efac : 0xfde68a }),
+        0, 0.08, 0,
+        group
+      );
+      lot.rotation.x = -Math.PI / 2;
+
+      const shell = new THREE.Group();
+      box(8, 4.4, 7, color, 0, 2.2, 0, shell);
+      const roof = mesh(
+        new THREE.ConeGeometry(6, 2.4, 4),
+        new THREE.MeshLambertMaterial({ color: 0x7c2d12 }),
+        0, 5.5, 0,
+        shell
+      );
+      roof.rotation.y = Math.PI / 4;
+      [[-2, 2.3, 3.55], [2, 2.3, 3.55]].forEach(([x, y, z]) => {
+        box(1.3, 1.2, 0.12, 0xbae6fd, x, y, z, shell);
+      });
+      box(1.4, 2.3, 0.2, 0x44403c, 0, 1.15, 3.6, shell);
+      group.add(shell);
+      shell.visible = false;
+
+      const sign = box(2.2, 1.1, 0.12, free ? 0x16a34a : 0xd97706, 0, 1.2, 5.2, group);
+      const emptyOnly = [lot, sign];
+
+      // Interior: living room + bedroom with ONE bed, sofa — not dozens of beds
+      const interior = new THREE.Group();
+      interior.visible = false;
+      box(7.4, 0.12, 6.4, 0xd6b48a, 0, 0.08, 0, interior);
+      box(7.4, 3.2, 0.2, 0xfff7ed, 0, 1.7, -3.1, interior);
+      box(0.2, 3.2, 6.4, 0xfff7ed, -3.6, 1.7, 0, interior);
+      box(0.2, 3.2, 6.4, 0xfff7ed, 3.6, 1.7, 0, interior);
+      box(7.4, 0.1, 6.4, 0xfef3c7, 0, 3.4, 0, interior);
+      // Sofa
+      box(2.8, 0.55, 1.1, 0x2563eb, -1.8, 0.45, -1.6, interior);
+      box(2.8, 0.75, 0.3, 0x1d4ed8, -1.8, 0.95, -2.05, interior);
+      // Table
+      box(1.4, 0.45, 0.9, 0x92400e, 0.2, 0.4, -0.6, interior);
+      // TV
+      box(1.6, 0.9, 0.12, 0x111827, 1.9, 1.5, -2.9, interior);
+      // ONE bed in bedroom corner
+      box(1.8, 0.35, 2.4, 0xf9a8d4, 2.0, 0.32, 1.5, interior);
+      box(1.8, 0.35, 0.35, 0xfce7f3, 2.0, 0.55, 0.45, interior);
+      // Rug
+      box(2.2, 0.05, 1.6, 0xfca5a5, -1.5, 0.12, 1.2, interior);
+      const lamp = new THREE.PointLight(0xffe4c4, 0.95, 12);
+      lamp.position.set(0, 2.7, 0);
+      interior.add(lamp);
+      group.add(interior);
+
+      plots.push({
+        idx, name, free, price, color,
+        x: def.x, z: def.z,
+        door: { x: def.x, z: def.z + 4.2 },
+        group, shell, interior, emptyOnly,
+        owned: false, built: false,
+      });
+      exteriorRoot.add(group);
+    }
+    lotSpots.forEach(buildHouse);
+
+    function decoCar(x, z, color) {
+      box(3.4, 0.9, 1.6, color, x, 0.5, z);
+      box(1.7, 0.7, 1.5, 0xe0f2fe, x - 0.25, 1.2, z);
+    }
+    decoCar(14, -10, 0x3b82f6);
+    decoCar(-16, 28, 0xef4444);
+    decoCar(40, 50, 0x16a34a);
+
+    let coins = 120;
+    let myPlot = null;
+    let inside = null;
+    let inCar = false;
+    let car = null;
+    let toastT = 0;
+    let wetCooldown = 0;
+    let deadT = 0;
+    const tut = { spawn: true, house: false, car: false, enter: false };
+
+    const toastEl = document.getElementById("toast");
+    const promptEl = document.getElementById("prompt");
+    const sheet = document.getElementById("sheet");
+
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      toastT = 2.4;
+    }
+    function syncTut() {
+      document.getElementById("s1").classList.toggle("done", tut.spawn);
+      document.getElementById("s2").classList.toggle("done", tut.house);
+      document.getElementById("s3").classList.toggle("done", tut.car);
+      document.getElementById("s4").classList.toggle("done", tut.enter);
+    }
+    function syncUI() {
+      document.getElementById("coins").textContent = coins;
+      document.getElementById("loc").textContent = inCar
+        ? "в машине"
+        : inside
+        ? inside.name + " (внутри)"
+        : "улица";
+      document.getElementById("house").textContent = myPlot ? myPlot.name : "нет";
+      syncTut();
+    }
+
+    const player = AmalWalkPlayer.create(scene, THREE, {
+      x: CITY_SPAWN.x,
+      z: CITY_SPAWN.z,
+      humanoid: true,
+      speed: 9,
+      height: 1.7,
+    });
+    AmalDraftOwner.attachPlayer(player);
+    AmalDraftOwner.badge();
+    const bounds = { minX: -135, maxX: 135, minZ: -130, maxZ: 130 };
+
+    function dist2(ax, az, bx, bz) {
+      return Math.hypot(ax - bx, az - bz);
+    }
+
+    function buildOnPlot(plot) {
+      plot.built = true;
+      plot.shell.visible = true;
+      plot.emptyOnly.forEach((m) => { m.visible = false; });
+    }
+
+    function claimPlot(plot) {
+      if (plot.owned) {
+        toast(plot === myPlot ? "Это уже твой дом" : "Участок занят");
+        return;
+      }
+      if (!plot.free && coins < plot.price) {
+        toast("Нужно " + plot.price + " монет");
+        return;
+      }
+      if (!plot.free) coins -= plot.price;
+      if (myPlot) myPlot.owned = false;
+      plot.owned = true;
+      myPlot = plot;
+      buildOnPlot(plot);
+      mesh(
+        new THREE.RingGeometry(5.5, 6.2, 32),
+        new THREE.MeshLambertMaterial({ color: 0xfbbf24, side: THREE.DoubleSide }),
+        plot.x, 0.12, plot.z
+      ).rotation.x = -Math.PI / 2;
+      tut.house = true;
+      toast(plot.free ? "Бесплатный дом твой! → шаг 3: машина" : "Дом куплен!");
+      syncUI();
+      closeSheet();
+    }
+
+    function enterHouse(plot) {
+      if (!plot.built) {
+        toast("Сначала займи участок (кнопка «Дома»)");
+        return;
+      }
+      inside = plot;
+      plot.shell.visible = false;
+      plot.interior.visible = true;
+      exteriorRoot.children.forEach((g) => {
+        if (g !== plot.group) g.visible = false;
+      });
+      npcs.forEach((n) => { n.mesh.visible = false; });
+      player.mesh.position.set(plot.x, 0, plot.z + 0.4);
+      scene.background = new THREE.Color(0x2a2018);
+      scene.fog.near = 14;
+      scene.fog.far = 30;
+      scene.fog.color.set(0x2a2018);
+      tut.enter = true;
+      toast("Внутри · диван + одна кровать · E у двери — выйти");
+      syncUI();
+    }
+
+    function exitHouse() {
+      if (!inside) return;
+      const plot = inside;
+      plot.shell.visible = true;
+      plot.interior.visible = false;
+      inside = null;
+      exteriorRoot.children.forEach((g) => { g.visible = true; });
+      npcs.forEach((n) => { n.mesh.visible = true; });
+      player.mesh.position.set(plot.door.x, 0, plot.door.z + 1.4);
+      scene.background = new THREE.Color(0x87b8e8);
+      scene.fog.near = 100;
+      scene.fog.far = 280;
+      scene.fog.color.set(0x87b8e8);
+      toast("На улице");
+      syncUI();
+    }
+
+    function teleport(x, z, label) {
+      exitCar(true);
+      if (inside) exitHouse();
+      player.state.locked = false;
+      player.mesh.position.set(x, 0, z);
+      player.state.vx = player.state.vz = player.state.vy = 0;
+      toast(label || "Телепорт");
+      syncUI();
+    }
+
+    const CAR_TYPES = [
+      { id: "sedan", name: "Седан", color: 0x3b82f6, price: 0 },
+      { id: "sport", name: "Спорткар", color: 0xef4444, price: 35 },
+      { id: "suv", name: "Джип", color: 0x16a34a, price: 50 },
+      { id: "taxi", name: "Такси", color: 0xfbbf24, price: 20 },
+    ];
+
+    function destroyCar() {
+      if (!car) return;
+      scene.remove(car.group);
+      car = null;
+      inCar = false;
+    }
+
+    function spawnCar(type) {
+      if (!type.free && type.price > 0 && coins < type.price) {
+        toast("Нужно " + type.price + " монет");
+        return;
+      }
+      if (type.price > 0) coins -= type.price;
+      destroyCar();
+      const g = new THREE.Group();
+      box(3.6, 1, 1.8, type.color, 0, 0.55, 0, g);
+      box(1.9, 0.75, 1.7, 0xe0f2fe, -0.2, 1.25, 0, g);
+      [[-1.2, 0.9], [1.1, 0.9], [-1.2, -0.9], [1.1, -0.9]].forEach(([dx, dz]) => {
+        const w = mesh(
+          new THREE.CylinderGeometry(0.38, 0.38, 0.3, 10),
+          new THREE.MeshLambertMaterial({ color: 0x111827 }),
+          dx, 0.38, dz, g
+        );
+        w.rotation.z = Math.PI / 2;
+      });
+      const px = player.mesh.position.x;
+      const pz = player.mesh.position.z;
+      const yaw = orbit.state.yaw;
+      g.position.set(px + Math.sin(yaw) * 4, 0, pz + Math.cos(yaw) * 4);
+      g.rotation.y = yaw;
+      scene.add(g);
+      car = { group: g, type: type, speed: type.id === "sport" ? 22 : type.id === "suv" ? 14 : 17 };
+      tut.car = true;
+      toast("Машина: " + type.name + " · подойди и E");
+      syncUI();
+      closeSheet();
+    }
+
+    function enterCar() {
+      if (!car || inCar) return;
+      inCar = true;
+      player.mesh.visible = false;
+      player.state.locked = true;
+      toast("За рулём · WASD · E выйти");
+      syncUI();
+    }
+
+    function exitCar(silent) {
+      if (!inCar || !car) return;
+      inCar = false;
+      player.mesh.visible = true;
+      player.state.locked = false;
+      const g = car.group;
+      player.mesh.position.set(g.position.x + 2.2, 0, g.position.z);
+      if (!silent) toast("Вышел из машины");
+      syncUI();
+    }
+
+    function openSheet(title, buttons) {
+      sheet.innerHTML =
+        "<h3>" +
+        title +
+        "</h3>" +
+        buttons
+          .map((b, i) => '<button type="button" data-i="' + i + '">' + b.label + "</button>")
+          .join("");
+      sheet.classList.add("open");
+      sheet.querySelectorAll("button").forEach((btn) => {
+        btn.onclick = () => buttons[+btn.getAttribute("data-i")].run();
+      });
+    }
+    function closeSheet() {
+      sheet.classList.remove("open");
+      sheet.innerHTML = "";
+    }
+
+    document.getElementById("btnSpawn").onclick = () =>
+      teleport(CITY_SPAWN.x, CITY_SPAWN.z, "Спавн города");
+    document.getElementById("btnHome").onclick = () => {
+      if (!myPlot) {
+        toast("Сначала возьми дом");
+        openPlots();
+        return;
+      }
+      teleport(myPlot.door.x, myPlot.door.z + 2, "У своего дома");
+    };
+    document.getElementById("btnCars").onclick = () => {
+      openSheet(
+        "Спавн машины",
+        CAR_TYPES.map((t) => ({
+          label: t.name + (t.price ? " — " + t.price + " монет" : " — бесплатно"),
+          run: () => spawnCar(t),
+        })).concat([
+          {
+            label: "Убрать машину",
+            run: () => {
+              destroyCar();
+              toast("Машина убрана");
+              closeSheet();
+            },
+          },
+        ])
+      );
+    };
+    function openPlots() {
+      const freeFirst = plots
+        .filter((p) => !p.owned && p.free)
+        .slice(0, 8)
+        .concat(plots.filter((p) => !p.owned && !p.free).slice(0, 8));
+      const list = freeFirst.map((p) => ({
+        label:
+          (p.owned ? (p === myPlot ? "★ Твой: " : "Занят: ") : p.free ? "FREE: " : p.price + "🪙: ") +
+          p.name,
+        run: () => {
+          if (p.owned && p === myPlot) {
+            teleport(p.door.x, p.door.z + 2, "У твоего дома");
+            closeSheet();
+          } else if (!p.owned) {
+            claimPlot(p);
+            teleport(p.door.x, p.door.z + 2, "У нового дома");
+          } else toast("Занято");
+        },
+      }));
+      openSheet("Дома (зелёные = бесплатно)", list);
+    }
+    document.getElementById("btnPlots").onclick = openPlots;
+
+    function nearestInteract() {
+      const p = player.mesh.position;
+      if (inside) {
+        if (dist2(p.x, p.z, inside.door.x, inside.door.z) < 3) return { type: "exit" };
+        return null;
+      }
+      if (inCar) return { type: "exitCar" };
+      if (car && !inCar && dist2(p.x, p.z, car.group.position.x, car.group.position.z) < 3.5)
+        return { type: "enterCar" };
+      for (const plot of plots) {
+        if (dist2(p.x, p.z, plot.door.x, plot.door.z) < 2.8) {
+          if (!plot.built) return { type: "claimHere", plot: plot };
+          return { type: "door", plot: plot };
+        }
+      }
+      if (dist2(p.x, p.z, shopPos.x, shopPos.z) < 5) return { type: "shop" };
+      return null;
+    }
+
+    function doInteract() {
+      const act = nearestInteract();
+      if (!act) return;
+      if (act.type === "exit") exitHouse();
+      else if (act.type === "exitCar") exitCar();
+      else if (act.type === "enterCar") enterCar();
+      else if (act.type === "door") enterHouse(act.plot);
+      else if (act.type === "claimHere") claimPlot(act.plot);
+      else if (act.type === "shop") {
+        coins += 15;
+        syncUI();
+        toast("Подработка +15 монет");
+      }
+    }
+
+    addEventListener("keydown", (e) => {
+      if (e.code === "KeyE" && !e.repeat) {
+        e.preventDefault();
+        doInteract();
+      }
+      if (e.code === "Escape") closeSheet();
+    });
+
+    function pickNpcTarget(n) {
+      const mode = Math.random();
+      if (mode < 0.4) {
+        n.tx = (Math.random() - 0.5) * 80;
+        n.tz = (Math.random() - 0.5) * 60 + 10;
+      } else if (mode < 0.7) {
+        const roadZ = Math.random() < 0.5 ? 0 : (Math.random() < 0.5 ? -60 : 60);
+        n.tx = (Math.random() - 0.5) * 120;
+        n.tz = roadZ + (Math.random() - 0.5) * 4;
+      } else {
+        n.tx = CITY_SPAWN.x + (Math.random() - 0.5) * 20;
+        n.tz = CITY_SPAWN.z + (Math.random() - 0.5) * 16;
+      }
+    }
+
+    let last = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (toastT > 0) {
+        toastT -= dt;
+        if (toastT <= 0) toastEl.classList.remove("show");
+      }
+      if (wetCooldown > 0) wetCooldown -= dt;
+      if (deadT > 0) {
+        deadT -= dt;
+        player.state.locked = true;
+        if (deadT <= 0) {
+          if (inside) exitHouse();
+          exitCar(true);
+          teleport(CITY_SPAWN.x, CITY_SPAWN.z, "Респавн");
+          wetCooldown = 1;
+        }
+      }
+
+      // NPC wander
+      if (!inside) {
+        npcs.forEach((n) => {
+          if (n.wait > 0) {
+            n.wait -= dt;
+            return;
+          }
+          const dx = n.tx - n.mesh.position.x;
+          const dz = n.tz - n.mesh.position.z;
+          const d = Math.hypot(dx, dz);
+          if (d < 0.6) {
+            n.wait = 1 + Math.random() * 3;
+            pickNpcTarget(n);
+            return;
+          }
+          n.mesh.position.x += (dx / d) * n.speed * dt;
+          n.mesh.position.z += (dz / d) * n.speed * dt;
+          n.mesh.rotation.y = Math.atan2(dx, dz);
+          n.mesh.position.y = 0;
+        });
+      }
+
+      if (inCar && car) {
+        const keys = player.keys;
+        let ix = 0, iz = 0;
+        if (keys.w || keys.arrowup) iz -= 1;
+        if (keys.s || keys.arrowdown) iz += 1;
+        if (keys.a || keys.arrowleft) ix -= 1;
+        if (keys.d || keys.arrowright) ix += 1;
+        const yaw = orbit.state.yaw;
+        const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+        const rx = Math.cos(yaw), rz = -Math.sin(yaw);
+        let wx = 0, wz = 0;
+        if (ix || iz) {
+          wx = fx * -iz + rx * ix;
+          wz = fz * -iz + rz * ix;
+          const len = Math.hypot(wx, wz) || 1;
+          wx /= len;
+          wz /= len;
+          car.group.rotation.y = Math.atan2(wx, wz);
+        }
+        car.group.position.x += wx * car.speed * dt;
+        car.group.position.z += wz * car.speed * dt;
+        car.group.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, car.group.position.x));
+        car.group.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, car.group.position.z));
+        player.mesh.position.copy(car.group.position);
+        orbit.follow(car.group.position);
+      } else if (deadT <= 0) {
+        player.update(dt, orbit.state.yaw, bounds);
+        orbit.follow(player.mesh.position);
+      } else {
+        orbit.follow(player.mesh.position);
+      }
+
+      const p = inCar && car ? car.group.position : player.mesh.position;
+      if (!inside && deadT <= 0 && wetCooldown <= 0 && dist2(p.x, p.z, pondCenter.x, pondCenter.z) < pondCenter.r) {
+        if (!AmalDraftOwner.canDie()) {
+          if (inCar) car.group.position.set(pondCenter.x - 12, 0, pondCenter.z);
+          else player.mesh.position.set(pondCenter.x - 12, 0, pondCenter.z);
+          wetCooldown = 1.2;
+          toast("Пруд · хозяин не тонет");
+        } else {
+          coins = Math.max(0, coins - 8);
+          syncUI();
+          deadT = 1.5;
+          toast("Утонул · респавн");
+        }
+      }
+
+      const act = nearestInteract();
+      if (act) {
+        promptEl.style.display = "block";
+        promptEl.textContent =
+          act.type === "door"
+            ? "E — войти в дом"
+            : act.type === "exit"
+            ? "E — выйти"
+            : act.type === "claimHere"
+            ? "E — занять " + (act.plot.free ? "(бесплатно)" : act.plot.price + " монет")
+            : act.type === "enterCar"
+            ? "E — сесть в машину"
+            : act.type === "exitCar"
+            ? "E — выйти из машины"
+            : act.type === "shop"
+            ? "E — подработка +15"
+            : "E";
+      } else promptEl.style.display = "none";
+
+      renderer.render(scene, camera);
+    }
+
+    syncUI();
+    toast("Шаг 1 ✓ · возьми бесплатный дом (Дома)");
+    animate(performance.now());
+  })();
+  </script>
+</body>
+</html>

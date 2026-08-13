@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Build a Boat 3D</title>
-  <meta name="description" content="3D Build a Boat — построй лодку и плыви!" />
+  <meta name="description" content="3D Build a Boat вЂ” РїРѕСЃС‚СЂРѕР№ Р»РѕРґРєСѓ Рё РїР»С‹РІРё!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #0a2540; font-family: system-ui, sans-serif; }
@@ -32,25 +32,25 @@
 <body>
   <div id="ui">
     <b>Build a Boat</b><br/>
-    Блоки: <span id="blocks">0</span><br/>
-    Расстояние: <span id="dist">0</span>м<br/>
-    Монеты: <span id="coins">0</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
+    Р‘Р»РѕРєРё: <span id="blocks">0</span><br/>
+    Р Р°СЃСЃС‚РѕСЏРЅРёРµ: <span id="dist">0</span>Рј<br/>
+    РњРѕРЅРµС‚С‹: <span id="coins">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
   </div>
-  <a id="back" href="../">← Каталог</a>
+  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
   <div id="admin-shop">
-    <div class="label">👑 Только админ · вещи, не команды</div>
-    <button id="ex-sail" type="button">Золотой парус ($0)</button>
-    <button id="ex-figurehead" type="button">Носовая корона ($0)</button>
-    <button id="ex-stripe" type="button">Радужная полоса ($0)</button>
+    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
+    <button id="ex-sail" type="button">Р—РѕР»РѕС‚РѕР№ РїР°СЂСѓСЃ ($0)</button>
+    <button id="ex-figurehead" type="button">РќРѕСЃРѕРІР°СЏ РєРѕСЂРѕРЅР° ($0)</button>
+    <button id="ex-stripe" type="button">Р Р°РґСѓР¶РЅР°СЏ РїРѕР»РѕСЃР° ($0)</button>
   </div>
   <div id="build-panel">
-    <button id="add-wood">+ Дерево</button>
-    <button id="add-metal">+ Металл</button>
-    <button id="add-rocket">+ Ракета</button>
-    <button id="go" class="btn-go">Плыть!</button>
+    <button id="add-wood">+ Р”РµСЂРµРІРѕ</button>
+    <button id="add-metal">+ РњРµС‚Р°Р»Р»</button>
+    <button id="add-rocket">+ Р Р°РєРµС‚Р°</button>
+    <button id="go" class="btn-go">РџР»С‹С‚СЊ!</button>
   </div>
-  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Ещё раз</button></div>
+  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Р•С‰С‘ СЂР°Р·</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
@@ -157,7 +157,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
         }
       });
     }
@@ -201,8 +201,8 @@
       const earned = Math.floor(distance * 2);
       coins += earned;
       document.getElementById("coins").textContent = coins;
-      document.getElementById("res-title").textContent = `Проплыл ${Math.floor(distance)}м!`;
-      document.getElementById("res-text").textContent = `Заработано: ${earned} монет`;
+      document.getElementById("res-title").textContent = `РџСЂРѕРїР»С‹Р» ${Math.floor(distance)}Рј!`;
+      document.getElementById("res-text").textContent = `Р—Р°СЂР°Р±РѕС‚Р°РЅРѕ: ${earned} РјРѕРЅРµС‚`;
       document.getElementById("result").classList.add("show");
     }
 
@@ -289,7 +289,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-owner-powers.js?v=18"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
 </body>
 </html>

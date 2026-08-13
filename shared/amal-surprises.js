@@ -624,12 +624,169 @@
     if (hasRainNight()) applyRainDom(true);
   }
 
+  /** Пасхалки «Леша» и «я рядом» — во всех играх хаба, только для хозяина */
+  const US_EGGS_STYLE = "amal-us-eggs-style";
+  const US_SEEN_PREFIX = "amal-us-egg-seen-";
+
+  const LESHA_LINES = [
+    "✦ Леша · эта игра тоже твоя",
+    "✦ Amal · хозяин хаба",
+    "✦ Для тебя здесь тихий знак",
+    "✦ Леша · корона не для всех",
+  ];
+
+  const ME_LINES = [
+    "◌ я рядом · в этой игре",
+    "◌ не один · я здесь",
+    "◌ тихий след для тебя",
+    "◌ с тобой на смене",
+  ];
+
+  function ensureUsEggsStyle() {
+    if (document.getElementById(US_EGGS_STYLE)) return;
+    const s = document.createElement("style");
+    s.id = US_EGGS_STYLE;
+    s.textContent =
+      "#amal-us-eggs{position:fixed;left:10px;bottom:48px;z-index:9990;display:flex;flex-direction:column;gap:6px;pointer-events:none}" +
+      "#amal-us-eggs button{pointer-events:auto;border:0;cursor:pointer;padding:5px 9px;border-radius:8px;" +
+      "font:700 11px/1.2 system-ui,sans-serif;opacity:.72;transition:opacity .2s,transform .2s}" +
+      "#amal-us-eggs button:hover{opacity:1;transform:translateY(-1px)}" +
+      "#amal-egg-lesha{background:rgba(255,200,90,.88);color:#1a1208}" +
+      "#amal-egg-me{background:rgba(120,190,255,.82);color:#061018}" +
+      "#amal-us-eggs.pulse button{animation:amalEggPulse 1.2s ease 2}" +
+      "@keyframes amalEggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}";
+    document.head.appendChild(s);
+  }
+
+  function usSeenKey(kind) {
+    return US_SEEN_PREFIX + kind + "-" + detectGame() + "-" + formatDay(Date.now());
+  }
+
+  function softToast(msg) {
+    let el = document.getElementById("amal-us-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-us-toast";
+      el.style.cssText =
+        "position:fixed;left:50%;bottom:18%;transform:translateX(-50%);z-index:9991;" +
+        "padding:8px 14px;border-radius:10px;background:rgba(8,12,22,.82);color:#f3efe6;" +
+        "font:700 13px/1.3 system-ui,sans-serif;pointer-events:none;opacity:0;transition:opacity .25s";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = "1";
+    clearTimeout(softToast._t);
+    softToast._t = setTimeout(() => {
+      el.style.opacity = "0";
+    }, 2200);
+  }
+
+  function pickLine(arr) {
+    return arr[(Math.random() * arr.length) | 0];
+  }
+
+  function showUsPair() {
+    if (!isOwnerLocal()) return;
+    const game = detectGame();
+    showCinematic({
+      kicker: "мы",
+      label: "Леша · и я рядом",
+      detail: "пасхалки в «" + game + "» · только для вас двоих",
+      at: Date.now(),
+    });
+    try {
+      localStorage.setItem(usSeenKey("pair"), "1");
+    } catch (_) {}
+  }
+
+  function bootUsEggs() {
+    if (!isOwnerLocal() || typeof document === "undefined") return;
+    if (document.getElementById("amal-us-eggs")) return;
+    ensureUsEggsStyle();
+    const wrap = document.createElement("div");
+    wrap.id = "amal-us-eggs";
+    wrap.innerHTML =
+      '<button type="button" id="amal-egg-lesha" title="пасхалка Леши">✦ Леша</button>' +
+      '<button type="button" id="amal-egg-me" title="пасхалка рядом">◌ я рядом</button>';
+    document.body.appendChild(wrap);
+
+    let clickBuf = "";
+    let clickT = 0;
+    const leshaBtn = document.getElementById("amal-egg-lesha");
+    const meBtn = document.getElementById("amal-egg-me");
+
+    if (leshaBtn) {
+      leshaBtn.addEventListener("click", () => {
+        softToast(pickLine(LESHA_LINES));
+        const now = Date.now();
+        if (now - clickT > 2000) clickBuf = "";
+        clickT = now;
+        clickBuf += "L";
+        if (clickBuf.indexOf("LM") >= 0 || clickBuf.indexOf("ML") >= 0) {
+          clickBuf = "";
+          showUsPair();
+        }
+      });
+    }
+    if (meBtn) {
+      meBtn.addEventListener("click", () => {
+        softToast(pickLine(ME_LINES));
+        const now = Date.now();
+        if (now - clickT > 2000) clickBuf = "";
+        clickT = now;
+        clickBuf += "M";
+        if (clickBuf.indexOf("LM") >= 0 || clickBuf.indexOf("ML") >= 0) {
+          clickBuf = "";
+          showUsPair();
+        }
+      });
+    }
+
+    // раз в день на игру — лёгкий пульс, что пасхалки здесь
+    let pulsed = false;
+    try {
+      pulsed = localStorage.getItem(usSeenKey("pulse")) === "1";
+    } catch (_) {}
+    if (!pulsed) {
+      setTimeout(() => {
+        wrap.classList.add("pulse");
+        softToast("✦ пасхалки · Леша и я рядом");
+        try {
+          localStorage.setItem(usSeenKey("pulse"), "1");
+        } catch (_) {}
+      }, 1600);
+    }
+
+    // кодовое слово на клавиатуре: мы / amal (латиница)
+    let buf = "";
+    let bufT = 0;
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!isOwnerLocal()) return;
+        const tag = (e.target && e.target.tagName) || "";
+        if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
+        const now = Date.now();
+        if (now - bufT > 1400) buf = "";
+        bufT = now;
+        if (e.key && e.key.length === 1) buf += e.key.toLowerCase();
+        if (buf.length > 8) buf = buf.slice(-8);
+        if (buf.indexOf("мы") >= 0 || buf.indexOf("amal") >= 0 || buf.indexOf("lesha") >= 0) {
+          buf = "";
+          showUsPair();
+        }
+      },
+      true
+    );
+  }
+
   if (typeof document !== "undefined") {
     const boot = () => {
       bootGameUpdate();
       bootQuietHere();
       bootAnimeWorld();
       bootRainNight();
+      bootUsEggs();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);
@@ -685,6 +842,7 @@
     hasAnimeWorld,
     setRainNight,
     hasRainNight,
+    bootUsEggs,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tower Defense 3D</title>
-  <meta name="description" content="3D Tower Defense — строй башни, защищай базу!" />
+  <meta name="description" content="3D Tower Defense вЂ” СЃС‚СЂРѕР№ Р±Р°С€РЅРё, Р·Р°С‰РёС‰Р°Р№ Р±Р°Р·Сѓ!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #1a1a2e; font-family: system-ui, sans-serif; }
@@ -36,25 +36,25 @@
 <body>
   <div id="ui">
     <div><b>Tower Defense</b></div>
-    <div>Волна: <span id="wave">1</span></div>
-    <div>Монеты: <span id="coins">100</span></div>
-    <div>Жизни: <span id="lives">10</span></div>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
+    <div>Р’РѕР»РЅР°: <span id="wave">1</span></div>
+    <div>РњРѕРЅРµС‚С‹: <span id="coins">100</span></div>
+    <div>Р–РёР·РЅРё: <span id="lives">10</span></div>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
   </div>
-  <a id="back" href="../">← Каталог</a>
+  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
   <div id="admin-shop">
-    <div class="label">👑 Только админ · вещи, не команды</div>
-    <button id="ex-banner" type="button">Золотой баннер крепости ($0)</button>
-    <button id="ex-crystal" type="button">Кристальная башня ($0)</button>
-    <button id="ex-flag" type="button">Флаг владельца ($0)</button>
+    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
+    <button id="ex-banner" type="button">Р—РѕР»РѕС‚РѕР№ Р±Р°РЅРЅРµСЂ РєСЂРµРїРѕСЃС‚Рё ($0)</button>
+    <button id="ex-crystal" type="button">РљСЂРёСЃС‚Р°Р»СЊРЅР°СЏ Р±Р°С€РЅСЏ ($0)</button>
+    <button id="ex-flag" type="button">Р¤Р»Р°Рі РІР»Р°РґРµР»СЊС†Р° ($0)</button>
   </div>
   <div id="shop">
-    <button class="btn-tower1" id="buy1">Башня (30)</button>
-    <button class="btn-tower2" id="buy2">Огненная (60)</button>
-    <button class="btn-tower3" id="buy3">Ледяная (80)</button>
+    <button class="btn-tower1" id="buy1">Р‘Р°С€РЅСЏ (30)</button>
+    <button class="btn-tower2" id="buy2">РћРіРЅРµРЅРЅР°СЏ (60)</button>
+    <button class="btn-tower3" id="buy3">Р›РµРґСЏРЅР°СЏ (80)</button>
   </div>
   <div id="wave-msg"></div>
-  <div id="gameover"><h1>Поражение!</h1><p>Враги прорвались</p><button id="restart">Заново</button></div>
+  <div id="gameover"><h1>РџРѕСЂР°Р¶РµРЅРёРµ!</h1><p>Р’СЂР°РіРё РїСЂРѕСЂРІР°Р»РёСЃСЊ</p><button id="restart">Р—Р°РЅРѕРІРѕ</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
@@ -199,7 +199,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
         }
       });
     }
@@ -275,7 +275,7 @@
       spawnIdx = 0;
       waveTimer = 0;
       const msg = document.getElementById("wave-msg");
-      msg.textContent = "Волна " + wave + "!";
+      msg.textContent = "Р’РѕР»РЅР° " + wave + "!";
       msg.style.display = "block";
       setTimeout(() => msg.style.display = "none", 1500);
       updateUI();
@@ -418,7 +418,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-owner-powers.js?v=18"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pet Simulator 3D</title>
-  <meta name="description" content="3D Pet Simulator — собирай питомцев, открывай яйца!" />
+  <meta name="description" content="3D Pet Simulator вЂ” СЃРѕР±РёСЂР°Р№ РїРёС‚РѕРјС†РµРІ, РѕС‚РєСЂС‹РІР°Р№ СЏР№С†Р°!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #0f0f23; font-family: system-ui, sans-serif; }
@@ -37,22 +37,22 @@
 <body>
   <div id="ui">
     <b>Pet Simulator</b><br/>
-    Монеты: <span id="coins">0</span><br/>
-    Питомцы: <span id="pet-count">0</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
+    РњРѕРЅРµС‚С‹: <span id="coins">0</span><br/>
+    РџРёС‚РѕРјС†С‹: <span id="pet-count">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
   </div>
-  <a id="back" href="../">← Каталог</a>
+  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
   <div id="pets-bar"></div>
   <div id="admin-shop">
-    <div class="label">👑 Только админ · вещи, не команды</div>
-    <button id="ex-egg" type="button">Радужное легендарное яйцо ($0)</button>
-    <button id="ex-pedestal" type="button">Золотой пьедестал ($0)</button>
-    <button id="ex-crownpet" type="button">Корона-питомец ($0)</button>
+    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
+    <button id="ex-egg" type="button">Р Р°РґСѓР¶РЅРѕРµ Р»РµРіРµРЅРґР°СЂРЅРѕРµ СЏР№С†Рѕ ($0)</button>
+    <button id="ex-pedestal" type="button">Р—РѕР»РѕС‚РѕР№ РїСЊРµРґРµСЃС‚Р°Р» ($0)</button>
+    <button id="ex-crownpet" type="button">РљРѕСЂРѕРЅР°-РїРёС‚РѕРјРµС† ($0)</button>
   </div>
   <div id="actions">
-    <button class="btn-coin" id="btn-farm">Фармить монеты</button>
-    <button class="btn-egg" id="btn-egg">Открыть яйцо (100)</button>
-    <button class="btn-sell" id="btn-sell">Продать худшего</button>
+    <button class="btn-coin" id="btn-farm">Р¤Р°СЂРјРёС‚СЊ РјРѕРЅРµС‚С‹</button>
+    <button class="btn-egg" id="btn-egg">РћС‚РєСЂС‹С‚СЊ СЏР№С†Рѕ (100)</button>
+    <button class="btn-sell" id="btn-sell">РџСЂРѕРґР°С‚СЊ С…СѓРґС€РµРіРѕ</button>
   </div>
   <div id="hatch-popup" id="popup"></div>
 
@@ -90,15 +90,15 @@
     egg.position.set(0, 1.4, 0); scene.add(egg);
 
     const PETS = [
-      { name: "Кот", rarity: "common", color: 0xa3a3a3, value: 10 },
-      { name: "Собака", rarity: "common", color: 0x92400e, value: 10 },
-      { name: "Кролик", rarity: "common", color: 0xfecaca, value: 12 },
-      { name: "Лиса", rarity: "rare", color: 0xf97316, value: 30 },
-      { name: "Панда", rarity: "rare", color: 0x1f2937, value: 35 },
-      { name: "Дракон", rarity: "epic", color: 0x7c3aed, value: 80 },
-      { name: "Единорог", rarity: "epic", color: 0xf9a8d4, value: 90 },
-      { name: "Феникс", rarity: "legendary", color: 0xfbbf24, value: 200 },
-      { name: "Тёмный Дракон", rarity: "legendary", color: 0x1f1f1f, value: 300 },
+      { name: "РљРѕС‚", rarity: "common", color: 0xa3a3a3, value: 10 },
+      { name: "РЎРѕР±Р°РєР°", rarity: "common", color: 0x92400e, value: 10 },
+      { name: "РљСЂРѕР»РёРє", rarity: "common", color: 0xfecaca, value: 12 },
+      { name: "Р›РёСЃР°", rarity: "rare", color: 0xf97316, value: 30 },
+      { name: "РџР°РЅРґР°", rarity: "rare", color: 0x1f2937, value: 35 },
+      { name: "Р”СЂР°РєРѕРЅ", rarity: "epic", color: 0x7c3aed, value: 80 },
+      { name: "Р•РґРёРЅРѕСЂРѕРі", rarity: "epic", color: 0xf9a8d4, value: 90 },
+      { name: "Р¤РµРЅРёРєСЃ", rarity: "legendary", color: 0xfbbf24, value: 200 },
+      { name: "РўС‘РјРЅС‹Р№ Р”СЂР°РєРѕРЅ", rarity: "legendary", color: 0x1f1f1f, value: 300 },
     ];
 
     const RARITY_CHANCE = { common: 0.55, rare: 0.3, epic: 0.12, legendary: 0.03 };
@@ -190,7 +190,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " ✓";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
         }
       });
     }
@@ -285,7 +285,7 @@
     animate();
   })();
   </script>
-  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-owner-powers.js?v=18"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
 </body>
 </html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вырасти сад — Amal draft · не опубликовано</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#1b2e14;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
+    #hud{position:fixed;top:10px;left:10px;z-index:20;max-width:340px;text-shadow:0 1px 3px #000}
+    #hud h1{font-size:18px;margin-bottom:4px}
+    #hud .meta{font-size:13px;line-height:1.45}
+    #rules{margin-top:8px;padding:8px 10px;background:rgba(0,0,0,.45);border-radius:8px;font-size:11px;line-height:1.4}
+    #panel{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:20;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:96vw}
+    #panel button{padding:8px 12px;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-weight:700;background:#81c784;color:#123}
+    #panel button.buy{background:#ffd54f}
+    #panel button:disabled{opacity:.45;cursor:default}
+    #toast{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:30;background:rgba(0,0,0,.78);padding:10px 18px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;text-align:center;max-width:90vw}
+    #toast.show{opacity:1}
+    #prompt{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);z-index:20;font-size:13px;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:8px;display:none}
+    a.back{position:fixed;top:10px;right:10px;z-index:20;color:#cde;font-size:12px;opacity:.7;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <h1>Вырасти сад</h1>
+    <div class="meta">Монеты: <b id="coins">40</b> · Семя: <b id="seedName">Обычное</b></div>
+    <div id="rules">
+      WASD — ходить · ПКМ — камера · E у грядки — посадить / собрать.<br>
+      Растения растут на глазах. Лучшие семена в магазине. Мирный сад · Обычный игрок может погибнуть · хозяин: ∞ и полёт
+    </div>
+  </div>
+  <div id="draft" style="position:fixed;top:10px;right:10px;z-index:20;font-size:11px;opacity:.7;background:rgba(0,0,0,.45);padding:6px 10px;border-radius:8px">черновик · не на сайте</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="toast"></div>
+  <div id="prompt"></div>
+  <div id="panel">
+    <button type="button" id="btnPlant" disabled>Посадить (E)</button>
+    <button type="button" id="btnHarvest" disabled>Собрать (E)</button>
+    <button type="button" class="buy" id="buyBasic">Семя обычное (0)</button>
+    <button type="button" class="buy" id="buyGood">Семя лучше (25)</button>
+    <button type="button" class="buy" id="buyGold">Золотое семя (60)</button>
+  </div>
+  <a class="back" href="../">← назад</a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
+  <script src="../shared/amal-walk-player.js?v=3"></script>
+  <script src="../shared/amal-draft-owner.js?v=2"></script>
+  <script>
+  (function () {
+    if (!THREE.CapsuleGeometry) {
+      THREE.CapsuleGeometry = function (r, len, c, seg) {
+        return new THREE.CylinderGeometry(r, r, (len || 1) + r * 2, seg || 8);
+      };
+    }
+
+    const SEEDS = {
+      basic: { name: "Обычное", cost: 0, grow: 8, value: 8, color: 0x66bb6a, flower: 0x81c784 },
+      good: { name: "Лучшее", cost: 25, grow: 6, value: 18, color: 0x43a047, flower: 0x26a69a },
+      gold: { name: "Золотое", cost: 60, grow: 5, value: 40, color: 0xfbc02d, flower: 0xffeb3b }
+    };
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x9fd4ff);
+    scene.fog = new THREE.Fog(0x9fd4ff, 55, 140);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 180);
+    camera.position.set(0, 12, 16);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, { distance: 14, pitch: 0.55, lookOffsetY: 1.2 });
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const sun = new THREE.DirectionalLight(0xfff3c4, 1.05);
+    sun.position.set(18, 28, 12);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.camera.left = -45;
+    sun.shadow.camera.right = 45;
+    sun.shadow.camera.top = 45;
+    sun.shadow.camera.bottom = -45;
+    scene.add(sun);
+    const hemi = new THREE.HemisphereLight(0xb3e5fc, 0x558b2f, 0.35);
+    scene.add(hemi);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(90, 90),
+      new THREE.MeshLambertMaterial({ color: 0x7cb342 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Path strips
+    [[0, 0, 4, 36], [0, 0, 36, 4]].forEach(([x, z, w, d]) => {
+      const path = new THREE.Mesh(
+        new THREE.BoxGeometry(w, 0.06, d),
+        new THREE.MeshLambertMaterial({ color: 0xc9a66b })
+      );
+      path.position.set(x, 0.03, z);
+      path.receiveShadow = true;
+      scene.add(path);
+    });
+
+    // Fence around farm (~2x)
+    const fenceMat = [
+      new THREE.MeshLambertMaterial({ color: 0x8d6e63 }),
+      new THREE.MeshLambertMaterial({ color: 0xa1887f }),
+      new THREE.MeshLambertMaterial({ color: 0x6d4c41 })
+    ];
+    for (let i = -18; i <= 18; i += 2) {
+      [[i, -18], [i, 18], [-18, i], [18, i]].forEach(([x, z], idx) => {
+        const p = new THREE.Mesh(
+          new THREE.BoxGeometry(0.28, 1.35, 0.28),
+          fenceMat[(Math.abs(x) + Math.abs(z) + idx) % 3]
+        );
+        p.position.set(x, 0.68, z);
+        p.castShadow = true;
+        scene.add(p);
+        if (i < 18) {
+          const rail = new THREE.Mesh(
+            new THREE.BoxGeometry(i === x ? 1.9 : 0.12, 0.12, i === x ? 0.12 : 1.9),
+            fenceMat[0]
+          );
+          rail.position.set(
+            i === x ? x + 1 : x,
+            0.85,
+            i === x ? z : z + (z < 0 || x === -18 ? 1 : -1) * (Math.abs(z) === 18 ? 0 : 0)
+          );
+        }
+      });
+    }
+    // Horizontal rails
+    for (let i = -18; i < 18; i += 2) {
+      [[i + 1, -18], [i + 1, 18]].forEach(([x, z]) => {
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(1.85, 0.1, 0.1),
+          fenceMat[1]
+        );
+        rail.position.set(x, 0.9, z);
+        scene.add(rail);
+      });
+      [[-18, i + 1], [18, i + 1]].forEach(([x, z]) => {
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(0.1, 0.1, 1.85),
+          fenceMat[1]
+        );
+        rail.position.set(x, 0.9, z);
+        scene.add(rail);
+      });
+    }
+
+    const plots = [];
+    const startX = -10.5, startZ = -10.5, gap = 3.5;
+    for (let row = 0; row < 7; row++) {
+      for (let col = 0; col < 7; col++) {
+        if (row >= 2 && row <= 4 && col >= 2 && col <= 4) continue; // center path
+        const x = startX + col * gap;
+        const z = startZ + row * gap;
+        const bed = new THREE.Mesh(
+          new THREE.BoxGeometry(2.8, 0.35, 2.8),
+          new THREE.MeshLambertMaterial({ color: 0x5d4037 })
+        );
+        bed.position.set(x, 0.18, z);
+        bed.receiveShadow = true;
+        bed.castShadow = true;
+        scene.add(bed);
+        const soil = new THREE.Mesh(
+          new THREE.BoxGeometry(2.4, 0.12, 2.4),
+          new THREE.MeshLambertMaterial({ color: 0x3e2723 })
+        );
+        soil.position.set(x, 0.4, z);
+        scene.add(soil);
+        plots.push({ x, z, soil, plant: null, seed: null, age: 0, ready: false, stem: null, bloom: null });
+      }
+    }
+
+    // Decorative trees & bushes outside plots
+    const leafColors = [0x2e7d32, 0x388e3c, 0x1b5e20, 0x558b2f, 0x689f38];
+    function addTree(x, z, scale) {
+      const s = scale || 1;
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.22 * s, 0.32 * s, 2.4 * s, 6),
+        new THREE.MeshLambertMaterial({ color: 0x5d4037 })
+      );
+      trunk.position.set(x, 1.2 * s, z);
+      trunk.castShadow = true;
+      scene.add(trunk);
+      const crown = new THREE.Mesh(
+        new THREE.SphereGeometry(1.1 * s, 8, 8),
+        new THREE.MeshLambertMaterial({ color: leafColors[(Math.abs(x * 3 + z) | 0) % leafColors.length] })
+      );
+      crown.position.set(x, 2.8 * s, z);
+      crown.castShadow = true;
+      scene.add(crown);
+    }
+    const treeSpots = [
+      [-28, -22], [-32, 8], [-26, 28], [24, -30], [30, 12], [28, -8],
+      [-22, -32], [18, 32], [-8, -34], [34, -18], [-34, -6], [12, -36],
+      [-36, 18], [36, 24], [0, -38], [-14, 36]
+    ];
+    treeSpots.forEach(([x, z], i) => addTree(x, z, 0.85 + (i % 4) * 0.15));
+
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      const r = 22 + (i % 5) * 2.5;
+      const bush = new THREE.Mesh(
+        new THREE.SphereGeometry(0.55 + (i % 3) * 0.15, 8, 8),
+        new THREE.MeshLambertMaterial({ color: leafColors[i % leafColors.length] })
+      );
+      bush.position.set(Math.cos(a) * r, 0.45, Math.sin(a) * r);
+      bush.scale.y = 0.7;
+      bush.castShadow = true;
+      scene.add(bush);
+    }
+
+    // Flowers beds near shed
+    for (let i = 0; i < 10; i++) {
+      const flower = new THREE.Mesh(
+        new THREE.SphereGeometry(0.18, 6, 6),
+        new THREE.MeshLambertMaterial({ color: [0xef5350, 0xab47bc, 0xffee58, 0x42a5f5][i % 4] })
+      );
+      flower.position.set(26 + (i % 5) * 0.7, 0.25, -4 + Math.floor(i / 5) * 1.2);
+      scene.add(flower);
+    }
+
+    // Shop shed
+    const shed = new THREE.Mesh(
+      new THREE.BoxGeometry(5, 3.2, 4),
+      new THREE.MeshLambertMaterial({ color: 0xcfd8dc })
+    );
+    shed.position.set(28, 1.6, 0);
+    shed.castShadow = true;
+    shed.receiveShadow = true;
+    scene.add(shed);
+    const roof = new THREE.Mesh(
+      new THREE.ConeGeometry(4, 1.6, 4),
+      new THREE.MeshLambertMaterial({ color: 0xc62828 })
+    );
+    roof.rotation.y = Math.PI / 4;
+    roof.position.set(28, 3.9, 0);
+    roof.castShadow = true;
+    scene.add(roof);
+    const sign = new THREE.Mesh(
+      new THREE.BoxGeometry(2.2, 0.8, 0.12),
+      new THREE.MeshLambertMaterial({ color: 0xfff59d })
+    );
+    sign.position.set(28, 2.2, 2.1);
+    scene.add(sign);
+
+    // Water well
+    const well = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.1, 1.25, 1.2, 12),
+      new THREE.MeshLambertMaterial({ color: 0x78909c })
+    );
+    well.position.set(-28, 0.6, 8);
+    well.castShadow = true;
+    scene.add(well);
+    const water = new THREE.Mesh(
+      new THREE.CircleGeometry(0.85, 16),
+      new THREE.MeshLambertMaterial({ color: 0x29b6f6 })
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(-28, 1.15, 8);
+    scene.add(water);
+
+    // Scarecrow
+    const scare = new THREE.Group();
+    const pole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.08, 0.1, 2.2, 6),
+      new THREE.MeshLambertMaterial({ color: 0x6d4c41 })
+    );
+    pole.position.y = 1.1;
+    scare.add(pole);
+    const torso = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 0.7, 0.35),
+      new THREE.MeshLambertMaterial({ color: 0xef6c00 })
+    );
+    torso.position.y = 1.6;
+    scare.add(torso);
+    const head = new THREE.Mesh(
+      new THREE.SphereGeometry(0.28, 8, 8),
+      new THREE.MeshLambertMaterial({ color: 0xffe082 })
+    );
+    head.position.y = 2.15;
+    scare.add(head);
+    scare.position.set(14, 0, -14);
+    scene.add(scare);
+
+    // Crow visual
+    const crow = new THREE.Group();
+    const crowBody = new THREE.Mesh(
+      new THREE.SphereGeometry(0.35, 8, 8),
+      new THREE.MeshLambertMaterial({ color: 0x212121 })
+    );
+    crow.add(crowBody);
+    const beak = new THREE.Mesh(
+      new THREE.ConeGeometry(0.08, 0.35, 6),
+      new THREE.MeshLambertMaterial({ color: 0xff9800 })
+    );
+    beak.rotation.z = -Math.PI / 2;
+    beak.position.set(0.4, 0, 0);
+    crow.add(beak);
+    const wingL = new THREE.Mesh(
+      new THREE.BoxGeometry(0.15, 0.08, 0.55),
+      new THREE.MeshLambertMaterial({ color: 0x424242 })
+    );
+    wingL.position.set(0, 0.05, 0.35);
+    crow.add(wingL);
+    crow.position.set(0, 8, 0);
+    crow.visible = false;
+    scene.add(crow);
+
+    let coins = 40;
+    let currentSeed = "basic";
+    let toastT = 0;
+    let crowTimer = 18 + Math.random() * 12;
+    let crowAnim = null;
+    const toastEl = document.getElementById("toast");
+    const promptEl = document.getElementById("prompt");
+
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      toastT = 2.4;
+    }
+    function syncUI() {
+      document.getElementById("coins").textContent = coins;
+      document.getElementById("seedName").textContent = SEEDS[currentSeed].name;
+      document.getElementById("buyGood").disabled = coins < 25 && currentSeed !== "good";
+      document.getElementById("buyGold").disabled = coins < 60 && currentSeed !== "gold";
+    }
+
+    function makePlant(plot, seedKey) {
+      const def = SEEDS[seedKey];
+      const g = new THREE.Group();
+      const stem = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.06, 0.1, 1.0, 6),
+        new THREE.MeshLambertMaterial({ color: def.color })
+      );
+      stem.position.y = 0.5;
+      stem.castShadow = true;
+      g.add(stem);
+      const leaf1 = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 6, 6),
+        new THREE.MeshLambertMaterial({ color: 0x66bb6a })
+      );
+      leaf1.position.set(0.2, 0.45, 0);
+      leaf1.scale.set(1.2, 0.4, 0.7);
+      g.add(leaf1);
+      const leaf2 = leaf1.clone();
+      leaf2.position.set(-0.18, 0.55, 0.1);
+      g.add(leaf2);
+      const bloom = new THREE.Mesh(
+        new THREE.SphereGeometry(0.28, 10, 10),
+        new THREE.MeshLambertMaterial({ color: def.flower, emissive: 0x000000 })
+      );
+      bloom.position.y = 1.05;
+      bloom.scale.set(0.2, 0.2, 0.2);
+      bloom.castShadow = true;
+      g.add(bloom);
+      g.position.set(plot.x, 0.45, plot.z);
+      g.scale.set(0.2, 0.2, 0.2);
+      scene.add(g);
+      plot.plant = g;
+      plot.stem = stem;
+      plot.bloom = bloom;
+      plot.seed = seedKey;
+      plot.age = 0;
+      plot.ready = false;
+    }
+
+    function clearPlant(plot) {
+      if (plot.plant) {
+        scene.remove(plot.plant);
+        plot.plant.traverse((c) => {
+          if (c.geometry) c.geometry.dispose();
+          if (c.material) c.material.dispose();
+        });
+      }
+      plot.plant = null;
+      plot.stem = null;
+      plot.bloom = null;
+      plot.seed = null;
+      plot.age = 0;
+      plot.ready = false;
+    }
+
+    function nearestPlot() {
+      const p = player.mesh.position;
+      let best = null, bd = 2.2;
+      for (const plot of plots) {
+        const d = Math.hypot(p.x - plot.x, p.z - plot.z);
+        if (d < bd) { bd = d; best = plot; }
+      }
+      return best;
+    }
+
+    function plantOrHarvest() {
+      const plot = nearestPlot();
+      if (!plot) return;
+      if (!plot.plant) {
+        makePlant(plot, currentSeed);
+        toast("Посажено: " + SEEDS[currentSeed].name);
+      } else if (plot.ready) {
+        const val = SEEDS[plot.seed].value;
+        coins += val;
+        clearPlant(plot);
+        syncUI();
+        toast("Урожай! +" + val + " монет");
+      } else {
+        toast("Ещё растёт…");
+      }
+    }
+
+    document.getElementById("btnPlant").onclick = plantOrHarvest;
+    document.getElementById("btnHarvest").onclick = plantOrHarvest;
+    document.getElementById("buyBasic").onclick = () => {
+      currentSeed = "basic";
+      syncUI();
+      toast("Выбрано обычное семя");
+    };
+    document.getElementById("buyGood").onclick = () => {
+      if (currentSeed === "good") return;
+      if (coins < 25) { toast("Нужно 25 монет"); return; }
+      coins -= 25;
+      currentSeed = "good";
+      syncUI();
+      toast("Куплено лучшее семя");
+    };
+    document.getElementById("buyGold").onclick = () => {
+      if (currentSeed === "gold") return;
+      if (coins < 60) { toast("Нужно 60 монет"); return; }
+      coins -= 60;
+      currentSeed = "gold";
+      syncUI();
+      toast("Куплено золотое семя");
+    };
+
+    addEventListener("keydown", (e) => {
+      if (e.code === "KeyE" && !e.repeat) plantOrHarvest();
+    });
+
+    const player = AmalWalkPlayer.create(scene, THREE, {
+      x: 0, z: 16, humanoid: true, speed: 8, height: 1.7
+    });
+    AmalDraftOwner.attachPlayer(player);
+    AmalDraftOwner.badge();
+    const bounds = { minX: -42, maxX: 42, minZ: -42, maxZ: 42 };
+
+    function stealPlant() {
+      const grown = plots.filter((p) => p.plant);
+      if (!grown.length) return;
+      const plot = grown[Math.floor(Math.random() * grown.length)];
+      crow.visible = true;
+      crow.position.set(plot.x - 8, 5, plot.z - 5);
+      crowAnim = { plot, t: 0, phase: "dive" };
+    }
+
+    let last = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (toastT > 0) {
+        toastT -= dt;
+        if (toastT <= 0) toastEl.classList.remove("show");
+      }
+
+      player.update(dt, orbit.state.yaw, bounds);
+
+      // Visible plant growth
+      for (const plot of plots) {
+        if (!plot.plant || plot.ready) continue;
+        const need = SEEDS[plot.seed].grow;
+        plot.age += dt;
+        const k = Math.min(1, plot.age / need);
+        const s = 0.22 + k * 1.05;
+        plot.plant.scale.set(s, s, s);
+        plot.plant.position.y = 0.42 + s * 0.08;
+        if (plot.bloom) {
+          const bk = Math.max(0, (k - 0.35) / 0.65);
+          const bs = 0.15 + bk * 1.1;
+          plot.bloom.scale.set(bs, bs, bs);
+          plot.bloom.position.y = 0.85 + k * 0.35;
+          if (k > 0.7) {
+            plot.bloom.material.emissive.setHex(0x222200);
+            plot.bloom.rotation.y += dt * 1.2;
+          }
+        }
+        if (plot.stem) {
+          plot.stem.scale.y = 0.6 + k * 0.7;
+        }
+        if (k >= 1) {
+          plot.ready = true;
+          if (plot.bloom && plot.bloom.material.emissive) {
+            plot.bloom.material.emissive.setHex(0x335522);
+          }
+        }
+      }
+
+      crowTimer -= dt;
+      if (crowTimer <= 0 && !crowAnim) {
+        crowTimer = 16 + Math.random() * 14;
+        stealPlant();
+      }
+
+      if (crowAnim) {
+        crowAnim.t += dt;
+        const plot = crowAnim.plot;
+        if (crowAnim.phase === "dive") {
+          crow.position.lerp(new THREE.Vector3(plot.x, 1.4, plot.z), Math.min(1, crowAnim.t * 1.5));
+          if (crowAnim.t > 0.9) {
+            if (plot.plant) {
+              clearPlant(plot);
+              toast("Ворона украла растение!");
+            }
+            crowAnim.phase = "fly";
+            crowAnim.t = 0;
+          }
+        } else {
+          crow.position.x += 10 * dt;
+          crow.position.y += 6 * dt;
+          if (crowAnim.t > 1.2) {
+            crow.visible = false;
+            crowAnim = null;
+          }
+        }
+      }
+
+      const np = nearestPlot();
+      const btnP = document.getElementById("btnPlant");
+      const btnH = document.getElementById("btnHarvest");
+      if (np) {
+        promptEl.style.display = "block";
+        if (!np.plant) {
+          promptEl.textContent = "E — посадить «" + SEEDS[currentSeed].name + "»";
+          btnP.disabled = false;
+          btnH.disabled = true;
+        } else if (np.ready) {
+          promptEl.textContent = "E — собрать урожай";
+          btnP.disabled = true;
+          btnH.disabled = false;
+        } else {
+          const left = Math.max(0, SEEDS[np.seed].grow - np.age);
+          const pct = Math.min(100, Math.floor((np.age / SEEDS[np.seed].grow) * 100));
+          promptEl.textContent = "Растёт… " + pct + "% · ~" + left.toFixed(1) + "с";
+          btnP.disabled = true;
+          btnH.disabled = true;
+        }
+      } else {
+        promptEl.style.display = "none";
+        btnP.disabled = true;
+        btnH.disabled = true;
+      }
+
+      orbit.follow(player.mesh.position);
+      renderer.render(scene, camera);
+    }
+    syncUI();
+    toast("Большая ферма готова — посади семена!");
+    animate(performance.now());
+  })();
+  </script>
+</body>
+</html>
