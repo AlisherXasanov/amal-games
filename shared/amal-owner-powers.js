@@ -1042,9 +1042,14 @@
     injectSharedScript("amal-admin-things.js?v=1", "AmalAdminThings");
   }
 
+  function ensureFaqLib() {
+    injectSharedScript("amal-site-faq.js?v=1", "AmalFaq");
+  }
+
   function boot() {
     ensureSurprisesLib();
     ensureAdminThingsLib();
+    ensureFaqLib();
     try {
       if (new URLSearchParams(location.search).get("owner")) unlockAll();
     } catch (_) {}
