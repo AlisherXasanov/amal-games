@@ -1676,6 +1676,14 @@
       if (state === "desk") state = "play";
       layoutQueue();
       refreshRequestsStrip();
+    } else if (!g.queue.length) {
+      const forceWeird = g.noAnomalies ? false : null;
+      for (let i = 0; i < 5; i++) {
+        g.queue.push(makeVisitor(forceWeird === false ? false : i === 1 ? true : null));
+      }
+      layoutQueue();
+      refreshRequestsStrip();
+      g.spawnCd = 1.2;
     }
     syncAnimalsFab();
     if (silent) return;
@@ -1683,7 +1691,8 @@
       toast("🐾 Животные ВЫКЛ · очередь пустая");
       showEvent("🐾 Выкл · сон без зверей", 2.2);
     } else {
-      toast("🐾 Животные снова могут прийти");
+      toast("🐾 Животные снова в очереди");
+      showEvent("🐾 ВКЛ · пациенты пришли", 2.0);
     }
   }
 
@@ -2718,15 +2727,21 @@
 
     coffeeCd = { coffee: 0, coffee2: 0 };
 
-    // хозяин: сразу «без аномалий» — можно выключить кнопкой слева
+    // хозяин: сразу «без аномалий» (кнопка слева). Пациенты по умолчанию ВКЛ.
     if (canUseSecretShifts()) {
       g.ownerQuiet = true;
       g.noAnomalies = true;
-      if (meta.noAnimals == null) {
-        g.noAnimals = true;
-        meta.noAnimals = true;
+      // старый дефолт был «без зверей» — один раз вернуть очередь
+      if (!meta.animalsDefaultOn) {
+        meta.animalsDefaultOn = true;
+        meta.noAnimals = false;
         storeSet(SAVE, meta);
       }
+      if (meta.noAnimals == null) {
+        meta.noAnimals = false;
+        storeSet(SAVE, meta);
+      }
+      g.noAnimals = !!meta.noAnimals;
     }
 
     // бесконечная очередь: стартовая пачка + постоянный спавн дальше
@@ -3007,10 +3022,15 @@
     hideEl(shiftTag);
     hideEl(queueStrip);
     endTitle.textContent = reason === "insanity" ? "Рассудок 0 — провал" : "Смена окончена";
+    const emptyHint =
+      g.noAnimals && !g.treated
+        ? "<br><small>Очередь была выкл (🐾). Ты всё ещё хозяин — секретные смены на месте.</small>"
+        : "<br><small>Ты не потерял права хозяина · секретные смены остаются.</small>";
     endSub.innerHTML =
       `${g.shift.name}<br>Вылечено: ${g.treated} · Аномалий: ${g.blocked} · Пропущено: ${g.leaked}` +
       (g.died ? ` · Умерло: ${g.died}` : "") +
-      `<br>Монеты: ∞`;
+      `<br>Монеты: ∞` +
+      (canUseSecretShifts() ? emptyHint : "");
     showEl(endPanel);
   }
 
