@@ -669,11 +669,14 @@
   }
 
   function animeWorldOn() {
-    return !!(meta && meta.animeWorld) || (g && g.theme === "anime");
+    // во время смены — только если тема смены anime; флаг лобби не красит все смены
+    if (g) return g.theme === "anime";
+    return !!(meta && meta.animeWorld);
   }
 
   function rainNightOn() {
-    return !!(meta && meta.rainNight) || (g && g.theme === "rain");
+    if (g) return g.theme === "rain";
+    return !!(meta && meta.rainNight);
   }
 
   function speciesLabel(sp) {
@@ -898,10 +901,13 @@
   }
   forceInfinite();
   try {
-    if (localStorage.getItem("amal-anime-world-v1") === "1") meta.animeWorld = true;
-    if (localStorage.getItem("amal-rain-night-v1") === "1") meta.rainNight = true;
+    // аниме/дождь больше не липнут ко всем сменам
+    localStorage.removeItem("amal-anime-world-v1");
+    localStorage.removeItem("amal-rain-night-v1");
   } catch (_) {}
-  syncAnimeWorldTheme();
+  meta.animeWorld = false;
+  meta.rainNight = false;
+  applyThemeClass(null);
 
   function isOwner() {
     return true;
@@ -1447,6 +1453,8 @@
         "∞ время · очередь ∞" +
         (g.players[0].weapon ? " · F по аномалии сразу" : "")
     );
+    // тема только от выбранной смены (не от залипшего «аниме» в лобби)
+    g.theme = shift.theme || null;
     applyThemeClass(shift.theme || null);
     if (isVipShift(shift)) giveVipKit(g.players[0], shift);
     if (shift.lesha || shift.endlessCoffee || shift.theme === "gold") {
@@ -1531,14 +1539,7 @@
       showEvent("✦ Попугай · обычная смена · лечи вовремя", 3.0);
       toast("Не те вещи / долго ждёт = смерть");
     }
-    if (meta.rainNight && !(shift.parrotShift || shift.theme === "parrot")) {
-      g.theme = "rain";
-      applyThemeClass("rain");
-    } else if (meta.animeWorld && !(shift.parrotShift || shift.theme === "parrot")) {
-      g.theme = "anime";
-      applyThemeClass("anime");
-      showEvent("✦ Всё в аниме", 2.2);
-    }
+    // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
     renderInv();
   }
@@ -2788,8 +2789,8 @@
   function tintRoom(base, theme) {
     if (theme === "gold") return "#6a4820";
     if (theme === "diamond") return "#1a4060";
-    if (theme === "anime" || animeWorldOn()) return "#3a2850";
-    if (theme === "rain" || rainNightOn()) return "#1a3048";
+    if (theme === "anime") return "#3a2850";
+    if (theme === "rain") return "#1a3048";
     if (theme === "parrot") return "#4a3020";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
@@ -2807,12 +2808,7 @@
       return;
     }
 
-    const theme =
-      (rainNightOn() ? "rain" : null) ||
-      (animeWorldOn() ? "anime" : null) ||
-      g.theme ||
-      (g.shift && g.shift.theme) ||
-      null;
+    const theme = g.theme || (g.shift && g.shift.theme) || null;
 
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
