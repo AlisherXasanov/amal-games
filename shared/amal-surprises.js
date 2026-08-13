@@ -686,12 +686,11 @@
   }
 
   function showUsPair() {
-    if (!isOwnerLocal()) return;
     const game = detectGame();
     showCinematic({
       kicker: "мы",
       label: "Леша · и я рядом",
-      detail: "пасхалки в «" + game + "» · только для вас двоих",
+      detail: "пасхалки в «" + game + "» · Amal Games",
       at: Date.now(),
     });
     try {
@@ -700,7 +699,7 @@
   }
 
   function bootUsEggs() {
-    if (!isOwnerLocal() || typeof document === "undefined") return;
+    if (typeof document === "undefined") return;
     if (document.getElementById("amal-us-eggs")) return;
     ensureUsEggsStyle();
     const wrap = document.createElement("div");
@@ -714,6 +713,7 @@
     let clickT = 0;
     const leshaBtn = document.getElementById("amal-egg-lesha");
     const meBtn = document.getElementById("amal-egg-me");
+    const owner = isOwnerLocal();
 
     if (leshaBtn) {
       leshaBtn.addEventListener("click", () => {
@@ -742,7 +742,7 @@
       });
     }
 
-    // раз в день на игру — лёгкий пульс, что пасхалки здесь
+    // раз в день на игру — лёгкий пульс, чтобы заметили
     let pulsed = false;
     try {
       pulsed = localStorage.getItem(usSeenKey("pulse")) === "1";
@@ -750,20 +750,19 @@
     if (!pulsed) {
       setTimeout(() => {
         wrap.classList.add("pulse");
-        softToast("✦ пасхалки · Леша и я рядом");
+        softToast(owner ? "✦ пасхалки · Леша и я рядом" : "✦ пасхалки Amal · нажми и посмотри");
         try {
           localStorage.setItem(usSeenKey("pulse"), "1");
         } catch (_) {}
       }, 1600);
     }
 
-    // кодовое слово на клавиатуре: мы / amal (латиница)
+    // кодовое слово: мы / amal / lesha
     let buf = "";
     let bufT = 0;
     document.addEventListener(
       "keydown",
       (e) => {
-        if (!isOwnerLocal()) return;
         const tag = (e.target && e.target.tagName) || "";
         if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
         const now = Date.now();

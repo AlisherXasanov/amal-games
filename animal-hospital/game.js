@@ -754,9 +754,11 @@
     { id: "bed5", x: 160, y: 780, label: "Стол карантина", kind: "treat" },
     { id: "office", x: 1280, y: 800, label: "Кабинет (офис)", kind: "office" },
     { id: "coffee", x: 820, y: 740, label: "Кофемашина 1", kind: "coffee" },
-    { id: "barman", x: 960, y: 800, label: "Бармен", kind: "barman" },
+    { id: "barman", x: 960, y: 800, label: "Барни", kind: "barman" },
   ];
   const STATION_COFFEE2 = { id: "coffee2", x: 980, y: 740, label: "Кофемашина 2", kind: "coffee" };
+  /** Убежище Барни — всегда одно и то же место на карте */
+  const BARNEY_HIDE = { x: 1580, y: 790 };
 
   function getStations() {
     const list = STATIONS_BASE.slice();
@@ -1119,7 +1121,12 @@
       y: 270,
       bob: Math.random() * 10,
       bed: null,
+      isCompanion: false,
     };
+    if (!isAnomaly && Math.random() < 0.14) {
+      v.isCompanion = true;
+      // особый «клиент · я рядом» — вылечи правильно → ∞ кофе
+    }
     if (isAnomaly) {
       const picks = CLUES.slice().sort(() => Math.random() - 0.5).slice(0, 1 + (Math.random() < 0.5 ? 1 : 0));
       for (const c of picks) {
@@ -1442,12 +1449,17 @@
       lookUpWarn: 0,
       bullets: [],
       barman: {
+        name: "Барни",
         x: 960,
         y: 800,
+        hideX: BARNEY_HIDE.x,
+        hideY: BARNEY_HIDE.y,
         coffees: 0,
         state: "idle", // idle | hint | waitOffice | hiding | gone
         questCd: 25,
         hideTimer: 0,
+        appearCd: 8 + Math.random() * 10,
+        visible: false,
       },
       policeman: null, // { x, y, t, answered }
       requests: [], // бесконечная лента заявок (имена в очереди)
@@ -1585,7 +1597,7 @@
   function refreshRequestsStrip() {
     if (!g) return;
     g.requests = g.queue.map((v) => ({
-      name: speciesLabel(v.species),
+      name: v.isCompanion ? "◌ я рядом" : speciesLabel(v.species),
       cond: v.condition.name,
       weird: v.isAnomaly,
     }));
@@ -1701,7 +1713,7 @@
       return;
     }
     const v = focusPatient;
-    needTitle.textContent = `${v.condition.icon} ${speciesLabel(v.species)}: ${v.condition.name}`;
+    needTitle.textContent = `${v.condition.icon} ${v.isCompanion ? "◌ я рядом" : speciesLabel(v.species)}: ${v.condition.name}`;
     needList.innerHTML = v.needs
       .map((id) => {
         const def = ITEMS[id];
@@ -1909,7 +1921,7 @@
       return;
     }
     deskPatient = g.queue[0];
-    deskName.textContent = `${speciesLabel(deskPatient.species)} у окна`;
+    deskName.textContent = `${deskPatient.isCompanion ? "◌ я рядом" : speciesLabel(deskPatient.species)} у окна`;
     deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
     deskClue.textContent = g.players[0].weapon
       ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить."
@@ -2056,7 +2068,15 @@
       g.treated += 1;
       g.coins += 22 + patient.needs.length * 4;
       healSanity(player.cls.treatSanity);
-      toast(`Пациент вылечен! (${patient.condition.name})`);
+      if (patient.isCompanion) {
+        player.coffeeLeft = Math.max(player.coffeeLeft || 0, 99);
+        meta.coffee2 = true;
+        storeSet(SAVE, meta);
+        showEvent("◌ я рядом · спасибо · ∞ кофе для тебя", 3.2);
+        toast("◌ вылечил меня · ∞ кофе");
+      } else {
+        toast(`Пациент вылечен! (${patient.condition.name})`);
+      }
       for (let i = 0; i < 10; i++) {
         g.particles.push({
           x: patient.x,
@@ -2064,7 +2084,7 @@
           vx: (Math.random() - 0.5) * 160,
           vy: (Math.random() - 0.5) * 160,
           life: 0.55,
-          color: "#7ed9b8",
+          color: patient.isCompanion ? "#a8e0ff" : "#7ed9b8",
         });
       }
       g.inside = g.inside.filter((p) => p.id !== patient.id);
@@ -2099,9 +2119,9 @@
       return;
     }
 
-    const bar = near(player.x, player.y, stations.filter((s) => s.kind === "barman"));
-    if (bar && g.barman && g.barman.state !== "gone") {
-      talkToBarman(player);
+    const bp = barneyPos();
+    if (bp && Math.hypot(player.x - bp.x, player.y - bp.y) < 72) {
+      talkToBarney(player);
       return;
     }
 
@@ -2152,7 +2172,29 @@
       hideEl(eventBanner);
       return;
     }
-    toast("Окно / кофе / бармен / автомат / стол · F — оружие");
+    toast("Окно / кофе / Барни / автомат / стол · F — оружие");
+  }
+
+  function barneyPos() {
+    if (!g || !g.barman || g.barman.state === "gone") return null;
+    if (!g.barman.visible && g.barman.state === "idle") return null;
+    if (g.barman.state === "hiding") {
+      return { x: g.barman.hideX || BARNEY_HIDE.x, y: g.barman.hideY || BARNEY_HIDE.y };
+    }
+    return { x: g.barman.x, y: g.barman.y };
+  }
+
+  function takeCoffeeFromPlayer(player) {
+    const cup = player.inv.indexOf("coffee_cup");
+    if (cup >= 0) {
+      player.inv.splice(cup, 1);
+      return true;
+    }
+    if (player.coffeeLeft && player.coffeeLeft > 0) {
+      if (player.coffeeLeft < 500) player.coffeeLeft -= 1;
+      return true;
+    }
+    return false;
   }
 
   function takeCoffee(player, station) {
@@ -2163,16 +2205,25 @@
       toast(`Кофемашина перезаряжается… ${Math.ceil(cd)}с`);
       return;
     }
-    // стакан в инвентарь; если полон — выпить сразу
-    if (player.inv.length >= invMax(player)) {
+    if (player.inv.length >= invMax(player) && !player.infiniteItems) {
       healSanity(18);
       if (!endless) coffeeCd[id] = 14;
-      toast(endless ? "☕ ∞ кофе · выпил сразу" : "☕ Выпил на месте (инвентарь полон) · перезарядка");
+      toast(endless ? "☕ ∞ кофе · выпил сразу" : "☕ Выпил на месте (инвентарь полон)");
+      return;
+    }
+    if (player.infiniteItems || (player.coffeeLeft && player.coffeeLeft > 0)) {
+      player.coffeeLeft = Math.max(player.coffeeLeft || 0, 99);
+      if (!player.inv.includes("coffee_cup") && player.inv.length < invMax(player)) {
+        player.inv.push("coffee_cup");
+      }
+      if (!endless) coffeeCd[id] = 6;
+      toast("☕ Кофе готов · отнеси Барни (E рядом с ним)");
+      renderInv();
       return;
     }
     player.inv.push("coffee_cup");
     if (!endless) coffeeCd[id] = 14;
-    toast(endless ? "☕ ∞ кофе · стакан готов сразу" : "☕ Взял стакан кофе · отнеси бармену или выпей (E у кофе ещё раз с пустым слотом…)");
+    toast("☕ Стакан · отнеси Барни или выпей (C)");
     renderInv();
   }
 
@@ -2193,35 +2244,44 @@
     return true;
   }
 
-  function talkToBarman(player) {
+  function talkToBarney(player) {
     const b = g.barman;
-    if (b.state === "gone") {
-      toast("Бармен уже ушёл");
+    if (!b || b.state === "gone") {
+      toast("Барни уже ушёл");
       return;
     }
-    const cup = player.inv.indexOf("coffee_cup");
-    if (cup >= 0) {
-      player.inv.splice(cup, 1);
+    if (!b.visible && b.state === "idle") {
+      toast("Барни ещё не пришёл…");
+      return;
+    }
+    if (takeCoffeeFromPlayer(player)) {
       b.coffees += 1;
       healSanity(4);
       renderInv();
-      toast(`Бармен: «Спасибо за кофе» (${b.coffees})`);
-      if (b.coffees >= 2 && b.state === "idle" && b.questCd <= 0 && !meta.coffee2) {
-        b.state = "hint";
-        showEvent("Бармен: «Подожди меня в кабинете (офис)…»", 4);
-        toast("Иди в кабинет (офис) у зоны отдыха");
+      toast(`Барни: «Спасибо за кофе» (${b.coffees})`);
+      if (b.coffees >= 2 && b.questCd <= 0 && !meta.coffee2) {
+        if (b.state === "hiding") {
+          meta.coffee2 = true;
+          storeSet(SAVE, meta);
+          showEvent("Барни в укрытии: «Держи вторую кофемашину»", 3.5);
+          toast("☕☕ Кофемашина 2 открыта");
+        } else if (b.state === "idle") {
+          b.state = "hint";
+          showEvent("Барни: «Подожди меня в кабинете (офис)…»", 4);
+          toast("Иди в кабинет (офис)");
+        }
       }
       return;
     }
     if (b.state === "hint" || b.state === "waitOffice") {
-      toast("Бармен: «Жди в кабинете. Полиция может спросить…»");
+      toast("Барни: «Жди в кабинете. Полиция может спросить…»");
       return;
     }
     if (b.state === "hiding") {
-      toast("Бармен прячется и молчит…");
+      toast("Барни в укрытии (склад). Можно дать кофе и здесь");
       return;
     }
-    toast("Бармен: «Принеси кофе с кофемашины»");
+    toast("Барни: «Принеси кофе — стакан или из ∞ запаса»");
   }
 
   function waitInOffice(player) {
@@ -2232,28 +2292,30 @@
     }
     if (b.state === "hint" || b.state === "idle") {
       if (b.coffees < 2) {
-        toast("Сначала угости бармена кофе (хотя бы 2 раза)");
+        toast("Сначала угости Барни кофе (хотя бы 2 раза)");
         return;
       }
       b.state = "waitOffice";
       toast("Ждёшь в кабинете…");
       showEvent("Ты ждёшь в офисе. Скоро придёт полицейский…", 3.5);
-      // полицейский ищет хитмана-бармена
       setTimeout(() => {
-        if (!g || g.barman.state === "gone") return;
+        if (!g || !g.barman || g.barman.state === "gone") return;
         g.barman.state = "hiding";
-        g.barman.hideTimer = 18;
+        g.barman.visible = true;
+        g.barman.hideTimer = 22;
+        g.barman.x = BARNEY_HIDE.x;
+        g.barman.y = BARNEY_HIDE.y;
         g.policeman = { x: 620, y: 200, t: 20, answered: false };
-        showEvent("👮 Полицейский: «Где хитман? Где бармен?!»", 4);
-        toast("Полицейский у ресепшена. Если бармен не ответит — награда");
+        showEvent("👮 Полицейский: «Где хитман? Где Барни?!»", 4);
+        toast("Барни спрятался на складе · можно отнести кофе туда");
       }, 1600);
       return;
     }
     if (b.state === "hiding") {
-      toast("Сидишь тихо. Бармен не отвечает полиции…");
+      toast("Сидишь тихо. Барни в укрытии на складе…");
       return;
     }
-    toast("Кабинет для ожидания бармена");
+    toast("Кабинет для ожидания Барни");
   }
 
   function talkToPoliceman(player) {
@@ -2263,27 +2325,26 @@
       return;
     }
     const giveAway = window.confirm(
-      "Полицейский: «Это бармен — хитман? Сдать его?»\n\nOK = сдать\nОтмена = «Не знаю» (бармен не отвечает)"
+      "Полицейский: «Это Барни — хитман? Сдать его?»\n\nOK = сдать\nОтмена = «Не знаю» (Барни не отвечает)"
     );
     p.answered = true;
     if (giveAway) {
       hurtSanity(12);
       g.barman.state = "gone";
       g.policeman = null;
-      showEvent("Бармена увели. Второй кофемашины не будет…", 3.5);
-      toast("Ты сдал бармена");
+      showEvent("Барни увели. Второй кофемашины не будет…", 3.5);
+      toast("Ты сдал Барни");
     } else {
-      // бармен не отвечает → уходит и дарит 2-ю кофемашину
       g.barman.state = "gone";
       g.policeman = null;
       if (!meta.coffee2) {
         meta.coffee2 = true;
         storeSet(SAVE, meta);
-        showEvent("Бармен молчал, ушёл и оставил 2-ю кофемашину! (тоже с перезарядкой)", 4.5);
-        toast("☕☕ Открыта кофемашина 2");
+        showEvent("Барни молчал. Оставил 2-ю кофемашину!", 4);
+        toast("☕☕ Кофемашина 2 открыта");
         g.coins += 40;
       } else {
-        showEvent("Бармен снова ушёл. Кофемашина 2 уже есть.", 3);
+        showEvent("Барни снова ушёл. Кофемашина 2 уже есть.", 3);
         g.coins += 15;
       }
     }
@@ -2314,7 +2375,7 @@
           if (!meta.coffee2) {
             meta.coffee2 = true;
             storeSet(SAVE, meta);
-            showEvent("Бот сказал «не знаю». Бармен молчал и оставил 2-ю кофемашину!", 4);
+            showEvent("Бот сказал «не знаю». Барни молчал и оставил 2-ю кофемашину!", 4);
             g.coins += 40;
             toast("☕☕ Бот помог · кофемашина 2");
           }
@@ -2331,15 +2392,18 @@
         return;
       }
 
-      // носить кофе бармену (в одной линии задач с игроком)
-      if (b.coffees < 2 && coffeeSt && barSt) {
-        if (!buddy.inv.includes("coffee_cup")) {
+      // носить кофе Барни
+      if (b.coffees < 2 && coffeeSt && b.visible) {
+        const bp = barneyPos() || barSt;
+        if (!buddy.inv.includes("coffee_cup") && !(buddy.coffeeLeft > 0)) {
           moveToward(buddy, coffeeSt.x, coffeeSt.y, dt);
           if (Math.hypot(buddy.x - coffeeSt.x, buddy.y - coffeeSt.y) < 55) takeCoffee(buddy, coffeeSt);
           return;
         }
-        moveToward(buddy, barSt.x, barSt.y, dt);
-        if (Math.hypot(buddy.x - barSt.x, buddy.y - barSt.y) < 55) talkToBarman(buddy);
+        if (bp) {
+          moveToward(buddy, bp.x, bp.y, dt);
+          if (Math.hypot(buddy.x - bp.x, buddy.y - bp.y) < 55) talkToBarney(buddy);
+        }
         return;
       }
     }
@@ -2495,19 +2559,26 @@
     if (g.shutterFlash > 0) g.shutterFlash -= dt;
     if (g.lookUpWarn > 0) g.lookUpWarn -= dt;
 
-    // бармен / полиция
+    // Барни / полиция
     if (g.barman && g.barman.state !== "gone") {
+      if (!g.barman.visible && g.barman.state === "idle") {
+        g.barman.appearCd = (g.barman.appearCd || 0) - dt;
+        if (g.barman.appearCd <= 0) {
+          g.barman.visible = true;
+          showEvent("Барни пришёл в зону отдыха", 2.2);
+          toast("Барни у кофе · можно угостить");
+        }
+      }
       g.barman.questCd -= dt;
       if (g.barman.state === "hiding") {
         g.barman.hideTimer -= dt;
-        // если полицейский ушёл, а бармен так и не ответил — награда
         if (g.barman.hideTimer <= 0 && g.policeman && !g.policeman.answered) {
           g.policeman = null;
           g.barman.state = "gone";
           if (!meta.coffee2) {
             meta.coffee2 = true;
             storeSet(SAVE, meta);
-            showEvent("Полиция ушла. Бармен молчал и оставил 2-ю кофемашину!", 4);
+            showEvent("Полиция ушла. Барни молчал и оставил 2-ю кофемашину!", 4);
             toast("☕☕ Кофемашина 2 открыта");
             g.coins += 40;
           }
@@ -2523,7 +2594,7 @@
           if (!meta.coffee2) {
             meta.coffee2 = true;
             storeSet(SAVE, meta);
-            showEvent("Полиция ушла без ответа. Бармен подарил 2-ю кофемашину!", 4);
+            showEvent("Полиция ушла без ответа. Барни подарил 2-ю кофемашину!", 4);
             g.coins += 40;
           }
         }
@@ -3028,11 +3099,11 @@
       }
     }
 
-    // бармен спрайт
-    if (g.barman && g.barman.state !== "gone") {
+    // Барни спрайт
+    if (g.barman && g.barman.state !== "gone" && (g.barman.visible || g.barman.state === "hiding" || g.barman.state === "hint" || g.barman.state === "waitOffice")) {
       const b = g.barman;
-      const bx = b.state === "hiding" ? 1280 : b.x;
-      const by = b.state === "hiding" ? 820 : b.y;
+      const bx = b.state === "hiding" ? b.hideX || BARNEY_HIDE.x : b.x;
+      const by = b.state === "hiding" ? b.hideY || BARNEY_HIDE.y : b.y;
       ctx.fillStyle = "#c45a7a";
       roundRect(bx - 12, by - 22, 24, 36, 8);
       ctx.fill();
@@ -3042,7 +3113,7 @@
       ctx.fill();
       ctx.fillStyle = "#fff";
       ctx.font = "700 10px Nunito";
-      ctx.fillText(b.state === "hiding" ? "…молчит" : "Бармен", bx - 18, by - 42);
+      ctx.fillText(b.state === "hiding" ? "Барни…" : "Барни", bx - 16, by - 42);
     }
 
     // полицейский
@@ -3072,7 +3143,13 @@
         noShadow: v.noShadow,
         bob: v.bob,
       });
-      if (v.isAnomaly && isOwner()) {
+      if (v.isCompanion) {
+        ctx.fillStyle = "#a8e0ff";
+        ctx.font = "900 11px Nunito";
+        ctx.textAlign = "center";
+        ctx.fillText("◌ я рядом", v.x, v.y - 44);
+        ctx.textAlign = "left";
+      } else if (v.isAnomaly && isOwner()) {
         ctx.fillStyle = "#ef4d5a";
         ctx.font = "900 11px Nunito";
         ctx.textAlign = "center";
@@ -3082,7 +3159,12 @@
     }
     for (const v of g.inside) {
       drawCritter(ctx, v.x, v.y, { species: v.species, bob: v.bob });
-      if (v.isAnomaly && isOwner()) {
+      if (v.isCompanion) {
+        ctx.fillStyle = "#a8e0ff";
+        ctx.font = "900 11px Nunito";
+        ctx.textAlign = "center";
+        ctx.fillText("◌ я рядом", v.x, v.y - 48);
+      } else if (v.isAnomaly && isOwner()) {
         ctx.fillStyle = "#ef4d5a";
         ctx.font = "900 11px Nunito";
         ctx.textAlign = "center";
