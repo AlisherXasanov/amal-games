@@ -842,6 +842,10 @@ body.theme-parrot #app {
   display: flex;
   gap: 0.3rem;
   flex-wrap: wrap;
+  max-width: min(520px, 70vw);
+  max-height: 7.2rem;
+  overflow: auto;
+  pointer-events: auto;
 }
 .inv-slot {
   min-width: 54px;
@@ -853,7 +857,21 @@ body.theme-parrot #app {
   font-weight: 800;
   text-align: center;
   line-height: 1.2;
+  color: inherit;
+  cursor: default;
 }
+button.inv-slot {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.inv-slot.selected {
+  border-color: #ffd76a;
+  background: rgba(255, 215, 106, 0.18);
+  box-shadow: 0 0 0 1px rgba(255, 215, 106, 0.35);
+}
+.inv-slot.weapon { border-color: #ffd36a; }
+.inv-slot.coffee { border-color: #c4a574; }
 .inv-slot.empty { opacity: 0.35; }
 
 .need-panel {

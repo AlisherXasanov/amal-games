@@ -733,6 +733,7 @@
     if (!player) return;
     const meds = Object.keys(ITEMS).filter((id) => id !== "coffee_cup" && id !== "juice_cup");
     player.inv = meds.slice();
+    player.selInv = 0;
     player.coffeeLeft = (shift && shift.coffeeGift) || player.coffeeLeft || 99;
     player.infiniteItems = true;
     grantInfiniteAmmo(player);
@@ -860,6 +861,11 @@
     if (e.code === "KeyQ" && g) dropItem(g.players[0]);
     if (e.code === "KeyC" && g) drinkCoffeeCup(g.players[0]);
     if (e.code === "KeyJ" && g) tryGiveJuice(g.players[0]);
+    if (e.code === "BracketLeft" && g) cycleInv(g.players[0], -1);
+    if (e.code === "BracketRight" && g) cycleInv(g.players[0], 1);
+    if (g && /^Digit[1-9]$/.test(e.code)) {
+      selectInvSlot(g.players[0], Number(e.code.slice(5)) - 1);
+    }
     if (e.code === "KeyF") shoot1 = true;
     if (e.code === "KeyR") reload1 = true;
     if (e.code === "ShiftRight") shoot2 = true;
@@ -1042,8 +1048,15 @@
   function refreshDeskIfOpen() {
     if (state !== "desk" || !g || !g.queue.length) return;
     deskPatient = g.queue[0];
-    deskName.textContent = `${guestLabel(deskPatient)}${guestKindTag(deskPatient) ? " · " + guestKindTag(deskPatient) : ""} у окна`;
-    deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
+    const kind = deskPatient.isAnomaly
+      ? " · ⚠ АНОМАЛИЯ"
+      : deskPatient.rareKind
+        ? ` · ${guestKindTag(deskPatient) || guestLabel(deskPatient)}`
+        : " · 🐾 обычное";
+    deskName.textContent = `${guestLabel(deskPatient)}${kind} у окна`;
+    deskQueueNote.textContent = deskPatient.isAnomaly
+      ? `⚠ Это АНОМАЛИЯ · ещё в очереди: ${Math.max(0, g.queue.length - 1)}`
+      : `🐾 Обычный · ещё в очереди: ${Math.max(0, g.queue.length - 1)}`;
     renderInspectViews(deskPatient);
     showEl(deskPanel);
     syncJuiceDeskBtn();
@@ -1257,16 +1270,18 @@
     if (itemId === "animal") {
       const v = spawnQueueGuest({ normal: true });
       if (v) {
-        showEvent("🐾 Животное в очереди", 1.8);
-        toast("Животное заспавнено");
+        showEvent("🐾 ОБЫЧНОЕ животное · не аномалия", 2.2);
+        toast("🐾 Обычное · НЕ аномалия");
+        if (state === "desk") refreshDeskIfOpen();
       }
       return;
     }
     if (itemId === "anomalyGuest") {
       const v = spawnQueueGuest({ anomaly: true });
       if (v) {
-        showEvent("⚠ Аномалия-пациент", 1.8);
-        toast("Аномалия в очереди");
+        showEvent("⚠ АНОМАЛИЯ у окна · сравни фото / камеру", 2.4);
+        toast("⚠ Это АНОМАЛИЯ · не обычный");
+        if (state === "desk") refreshDeskIfOpen();
       }
       return;
     }
@@ -1345,7 +1360,7 @@
     if (spawnRow && !spawnRow.dataset.ready) {
       spawnRow.dataset.ready = "1";
       const pack = [
-        { id: "animal", label: "🐾 Животное" },
+        { id: "animal", label: "🐾 Обычное" },
         { id: "anomalyGuest", label: "⚠ Аномалия" },
         { id: "anomalyMob", label: "👾 Монстр" },
         { id: "relaxOn", label: "◌ Отдых ВКЛ" },
@@ -2407,42 +2422,83 @@
   }
 
   function invMax(player) {
-    if (player && player.infiniteItems) return Math.max(24, (player.inv && player.inv.length) || 24);
+    if (player && player.infiniteItems) return Math.max(player.inv.length, 1);
     return player.cls.inv || INV_MAX;
+  }
+
+  function ensureInvSelection(player) {
+    if (!player || !player.inv || !player.inv.length) {
+      if (player) player.selInv = -1;
+      return;
+    }
+    if (player.selInv == null || player.selInv < 0 || player.selInv >= player.inv.length) {
+      player.selInv = 0;
+    }
+  }
+
+  function selectedInvId(player) {
+    ensureInvSelection(player);
+    if (!player || player.selInv < 0) return null;
+    return player.inv[player.selInv] || null;
+  }
+
+  function selectInvSlot(player, index) {
+    if (!player || !player.inv || !player.inv.length) return;
+    if (index < 0 || index >= player.inv.length) return;
+    player.selInv = index;
+    const def = ITEMS[player.inv[index]];
+    toast(`В руках: ${def ? def.icon + " " + def.name : "?"}${player.infiniteItems ? " · ∞" : ""}`);
+    renderInv();
+  }
+
+  function cycleInv(player, dir) {
+    if (!player || !player.inv || !player.inv.length) return;
+    ensureInvSelection(player);
+    const n = player.inv.length;
+    player.selInv = (player.selInv + dir + n) % n;
+    const def = ITEMS[player.inv[player.selInv]];
+    toast(`В руках: ${def ? def.icon + " " + def.name : "?"}`);
+    renderInv();
   }
 
   function renderInv() {
     if (!g) return;
     const p = g.players[0];
+    ensureInvSelection(p);
     const slots = [];
     if (p.weapon) {
       const w = p.weapon;
       const reload = w.reloadCd > 0 ? ` ⏳${w.reloadCd.toFixed(1)}` : "";
       const ammoTxt = p.infiniteAmmo ? "∞" : `${w.ammo}/${w.maxAmmo}`;
       slots.push(
-        `<div class="inv-slot" style="border-color:#ffd36a">${w.icon}<br>${ammoTxt}${reload}</div>`
+        `<div class="inv-slot weapon">${w.icon}<br>${ammoTxt}${reload}</div>`
       );
     }
-    if (p.infiniteItems) {
-      const icons = p.inv.map((id) => (ITEMS[id] ? ITEMS[id].icon : "?")).join("");
+    if (p.coffeeLeft > 0) {
       slots.push(
-        `<div class="inv-slot" style="border-color:#7ed9b8;min-width:7rem">∞ все<br><span style="font-size:0.85rem">${icons}</span></div>`
+        `<div class="inv-slot coffee">☕${p.infiniteItems || p.coffeeLeft > 90 ? "∞" : "×" + p.coffeeLeft}<br>кофе</div>`
       );
-      if (p.coffeeLeft > 0) {
+    }
+    const showCount = p.infiniteItems ? p.inv.length : invMax(p);
+    for (let i = 0; i < showCount; i++) {
+      const it = p.inv[i];
+      if (it) {
+        const def = ITEMS[it];
+        const sel = p.selInv === i ? " selected" : "";
+        const inf = p.infiniteItems ? " ∞" : "";
         slots.push(
-          `<div class="inv-slot" style="border-color:#c4a574">☕ ×${p.coffeeLeft}<br>кофе</div>`
+          `<button type="button" class="inv-slot${sel}" data-inv="${i}" title="${def.name}${inf}">${def.icon}<br>${def.name}</button>`
         );
-      }
-    } else {
-      for (let i = 0; i < invMax(p); i++) {
-        const it = p.inv[i];
-        if (it) {
-          const def = ITEMS[it];
-          slots.push(`<div class="inv-slot">${def.icon}<br>${def.name}</div>`);
-        } else slots.push(`<div class="inv-slot empty">пусто</div>`);
+      } else if (!p.infiniteItems) {
+        slots.push(`<div class="inv-slot empty">пусто</div>`);
       }
     }
     invSlots.innerHTML = slots.join("");
+    invSlots.querySelectorAll("[data-inv]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        selectInvSlot(p, Number(btn.getAttribute("data-inv")));
+      });
+    });
   }
 
   function updateNeedUI() {
@@ -2952,11 +3008,20 @@
       return;
     }
     deskPatient = g.queue[0];
-    deskName.textContent = `${guestLabel(deskPatient)}${guestKindTag(deskPatient) ? " · " + guestKindTag(deskPatient) : ""} у окна`;
-    deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
-    deskClue.textContent = g.players[0].weapon
-      ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить. Сок (J) — только аномалии."
-      : "Сравни клиента, удостоверение и камеру. Подозрительно — шторка. 🧃 Сок — только аномалии.";
+    const kind = deskPatient.isAnomaly
+      ? " · ⚠ АНОМАЛИЯ"
+      : deskPatient.rareKind
+        ? ` · ${guestKindTag(deskPatient) || guestLabel(deskPatient)}`
+        : " · 🐾 обычное";
+    deskName.textContent = `${guestLabel(deskPatient)}${kind} у окна`;
+    deskQueueNote.textContent = deskPatient.isAnomaly
+      ? `⚠ Это АНОМАЛИЯ · шторка / сок / F · ещё в очереди: ${Math.max(0, g.queue.length - 1)}`
+      : `🐾 Обычный клиент · можно впустить · ещё в очереди: ${Math.max(0, g.queue.length - 1)}`;
+    deskClue.textContent = deskPatient.isAnomaly
+      ? "⚠ АНОМАЛИЯ: расхождения на фото/камере. Шторка / 🧃 сок / F — не впускай."
+      : g.players[0].weapon
+        ? "🐾 Обычное животное. Можно впустить. (F только если это аномалия.)"
+        : "🐾 Обычное · сравни панели. Если всё сходится — впустить.";
     renderInspectViews(deskPatient);
     state = "desk";
     showEl(deskPanel);
@@ -3079,17 +3144,29 @@
       }
     }
 
-    for (const needId of still.slice()) {
-      if (player.infiniteItems) {
-        patient.delivered.push(needId);
+    // ∞ вещи: применяем только выбранный слот (клик / 1–9 / [ ]), не всё сразу
+    if (player.infiniteItems) {
+      const pick = selectedInvId(player);
+      if (pick && still.includes(pick) && !patient.delivered.includes(pick)) {
+        patient.delivered.push(pick);
         applied += 1;
-        continue;
+      } else if (pick && !still.includes(pick)) {
+        toast(`Сейчас в руках ${ITEMS[pick] ? ITEMS[pick].icon : "?"} — выбери нужное`);
+        return;
+      } else {
+        toast("Выбери вещь в инвентаре (клик / 1–9)");
+        return;
       }
-      const idx = player.inv.indexOf(needId);
-      if (idx >= 0) {
-        player.inv.splice(idx, 1);
-        patient.delivered.push(needId);
-        applied += 1;
+    } else {
+      for (const needId of still.slice()) {
+        const idx = player.inv.indexOf(needId);
+        if (idx >= 0) {
+          player.inv.splice(idx, 1);
+          if (player.selInv === idx) player.selInv = Math.min(idx, player.inv.length - 1);
+          else if (player.selInv > idx) player.selInv -= 1;
+          patient.delivered.push(needId);
+          applied += 1;
+        }
       }
     }
     renderInv();
