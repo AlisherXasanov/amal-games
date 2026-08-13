@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Топ-2 · лучшие игры</title>
+  <meta name="description" content="Топ-2 лучших приложений и игр — жми и играй." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./top-2.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="hub" class="screen">
+    <p class="brand">ТОП-2</p>
+    <p class="sub">Две лучшие игры. Выбери и играй.</p>
+    <div class="duo" id="cards"></div>
+    <p class="more"><a href="./top-20.html">ещё 20 на Best Console →</a></p>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="play-frame">
+      <div class="topbar">
+        <button type="button" class="btn ghost" id="btnHub">← Топ-2</button>
+        <span id="playTitle">…</span>
+        <span id="playStat"></span>
+      </div>
+      <div class="tv">
+        <canvas id="c" width="960" height="540"></canvas>
+      </div>
+      <div class="bubble" id="bubble" hidden></div>
+    </div>
+  </div>
+
+  <div id="win" class="screen overlay" hidden>
+    <div class="win-card">
+      <p class="brand">ТОП-2</p>
+      <p class="sub" id="winText"></p>
+      <p class="code" id="winCode"></p>
+      <button type="button" class="btn" id="btnWinHub">В меню</button>
+      <button type="button" class="btn ghost" id="btnAgain">Ещё раз</button>
+    </div>
+  </div>
+
+  <script src="./top-2.js?v=1"></script>
+</body>
+</html>
