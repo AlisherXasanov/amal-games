@@ -698,11 +698,17 @@
   }
 
   function giveVipKit(player, shift) {
-    if (!player || !shift || !shift.vipKit) return;
+    if (!player) return;
     const meds = Object.keys(ITEMS).filter((id) => id !== "coffee_cup");
     player.inv = meds.slice();
-    player.coffeeLeft = shift.coffeeGift || 0;
+    player.coffeeLeft = (shift && shift.coffeeGift) || player.coffeeLeft || 99;
     player.infiniteItems = true;
+    grantInfiniteAmmo(player);
+  }
+
+  function giveOwnerLoadoutAll(shift) {
+    if (!g || !g.players) return;
+    for (const pl of g.players) giveVipKit(pl, shift);
   }
 
   const ROOMS = [
@@ -1478,6 +1484,7 @@
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
     toast(
       (shift.selfServe ? "Самообслуживание · " : "Ресепшен · ") +
+        "∞ вещи · ∞ патроны · " +
         (g.patientDeath ? "не тяни — умрут · " : "") +
         "∞ время · очередь ∞" +
         (g.players[0].weapon ? " · F по аномалии сразу" : "")
@@ -1485,7 +1492,8 @@
     // тема только от выбранной смены (не от залипшего «аниме» в лобби)
     g.theme = shift.theme || null;
     applyThemeClass(shift.theme || null);
-    if (isVipShift(shift)) giveVipKit(g.players[0], shift);
+    // на ВСЕХ сменах: полный набор уже с собой + ∞ патроны
+    giveOwnerLoadoutAll(shift);
     if (shift.lesha || shift.endlessCoffee || shift.theme === "gold") {
       meta.coffee2 = true;
       storeSet(SAVE, meta);
@@ -1564,10 +1572,10 @@
       g.theme = "parrot";
       g.immortal = false;
       g.patientDeath = true;
-      for (const pl of g.players) grantInfiniteAmmo(pl);
+      giveOwnerLoadoutAll(shift);
       applyThemeClass("parrot");
-      showEvent("✦ Попугай · ∞ патроны · лечи вовремя", 3.0);
-      toast("∞ патроны · не те вещи / долго ждёт = смерть");
+      showEvent("✦ Попугай · ∞ вещи · ∞ патроны", 3.0);
+      toast("∞ уже с собой · лечи вовремя");
     }
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
