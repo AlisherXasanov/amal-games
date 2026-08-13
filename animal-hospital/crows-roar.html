@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Crow's Roar · первая игра</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./crows-roar.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+
+  <div id="app">
+    <canvas id="c" width="960" height="540"></canvas>
+    <div class="hud" id="hud" hidden>
+      <span id="hudLabel">Crow's Roar</span>
+      <strong id="hudCoins">🪶 0 / 8</strong>
+      <span id="hudRoar">E · рык</span>
+    </div>
+    <div class="bubble" id="bubble" hidden></div>
+
+    <div class="overlay" id="menu">
+      <div class="card">
+        <p class="tag">Roblox · первая игра</p>
+        <p class="brand">Crow's Roar</p>
+        <p class="sub">
+          Ты — ворон на крышах блок-сити.<br />
+          Летай, рычи и собирай перья. Рык сгоняет котов и открывает ящики.
+        </p>
+        <button type="button" class="btn" id="btnPlay">Играть</button>
+        <p class="hints">WASD · стрелки · E или Пробел — рык · телефон — джойстик</p>
+      </div>
+    </div>
+
+    <div class="overlay win" id="win" hidden>
+      <div class="card">
+        <p class="brand">✦ Гнездо найдено</p>
+        <p class="sub" id="winText">Первая игра пройдена.</p>
+        <p class="code" id="winCode">CROW · ROAR · #1</p>
+        <button type="button" class="btn" id="btnAgain">Ещё раз</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="touch" id="touch" hidden>
+    <div class="pad" id="pad"></div>
+    <button type="button" class="roar-btn" id="btnRoar">РЫК</button>
+  </div>
+
+  <script src="./crows-roar.js?v=1"></script>
+</body>
+</html>
