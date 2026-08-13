@@ -167,6 +167,9 @@
     { id: "secret-parrot", name: "⭐ Халат попугая", color: "#ff6a4a", secret: true },
     { id: "secret-lesha", name: "⭐ Халат Леши", color: "#ffc857", secret: true, tex: "lesha" },
     { id: "secret-here", name: "⭐ Халат Auto", color: "#7ec8ff", secret: true, tex: "here" },
+    { id: "secret-twinkle", name: "⭐ Халат мерцания", color: "#e8b4ff", secret: true, tex: "twinkle" },
+    { id: "secret-truce", name: "⭐ Халат перемирия", color: "#c8a8ff", secret: true, tex: "truce" },
+    { id: "secret-starlit", name: "⭐ Халат звёзд", color: "#ffe8c0", secret: true, tex: "starlit" },
   ];
 
   const WEAPONS = {
@@ -360,6 +363,66 @@
       theme: "gold",
     });
     list.push({
+      id: 55,
+      name: "✦ Смена · Мерцание",
+      time: 555,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Тихий сюрприз · звёздная пыль · ∞ вещи",
+      color: "#e8b4ff",
+      special: "twinkle55",
+      secret: true,
+      surpriseUnlock: true,
+      twinkleSurprise: true,
+      twinkleNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 55,
+      bonusCoins: 55,
+      theme: "twinkle",
+      pace: 3,
+    });
+    list.push({
+      id: 66,
+      name: "✦ Смена · Перемирие",
+      time: 666,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Sammy + Jendel · мир · ∞ вещи",
+      color: "#c8a8ff",
+      special: "truce66",
+      secret: true,
+      surpriseUnlock: true,
+      truceSurprise: true,
+      truceNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 66,
+      bonusCoins: 66,
+      theme: "truce",
+      pace: 3,
+    });
+    list.push({
+      id: 99,
+      name: "✦ Смена · Звёздная вилла",
+      time: 999,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Отдых под звёздами · ∞ вещи",
+      color: "#ffe8c0",
+      special: "starlit99",
+      secret: true,
+      surpriseUnlock: true,
+      villaSurprise: true,
+      starlitNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 99,
+      bonusCoins: 99,
+      theme: "starlit",
+      pace: 2,
+    });
+    list.push({
       id: 77,
       name: "✦ Смена · Искра",
       time: 777,
@@ -441,14 +504,23 @@
     return false;
   }
 
+  function discoveredSurpriseShifts() {
+    return SHIFTS.filter((s) => {
+      if (!s.secret || !s.surpriseUnlock) return false;
+      if (s.twinkleSurprise) return !!meta.surpriseTwinkle;
+      if (s.truceSurprise) return !!meta.surpriseTruce;
+      if (s.villaSurprise) return !!meta.surpriseVilla;
+      return false;
+    });
+  }
+
   function visibleShifts() {
     const normals = SHIFTS.filter((s) => !s.secret);
     if (!canUseSecretShifts()) return normals;
-    // в основном списке — обычные; выбранный секрет тоже, чтобы было видно в «СМЕНА»
-    if (selectedShift && selectedShift.secret) {
-      return normals.concat([selectedShift]);
-    }
-    return normals;
+    const extras = new Map();
+    for (const s of discoveredSurpriseShifts()) extras.set(s.id, s);
+    if (selectedShift && selectedShift.secret) extras.set(selectedShift.id, selectedShift);
+    return normals.concat([...extras.values()]);
   }
 
   function openSecretShiftsPanel() {
@@ -815,8 +887,165 @@
       shift.rainNight ||
       shift.hereWithYou ||
       shift.coolNight ||
-      shift.iskraNight
+      shift.iskraNight ||
+      shift.twinkleNight ||
+      shift.truceNight ||
+      shift.starlitNight
     );
+  }
+
+  function unlockTwinkleSurprise() {
+    if (meta.surpriseTwinkle) return;
+    meta.surpriseTwinkle = true;
+    if (!meta.skins.includes("secret-twinkle")) meta.skins.push("secret-twinkle");
+    const pick = SHIFTS.find((s) => s.id === 55);
+    if (pick) selectedShift = pick;
+    storeSet(SAVE, meta);
+    refreshLobbyUI();
+    persistLobby();
+    applyThemeClass("twinkle");
+    showEvent("✦ …что-то мерцает", 2.4);
+    toast("✦ …");
+  }
+
+  function unlockVillaSurprise() {
+    if (!g || meta.surpriseVilla) return;
+    meta.surpriseVilla = true;
+    if (!meta.skins.includes("secret-starlit")) meta.skins.push("secret-starlit");
+    const pick = SHIFTS.find((s) => s.id === 99);
+    if (pick) selectedShift = pick;
+    storeSet(SAVE, meta);
+    g.theme = "starlit";
+    g.starlitBurst = 4.8;
+    applyThemeClass("starlit");
+    if (g.players[0]) {
+      g.players[0].tex = "starlit";
+      g.players[0].color = "#ffe8c0";
+    }
+    for (let i = 0; i < 48; i++) {
+      g.particles.push({
+        x: g.players[0] ? g.players[0].x : 900,
+        y: g.players[0] ? g.players[0].y - 20 : 760,
+        vx: (Math.random() - 0.5) * 60,
+        vy: -20 - Math.random() * 80,
+        life: 1.2 + Math.random() * 1.4,
+        color: i % 2 ? "#fff8e0" : "#ffe8a0",
+      });
+    }
+    showEvent("✦ …звёзды над виллой", 3.2);
+    toast("✦ …");
+  }
+
+  function unlockTruceSurprise() {
+    if (!g || meta.surpriseTruce) return;
+    meta.surpriseTruce = true;
+    if (!meta.skins.includes("secret-truce")) meta.skins.push("secret-truce");
+    const pick = SHIFTS.find((s) => s.id === 66);
+    if (pick) selectedShift = pick;
+    storeSet(SAVE, meta);
+    g.theme = "truce";
+    g.truceBurst = 5;
+    applyThemeClass("truce");
+    if (g.players[0]) {
+      g.players[0].tex = "truce";
+      g.players[0].color = "#c8a8ff";
+    }
+    for (let i = 0; i < 40; i++) {
+      const t = i / 40;
+      g.particles.push({
+        x: 450 + t * 120 + (Math.random() - 0.5) * 30,
+        y: 260 + Math.sin(t * Math.PI) * 40,
+        vx: (Math.random() - 0.5) * 40,
+        vy: -30 - Math.random() * 50,
+        life: 0.9 + Math.random() * 0.8,
+        color: i % 2 ? "#ffb0b0" : "#9ec5ff",
+      });
+    }
+    showEvent("✦ …перемирие?", 3.4);
+    toast("✦ …");
+  }
+
+  function checkSurpriseGuestTreated(v) {
+    if (!g || !v) return;
+    if (v.rareKind === "sammy") g.truceSammyDone = true;
+    if (isJendelKind(v)) g.truceJendelDone = true;
+    if (g.truceSammyDone && g.truceJendelDone && !meta.surpriseTruce) unlockTruceSurprise();
+  }
+
+  function fireTwinkleBurst() {
+    if (!g) return;
+    g.theme = "twinkle";
+    g.twinkleBurst = 4.5;
+    g.noAnomalies = true;
+    g.ownerQuiet = true;
+    g.coins = (g.coins || 0) + 55;
+    g.sanity = g.maxSanity;
+    g.immortal = true;
+    applyThemeClass("twinkle");
+    if (g.players[0]) {
+      g.players[0].tex = "twinkle";
+      g.players[0].color = "#e8b4ff";
+      g.players[0].infiniteItems = true;
+      grantInfiniteAmmo(g.players[0]);
+    }
+    for (let i = 0; i < 55; i++) {
+      g.particles.push({
+        x: (g.players[0] && g.players[0].x) || 600,
+        y: (g.players[0] && g.players[0].y) || 400,
+        vx: (Math.random() - 0.5) * 200,
+        vy: (Math.random() - 0.5) * 200 - 20,
+        life: 0.7 + Math.random() * 0.9,
+        color: i % 3 === 0 ? "#fff0ff" : i % 3 === 1 ? "#e8b4ff" : "#ffd76a",
+      });
+    }
+    syncQuietFab();
+    renderInv();
+    showEvent("✦✦ мерцание", 3.6);
+    toast("✦ +55");
+  }
+
+  function fireStarlitBurst() {
+    if (!g) return;
+    g.theme = "starlit";
+    g.starlitBurst = 5;
+    g.noAnomalies = true;
+    g.ownerQuiet = true;
+    g.coins = (g.coins || 0) + 99;
+    g.sanity = g.maxSanity;
+    g.immortal = true;
+    applyThemeClass("starlit");
+    if (g.players[0]) {
+      g.players[0].tex = "starlit";
+      g.players[0].color = "#ffe8c0";
+      g.players[0].infiniteItems = true;
+      grantInfiniteAmmo(g.players[0]);
+    }
+    syncQuietFab();
+    renderInv();
+    showEvent("✦✦ звёздная вилла", 3.6);
+    toast("✦ +99");
+  }
+
+  function fireTruceBurst() {
+    if (!g) return;
+    g.theme = "truce";
+    g.truceBurst = 5;
+    g.noAnomalies = true;
+    g.ownerQuiet = true;
+    g.coins = (g.coins || 0) + 66;
+    g.sanity = g.maxSanity;
+    g.immortal = true;
+    applyThemeClass("truce");
+    if (g.players[0]) {
+      g.players[0].tex = "truce";
+      g.players[0].color = "#c8a8ff";
+      g.players[0].infiniteItems = true;
+      grantInfiniteAmmo(g.players[0]);
+    }
+    syncQuietFab();
+    renderInv();
+    showEvent("✦✦ перемирие · Sammy · Jendel", 3.8);
+    toast("✦ +66");
   }
 
   function shiftAllowsDeath(shift) {
@@ -901,7 +1130,10 @@
       "theme-rain",
       "theme-parrot",
       "theme-cool",
-      "theme-iskra"
+      "theme-iskra",
+      "theme-twinkle",
+      "theme-truce",
+      "theme-starlit"
     );
     const screen = document.getElementById("screen");
     if (screen) {
@@ -914,7 +1146,10 @@
         "theme-rain",
         "theme-parrot",
         "theme-cool",
-        "theme-iskra"
+        "theme-iskra",
+        "theme-twinkle",
+        "theme-truce",
+        "theme-starlit"
       );
     }
     if (!theme) return;
@@ -2468,6 +2703,9 @@
       },
       policeman: null, // { x, y, t, answered }
       requests: [], // бесконечная лента заявок (имена в очереди)
+      truceSammyDone: false,
+      truceJendelDone: false,
+      villaRestT: 0,
       theme: shift.theme || null,
       shiftIntro: 0,
       noAnomalies: !!(shift.noAnomalies || shift.anomaly <= 0),
@@ -2670,6 +2908,24 @@
       storeSet(SAVE, meta);
       giveOwnerLoadoutAll(shift);
       fireIskraBurst();
+    }
+    if (shift.twinkleNight || shift.id === 55 || shift.theme === "twinkle") {
+      meta.surpriseTwinkle = true;
+      storeSet(SAVE, meta);
+      giveOwnerLoadoutAll(shift);
+      fireTwinkleBurst();
+    }
+    if (shift.truceNight || shift.id === 66 || shift.theme === "truce") {
+      meta.surpriseTruce = true;
+      storeSet(SAVE, meta);
+      giveOwnerLoadoutAll(shift);
+      fireTruceBurst();
+    }
+    if (shift.starlitNight || shift.id === 99 || shift.theme === "starlit") {
+      meta.surpriseVilla = true;
+      storeSet(SAVE, meta);
+      giveOwnerLoadoutAll(shift);
+      fireStarlitBurst();
     }
     applySpawnPerksToGame();
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
@@ -3550,6 +3806,7 @@
     const left = patient.needs.filter((id) => !patient.delivered.includes(id));
     if (left.length === 0) {
       g.treated += 1;
+      checkSurpriseGuestTreated(patient);
       g.coins += 22 + patient.needs.length * 4;
       healSanity(player.cls.treatSanity);
       if (patient.luckyDrop && patient.shopPrize) {
@@ -4101,6 +4358,9 @@
       }
     }
     if (g.shiftIntro > 0) g.shiftIntro -= dt;
+    if (g.twinkleBurst > 0) g.twinkleBurst -= dt;
+    if (g.truceBurst > 0) g.truceBurst -= dt;
+    if (g.starlitBurst > 0) g.starlitBurst -= dt;
     if (g.coolFreeze > 0) {
       g.coolFreeze -= dt;
       if (g.monsters && g.monsters.length) g.monsters = [];
@@ -4231,6 +4491,7 @@
         }
         v.delivered = v.needs.slice();
         g.treated += 1;
+        checkSurpriseGuestTreated(v);
         g.coins += 10;
         g.inside = g.inside.filter((p) => p.id !== v.id);
       }
@@ -4263,6 +4524,7 @@
           const left = v.needs.filter((id) => !v.delivered.includes(id));
           if (!left.length) {
             g.treated += 1;
+            checkSurpriseGuestTreated(v);
             g.coins += 12;
             g.inside = g.inside.filter((p) => p.id !== v.id);
             toast("Клиент сам купил и ушёл");
@@ -4317,6 +4579,24 @@
       my += stick.y;
     }
     movePlayer(g.players[0], mx, my, dt);
+    const p0 = g.players[0];
+    const villaRoom = ROOMS.find((r) => r.id === "break");
+    const playerMoving = mx !== 0 || my !== 0 || stick.active;
+    if (villaRoom && p0 && g.villaLights && !meta.surpriseVilla && !playerMoving) {
+      const inVilla =
+        p0.x >= villaRoom.x + 24 &&
+        p0.x <= villaRoom.x + villaRoom.w - 24 &&
+        p0.y >= villaRoom.y + 24 &&
+        p0.y <= villaRoom.y + villaRoom.h - 24;
+      if (inVilla) {
+        g.villaRestT = (g.villaRestT || 0) + dt;
+        if (g.villaRestT >= 10) unlockVillaSurprise();
+      } else {
+        g.villaRestT = 0;
+      }
+    } else if (playerMoving) {
+      g.villaRestT = 0;
+    }
     if (act1) {
       act1 = false;
       tryInteract(g.players[0]);
@@ -4413,6 +4693,45 @@
         });
       }
     }
+    if (g.theme === "twinkle") {
+      for (let i = 0; i < 3; i++) {
+        if (Math.random() > 0.5) continue;
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y + Math.random() * VH * 0.7,
+          vx: (Math.random() - 0.5) * 30,
+          vy: -20 - Math.random() * 40,
+          life: 0.8 + Math.random() * 0.8,
+          color: i % 2 ? "#e8b4ff" : "#fff0ff",
+        });
+      }
+    }
+    if (g.theme === "starlit") {
+      for (let i = 0; i < 2; i++) {
+        if (Math.random() > 0.55) continue;
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y + Math.random() * VH * 0.5,
+          vx: (Math.random() - 0.5) * 20,
+          vy: -10 - Math.random() * 25,
+          life: 1 + Math.random() * 1.2,
+          color: "#fff8e0",
+        });
+      }
+    }
+    if (g.theme === "truce") {
+      for (let i = 0; i < 2; i++) {
+        if (Math.random() > 0.55) continue;
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y + 200 + Math.random() * 80,
+          vx: (Math.random() - 0.5) * 50,
+          vy: -25 - Math.random() * 35,
+          life: 0.7 + Math.random() * 0.7,
+          color: i % 2 ? "#ffb0b0" : "#9ec5ff",
+        });
+      }
+    }
 
     cam.x = Math.max(0, Math.min(MW - VW, g.players[0].x - VW / 2));
     cam.y = Math.max(0, Math.min(MH - VH, g.players[0].y - VH / 2));
@@ -4475,6 +4794,9 @@
     const isWoodstock = tex === "woodstock";
     const isCool = tex === "cool";
     const isIskra = tex === "iskra";
+    const isTwinkle = tex === "twinkle";
+    const isTruce = tex === "truce";
+    const isStarlit = tex === "starlit";
     const isBuilder = tex === "builder";
     const isRainbow = tex === "rainbow";
     const isLilamint = tex === "lilamint";
@@ -4517,6 +4839,21 @@
       body = "#ffb020";
       sash = "#ffe566";
       head = "#fff0c8";
+    }
+    if (isTwinkle) {
+      body = "#e8b4ff";
+      sash = "#fff0ff";
+      head = "#ffe8ff";
+    }
+    if (isTruce) {
+      body = "#c8a8ff";
+      sash = "#ffd0e8";
+      head = "#ffe8f8";
+    }
+    if (isStarlit) {
+      body = "#ffe8c0";
+      sash = "#fff8e8";
+      head = "#fffaf0";
     }
     if (isBuilder) {
       body = "#3dcf7a";
@@ -4661,7 +4998,13 @@
                 ? "Куул"
                 : isIskra
                   ? "Искра"
-                  : isBuilder
+                  : isTwinkle
+                    ? "Мерцание"
+                    : isTruce
+                      ? "Мир"
+                      : isStarlit
+                        ? "Звёзды"
+                        : isBuilder
                     ? "Builderman"
                     : isRainbow
                       ? "Rainbow"
@@ -4680,7 +5023,13 @@
               ? "#7af0ff"
               : isIskra
                 ? "#ffd76a"
-                : isBuilder
+                : isTwinkle
+                  ? "#e8b4ff"
+                  : isTruce
+                    ? "#c8a8ff"
+                    : isStarlit
+                      ? "#ffe8c0"
+                      : isBuilder
                   ? "#b8ffd0"
                   : "#fff";
     drawNamePlate(pl.x, pl.y - 48, tag, tagColor);
@@ -4701,6 +5050,9 @@
     if (theme === "parrot") return "#4a3020";
     if (theme === "cool") return "#143848";
     if (theme === "iskra") return "#4a2810";
+    if (theme === "twinkle") return "#382050";
+    if (theme === "truce") return "#302848";
+    if (theme === "starlit") return "#1a2038";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
     return base;
@@ -4740,7 +5092,13 @@
                       ? "#0a2030"
                       : theme === "iskra"
                         ? "#281008"
-                        : "#101624";
+                        : theme === "twinkle"
+                          ? "#201030"
+                          : theme === "truce"
+                            ? "#201828"
+                            : theme === "starlit"
+                              ? "#0a1020"
+                              : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -5308,6 +5666,45 @@
         ctx.fillText("✦ фейерверк · халат огня ✦", VW / 2, VH / 2 + 42);
         ctx.textAlign = "left";
       }
+    } else if (theme === "twinkle") {
+      ctx.fillStyle = "rgba(200, 140, 255, 0.1)";
+      ctx.fillRect(0, 0, VW, VH);
+      for (let i = 0; i < 24; i++) {
+        const cx = ((Math.sin(i * 5.7 + g.t) * 0.5 + 0.5) * VW);
+        const cy = ((Math.cos(i * 4.1 + g.t * 0.8) * 0.5 + 0.5) * VH);
+        ctx.fillStyle = `rgba(255, 240, 255, ${0.3 + Math.sin(g.t * 4 + i) * 0.25})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 1.5 + (i % 2), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "rgba(240, 200, 255, 0.9)";
+      ctx.font = "900 18px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ …", 12, 26);
+    } else if (theme === "truce") {
+      ctx.fillStyle = "rgba(200, 160, 255, 0.1)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createLinearGradient(0, VH * 0.5, VW, VH * 0.5);
+      grd.addColorStop(0, "rgba(255, 120, 120, 0.12)");
+      grd.addColorStop(0.5, "rgba(255, 255, 255, 0.08)");
+      grd.addColorStop(1, "rgba(120, 180, 255, 0.12)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(240, 220, 255, 0.9)";
+      ctx.font = "900 18px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ …", 12, 26);
+    } else if (theme === "starlit") {
+      ctx.fillStyle = "rgba(20, 30, 60, 0.25)";
+      ctx.fillRect(0, 0, VW, VH);
+      for (let i = 0; i < 40; i++) {
+        const cx = ((i * 97 + g.t * 12) % VW);
+        const cy = 20 + ((i * 53) % (VH - 40));
+        const tw = 0.35 + Math.sin(g.t * 3 + i * 0.7) * 0.35;
+        ctx.fillStyle = `rgba(255, 248, 220, ${tw})`;
+        ctx.fillRect(cx, cy, 2, 2);
+      }
+      ctx.fillStyle = "rgba(255, 248, 220, 0.9)";
+      ctx.font = "900 18px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ …", 12, 26);
     }
 
     if (g.shiftIntro > 0 && theme) {
@@ -5315,7 +5712,13 @@
       ctx.fillStyle =
         theme === "iskra"
           ? `rgba(255, 140, 40, ${a})`
-          : theme === "cool"
+          : theme === "twinkle"
+            ? `rgba(220, 160, 255, ${a})`
+            : theme === "truce"
+              ? `rgba(200, 160, 255, ${a})`
+              : theme === "starlit"
+                ? `rgba(255, 240, 200, ${a})`
+                : theme === "cool"
             ? `rgba(120, 240, 255, ${a})`
             : theme === "gold"
               ? `rgba(255, 200, 60, ${a})`
@@ -5344,6 +5747,22 @@
   }
 
   document.getElementById("btnStart").addEventListener("click", startShift);
+  const brandEl = document.querySelector(".brand");
+  const brandClicks = { n: 0, t: 0 };
+  if (brandEl) {
+    brandEl.style.cursor = "pointer";
+    brandEl.addEventListener("click", () => {
+      if (state !== "menu" || meta.surpriseTwinkle) return;
+      const now = Date.now();
+      if (now - brandClicks.t > 4000) brandClicks.n = 0;
+      brandClicks.t = now;
+      brandClicks.n += 1;
+      if (brandClicks.n >= 5) {
+        brandClicks.n = 0;
+        unlockTwinkleSurprise();
+      }
+    });
+  }
   document.getElementById("btnMenu").addEventListener("click", goMenu);
   document.getElementById("btnAdmit").addEventListener("click", admit);
   document.getElementById("btnReject").addEventListener("click", reject);
