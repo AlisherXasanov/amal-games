@@ -3271,6 +3271,14 @@
   if (btnAllSecrets) btnAllSecrets.addEventListener("click", openSecretShiftsPanel);
   const btnCloseSecrets = document.getElementById("btnCloseSecrets");
   if (btnCloseSecrets) btnCloseSecrets.addEventListener("click", closeSecretShiftsPanel);
+  const btnHardReload = document.getElementById("btnHardReload");
+  if (btnHardReload) {
+    btnHardReload.addEventListener("click", () => {
+      const u = new URL(location.href);
+      u.searchParams.set("r", String(Date.now()));
+      location.replace(u.toString());
+    });
+  }
 
   const secretDeathInput = document.getElementById("secretDeathInput");
   const secretDeathGo = document.getElementById("secretDeathGo");

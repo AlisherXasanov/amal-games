@@ -351,6 +351,12 @@ body.theme-parrot #app {
   font-size: 0.72rem;
   opacity: 0.9;
 }
+.panel.menu .build-stamp {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  opacity: 0.55;
+  text-align: center;
+}
 
 /* админ-вещи: нормальный размер, сверху — не закрывают лобби */
 #amal-admin-things {
