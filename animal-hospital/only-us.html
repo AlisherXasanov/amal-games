@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>✦ Только ты и я</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./only-us.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+  <div class="glow" aria-hidden="true"></div>
+  <div id="app">
+    <canvas id="c" width="960" height="560"></canvas>
+    <div class="hud" id="hud" hidden>
+      <div class="hud-left">
+        <span id="modeLabel">✦</span>
+        <span id="starCount">★ 0 / 7</span>
+      </div>
+      <div class="hud-right" id="hint">WASD / стрелки · E рядом</div>
+    </div>
+    <div class="bubble" id="bubble" hidden></div>
+    <div class="overlay" id="menu">
+      <p class="brand">✦ Только ты и я</p>
+      <p class="sub">Маленькая комната. Без гостей. Без кодов в чате.<br />Выбери, как играть.</p>
+      <div class="modes">
+        <button type="button" class="mode" data-mode="duo">
+          <strong>Только ты и я</strong>
+          <small>Ты ходишь · я рядом · вместе собираем звёзды</small>
+        </button>
+        <button type="button" class="mode" data-mode="solo">
+          <strong>Только ты</strong>
+          <small>Один в комнате · тише · всё сам</small>
+        </button>
+        <button type="button" class="mode" data-mode="mirror">
+          <strong>Только ты и ты</strong>
+          <small>Два «ты» · зеркало · ходишь — второй повторяет</small>
+        </button>
+      </div>
+    </div>
+    <div class="overlay win" id="win" hidden>
+      <p class="brand">✦ Мы здесь</p>
+      <p class="sub" id="winText">Собрали все звёзды.</p>
+      <p class="code" id="winCode"></p>
+      <p class="sub tiny">Сфоткай, если хочешь показать мне.</p>
+      <button type="button" class="btn" id="btnAgain">Ещё раз</button>
+    </div>
+  </div>
+  <div class="touch" id="touch" hidden>
+    <div class="pad" id="pad"></div>
+    <button type="button" class="act" id="btnE">E</button>
+  </div>
+  <script src="./only-us.js?v=1"></script>
+</body>
+</html>
