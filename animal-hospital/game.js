@@ -468,11 +468,24 @@
   }
 
   function applySecretDeathCode(raw) {
-    if (!canUseSecretShifts()) return false;
+    if (!canUseSecretShifts()) {
+      toast("Код только для хозяина");
+      return false;
+    }
     const code = String(raw || "")
       .trim()
-      .toLowerCase();
-    if (code === "parrot" || code === "попугай") {
+      .toLowerCase()
+      .replace(/ё/g, "е")
+      .replace(/[\s,.\-_/'"«»]+/g, "");
+    const parrotCodes = [
+      "попугай",
+      "parrot",
+      "кеша",
+      "тоты",
+      "парольпопугай",
+      "кодпопугай",
+    ];
+    if (parrotCodes.includes(code)) {
       meta.secretParrot = true;
       meta.secretShifts67 = true;
       meta.secretShift7 = true;
@@ -494,11 +507,12 @@
       refreshLobbyUI();
       persistLobby();
       applyThemeClass("parrot");
-      toast("✦ попугай");
+      toast("✦ попугай · смена выбрана");
       showEvent("✦ Попугай · первый секретный код", 2.8);
       return true;
     }
     if (code !== "67" && code !== "52" && code !== "7" && code !== "12" && code !== "19" && code !== "33") {
+      toast("Неизвестный код");
       return false;
     }
     meta.secretShifts67 = true;
@@ -508,6 +522,7 @@
     if (pick) selectedShift = pick;
     refreshLobbyUI();
     persistLobby();
+    toast("Смена: " + (pick ? pick.name : code));
     return true;
   }
 
