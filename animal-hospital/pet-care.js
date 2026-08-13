@@ -26,6 +26,10 @@
   let last = performance.now();
   let done = false;
   let audioCtx = null;
+  let skyLevel = 0; // 0 room → 1 full sky
+  let skyTriggered = false;
+  let skyStars = [];
+  let t = 0;
 
   const LINES = {
     cat: {
@@ -34,6 +38,8 @@
       play: ["Хватай мышку!", "Я прыгнул выше всех!", "Играю как чемпион."],
       sleep: ["Zzz… мышцы отдыхают.", "Сон сильного кота.", "Мррр… спокойной."],
       low: ["Я голоден…", "Я грязный!", "Мне скучно…", "Я устал…"],
+      full: ["Всё на максимуме! Я лечу в небо!", "Сила + счастье = небо!", "Мррр… я как на облаке."],
+      sad: ["Мяу… мне плохо.", "Без заботы я слабею.", "Хочу внимания…"],
     },
     dog: {
       feed: ["Гав! Корги сыт.", "Taxi dog одобряет.", "Ням-ням, короткие лапки счастливы."],
@@ -41,6 +47,8 @@
       play: ["Мячик! Гав-гав!", "Бегу на коротких лапках!", "Taxi dog на службе веселья."],
       sleep: ["Корги спит…", "Такси закрыто на ночь.", "Zzz… гав…"],
       low: ["Гав… голодно.", "Я грязный корги.", "Поиграем?", "Хочу спать…"],
+      full: ["Taxi to the sky! Всё отлично!", "Корги на облаке!", "Гав! Небесный рейс!"],
+      sad: ["Гав… грустно.", "Такси сломалось без заботы.", "Мне нужна помощь…"],
     },
   };
 
@@ -71,6 +79,8 @@
   }
 
   function makePet(kind) {
+    const baseY = kind === "cat" ? VH * 0.62 : VH * 0.68;
+    const baseX = mode === "both" ? (kind === "cat" ? VW * 0.32 : VW * 0.68) : VW * 0.5;
     if (kind === "cat") {
       return {
         id: "cat",
@@ -84,8 +94,12 @@
         bob: 0,
         anim: 0,
         effect: null,
-        x: mode === "both" ? VW * 0.32 : VW * 0.5,
-        y: VH * 0.62,
+        x: baseX,
+        y: baseY,
+        baseY,
+        float: 0,
+        sky: false,
+        glow: 0,
       };
     }
     return {
@@ -100,14 +114,44 @@
       bob: 0,
       anim: 0,
       effect: null,
-      x: mode === "both" ? VW * 0.68 : VW * 0.5,
-      y: VH * 0.68,
+      x: baseX,
+      y: baseY,
+      baseY,
+      float: 0,
+      sky: false,
+      glow: 0,
     };
+  }
+
+  function isFull(p) {
+    return p.hunger >= 88 && p.clean >= 88 && p.happy >= 88 && p.energy >= 88 && p.power >= 60;
+  }
+
+  function isSad(p) {
+    return p.hunger < 25 || p.clean < 25 || p.happy < 25 || p.energy < 20;
+  }
+
+  function avgCare(p) {
+    return (p.hunger + p.clean + p.happy + p.energy) / 4;
+  }
+
+  function makeSkyStars() {
+    skyStars = [];
+    for (let i = 0; i < 40; i++) {
+      skyStars.push({
+        x: Math.random() * VW,
+        y: Math.random() * VH * 0.7,
+        s: 1 + Math.random() * 2.5,
+        tw: Math.random() * Math.PI * 2,
+      });
+    }
   }
 
   function showMenu() {
     done = false;
     pets = [];
+    skyLevel = 0;
+    skyTriggered = false;
     menu.hidden = false;
     play.hidden = true;
     win.hidden = true;
@@ -120,8 +164,11 @@
     day = 1;
     dayT = 0;
     done = false;
+    skyLevel = 0;
+    skyTriggered = false;
     particles = [];
     pets = [];
+    makeSkyStars();
     if (m === "cat" || m === "both") pets.push(makePet("cat"));
     if (m === "dog" || m === "both") pets.push(makePet("dog"));
     active = 0;
@@ -131,16 +178,27 @@
     dayLabel.textContent = "День 1";
     loveLabel.textContent = "❤ 0";
     renderPanel();
-    say(m === "both" ? "Два питомца. Кликни по коту или корги — или по карточке." : "Забота начинается!", 3);
+    say(
+      m === "both"
+        ? "Два питомца. Если всё на максимуме — они взлетят в небо!"
+        : "Если всё на максимуме — питомец взлетит в небо!",
+      3.5
+    );
     draw();
   }
 
-  function finish() {
+  function finish(skyWin) {
     if (done) return;
     done = true;
-    winText.textContent =
-      "Ты заботился " + day + " дн. · любовь " + love + ". Питомцы счастливы.";
-    winCode.textContent = "PET · " + String(((Date.now() / 1000) | 0) % 100000);
+    if (skyWin) {
+      winText.textContent =
+        "Всё на максимуме! Питомцы улетели в небо. День " + day + " · ❤ " + love;
+      winCode.textContent = "SKY · " + String(((Date.now() / 1000) | 0) % 100000);
+    } else {
+      winText.textContent =
+        "Ты заботился " + day + " дн. · любовь " + love + ". Питомцы счастливы.";
+      winCode.textContent = "PET · " + String(((Date.now() / 1000) | 0) % 100000);
+    }
     win.hidden = false;
   }
 
@@ -179,7 +237,8 @@
       }
       p.hunger = clamp(p.hunger + 28);
       p.happy = clamp(p.happy + 8);
-      if (p.id === "cat") p.power = clamp(p.power + 6);
+      if (p.id === "cat") p.power = clamp(p.power + 10);
+      else p.power = clamp(p.power + 6);
       p.anim = 0.8;
       p.effect = "feed";
       burst(p.x, p.y - 40, "#ffb040", 12);
@@ -193,7 +252,7 @@
       }
       p.clean = clamp(p.clean + 32);
       p.happy = clamp(p.happy + 5);
-      if (p.id === "cat") p.power = clamp(p.power + 3);
+      p.power = clamp(p.power + (p.id === "cat" ? 5 : 4));
       p.anim = 0.9;
       p.effect = "wash";
       burst(p.x, p.y - 20, "#7ec8ff", 14);
@@ -208,8 +267,8 @@
       p.happy = clamp(p.happy + 26);
       p.energy = clamp(p.energy - 18);
       p.hunger = clamp(p.hunger - 8);
-      if (p.id === "dog") p.power = clamp(p.power + 4);
-      if (p.id === "cat") p.power = clamp(p.power + 2);
+      if (p.id === "dog") p.power = clamp(p.power + 8);
+      if (p.id === "cat") p.power = clamp(p.power + 5);
       p.anim = 0.7;
       p.effect = "play";
       burst(p.x, p.y - 50, "#ff90b8", 12);
@@ -229,7 +288,34 @@
 
     loveLabel.textContent = "❤ " + love;
     renderPanel();
-    if (love >= 50 && day >= 3) finish();
+    checkSkyState();
+    if (love >= 50 && day >= 3 && !pets.every(isFull)) finish(false);
+  }
+
+  function checkSkyState() {
+    for (const p of pets) {
+      if (isFull(p) && !p.sky) {
+        p.sky = true;
+        p.glow = 1;
+        love += 8;
+        loveLabel.textContent = "❤ " + love;
+        burst(p.x, p.y - 40, "#ffe080", 22);
+        burst(p.x, p.y - 20, "#a0d0ff", 16);
+        beep(523, 0.08);
+        setTimeout(() => beep(659, 0.1), 80);
+        setTimeout(() => beep(784, 0.14), 160);
+        say(line(p.id, "full"), 3.5);
+      } else if (!isFull(p) && p.sky) {
+        p.sky = false;
+      }
+    }
+    if (pets.length && pets.every(isFull) && !skyTriggered) {
+      skyTriggered = true;
+      say("✦ Всё на максимуме! Небо открывается…", 4);
+      setTimeout(() => {
+        if (!done && pets.every(isFull)) finish(true);
+      }, 4500);
+    }
   }
 
   function renderPanel() {
@@ -264,19 +350,41 @@
 
   function tickNeeds(dt) {
     for (const p of pets) {
-      p.hunger = clamp(p.hunger - dt * 2.2);
-      p.clean = clamp(p.clean - dt * 1.6);
-      p.happy = clamp(p.happy - dt * 1.4);
-      p.energy = clamp(p.energy - dt * 1.1);
-      p.bob += dt * 3;
+      // when in sky bliss, stats drain slower
+      const slow = p.sky ? 0.35 : 1;
+      p.hunger = clamp(p.hunger - dt * 2.2 * slow);
+      p.clean = clamp(p.clean - dt * 1.6 * slow);
+      p.happy = clamp(p.happy - dt * 1.4 * slow);
+      p.energy = clamp(p.energy - dt * 1.1 * slow);
+      p.bob += dt * (p.sky ? 5 : 3);
       if (p.anim > 0) p.anim -= dt;
       else p.effect = null;
+
+      const wantFloat = isFull(p) ? 1 : isSad(p) ? -0.15 : 0;
+      p.float += (wantFloat - p.float) * Math.min(1, dt * 1.8);
+      p.glow += ((isFull(p) ? 1 : 0) - p.glow) * Math.min(1, dt * 3);
+      // float toward sky
+      const targetY = p.baseY - p.float * (p.baseY - 110);
+      p.y += (targetY - p.y) * Math.min(1, dt * 2.5);
     }
+
+    // sky fills when pets are full
+    const fullN = pets.filter(isFull).length;
+    const targetSky = pets.length ? fullN / pets.length : 0;
+    skyLevel += (targetSky - skyLevel) * Math.min(1, dt * 1.2);
   }
 
   function maybeComplain(dt) {
     if (Math.random() > dt * 0.35) return;
     const p = pets[(Math.random() * pets.length) | 0];
+    if (isFull(p)) {
+      say(line(p.id, "full"), 2.2);
+      return;
+    }
+    if (isSad(p)) {
+      say(line(p.id, "sad"), 2.2);
+      return;
+    }
     const lows = [
       p.hunger < 28 ? LINES[p.id].low[0] : null,
       p.clean < 28 ? LINES[p.id].low[1] : null,
@@ -287,12 +395,41 @@
   }
 
   function drawRoom() {
+    const s = skyLevel;
     const sky = ctx.createLinearGradient(0, 0, 0, VH);
-    sky.addColorStop(0, "#b8e0ff");
-    sky.addColorStop(1, "#e8f4ff");
+    sky.addColorStop(0, lerpColor("#b8e0ff", "#2040a0", s));
+    sky.addColorStop(0.45, lerpColor("#e8f4ff", "#6090e0", s));
+    sky.addColorStop(1, lerpColor("#e8f4ff", "#c8e8ff", s));
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, VW, VH);
 
+    // stars appear as sky opens
+    if (s > 0.15) {
+      for (const st of skyStars) {
+        const a = (0.3 + Math.sin(t * 3 + st.tw) * 0.3) * s;
+        ctx.fillStyle = `rgba(255,255,255,${a})`;
+        ctx.beginPath();
+        ctx.arc(st.x, st.y, st.s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // clouds when sky
+    if (s > 0.2) {
+      ctx.fillStyle = `rgba(255,255,255,${0.35 * s})`;
+      for (let i = 0; i < 5; i++) {
+        const cx = ((i * 200 + t * 18) % (VW + 120)) - 60;
+        const cy = 60 + i * 28;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 50, 16, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx + 30, cy + 4, 40, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // floor fades when sky
+    const floorA = 1 - s * 0.85;
+    ctx.globalAlpha = floorA;
     ctx.fillStyle = "#f0e0c8";
     ctx.fillRect(0, VH * 0.72, VW, VH * 0.28);
     ctx.fillStyle = "#e0d0b0";
@@ -301,7 +438,7 @@
     }
 
     // window
-    ctx.fillStyle = "#dff0ff";
+    ctx.fillStyle = s > 0.5 ? "#fff8c0" : "#dff0ff";
     ctx.fillRect(40, 40, 160, 110);
     ctx.strokeStyle = "#c0a880";
     ctx.lineWidth = 6;
@@ -313,42 +450,90 @@
     ctx.lineTo(200, 95);
     ctx.stroke();
 
-    // sun
     ctx.fillStyle = "#ffe080";
     ctx.beginPath();
-    ctx.arc(140, 75, 18, 0, Math.PI * 2);
+    ctx.arc(140, 75, 18 + s * 10, 0, Math.PI * 2);
     ctx.fill();
 
-    // cushion
     ctx.fillStyle = "#ffb0c8";
     ctx.beginPath();
     ctx.ellipse(VW * 0.28, VH * 0.78, 70, 22, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // dog bed
     ctx.fillStyle = "#d0b090";
     ctx.beginPath();
     ctx.ellipse(VW * 0.72, VH * 0.8, 75, 20, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#c09060";
     ctx.fillRect(VW * 0.72 - 55, VH * 0.72, 110, 18);
+    ctx.globalAlpha = 1;
+
+    // rainbow when full sky
+    if (s > 0.55) {
+      const cx = VW / 2;
+      const cy = VH * 0.95;
+      const cols = ["#ff6080", "#ff9040", "#ffe060", "#60e080", "#60b0ff", "#a070ff"];
+      cols.forEach((c, i) => {
+        ctx.strokeStyle = c;
+        ctx.globalAlpha = (s - 0.55) * 1.5 * 0.45;
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 220 - i * 12, Math.PI, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    // sad tint when pets are neglected
+    const sadN = pets.filter(isSad).length;
+    if (sadN && s < 0.3) {
+      ctx.fillStyle = `rgba(40, 30, 60, ${0.12 * sadN})`;
+      ctx.fillRect(0, 0, VW, VH);
+    }
+  }
+
+  function lerpColor(a, b, t) {
+    const pa = parseInt(a.slice(1), 16);
+    const pb = parseInt(b.slice(1), 16);
+    const ar = (pa >> 16) & 255,
+      ag = (pa >> 8) & 255,
+      ab = pa & 255;
+    const br = (pb >> 16) & 255,
+      bg = (pb >> 8) & 255,
+      bb = pb & 255;
+    const r = (ar + (br - ar) * t) | 0;
+    const g = (ag + (bg - ag) * t) | 0;
+    const bl = (ab + (bb - ab) * t) | 0;
+    return `rgb(${r},${g},${bl})`;
   }
 
   function drawCat(p) {
     const bob = Math.sin(p.bob) * 4;
     const powerScale = 1 + p.power * 0.004;
+    const sad = isSad(p);
     ctx.save();
     ctx.translate(p.x, p.y + bob);
     ctx.scale(powerScale, powerScale);
 
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    if (p.glow > 0.05) {
+      ctx.fillStyle = `rgba(255, 220, 120, ${0.25 * p.glow})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, 70 + Math.sin(t * 4) * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = `rgba(160, 200, 255, ${0.2 * p.glow})`;
+      ctx.beginPath();
+      ctx.arc(0, -10, 50, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // shadow fades when floating
+    ctx.fillStyle = `rgba(0,0,0,${0.12 * (1 - p.float)})`;
     ctx.beginPath();
     ctx.ellipse(0, 28, 36, 10, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // body — muscular
-    ctx.fillStyle = "#ff9a4a";
+    ctx.fillStyle = sad ? "#c08060" : "#ff9a4a";
     ctx.beginPath();
     ctx.ellipse(0, 8, 34 + p.power * 0.08, 26 + p.power * 0.05, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -381,6 +566,13 @@
     ctx.arc(-7, -24, 2.2, 0, Math.PI * 2);
     ctx.arc(9, -24, 2.2, 0, Math.PI * 2);
     ctx.fill();
+    if (sad) {
+      ctx.strokeStyle = "#203040";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-8, -18, 4, 0.2, Math.PI - 0.2, true);
+      ctx.stroke();
+    }
 
     // nose / mouth
     ctx.fillStyle = "#ff6080";
@@ -404,6 +596,16 @@
     ctx.fillStyle = "#ff8a30";
     ctx.fillRect(-22, 24, 14, 18);
     ctx.fillRect(8, 24, 14, 18);
+
+    // wings when sky
+    if (p.float > 0.3) {
+      ctx.fillStyle = `rgba(255,255,255,${0.55 * p.float})`;
+      const flap = Math.sin(t * 8) * 8;
+      ctx.beginPath();
+      ctx.ellipse(-40, -5 + flap, 22, 10, -0.4, 0, Math.PI * 2);
+      ctx.ellipse(40, -5 - flap, 22, 10, 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // tail
     ctx.strokeStyle = "#ff9a4a";
@@ -431,6 +633,10 @@
       ctx.font = "700 16px Fredoka, sans-serif";
       ctx.fillText("Zzz", 20, -50);
     }
+    if (p.sky) {
+      ctx.font = "18px serif";
+      ctx.fillText("☁", -8, -70 - Math.sin(t * 3) * 4);
+    }
 
     // power badge
     ctx.fillStyle = "rgba(160, 80, 255, 0.85)";
@@ -447,16 +653,24 @@
 
   function drawDog(p) {
     const bob = Math.sin(p.bob * 1.2) * 3;
+    const sad = isSad(p);
     ctx.save();
     ctx.translate(p.x, p.y + bob);
 
-    ctx.fillStyle = "rgba(0,0,0,0.12)";
+    if (p.glow > 0.05) {
+      ctx.fillStyle = `rgba(255, 220, 100, ${0.25 * p.glow})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, 65 + Math.sin(t * 4) * 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = `rgba(0,0,0,${0.12 * (1 - p.float)})`;
     ctx.beginPath();
     ctx.ellipse(0, 22, 40, 9, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // body — low corgi
-    ctx.fillStyle = "#e0a060";
+    ctx.fillStyle = sad ? "#a08060" : "#e0a060";
     ctx.beginPath();
     ctx.ellipse(0, 4, 42, 22, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -516,8 +730,8 @@
     ctx.quadraticCurveTo(56, -18 + Math.sin(p.bob * 3) * 6, 50, -6);
     ctx.stroke();
 
-    // taxi badge
-    ctx.fillStyle = "#ffd040";
+    // taxi badge — becomes SKY when full
+    ctx.fillStyle = p.sky ? "#a0d0ff" : "#ffd040";
     ctx.fillRect(8, -8, 28, 14);
     ctx.strokeStyle = "#302010";
     ctx.lineWidth = 1.5;
@@ -525,7 +739,18 @@
     ctx.fillStyle = "#302010";
     ctx.font = "800 9px Nunito, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("TAXI", 22, 2);
+    ctx.fillText(p.sky ? "SKY" : "TAXI", 22, 2);
+
+    // float propeller / wings
+    if (p.float > 0.3) {
+      ctx.fillStyle = `rgba(255,255,255,${0.5 * p.float})`;
+      const flap = Math.sin(t * 10) * 10;
+      ctx.beginPath();
+      ctx.ellipse(-10, -28 + flap * 0.3, 28, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffd040";
+      ctx.fillRect(-2, -40, 4, 14);
+    }
 
     if (p.effect === "wash") {
       ctx.fillStyle = "rgba(126,200,255,0.5)";
@@ -547,6 +772,10 @@
       ctx.fillStyle = "#8060c0";
       ctx.font = "700 16px Fredoka, sans-serif";
       ctx.fillText("Zzz", 30, -36);
+    }
+    if (p.sky) {
+      ctx.font = "18px serif";
+      ctx.fillText("☁", 0, -55 - Math.sin(t * 3) * 4);
     }
 
     ctx.restore();
@@ -581,6 +810,7 @@
   }
 
   function update(dt) {
+    t += dt;
     if (bubbleT > 0) {
       bubbleT -= dt;
       if (bubbleT <= 0) bubble.hidden = true;
@@ -589,6 +819,10 @@
 
     tickNeeds(dt);
     maybeComplain(dt);
+    // keep sky flag in sync while draining
+    for (const p of pets) {
+      if (p.sky && !isFull(p)) p.sky = false;
+    }
 
     dayT += dt;
     if (dayT >= 28) {
@@ -604,7 +838,8 @@
       }
       loveLabel.textContent = "❤ " + love;
       renderPanel();
-      if (love >= 50 && day >= 3) finish();
+      checkSkyState();
+      if (love >= 50 && day >= 3 && !pets.every(isFull)) finish(false);
     }
 
     for (const pt of particles) {
