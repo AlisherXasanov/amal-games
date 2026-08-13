@@ -3722,9 +3722,11 @@
       showEvent("👻 Призрак в коридоре! F / E", 3.5);
       hurtSanity(5);
     } else if (g.shift.special === "mass") {
-      for (let i = 0; i < 3; i++) g.queue.push(makeVisitor());
-      layoutQueue();
-      showEvent("🚑 Массовое поступление!", 3);
+      if (!g.noAnimals) {
+        for (let i = 0; i < 3; i++) g.queue.push(makeVisitor());
+        layoutQueue();
+        showEvent("🚑 Массовое поступление!", 3);
+      }
     } else {
       g.monsters.push(spawnMonster("stalker", 400, 160, 8));
       showEvent("Сталкер рядом…", 3);
