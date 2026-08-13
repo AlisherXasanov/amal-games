@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>+1 Speed Escape — черновик</title>
+  <title>+1 Speed Escape вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#2a1040;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
@@ -17,13 +17,13 @@
 <body>
   <div id="hud">
     <b>+1 Speed Escape</b><br/>
-    Дистанция: <span id="dist">0</span> м · Скорость: <span id="spd">1</span><br/>
-    Рекорд: <span id="best">0</span> м<br/>
-    <span id="status">Беги вперёд · пады +1 · избегай препятствий</span>
+    Р”РёСЃС‚Р°РЅС†РёСЏ: <span id="dist">0</span> Рј В· РЎРєРѕСЂРѕСЃС‚СЊ: <span id="spd">1</span><br/>
+    Р РµРєРѕСЂРґ: <span id="best">0</span> Рј<br/>
+    <span id="status">Р‘РµРіРё РІРїРµСЂС‘Рґ В· РїР°РґС‹ +1 В· РёР·Р±РµРіР°Р№ РїСЂРµРїСЏС‚СЃС‚РІРёР№</span>
   </div>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
-  <div id="rules">Авто-бег вперёд · WASD помогает · ПКМ — камера<br/>Препятствие = гибель и сброс (хозяин проходит навылет).</div>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="rules">РђРІС‚Рѕ-Р±РµРі РІРїРµСЂС‘Рґ В· WASD РїРѕРјРѕРіР°РµС‚ В· РџРљРњ вЂ” РєР°РјРµСЂР°<br/>РџСЂРµРїСЏС‚СЃС‚РІРёРµ = РіРёР±РµР»СЊ Рё СЃР±СЂРѕСЃ (С…РѕР·СЏРёРЅ РїСЂРѕС…РѕРґРёС‚ РЅР°РІС‹Р»РµС‚).</div>
   <div id="toast"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -58,7 +58,7 @@
       lookOffsetY: 1.35,
       minDist: 5,
       maxDist: 28,
-      hintText: "Камера: ПКМ · колёсико"
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· РєРѕР»С‘СЃРёРєРѕ"
     });
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -137,7 +137,7 @@
       scene.add(g);
       segments.push({ group: g, z0: z0, end: z0 - SEG_LEN });
 
-      // speed pads (1–2 per segment after first)
+      // speed pads (1вЂ“2 per segment after first)
       if (segIndex > 0) {
         const padCount = 1 + (segIndex % 3 === 0 ? 1 : 0);
         for (let p = 0; p < padCount; p++) {
@@ -288,8 +288,8 @@
       player.state.vy = 0;
       player.state.vz = 0;
       clearWorld();
-      document.getElementById("status").textContent = "Снова вперёд! Собирай зелёные пады +1";
-      toast("Старт", 1.0);
+      document.getElementById("status").textContent = "РЎРЅРѕРІР° РІРїРµСЂС‘Рґ! РЎРѕР±РёСЂР°Р№ Р·РµР»С‘РЅС‹Рµ РїР°РґС‹ +1";
+      toast("РЎС‚Р°СЂС‚", 1.0);
       syncHud();
     }
 
@@ -299,8 +299,8 @@
       dead = true;
       player.state.locked = true;
       saveBest();
-      toast("Ты погиб", 1.5);
-      document.getElementById("status").textContent = "Сброс дистанции и скорости…";
+      toast("РўС‹ РїРѕРіРёР±", 1.5);
+      document.getElementById("status").textContent = "РЎР±СЂРѕСЃ РґРёСЃС‚Р°РЅС†РёРё Рё СЃРєРѕСЂРѕСЃС‚РёвЂ¦";
       respawnT = 1.5;
     }
 
@@ -403,8 +403,8 @@
           p.mesh.visible = false;
           if (p.label) p.label.visible = false;
           speedLevel += 1;
-          toast("+1 скорость! ×" + speedLevel, 1.0);
-          document.getElementById("status").textContent = "Скорость выросла — осторожнее с препятствиями";
+          toast("+1 СЃРєРѕСЂРѕСЃС‚СЊ! Г—" + speedLevel, 1.0);
+          document.getElementById("status").textContent = "РЎРєРѕСЂРѕСЃС‚СЊ РІС‹СЂРѕСЃР»Р° вЂ” РѕСЃС‚РѕСЂРѕР¶РЅРµРµ СЃ РїСЂРµРїСЏС‚СЃС‚РІРёСЏРјРё";
           syncHud();
         }
       }
@@ -432,7 +432,7 @@
               }
               const side = player.mesh.position.x >= ox ? 1 : -1;
               player.mesh.position.x += side * 0.9;
-              toast("Проход · хозяин", 0.8);
+              toast("РџСЂРѕС…РѕРґ В· С…РѕР·СЏРёРЅ", 0.8);
             } else {
               killPlayer();
               break;
@@ -449,6 +449,6 @@
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

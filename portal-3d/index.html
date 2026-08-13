@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D · на доработке (замок)</title>
-  <meta name="description" content="3D-игры Amal Lab под замком: игрокам пока нельзя, админ может войти." />
+  <title>3D В· РЅР° РґРѕСЂР°Р±РѕС‚РєРµ (Р·Р°РјРѕРє)</title>
+  <meta name="description" content="3D-РёРіСЂС‹ Amal Lab РїРѕРґ Р·Р°РјРєРѕРј: РёРіСЂРѕРєР°Рј РїРѕРєР° РЅРµР»СЊР·СЏ, Р°РґРјРёРЅ РјРѕР¶РµС‚ РІРѕР№С‚Рё." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -85,56 +85,113 @@
       font: 800 10px Space Grotesk, Nunito, sans-serif; letter-spacing: 0.06em;
     }
     .card.unlocked .badge-lock { background: #0d6e5f; }
+    .faq {
+      width: min(720px, 94vw);
+      margin: 1.4rem auto 0.5rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.16);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 0.4rem;
+      box-shadow: 0 10px 28px rgba(16,40,32,.08);
+    }
+    .faq h2 {
+      font: 700 1.15rem Fredoka, Nunito, sans-serif;
+      color: #0d6e5f;
+      margin-bottom: 0.55rem;
+    }
+    .faq details {
+      border-top: 1px dashed rgba(13,110,95,.18);
+      padding: 0.65rem 0;
+    }
+    .faq summary {
+      cursor: pointer;
+      font: 800 14px Nunito, sans-serif;
+      color: #102018;
+      list-style: none;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::before { content: "в–ё "; color: #0d6e5f; }
+    .faq details[open] summary::before { content: "в–ѕ "; }
+    .faq details p {
+      margin-top: 0.4rem;
+      color: #5a6a62;
+      font: 600 13px/1.45 Nunito, sans-serif;
+      padding-left: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="top">
-    <a class="back" href="../">&larr; Lab главная</a>
-    <a class="chip" href="../animal-hospital/lab-group.html">Группа Lab</a>
+    <a class="back" href="../">&larr; Lab РіР»Р°РІРЅР°СЏ</a>
+    <a class="chip" href="../animal-hospital/lab-group.html">Р“СЂСѓРїРїР° Lab</a>
   </div>
 
   <header class="hero">
-    <p class="eyebrow">WIP · LOCKED</p>
-    <h1>3D-игры под замком</h1>
-    <p class="sub">Их видно всем, но пока <b>в цепях</b>. Обычным игрокам зайти нельзя — игры ещё дорабатываются.</p>
+    <p class="eyebrow">WIP В· LOCKED</p>
+    <h1>3D-РёРіСЂС‹ РїРѕРґ Р·Р°РјРєРѕРј</h1>
+    <p class="sub">РС… РІРёРґРЅРѕ РІСЃРµРј, РЅРѕ РїРѕРєР° <b>РІ С†РµРїСЏС…</b>. РћР±С‹С‡РЅС‹Рј РёРіСЂРѕРєР°Рј Р·Р°Р№С‚Рё РЅРµР»СЊР·СЏ вЂ” РёРіСЂС‹ РµС‰С‘ РґРѕСЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ.</p>
   </header>
 
   <div class="banner">
-    <div class="lockline">⛓ 🔒 ⛓</div>
-    <strong>Временно недоступны</strong>
-    Клик по карточке покажет сообщение. Админ / хозяин может войти и тестировать.
+    <div class="lockline">в›“ рџ”’ в›“</div>
+    <strong>Р’СЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅС‹</strong>
+    РљР»РёРє РїРѕ РєР°СЂС‚РѕС‡РєРµ РїРѕРєР°Р¶РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ. РђРґРјРёРЅ / С…РѕР·СЏРёРЅ РјРѕР¶РµС‚ РІРѕР№С‚Рё Рё С‚РµСЃС‚РёСЂРѕРІР°С‚СЊ.
   </div>
-  <p class="admin-note" id="adminNote">👑 Ты админ — замок снят. Можно заходить в 3D и проверять.</p>
+  <p class="admin-note" id="adminNote">рџ‘‘ РўС‹ Р°РґРјРёРЅ вЂ” Р·Р°РјРѕРє СЃРЅСЏС‚. РњРѕР¶РЅРѕ Р·Р°С…РѕРґРёС‚СЊ РІ 3D Рё РїСЂРѕРІРµСЂСЏС‚СЊ.</p>
 
-  <p class="sec">Основные 3D</p>
+  <section class="faq" id="faq" aria-label="Р’РѕРїСЂРѕСЃС‹ РІРЅСѓС‚СЂРё">
+    <h2>вќ“ Р’РѕРїСЂРѕСЃС‹ В· РІРЅСѓС‚СЂРё</h2>
+    <details open>
+      <summary>Р§С‚Рѕ РґРµР»Р°С‚СЊ РІ 3D-РёРіСЂР°С… РѕР±С‹С‡РЅРѕРјСѓ РёРіСЂРѕРєСѓ?</summary>
+      <p>РќРёС‡РµРіРѕ РѕСЃРѕР±РµРЅРЅРѕРіРѕ: СЃРјРѕС‚СЂРё РєР°СЂС‚РѕС‡РєРё РїРѕРґ Р·Р°РјРєРѕРј Рё Р¶РґРё. РљР»РёРє РїРѕРєР°Р¶РµС‚: РёРіСЂС‹ РІСЂРµРјРµРЅРЅРѕ РЅРµРґРѕСЃС‚СѓРїРЅС‹, РµС‰С‘ РґРѕСЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ.</p>
+    </details>
+    <details open>
+      <summary>Р§С‚Рѕ РґРµР»Р°С‚СЊ Р°РґРјРёРЅСѓ / С…РѕР·СЏРёРЅСѓ?</summary>
+      <p>Р—Р°С…РѕРґРё РІ Р»СЋР±СѓСЋ РєР°СЂС‚РѕС‡РєСѓ (рџ‘‘), С‚РµСЃС‚РёСЂСѓР№ СѓРїСЂР°РІР»РµРЅРёРµ Рё Р±Р°РіРё. РљРѕРіРґР° РёРіСЂР° РіРѕС‚РѕРІР° вЂ” СЃРєР°Р¶Рё РѕС‚РєСЂС‹С‚СЊ 3D, Рё Р·Р°РјРѕРє СЃРЅРёРјСѓС‚ РґР»СЏ РІСЃРµС….</p>
+    </details>
+    <details>
+      <summary>РџРѕС‡РµРјСѓ РѕРЅРё РІ С†РµРїСЏС…, Р° РЅРµ СѓРґР°Р»РµРЅС‹?</summary>
+      <p>Р§С‚РѕР±С‹ РІСЃРµ РІРёРґРµР»Рё, С‡С‚Рѕ 3D РµСЃС‚СЊ Рё СЃРєРѕСЂРѕ РІРµСЂРЅС‘С‚СЃСЏ. РќРµ РѕС‚РґРµР»СЊРЅР°СЏ В«С‚Р°Р№РЅР°СЏ РІРєР»Р°РґРєР° Р±РµР· СЃР»РµРґР°В» вЂ” РїРѕР»РєР° РЅР° РІРёРґСѓ, РЅРѕ Р·Р°РєСЂС‹С‚Р°.</p>
+    </details>
+    <details>
+      <summary>РњРѕР¶РЅРѕ Р»Рё Р·Р°Р№С‚Рё РїРѕ РїСЂСЏРјРѕР№ СЃСЃС‹Р»РєРµ?</summary>
+      <p>РРіСЂРѕРє СѓРїСЂС‘С‚СЃСЏ РІ СЌРєСЂР°РЅ-Р·Р°РјРѕРє. РђРґРјРёРЅ РїСЂРѕР№РґС‘С‚. РўР°Рє РЅРµР»СЊР·СЏ РѕР±РѕР№С‚Рё Р·Р°РєСЂС‹С‚РёРµ, РїСЂРѕСЃС‚Рѕ СЃРєРѕРїРёСЂРѕРІР°РІ URL.</p>
+    </details>
+    <details>
+      <summary>Р“РґРµ 2D-РёРіСЂС‹ Рё Р»Р°Р±РѕСЂР°С‚РѕСЂРёСЏ?</summary>
+      <p>РќР° РіР»Р°РІРЅРѕР№ Lab Рё РІ РіСЂСѓРїРїРµ Animal Hospital вЂ” РѕРЅРё РѕС‚РєСЂС‹С‚С‹. 3D С‚РѕР»СЊРєРѕ Р·РґРµСЃСЊ, РїРѕРґ Р·Р°РјРєРѕРј.</p>
+    </details>
+  </section>
+
+  <p class="sec">РћСЃРЅРѕРІРЅС‹Рµ 3D</p>
   <div class="grid" id="main"></div>
-  <p class="sec">Черновики 3D</p>
+  <p class="sec">Р§РµСЂРЅРѕРІРёРєРё 3D</p>
   <div class="grid" id="drafts"></div>
 
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2"></script>
   <script>
     const MAIN = [
-      { href: "../obby/", icon: "🏃", title: "Obby", desc: "3D паркур.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
-      { href: "../tower-defense/", icon: "🏰", title: "Tower Defense", desc: "Башни и волны.", thumb: "linear-gradient(135deg,#16a34a,#1e3a5f)" },
-      { href: "../tycoon/", icon: "🍕", title: "Pizza Tycoon", desc: "Пиццерия.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
-      { href: "../murder-mystery/", icon: "🔪", title: "Murder Mystery", desc: "Убийца / шериф.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
-      { href: "../pet-simulator/", icon: "🥚", title: "Pet Simulator", desc: "Яйца и питомцы.", thumb: "linear-gradient(135deg,#d8b4fe,#7dd3fc)" },
-      { href: "../flee-facility/", icon: "🏃‍♂️", title: "Flee the Facility", desc: "Побег.", thumb: "linear-gradient(135deg,#111118,#e11d48)" },
-      { href: "../build-boat/", icon: "🚢", title: "Build a Boat", desc: "Лодка.", thumb: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
-      { href: "../minecraft/", icon: "⛏️", title: "CraftWorld", desc: "3D мир.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
-      { href: "../hideout/", icon: "🔦", title: "Укрытие", desc: "Прятки.", thumb: "linear-gradient(135deg,#1a2e24,#3d2a18)" },
+      { href: "../obby/", icon: "рџЏѓ", title: "Obby", desc: "3D РїР°СЂРєСѓСЂ.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
+      { href: "../tower-defense/", icon: "рџЏ°", title: "Tower Defense", desc: "Р‘Р°С€РЅРё Рё РІРѕР»РЅС‹.", thumb: "linear-gradient(135deg,#16a34a,#1e3a5f)" },
+      { href: "../tycoon/", icon: "рџЌ•", title: "Pizza Tycoon", desc: "РџРёС†С†РµСЂРёСЏ.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
+      { href: "../murder-mystery/", icon: "рџ”Є", title: "Murder Mystery", desc: "РЈР±РёР№С†Р° / С€РµСЂРёС„.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
+      { href: "../pet-simulator/", icon: "рџҐљ", title: "Pet Simulator", desc: "РЇР№С†Р° Рё РїРёС‚РѕРјС†С‹.", thumb: "linear-gradient(135deg,#d8b4fe,#7dd3fc)" },
+      { href: "../flee-facility/", icon: "рџЏѓвЂЌв™‚пёЏ", title: "Flee the Facility", desc: "РџРѕР±РµРі.", thumb: "linear-gradient(135deg,#111118,#e11d48)" },
+      { href: "../build-boat/", icon: "рџљў", title: "Build a Boat", desc: "Р›РѕРґРєР°.", thumb: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
+      { href: "../minecraft/", icon: "в›ЏпёЏ", title: "CraftWorld", desc: "3D РјРёСЂ.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
+      { href: "../hideout/", icon: "рџ”¦", title: "РЈРєСЂС‹С‚РёРµ", desc: "РџСЂСЏС‚РєРё.", thumb: "linear-gradient(135deg,#1a2e24,#3d2a18)" },
     ];
     const DRAFTS = [
-      { href: "../adopt-me/", icon: "🐣", title: "Adopt Me Lite", desc: "Черновик.", thumb: "linear-gradient(135deg,#f9a8d4,#7dd3fc)" },
-      { href: "../blox-fruits/", icon: "🍉", title: "Blox Fruits", desc: "Черновик.", thumb: "linear-gradient(135deg,#22c55e,#0ea5e9)" },
-      { href: "../brookhaven-rp/", icon: "🏘️", title: "Брукхейвен RP", desc: "Черновик.", thumb: "linear-gradient(135deg,#94a3b8,#38bdf8)" },
-      { href: "../grow-garden/", icon: "🌱", title: "Вырасти сад", desc: "Черновик.", thumb: "linear-gradient(135deg,#86efac,#65a30d)" },
-      { href: "../nights-forest/", icon: "🌲", title: "99 ночей в лесу", desc: "Черновик.", thumb: "linear-gradient(135deg,#0f172a,#166534)" },
-      { href: "../rivals-arena/", icon: "⚔️", title: "RIVALS Арена", desc: "Черновик.", thumb: "linear-gradient(135deg,#ef4444,#7c3aed)" },
-      { href: "../speed-escape/", icon: "💨", title: "+1 Speed Escape", desc: "Черновик.", thumb: "linear-gradient(135deg,#f97316,#eab308)" },
-      { href: "../steal-brainrot/", icon: "🧠", title: "Steal a Brainrot", desc: "Черновик.", thumb: "linear-gradient(135deg,#a855f7,#ec4899)" },
+      { href: "../adopt-me/", icon: "рџђЈ", title: "Adopt Me Lite", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#f9a8d4,#7dd3fc)" },
+      { href: "../blox-fruits/", icon: "рџЌ‰", title: "Blox Fruits", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#22c55e,#0ea5e9)" },
+      { href: "../brookhaven-rp/", icon: "рџЏпёЏ", title: "Р‘СЂСѓРєС…РµР№РІРµРЅ RP", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#94a3b8,#38bdf8)" },
+      { href: "../grow-garden/", icon: "рџЊ±", title: "Р’С‹СЂР°СЃС‚Рё СЃР°Рґ", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#86efac,#65a30d)" },
+      { href: "../nights-forest/", icon: "рџЊІ", title: "99 РЅРѕС‡РµР№ РІ Р»РµСЃСѓ", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#0f172a,#166534)" },
+      { href: "../rivals-arena/", icon: "вљ”пёЏ", title: "RIVALS РђСЂРµРЅР°", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#ef4444,#7c3aed)" },
+      { href: "../speed-escape/", icon: "рџ’Ё", title: "+1 Speed Escape", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#f97316,#eab308)" },
+      { href: "../steal-brainrot/", icon: "рџ§ ", title: "Steal a Brainrot", desc: "Р§РµСЂРЅРѕРІРёРє.", thumb: "linear-gradient(135deg,#a855f7,#ec4899)" },
     ];
 
     const admin = window.Amal3dLock && Amal3dLock.canEnter();
@@ -142,11 +199,11 @@
 
     function card(g) {
       const unlocked = admin ? " unlocked" : "";
-      const go = admin ? "👑 Войти (админ)" : "🔒 Закрыто";
+      const go = admin ? "рџ‘‘ Р’РѕР№С‚Рё (Р°РґРјРёРЅ)" : "рџ”’ Р—Р°РєСЂС‹С‚Рѕ";
       const badge = admin ? "ADMIN" : "LOCKED";
       return `<div class="card${unlocked}" data-amal-3d-lock data-href="${g.href}" role="button" tabindex="0">
         <span class="badge-lock">${badge}</span>
-        <div class="chains" aria-hidden="true">⛓ 🔒 ⛓</div>
+        <div class="chains" aria-hidden="true">в›“ рџ”’ в›“</div>
         <div class="thumb" style="background:${g.thumb}">${g.icon}</div>
         <div class="body"><h2>${g.title}</h2><p>${g.desc}</p><span class="go">${go}</span></div>
       </div>`;

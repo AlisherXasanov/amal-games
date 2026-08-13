@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Build a Boat 3D</title>
-  <meta name="description" content="3D Build a Boat вЂ” РїРѕСЃС‚СЂРѕР№ Р»РѕРґРєСѓ Рё РїР»С‹РІРё!" />
+  <meta name="description" content="3D Build a Boat РІР‚вЂќ Р С—Р С•РЎРѓРЎвЂљРЎР‚Р С•Р в„– Р В»Р С•Р Т‘Р С”РЎС“ Р С‘ Р С—Р В»РЎвЂ№Р Р†Р С‘!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #0a2540; font-family: system-ui, sans-serif; }
@@ -32,25 +32,25 @@
 <body>
   <div id="ui">
     <b>Build a Boat</b><br/>
-    Р‘Р»РѕРєРё: <span id="blocks">0</span><br/>
-    Р Р°СЃСЃС‚РѕСЏРЅРёРµ: <span id="dist">0</span>Рј<br/>
-    РњРѕРЅРµС‚С‹: <span id="coins">0</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">рџ‘‘ РђРґРјРёРЅ В· СЌРєСЃРєР»СЋР·РёРІ РІ РјР°РіР°Р·РёРЅРµ</div>
+    Р вЂР В»Р С•Р С”Р С‘: <span id="blocks">0</span><br/>
+    Р В Р В°РЎРѓРЎРѓРЎвЂљР С•РЎРЏР Р…Р С‘Р Вµ: <span id="dist">0</span>Р С<br/>
+    Р СљР С•Р Р…Р ВµРЎвЂљРЎвЂ№: <span id="coins">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">СЂСџвЂвЂ Р С’Р Т‘Р СР С‘Р Р… Р’В· РЎРЊР С”РЎРѓР С”Р В»РЎР‹Р В·Р С‘Р Р† Р Р† Р СР В°Р С–Р В°Р В·Р С‘Р Р…Р Вµ</div>
   </div>
-  <a id="back" href="../">в†ђ РљР°С‚Р°Р»РѕРі</a>
+  <a id="back" href="../">РІвЂ С’ Р С™Р В°РЎвЂљР В°Р В»Р С•Р С–</a>
   <div id="admin-shop">
-    <div class="label">рџ‘‘ РўРѕР»СЊРєРѕ Р°РґРјРёРЅ В· РІРµС‰Рё, РЅРµ РєРѕРјР°РЅРґС‹</div>
-    <button id="ex-sail" type="button">Р—РѕР»РѕС‚РѕР№ РїР°СЂСѓСЃ ($0)</button>
-    <button id="ex-figurehead" type="button">РќРѕСЃРѕРІР°СЏ РєРѕСЂРѕРЅР° ($0)</button>
-    <button id="ex-stripe" type="button">Р Р°РґСѓР¶РЅР°СЏ РїРѕР»РѕСЃР° ($0)</button>
+    <div class="label">СЂСџвЂвЂ Р СћР С•Р В»РЎРЉР С”Р С• Р В°Р Т‘Р СР С‘Р Р… Р’В· Р Р†Р ВµРЎвЂ°Р С‘, Р Р…Р Вµ Р С”Р С•Р СР В°Р Р…Р Т‘РЎвЂ№</div>
+    <button id="ex-sail" type="button">Р вЂ”Р С•Р В»Р С•РЎвЂљР С•Р в„– Р С—Р В°РЎР‚РЎС“РЎРѓ ($0)</button>
+    <button id="ex-figurehead" type="button">Р СњР С•РЎРѓР С•Р Р†Р В°РЎРЏ Р С”Р С•РЎР‚Р С•Р Р…Р В° ($0)</button>
+    <button id="ex-stripe" type="button">Р В Р В°Р Т‘РЎС“Р В¶Р Р…Р В°РЎРЏ Р С—Р С•Р В»Р С•РЎРѓР В° ($0)</button>
   </div>
   <div id="build-panel">
-    <button id="add-wood">+ Р”РµСЂРµРІРѕ</button>
-    <button id="add-metal">+ РњРµС‚Р°Р»Р»</button>
-    <button id="add-rocket">+ Р Р°РєРµС‚Р°</button>
-    <button id="go" class="btn-go">РџР»С‹С‚СЊ!</button>
+    <button id="add-wood">+ Р вЂќР ВµРЎР‚Р ВµР Р†Р С•</button>
+    <button id="add-metal">+ Р СљР ВµРЎвЂљР В°Р В»Р В»</button>
+    <button id="add-rocket">+ Р В Р В°Р С”Р ВµРЎвЂљР В°</button>
+    <button id="go" class="btn-go">Р СџР В»РЎвЂ№РЎвЂљРЎРЉ!</button>
   </div>
-  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Р•С‰С‘ СЂР°Р·</button></div>
+  <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Р вЂўРЎвЂ°РЎвЂ РЎР‚Р В°Р В·</button></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
@@ -157,7 +157,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " РІСљвЂњ";
         }
       });
     }
@@ -201,8 +201,8 @@
       const earned = Math.floor(distance * 2);
       coins += earned;
       document.getElementById("coins").textContent = coins;
-      document.getElementById("res-title").textContent = `РџСЂРѕРїР»С‹Р» ${Math.floor(distance)}Рј!`;
-      document.getElementById("res-text").textContent = `Р—Р°СЂР°Р±РѕС‚Р°РЅРѕ: ${earned} РјРѕРЅРµС‚`;
+      document.getElementById("res-title").textContent = `Р СџРЎР‚Р С•Р С—Р В»РЎвЂ№Р В» ${Math.floor(distance)}Р С!`;
+      document.getElementById("res-text").textContent = `Р вЂ”Р В°РЎР‚Р В°Р В±Р С•РЎвЂљР В°Р Р…Р С•: ${earned} Р СР С•Р Р…Р ВµРЎвЂљ`;
       document.getElementById("result").classList.add("show");
     }
 
@@ -293,6 +293,6 @@
   <script src="../shared/amal-hub.js?v=28"></script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

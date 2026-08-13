@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Steal a Brainrot — черновик</title>
+  <title>Steal a Brainrot вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#1a0a22;font-family:Segoe UI,system-ui,sans-serif;color:#fff;user-select:none}
@@ -72,27 +72,27 @@
   </style>
 </head>
 <body>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
-  <div id="yenBig">¥ <span id="yen">150</span></div>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="yenBig">ВҐ <span id="yen">150</span></div>
   <div id="hud">
     <b>Steal a Brainrot</b><br/>
-    Доход: <span id="income">0</span> ¥/сек<br/>
-    В руках: <span id="carry">пусто</span><br/>
-    <span id="status" style="color:#e9d5ff">Купи брейнрота в магазине ↓</span>
+    Р”РѕС…РѕРґ: <span id="income">0</span> ВҐ/СЃРµРє<br/>
+    Р’ СЂСѓРєР°С…: <span id="carry">РїСѓСЃС‚Рѕ</span><br/>
+    <span id="status" style="color:#e9d5ff">РљСѓРїРё Р±СЂРµР№РЅСЂРѕС‚Р° РІ РјР°РіР°Р·РёРЅРµ в†“</span>
   </div>
   <div id="tutorial">
-    <h2>Как играть</h2>
-    <div class="step" id="t1">1) Купи брейнрота за йены</div>
-    <div class="step" id="t2">2) Поставь на СВОЮ базу (E)</div>
-    <div class="step" id="t3">3) Воруй чужие (E) и неси домой</div>
+    <h2>РљР°Рє РёРіСЂР°С‚СЊ</h2>
+    <div class="step" id="t1">1) РљСѓРїРё Р±СЂРµР№РЅСЂРѕС‚Р° Р·Р° Р№РµРЅС‹</div>
+    <div class="step" id="t2">2) РџРѕСЃС‚Р°РІСЊ РЅР° РЎР’РћР® Р±Р°Р·Сѓ (E)</div>
+    <div class="step" id="t3">3) Р’РѕСЂСѓР№ С‡СѓР¶РёРµ (E) Рё РЅРµСЃРё РґРѕРјРѕР№</div>
   </div>
   <div id="slots">
-    <h3>Твоя база · слоты</h3>
+    <h3>РўРІРѕСЏ Р±Р°Р·Р° В· СЃР»РѕС‚С‹</h3>
     <div id="slotList"></div>
   </div>
   <div id="shop">
-    <h3>Магазин брейнротов</h3>
+    <h3>РњР°РіР°Р·РёРЅ Р±СЂРµР№РЅСЂРѕС‚РѕРІ</h3>
     <div id="shopList"></div>
   </div>
   <div id="prompt"></div>
@@ -112,14 +112,14 @@
     }
 
     const SHOP = [
-      { id: "tung", name: "Тунг-Тунг Сахар", price: 50, rate: 2, color: 0xf472b6, shape: "box" },
-      { id: "bomba", name: "Бомбардино Крокодило", price: 120, rate: 5, color: 0xfbbf24, shape: "sphere" },
-      { id: "capi", name: "Капибара-бум", price: 200, rate: 9, color: 0x34d399, shape: "cone" },
-      { id: "skib", name: "Скибиди-кекс", price: 350, rate: 16, color: 0x60a5fa, shape: "torus" },
-      { id: "meow", name: "Мяу-рар Делюкс", price: 500, rate: 25, color: 0xa78bfa, shape: "octa" },
-      { id: "tral", name: "Тралалело Траллала", price: 800, rate: 45, color: 0xf43f5e, shape: "sphere" },
-      { id: "brr", name: "Брр Брр Патапим", price: 1200, rate: 70, color: 0x2dd4bf, shape: "octa" },
-      { id: "liri", name: "Лирили Ларила", price: 2000, rate: 120, color: 0xe879f9, shape: "cone" },
+      { id: "tung", name: "РўСѓРЅРі-РўСѓРЅРі РЎР°С…Р°СЂ", price: 50, rate: 2, color: 0xf472b6, shape: "box" },
+      { id: "bomba", name: "Р‘РѕРјР±Р°СЂРґРёРЅРѕ РљСЂРѕРєРѕРґРёР»Рѕ", price: 120, rate: 5, color: 0xfbbf24, shape: "sphere" },
+      { id: "capi", name: "РљР°РїРёР±Р°СЂР°-Р±СѓРј", price: 200, rate: 9, color: 0x34d399, shape: "cone" },
+      { id: "skib", name: "РЎРєРёР±РёРґРё-РєРµРєСЃ", price: 350, rate: 16, color: 0x60a5fa, shape: "torus" },
+      { id: "meow", name: "РњСЏСѓ-СЂР°СЂ Р”РµР»СЋРєСЃ", price: 500, rate: 25, color: 0xa78bfa, shape: "octa" },
+      { id: "tral", name: "РўСЂР°Р»Р°Р»РµР»Рѕ РўСЂР°Р»Р»Р°Р»Р°", price: 800, rate: 45, color: 0xf43f5e, shape: "sphere" },
+      { id: "brr", name: "Р‘СЂСЂ Р‘СЂСЂ РџР°С‚Р°РїРёРј", price: 1200, rate: 70, color: 0x2dd4bf, shape: "octa" },
+      { id: "liri", name: "Р›РёСЂРёР»Рё Р›Р°СЂРёР»Р°", price: 2000, rate: 120, color: 0xe879f9, shape: "cone" },
     ];
 
     const scene = new THREE.Scene();
@@ -136,7 +136,7 @@
       lookOffsetY: 1.35,
       minDist: 5,
       maxDist: 32,
-      hintText: "Камера: ПКМ · колёсико · Q поворот (E — действие)",
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· РєРѕР»С‘СЃРёРєРѕ В· Q РїРѕРІРѕСЂРѕС‚ (E вЂ” РґРµР№СЃС‚РІРёРµ)",
     });
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -263,7 +263,7 @@
     baseRing.position.set(BASE.x, 0.4, BASE.z);
     scene.add(baseRing);
     box(4, 0.5, 1.2, 0x166534, BASE.x, 0.55, BASE.z - 5.5);
-    // sign "ТВОЯ БАЗА"
+    // sign "РўР’РћРЇ Р‘РђР—Рђ"
     box(0.2, 3.5, 0.2, 0x86efac, BASE.x + 4, 1.75, BASE.z + 4);
     box(2.2, 1.0, 0.12, 0x4ade80, BASE.x + 4, 3.3, BASE.z + 4);
 
@@ -283,10 +283,10 @@
 
     // === Other bases (stealable) ===
     const otherBases = [
-      { x: 22, z: -20, color: 0xef4444, label: "База соседа" },
-      { x: 24, z: 18, color: 0x3b82f6, label: "База Рика" },
-      { x: -18, z: -22, color: 0xf59e0b, label: "База Кати" },
-      { x: 4, z: 26, color: 0xec4899, label: "База Богдана" },
+      { x: 22, z: -20, color: 0xef4444, label: "Р‘Р°Р·Р° СЃРѕСЃРµРґР°" },
+      { x: 24, z: 18, color: 0x3b82f6, label: "Р‘Р°Р·Р° Р РёРєР°" },
+      { x: -18, z: -22, color: 0xf59e0b, label: "Р‘Р°Р·Р° РљР°С‚Рё" },
+      { x: 4, z: 26, color: 0xec4899, label: "Р‘Р°Р·Р° Р‘РѕРіРґР°РЅР°" },
     ];
     const worldPedestals = [];
 
@@ -415,18 +415,18 @@
     function syncUI() {
       yenEl.textContent = Math.floor(yen);
       incomeEl.textContent = incomeRate();
-      carryEl.textContent = carry ? carry.name : "пусто";
+      carryEl.textContent = carry ? carry.name : "РїСѓСЃС‚Рѕ";
       slotList.innerHTML = mySlots
         .map((sl, i) => {
-          if (!sl.brainrot) return '<div class="slot">Слот ' + (i + 1) + ': пусто</div>';
+          if (!sl.brainrot) return '<div class="slot">РЎР»РѕС‚ ' + (i + 1) + ': РїСѓСЃС‚Рѕ</div>';
           return (
-            '<div class="slot">Слот ' +
+            '<div class="slot">РЎР»РѕС‚ ' +
             (i + 1) +
             ": " +
             sl.brainrot.name +
-            " · +" +
+            " В· +" +
             sl.brainrot.rate +
-            "¥/с</div>"
+            "ВҐ/СЃ</div>"
           );
         })
         .join("");
@@ -440,9 +440,9 @@
           i +
           '"><span>' +
           item.name +
-          " · +" +
+          " В· +" +
           item.rate +
-          "¥/с</span><span class=\"price\">¥" +
+          "ВҐ/СЃ</span><span class=\"price\">ВҐ" +
           item.price +
           "</span></button>"
         );
@@ -455,11 +455,11 @@
     function buyShop(i) {
       const def = SHOP[i];
       if (carry) {
-        toast("Сначала поставь то, что в руках!");
+        toast("РЎРЅР°С‡Р°Р»Р° РїРѕСЃС‚Р°РІСЊ С‚Рѕ, С‡С‚Рѕ РІ СЂСѓРєР°С…!");
         return;
       }
       if (yen < def.price) {
-        toast("Мало йен · нужно ¥" + def.price);
+        toast("РњР°Р»Рѕ Р№РµРЅ В· РЅСѓР¶РЅРѕ ВҐ" + def.price);
         return;
       }
       yen -= def.price;
@@ -468,8 +468,8 @@
       carryMesh = makeShape(def, 0.75);
       scene.add(carryMesh);
       tut.bought = true;
-      statusEl.textContent = "Неси на ЗЕЛЁНУЮ базу и нажми E";
-      toast("Куплено: " + def.name);
+      statusEl.textContent = "РќРµСЃРё РЅР° Р—Р•Р›РЃРќРЈР® Р±Р°Р·Сѓ Рё РЅР°Р¶РјРё E";
+      toast("РљСѓРїР»РµРЅРѕ: " + def.name);
       syncUI();
     }
 
@@ -480,7 +480,7 @@
     function placeOnBase() {
       const slot = freeSlot();
       if (!slot) {
-        toast("База полна (4 слота)!");
+        toast("Р‘Р°Р·Р° РїРѕР»РЅР° (4 СЃР»РѕС‚Р°)!");
         return false;
       }
       slot.brainrot = Object.assign({}, carry);
@@ -493,9 +493,9 @@
       }
       if (!carry.fromShop) tut.stole = true;
       tut.placed = true;
-      toast("Поставлено! +" + carry.rate + " ¥/сек");
+      toast("РџРѕСЃС‚Р°РІР»РµРЅРѕ! +" + carry.rate + " ВҐ/СЃРµРє");
       carry = null;
-      statusEl.textContent = "Доход идёт · воруй чужие брейнроты!";
+      statusEl.textContent = "Р”РѕС…РѕРґ РёРґС‘С‚ В· РІРѕСЂСѓР№ С‡СѓР¶РёРµ Р±СЂРµР№РЅСЂРѕС‚С‹!";
       syncUI();
       return true;
     }
@@ -526,7 +526,7 @@
       const onBase = Math.hypot(px - BASE.x, pz - BASE.z) < BASE.r + 0.5;
 
       if (carry && onBase) {
-        return { type: "place", label: "E — поставить на базу" };
+        return { type: "place", label: "E вЂ” РїРѕСЃС‚Р°РІРёС‚СЊ РЅР° Р±Р°Р·Сѓ" };
       }
       if (!carry) {
         for (const p of worldPedestals) {
@@ -535,7 +535,7 @@
             return {
               type: "steal",
               ped: p,
-              label: "E — украсть «" + p.def.name + "»",
+              label: "E вЂ” СѓРєСЂР°СЃС‚СЊ В«" + p.def.name + "В»",
             };
           }
         }
@@ -560,8 +560,8 @@
         scene.add(carryMesh);
         alarmT = 4;
         alarmEl.style.display = "block";
-        statusEl.textContent = "ТРЕВОГА! Неси на свою зелёную базу!";
-        toast("Украл: " + p.def.name);
+        statusEl.textContent = "РўР Р•Р’РћР“Рђ! РќРµСЃРё РЅР° СЃРІРѕСЋ Р·РµР»С‘РЅСѓСЋ Р±Р°Р·Сѓ!";
+        toast("РЈРєСЂР°Р»: " + p.def.name);
         tut.stole = true;
         syncUI();
       }
@@ -579,7 +579,7 @@
 
     renderShop();
     syncUI();
-    toast("1 купи · 2 поставь · 3 воруй");
+    toast("1 РєСѓРїРё В· 2 РїРѕСЃС‚Р°РІСЊ В· 3 РІРѕСЂСѓР№");
 
     let last = performance.now();
     function animate(now) {
@@ -665,17 +665,17 @@
           if (!AmalDraftOwner.canDie()) {
             // Owner immune: no drop, no yen loss
             g.stun = 1.5;
-            toast("Охрана! Хозяин неуязвим");
+            toast("РћС…СЂР°РЅР°! РҐРѕР·СЏРёРЅ РЅРµСѓСЏР·РІРёРј");
             return;
           }
-          dropCarry("Поймали! Предмет упал · −¥30", 30);
+          dropCarry("РџРѕР№РјР°Р»Рё! РџСЂРµРґРјРµС‚ СѓРїР°Р» В· в€’ВҐ30", 30);
           stun = 1.4;
           player.mesh.position.set(BASE.x, 0, BASE.z - 4);
           player.state.vx = player.state.vz = player.state.vy = 0;
           g.stun = 1.2;
           alarmT = 0;
           alarmEl.style.display = "none";
-          statusEl.textContent = "Потерял добычу · попробуй ещё";
+          statusEl.textContent = "РџРѕС‚РµСЂСЏР» РґРѕР±С‹С‡Сѓ В· РїРѕРїСЂРѕР±СѓР№ РµС‰С‘";
         }
       });
 
@@ -695,6 +695,6 @@
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

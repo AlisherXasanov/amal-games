@@ -106,6 +106,18 @@
       text-transform: uppercase;
       color: #5a6a62;
     }
+    .faq {
+      max-width: 720px;
+      margin: 1rem auto 1.2rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.14);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 0.35rem;
+    }
+    .faq h2 { font: 700 1.1rem Fredoka, Nunito, sans-serif; color: #0d6e5f; margin-bottom: 0.4rem; }
+    .faq details { border-top: 1px dashed rgba(13,110,95,.16); padding: 0.55rem 0; }
+    .faq summary { cursor: pointer; font: 800 13px Nunito, sans-serif; }
+    .faq details p { margin-top: 0.35rem; color: #5a6a62; font: 600 13px/1.4 Nunito, sans-serif; padding-left: 0.5rem; }
   </style>
 </head>
 <body>
@@ -117,6 +129,22 @@
     <p class="sub">Здесь собраны <b>все</b> мини-игры из Animal Hospital — не только главная больница. Выбирай и играй.</p>
     <p class="count" id="count">игр: —</p>
   </header>
+
+  <section class="faq" aria-label="Вопросы внутри">
+    <h2>❓ Вопросы · внутри</h2>
+    <details open>
+      <summary>Где 3D-игры?</summary>
+      <p>На полке <a href="../portal-3d/#faq">3D · под замком</a>. Игрокам пока нельзя — ещё дорабатываются. Админ может войти.</p>
+    </details>
+    <details>
+      <summary>Что открыто сейчас?</summary>
+      <p>Эта группа: Лаборатория, Animal Hospital, Buttersquish, пельмени и остальные мини — играй свободно.</p>
+    </details>
+    <details>
+      <summary>Butterscotch выглядит по-старому?</summary>
+      <p>Жми Ctrl+F5. Нужен парк Buttersquish без шкал голода.</p>
+    </details>
+  </section>
 
   <p class="sec">Главное</p>
   <div class="grid" id="main"></div>

@@ -38,9 +38,7 @@
       .amal-3d-lock-card .ico{font-size:2.4rem;margin-bottom:.35rem}
       .amal-3d-lock-card h3{font:700 1.25rem Fredoka,Nunito,sans-serif;color:#0d6e5f;margin:.2rem 0 .55rem}
       .amal-3d-lock-card p{white-space:pre-line;font:600 14px/1.45 Nunito,sans-serif;color:#5a6a62}
-      .amal-3d-lock-card button{margin-top:1rem;appearance:none;border:none;cursor:pointer;
-        padding:11px 18px;border-radius:12px;font:800 14px Nunito,sans-serif;color:#f3efe6;
-        background:linear-gradient(135deg,#0d6e5f,#0a5248)}
+      .amal-3d-lock-card a{display:inline-block;margin-top:.75rem;color:#0d6e5f;font:800 13px Nunito,sans-serif}
       .amal-3d-page-block{position:fixed;inset:0;z-index:99980;display:grid;place-items:center;
         background:linear-gradient(165deg,#0d6e5f,#102018);color:#f3efe6;padding:1.5rem;text-align:center;
         font-family:Nunito,system-ui,sans-serif}
@@ -50,6 +48,17 @@
       .amal-3d-page-block a{color:#7ed9b8;font-weight:800}
     `;
     document.head.appendChild(s);
+  }
+
+  function faqHref() {
+    try {
+      const p = location.pathname || "";
+      if (p.indexOf("/portal-3d") !== -1) return "#faq";
+      if (p.indexOf("/animal-hospital") !== -1) return "../portal-3d/#faq";
+      return "portal-3d/#faq";
+    } catch (_) {
+      return "portal-3d/#faq";
+    }
   }
 
   function showLockedModal() {
@@ -66,6 +75,9 @@
       "<p>" +
       MSG.replace(/\n/g, "\n") +
       "</p>" +
+      '<a href="' +
+      faqHref() +
+      '">❓ Все вопросы · внутри</a><br/>' +
       '<button type="button">Понятно</button></div>';
     el.addEventListener("click", (e) => {
       if (e.target === el || e.target.tagName === "BUTTON") el.remove();

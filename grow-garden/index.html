@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Вырасти сад — Amal draft · не опубликовано</title>
+  <title>Р’С‹СЂР°СЃС‚Рё СЃР°Рґ вЂ” Amal draft В· РЅРµ РѕРїСѓР±Р»РёРєРѕРІР°РЅРѕ</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#1b2e14;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
@@ -23,25 +23,25 @@
 </head>
 <body>
   <div id="hud">
-    <h1>Вырасти сад</h1>
-    <div class="meta">Монеты: <b id="coins">40</b> · Семя: <b id="seedName">Обычное</b></div>
+    <h1>Р’С‹СЂР°СЃС‚Рё СЃР°Рґ</h1>
+    <div class="meta">РњРѕРЅРµС‚С‹: <b id="coins">40</b> В· РЎРµРјСЏ: <b id="seedName">РћР±С‹С‡РЅРѕРµ</b></div>
     <div id="rules">
-      WASD — ходить · ПКМ — камера · E у грядки — посадить / собрать.<br>
-      Растения растут на глазах. Лучшие семена в магазине. Мирный сад · Обычный игрок может погибнуть · хозяин: ∞ и полёт
+      WASD вЂ” С…РѕРґРёС‚СЊ В· РџРљРњ вЂ” РєР°РјРµСЂР° В· E Сѓ РіСЂСЏРґРєРё вЂ” РїРѕСЃР°РґРёС‚СЊ / СЃРѕР±СЂР°С‚СЊ.<br>
+      Р Р°СЃС‚РµРЅРёСЏ СЂР°СЃС‚СѓС‚ РЅР° РіР»Р°Р·Р°С…. Р›СѓС‡С€РёРµ СЃРµРјРµРЅР° РІ РјР°РіР°Р·РёРЅРµ. РњРёСЂРЅС‹Р№ СЃР°Рґ В· РћР±С‹С‡РЅС‹Р№ РёРіСЂРѕРє РјРѕР¶РµС‚ РїРѕРіРёР±РЅСѓС‚СЊ В· С…РѕР·СЏРёРЅ: в€ћ Рё РїРѕР»С‘С‚
     </div>
   </div>
-  <div id="draft" style="position:fixed;top:10px;right:10px;z-index:20;font-size:11px;opacity:.7;background:rgba(0,0,0,.45);padding:6px 10px;border-radius:8px">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="draft" style="position:fixed;top:10px;right:10px;z-index:20;font-size:11px;opacity:.7;background:rgba(0,0,0,.45);padding:6px 10px;border-radius:8px">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
   <div id="toast"></div>
   <div id="prompt"></div>
   <div id="panel">
-    <button type="button" id="btnPlant" disabled>Посадить (E)</button>
-    <button type="button" id="btnHarvest" disabled>Собрать (E)</button>
-    <button type="button" class="buy" id="buyBasic">Семя обычное (0)</button>
-    <button type="button" class="buy" id="buyGood">Семя лучше (25)</button>
-    <button type="button" class="buy" id="buyGold">Золотое семя (60)</button>
+    <button type="button" id="btnPlant" disabled>РџРѕСЃР°РґРёС‚СЊ (E)</button>
+    <button type="button" id="btnHarvest" disabled>РЎРѕР±СЂР°С‚СЊ (E)</button>
+    <button type="button" class="buy" id="buyBasic">РЎРµРјСЏ РѕР±С‹С‡РЅРѕРµ (0)</button>
+    <button type="button" class="buy" id="buyGood">РЎРµРјСЏ Р»СѓС‡С€Рµ (25)</button>
+    <button type="button" class="buy" id="buyGold">Р—РѕР»РѕС‚РѕРµ СЃРµРјСЏ (60)</button>
   </div>
-  <a class="back" href="../">← назад</a>
+  <a class="back" href="../">в†ђ РЅР°Р·Р°Рґ</a>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
@@ -56,9 +56,9 @@
     }
 
     const SEEDS = {
-      basic: { name: "Обычное", cost: 0, grow: 8, value: 8, color: 0x66bb6a, flower: 0x81c784 },
-      good: { name: "Лучшее", cost: 25, grow: 6, value: 18, color: 0x43a047, flower: 0x26a69a },
-      gold: { name: "Золотое", cost: 60, grow: 5, value: 40, color: 0xfbc02d, flower: 0xffeb3b }
+      basic: { name: "РћР±С‹С‡РЅРѕРµ", cost: 0, grow: 8, value: 8, color: 0x66bb6a, flower: 0x81c784 },
+      good: { name: "Р›СѓС‡С€РµРµ", cost: 25, grow: 6, value: 18, color: 0x43a047, flower: 0x26a69a },
+      gold: { name: "Р—РѕР»РѕС‚РѕРµ", cost: 60, grow: 5, value: 40, color: 0xfbc02d, flower: 0xffeb3b }
     };
 
     const scene = new THREE.Scene();
@@ -408,15 +408,15 @@
       if (!plot) return;
       if (!plot.plant) {
         makePlant(plot, currentSeed);
-        toast("Посажено: " + SEEDS[currentSeed].name);
+        toast("РџРѕСЃР°Р¶РµРЅРѕ: " + SEEDS[currentSeed].name);
       } else if (plot.ready) {
         const val = SEEDS[plot.seed].value;
         coins += val;
         clearPlant(plot);
         syncUI();
-        toast("Урожай! +" + val + " монет");
+        toast("РЈСЂРѕР¶Р°Р№! +" + val + " РјРѕРЅРµС‚");
       } else {
-        toast("Ещё растёт…");
+        toast("Р•С‰С‘ СЂР°СЃС‚С‘С‚вЂ¦");
       }
     }
 
@@ -425,23 +425,23 @@
     document.getElementById("buyBasic").onclick = () => {
       currentSeed = "basic";
       syncUI();
-      toast("Выбрано обычное семя");
+      toast("Р’С‹Р±СЂР°РЅРѕ РѕР±С‹С‡РЅРѕРµ СЃРµРјСЏ");
     };
     document.getElementById("buyGood").onclick = () => {
       if (currentSeed === "good") return;
-      if (coins < 25) { toast("Нужно 25 монет"); return; }
+      if (coins < 25) { toast("РќСѓР¶РЅРѕ 25 РјРѕРЅРµС‚"); return; }
       coins -= 25;
       currentSeed = "good";
       syncUI();
-      toast("Куплено лучшее семя");
+      toast("РљСѓРїР»РµРЅРѕ Р»СѓС‡С€РµРµ СЃРµРјСЏ");
     };
     document.getElementById("buyGold").onclick = () => {
       if (currentSeed === "gold") return;
-      if (coins < 60) { toast("Нужно 60 монет"); return; }
+      if (coins < 60) { toast("РќСѓР¶РЅРѕ 60 РјРѕРЅРµС‚"); return; }
       coins -= 60;
       currentSeed = "gold";
       syncUI();
-      toast("Куплено золотое семя");
+      toast("РљСѓРїР»РµРЅРѕ Р·РѕР»РѕС‚РѕРµ СЃРµРјСЏ");
     };
 
     addEventListener("keydown", (e) => {
@@ -521,7 +521,7 @@
           if (crowAnim.t > 0.9) {
             if (plot.plant) {
               clearPlant(plot);
-              toast("Ворона украла растение!");
+              toast("Р’РѕСЂРѕРЅР° СѓРєСЂР°Р»Р° СЂР°СЃС‚РµРЅРёРµ!");
             }
             crowAnim.phase = "fly";
             crowAnim.t = 0;
@@ -542,17 +542,17 @@
       if (np) {
         promptEl.style.display = "block";
         if (!np.plant) {
-          promptEl.textContent = "E — посадить «" + SEEDS[currentSeed].name + "»";
+          promptEl.textContent = "E вЂ” РїРѕСЃР°РґРёС‚СЊ В«" + SEEDS[currentSeed].name + "В»";
           btnP.disabled = false;
           btnH.disabled = true;
         } else if (np.ready) {
-          promptEl.textContent = "E — собрать урожай";
+          promptEl.textContent = "E вЂ” СЃРѕР±СЂР°С‚СЊ СѓСЂРѕР¶Р°Р№";
           btnP.disabled = true;
           btnH.disabled = false;
         } else {
           const left = Math.max(0, SEEDS[np.seed].grow - np.age);
           const pct = Math.min(100, Math.floor((np.age / SEEDS[np.seed].grow) * 100));
-          promptEl.textContent = "Растёт… " + pct + "% · ~" + left.toFixed(1) + "с";
+          promptEl.textContent = "Р Р°СЃС‚С‘С‚вЂ¦ " + pct + "% В· ~" + left.toFixed(1) + "СЃ";
           btnP.disabled = true;
           btnH.disabled = true;
         }
@@ -566,12 +566,12 @@
       renderer.render(scene, camera);
     }
     syncUI();
-    toast("Большая ферма готова — посади семена!");
+    toast("Р‘РѕР»СЊС€Р°СЏ С„РµСЂРјР° РіРѕС‚РѕРІР° вЂ” РїРѕСЃР°РґРё СЃРµРјРµРЅР°!");
     animate(performance.now());
   })();
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

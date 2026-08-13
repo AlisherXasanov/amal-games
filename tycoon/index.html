@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pizza Tycoon 3D</title>
-  <meta name="description" content="3D Tycoon РІР‚вЂќ РЎРѓРЎвЂљРЎР‚Р С•Р в„– РЎРѓР Р†Р С•РЎР‹ Р С—Р С‘РЎвЂ РЎвЂ Р ВµРЎР‚Р С‘РЎР‹ Р С‘ Р В·Р В°РЎР‚Р В°Р В±Р В°РЎвЂљРЎвЂ№Р Р†Р В°Р в„–!" />
+  <meta name="description" content="3D Tycoon Р Р†Р вЂљРІР‚Сњ Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР В РЎвЂўР В РІвЂћвЂ“ Р РЋР С“Р В Р вЂ Р В РЎвЂўР РЋР вЂ№ Р В РЎвЂ”Р В РЎвЂР РЋРІР‚В Р РЋРІР‚В Р В Р’ВµР РЋР вЂљР В РЎвЂР РЋР вЂ№ Р В РЎвЂ Р В Р’В·Р В Р’В°Р РЋР вЂљР В Р’В°Р В Р’В±Р В Р’В°Р РЋРІР‚С™Р РЋРІР‚в„–Р В Р вЂ Р В Р’В°Р В РІвЂћвЂ“!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #1a1a2e; font-family: system-ui, sans-serif; }
@@ -28,27 +28,27 @@
 <body>
   <div id="ui">
     <b>Pizza Tycoon</b><br/>
-    Р вЂќР ВµР Р…РЎРЉР С–Р С‘: $<span id="money">0</span><br/>
-    Р СџР С‘РЎвЂ РЎвЂ РЎвЂ№/РЎРѓР ВµР С”: <span id="pps">0</span><br/>
-    Р Р€РЎР‚Р С•Р Р†Р ВµР Р…РЎРЉ: <span id="level">1</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">СЂСџвЂвЂ Р С’Р Т‘Р СР С‘Р Р… Р’В· РЎРЊР С”РЎРѓР С”Р В»РЎР‹Р В·Р С‘Р Р† Р Р† Р СР В°Р С–Р В°Р В·Р С‘Р Р…Р Вµ</div>
+    Р В РІР‚СњР В Р’ВµР В Р вЂ¦Р РЋР Р‰Р В РЎвЂ“Р В РЎвЂ: $<span id="money">0</span><br/>
+    Р В РЎСџР В РЎвЂР РЋРІР‚В Р РЋРІР‚В Р РЋРІР‚в„–/Р РЋР С“Р В Р’ВµР В РЎвЂќ: <span id="pps">0</span><br/>
+    Р В Р в‚¬Р РЋР вЂљР В РЎвЂўР В Р вЂ Р В Р’ВµР В Р вЂ¦Р РЋР Р‰: <span id="level">1</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">РЎР‚РЎСџРІР‚ВРІР‚В Р В РЎвЂ™Р В РўвЂР В РЎВР В РЎвЂР В Р вЂ¦ Р вЂ™Р’В· Р РЋР РЉР В РЎвЂќР РЋР С“Р В РЎвЂќР В Р’В»Р РЋР вЂ№Р В Р’В·Р В РЎвЂР В Р вЂ  Р В Р вЂ  Р В РЎВР В Р’В°Р В РЎвЂ“Р В Р’В°Р В Р’В·Р В РЎвЂР В Р вЂ¦Р В Р’Вµ</div>
   </div>
-  <a id="back" href="../">РІвЂ С’ Р С™Р В°РЎвЂљР В°Р В»Р С•Р С–</a>
+  <a id="back" href="../">Р Р†РІР‚В РЎвЂ™ Р В РЎв„ўР В Р’В°Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р В РЎвЂўР В РЎвЂ“</a>
   <div id="admin-shop">
-    <div class="label">СЂСџвЂвЂ Р СћР С•Р В»РЎРЉР С”Р С• Р В°Р Т‘Р СР С‘Р Р…-Р С”Р С•Р СР В°Р Р…Р Т‘Р В° Р’В· Р Р†Р ВµРЎвЂ°Р С‘, Р Р…Р Вµ Р С”Р С•Р СР В°Р Р…Р Т‘РЎвЂ№</div>
-    <button id="ex-crown" type="button">Р С™Р С•РЎР‚Р С•Р Р…Р В° Amal ($0)</button>
-    <button id="ex-sign" type="button">Р СњР ВµР С•Р Р… AMAL ($0)</button>
-    <button id="ex-vault" type="button">Р вЂ”Р С•Р В»Р С•РЎвЂљР С•Р в„– РЎРѓР ВµР в„–РЎвЂћ ($0)</button>
-    <button id="ex-statue" type="button">Р В Р В°Р Т‘РЎС“Р С–Р В°-Р С—Р С‘РЎвЂ РЎвЂ Р В° ($0)</button>
-    <button id="ex-terrace" type="button">VIP-РЎвЂљР ВµРЎР‚РЎР‚Р В°РЎРѓР В° ($0)</button>
+    <div class="label">РЎР‚РЎСџРІР‚ВРІР‚В Р В РЎС›Р В РЎвЂўР В Р’В»Р РЋР Р‰Р В РЎвЂќР В РЎвЂў Р В Р’В°Р В РўвЂР В РЎВР В РЎвЂР В Р вЂ¦-Р В РЎвЂќР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР В Р’В° Р вЂ™Р’В· Р В Р вЂ Р В Р’ВµР РЋРІР‚В°Р В РЎвЂ, Р В Р вЂ¦Р В Р’Вµ Р В РЎвЂќР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР РЋРІР‚в„–</div>
+    <button id="ex-crown" type="button">Р В РЎв„ўР В РЎвЂўР РЋР вЂљР В РЎвЂўР В Р вЂ¦Р В Р’В° Amal ($0)</button>
+    <button id="ex-sign" type="button">Р В РЎСљР В Р’ВµР В РЎвЂўР В Р вЂ¦ AMAL ($0)</button>
+    <button id="ex-vault" type="button">Р В РІР‚вЂќР В РЎвЂўР В Р’В»Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В РІвЂћвЂ“ Р РЋР С“Р В Р’ВµР В РІвЂћвЂ“Р РЋРІР‚С› ($0)</button>
+    <button id="ex-statue" type="button">Р В Р’В Р В Р’В°Р В РўвЂР РЋРЎвЂњР В РЎвЂ“Р В Р’В°-Р В РЎвЂ”Р В РЎвЂР РЋРІР‚В Р РЋРІР‚В Р В Р’В° ($0)</button>
+    <button id="ex-terrace" type="button">VIP-Р РЋРІР‚С™Р В Р’ВµР РЋР вЂљР РЋР вЂљР В Р’В°Р РЋР С“Р В Р’В° ($0)</button>
   </div>
   <div id="shop">
-    <button id="b-table">Р РЋРЎвЂљР С•Р В» ($5)</button>
-    <button id="b-oven">Р СџР ВµРЎвЂЎРЎРЉ ($25)</button>
-    <button id="b-worker">Р В Р В°Р В±Р С•РЎвЂљР Р…Р С‘Р С” ($100)</button>
-    <button id="b-delivery">Р вЂќР С•РЎРѓРЎвЂљР В°Р Р†Р С”Р В° ($200)</button>
-    <button id="b-advert">Р В Р ВµР С”Р В»Р В°Р СР В° ($500)</button>
-    <button id="b-expand">Р В Р В°РЎРѓРЎв‚¬Р С‘РЎР‚Р С‘РЎвЂљРЎРЉ ($1000)</button>
+    <button id="b-table">Р В Р Р‹Р РЋРІР‚С™Р В РЎвЂўР В Р’В» ($5)</button>
+    <button id="b-oven">Р В РЎСџР В Р’ВµР РЋРІР‚РЋР РЋР Р‰ ($25)</button>
+    <button id="b-worker">Р В Р’В Р В Р’В°Р В Р’В±Р В РЎвЂўР РЋРІР‚С™Р В Р вЂ¦Р В РЎвЂР В РЎвЂќ ($100)</button>
+    <button id="b-delivery">Р В РІР‚СњР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В Р’В°Р В Р вЂ Р В РЎвЂќР В Р’В° ($200)</button>
+    <button id="b-advert">Р В Р’В Р В Р’ВµР В РЎвЂќР В Р’В»Р В Р’В°Р В РЎВР В Р’В° ($500)</button>
+    <button id="b-expand">Р В Р’В Р В Р’В°Р РЋР С“Р РЋРІвЂљВ¬Р В РЎвЂР РЋР вЂљР В РЎвЂР РЋРІР‚С™Р РЋР Р‰ ($1000)</button>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -311,7 +311,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " РІСљвЂњ";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " Р Р†РЎС™РІР‚Сљ";
         }
       });
     }
@@ -404,6 +404,6 @@
   <script src="../shared/amal-hub.js?v=28"></script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

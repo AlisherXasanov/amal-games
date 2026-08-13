@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>99 Ночей в лесу — черновик</title>
+  <title>99 РќРѕС‡РµР№ РІ Р»РµСЃСѓ вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#0a1208;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
@@ -37,21 +37,21 @@
 </head>
 <body>
   <div id="hud">
-    <b>99 Ночей в лесу</b>
-    Ночь: <span class="hi" id="night">0</span> / 99 · Дрова: <span class="hi" id="wood">0</span><br/>
-    Фаза: <span id="phase">день</span> · Тепло: <span id="warm">ок</span><br/>
-    Биом: <span id="biome">лагерь</span>
+    <b>99 РќРѕС‡РµР№ РІ Р»РµСЃСѓ</b>
+    РќРѕС‡СЊ: <span class="hi" id="night">0</span> / 99 В· Р”СЂРѕРІР°: <span class="hi" id="wood">0</span><br/>
+    Р¤Р°Р·Р°: <span id="phase">РґРµРЅСЊ</span> В· РўРµРїР»Рѕ: <span id="warm">РѕРє</span><br/>
+    Р‘РёРѕРј: <span id="biome">Р»Р°РіРµСЂСЊ</span>
   </div>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
   <div id="toast"></div>
   <div id="prompt"></div>
   <div id="panel">
-    <button type="button" id="btnLantern" class="blue">Фонарь</button>
-    <button type="button" id="btnAxe" class="wood">Топор</button>
-    <button type="button" id="btnFire" class="warm">Костёр+</button>
-    <button type="button" id="btnSignal" class="pur">Сигнал</button>
-    <button type="button" id="btnWall">Стена (2)</button>
+    <button type="button" id="btnLantern" class="blue">Р¤РѕРЅР°СЂСЊ</button>
+    <button type="button" id="btnAxe" class="wood">РўРѕРїРѕСЂ</button>
+    <button type="button" id="btnFire" class="warm">РљРѕСЃС‚С‘СЂ+</button>
+    <button type="button" id="btnSignal" class="pur">РЎРёРіРЅР°Р»</button>
+    <button type="button" id="btnWall">РЎС‚РµРЅР° (2)</button>
   </div>
   <div id="tut">
     <div class="box">
@@ -59,8 +59,8 @@
       <h2 id="tutTitle"></h2>
       <p id="tutText"></p>
       <div class="row">
-        <button type="button" class="skip" id="tutSkip">Пропустить</button>
-        <button type="button" class="next" id="tutNext">Далее</button>
+        <button type="button" class="skip" id="tutSkip">РџСЂРѕРїСѓСЃС‚РёС‚СЊ</button>
+        <button type="button" class="next" id="tutNext">Р”Р°Р»РµРµ</button>
       </div>
     </div>
   </div>
@@ -94,7 +94,7 @@
     document.body.appendChild(renderer.domElement);
     const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
       distance: 14, pitch: 0.48, lookOffsetY: 1.3, minDist: 5, maxDist: 36,
-      hintText: "Камера: ПКМ · колёсико"
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· РєРѕР»С‘СЃРёРєРѕ"
     });
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -128,10 +128,10 @@
 
     // Biome ground patches
     const BIOMES = [
-      { id: "forest", name: "лес", color: 0x3d5c2e, x: 0, z: 0, r: 55 },
-      { id: "snow", name: "снег", color: 0xdce6ef, x: 55, z: -40, r: 38 },
-      { id: "swamp", name: "болото", color: 0x3a4a28, x: -50, z: 35, r: 36 },
-      { id: "wastes", name: "пустошь", color: 0x6b5a45, x: 35, z: 55, r: 34 }
+      { id: "forest", name: "Р»РµСЃ", color: 0x3d5c2e, x: 0, z: 0, r: 55 },
+      { id: "snow", name: "СЃРЅРµРі", color: 0xdce6ef, x: 55, z: -40, r: 38 },
+      { id: "swamp", name: "Р±РѕР»РѕС‚Рѕ", color: 0x3a4a28, x: -50, z: 35, r: 36 },
+      { id: "wastes", name: "РїСѓСЃС‚РѕС€СЊ", color: 0x6b5a45, x: 35, z: 55, r: 34 }
     ];
     BIOMES.forEach((b) => {
       const g = mesh(
@@ -304,16 +304,16 @@
         const d = Math.hypot(x - b.x, z - b.z);
         if (d < b.r && d < bd) { best = b; bd = d; }
       });
-      if (Math.hypot(x - CAMP.x, z - CAMP.z) < 9) return { id: "camp", name: "лагерь" };
+      if (Math.hypot(x - CAMP.x, z - CAMP.z) < 9) return { id: "camp", name: "Р»Р°РіРµСЂСЊ" };
       return best;
     }
     function refreshHud() {
       document.getElementById("night").textContent = nightCount;
       document.getElementById("wood").textContent = wood;
-      document.getElementById("phase").textContent = isNight ? "ночь" : "день";
+      document.getElementById("phase").textContent = isNight ? "РЅРѕС‡СЊ" : "РґРµРЅСЊ";
       document.getElementById("phase").style.background = isNight ? "rgba(79,70,229,.45)" : "rgba(255,255,255,.12)";
       const nearFire = Math.hypot(player.mesh.position.x, player.mesh.position.z) < 7;
-      document.getElementById("warm").textContent = warmBoost > 0 || nearFire ? "тепло" : (isNight ? "холодно" : "ок");
+      document.getElementById("warm").textContent = warmBoost > 0 || nearFire ? "С‚РµРїР»Рѕ" : (isNight ? "С…РѕР»РѕРґРЅРѕ" : "РѕРє");
       document.getElementById("biome").textContent = biomeAt(player.mesh.position.x, player.mesh.position.z).name;
       document.getElementById("btnWall").disabled = wood < WALL_COST;
       document.getElementById("btnWall").classList.toggle("off", wood < WALL_COST);
@@ -330,9 +330,9 @@
         sun.intensity = 0.12;
         fireLight.intensity = 2.2;
         nightCount = Math.min(99, nightCount + 1);
-        toast("Ночь " + nightCount + " / 99", 2);
+        toast("РќРѕС‡СЊ " + nightCount + " / 99", 2);
         spawnWolves();
-        if (nightCount >= 99) toast("Ты пережил 99 ночей!", 4);
+        if (nightCount >= 99) toast("РўС‹ РїРµСЂРµР¶РёР» 99 РЅРѕС‡РµР№!", 4);
       } else {
         scene.background.set(0x87a878);
         scene.fog.color.set(0x87a878);
@@ -342,7 +342,7 @@
         sun.intensity = 1.05;
         fireLight.intensity = 1.4;
         clearWolves();
-        toast("Рассвет", 1.4);
+        toast("Р Р°СЃСЃРІРµС‚", 1.4);
       }
       refreshHud();
     }
@@ -377,11 +377,11 @@
     function chopWood() {
       if (chopCd > 0 || dead) return;
       const t = nearTree();
-      if (!t) { toast("Подойди к дереву", 1.2); return; }
+      if (!t) { toast("РџРѕРґРѕР№РґРё Рє РґРµСЂРµРІСѓ", 1.2); return; }
       chopCd = axeBoost > 0 ? 0.35 : 0.85;
       const gain = axeBoost > 0 ? Math.max(1, t.wood) : 1;
       wood += gain;
-      toast("+" + gain + " дрова", 1);
+      toast("+" + gain + " РґСЂРѕРІР°", 1);
       refreshHud();
     }
 
@@ -394,7 +394,7 @@
       const w = box(2.4, 2.2, 0.35, 0x8d6e63, x, 1.1, z);
       w.rotation.y = Math.atan2(dir.x, dir.z);
       walls.push({ mesh: w, x: x, z: z });
-      toast("Стена построена", 1.2);
+      toast("РЎС‚РµРЅР° РїРѕСЃС‚СЂРѕРµРЅР°", 1.2);
       refreshHud();
     }
 
@@ -403,7 +403,7 @@
       if (dead) return;
       // simple one-hit death like survival nights
       dead = true;
-      toast("Волки догнали… Ночь сброшена у костра", 2.8);
+      toast("Р’РѕР»РєРё РґРѕРіРЅР°Р»РёвЂ¦ РќРѕС‡СЊ СЃР±СЂРѕС€РµРЅР° Сѓ РєРѕСЃС‚СЂР°", 2.8);
       setTimeout(() => {
         player.mesh.position.set(2, 0, 3);
         dead = false;
@@ -417,27 +417,27 @@
       lanternOn = !lanternOn;
       lanternLight.intensity = lanternOn ? 1.8 : 0;
       document.getElementById("btnLantern").classList.toggle("off", !lanternOn);
-      toast(lanternOn ? "Фонарь включён" : "Фонарь выключен", 1.1);
+      toast(lanternOn ? "Р¤РѕРЅР°СЂСЊ РІРєР»СЋС‡С‘РЅ" : "Р¤РѕРЅР°СЂСЊ РІС‹РєР»СЋС‡РµРЅ", 1.1);
     }
     function useAxe() {
       axeBoost = 18;
-      toast("Топор: рубка быстрее 18с", 1.5);
+      toast("РўРѕРїРѕСЂ: СЂСѓР±РєР° Р±С‹СЃС‚СЂРµРµ 18СЃ", 1.5);
     }
     function useFireBoost() {
       if (Math.hypot(player.mesh.position.x, player.mesh.position.z) > 9) {
-        toast("Нужно у костра", 1.3);
+        toast("РќСѓР¶РЅРѕ Сѓ РєРѕСЃС‚СЂР°", 1.3);
         return;
       }
       warmBoost = 20;
       campWarm = 1.6;
       fireLight.intensity = isNight ? 3.2 : 2.2;
-      toast("Костёр+: тепло и лечение", 1.5);
-      // heal sense — owner already immortal; for mortal just clear cold fear via toast
+      toast("РљРѕСЃС‚С‘СЂ+: С‚РµРїР»Рѕ Рё Р»РµС‡РµРЅРёРµ", 1.5);
+      // heal sense вЂ” owner already immortal; for mortal just clear cold fear via toast
     }
     function useSignal() {
       signalT = 5;
       wolves.forEach((w) => { w.scared = 5; });
-      toast("Сигнал! Волки отступают", 1.6);
+      toast("РЎРёРіРЅР°Р»! Р’РѕР»РєРё РѕС‚СЃС‚СѓРїР°СЋС‚", 1.6);
     }
 
     document.getElementById("btnLantern").onclick = toggleLantern;
@@ -457,10 +457,10 @@
 
     // Tutorial
     const TUT = [
-      { t: "Выживание 99 ночей", p: "Большая карта с биомами: лес, снег, болото и пустошь. День сменяется ночью — счётчик идёт к 99." },
-      { t: "Костёр и дрова", p: "Лагерь в центре — относительно безопасно. E у дерева — дрова. Кнопка «Стена» (или F) строит укрытие за 2 дрова." },
-      { t: "Способности", p: "Фонарь — свет ночью. Топор — быстрее рубить. Костёр+ — тепло у костра. Сигнал — кратко пугает волков." },
-      { t: "Волки", p: "Волки появляются только ночью (вытянутые, не цилиндры). Хозяин урона не получает. Обычный игрок — берегись!" }
+      { t: "Р’С‹Р¶РёРІР°РЅРёРµ 99 РЅРѕС‡РµР№", p: "Р‘РѕР»СЊС€Р°СЏ РєР°СЂС‚Р° СЃ Р±РёРѕРјР°РјРё: Р»РµСЃ, СЃРЅРµРі, Р±РѕР»РѕС‚Рѕ Рё РїСѓСЃС‚РѕС€СЊ. Р”РµРЅСЊ СЃРјРµРЅСЏРµС‚СЃСЏ РЅРѕС‡СЊСЋ вЂ” СЃС‡С‘С‚С‡РёРє РёРґС‘С‚ Рє 99." },
+      { t: "РљРѕСЃС‚С‘СЂ Рё РґСЂРѕРІР°", p: "Р›Р°РіРµСЂСЊ РІ С†РµРЅС‚СЂРµ вЂ” РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р±РµР·РѕРїР°СЃРЅРѕ. E Сѓ РґРµСЂРµРІР° вЂ” РґСЂРѕРІР°. РљРЅРѕРїРєР° В«РЎС‚РµРЅР°В» (РёР»Рё F) СЃС‚СЂРѕРёС‚ СѓРєСЂС‹С‚РёРµ Р·Р° 2 РґСЂРѕРІР°." },
+      { t: "РЎРїРѕСЃРѕР±РЅРѕСЃС‚Рё", p: "Р¤РѕРЅР°СЂСЊ вЂ” СЃРІРµС‚ РЅРѕС‡СЊСЋ. РўРѕРїРѕСЂ вЂ” Р±С‹СЃС‚СЂРµРµ СЂСѓР±РёС‚СЊ. РљРѕСЃС‚С‘СЂ+ вЂ” С‚РµРїР»Рѕ Сѓ РєРѕСЃС‚СЂР°. РЎРёРіРЅР°Р» вЂ” РєСЂР°С‚РєРѕ РїСѓРіР°РµС‚ РІРѕР»РєРѕРІ." },
+      { t: "Р’РѕР»РєРё", p: "Р’РѕР»РєРё РїРѕСЏРІР»СЏСЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РЅРѕС‡СЊСЋ (РІС‹С‚СЏРЅСѓС‚С‹Рµ, РЅРµ С†РёР»РёРЅРґСЂС‹). РҐРѕР·СЏРёРЅ СѓСЂРѕРЅР° РЅРµ РїРѕР»СѓС‡Р°РµС‚. РћР±С‹С‡РЅС‹Р№ РёРіСЂРѕРє вЂ” Р±РµСЂРµРіРёСЃСЊ!" }
     ];
     let tutI = 0;
     const dots = document.getElementById("stepDots");
@@ -472,7 +472,7 @@
       });
       document.getElementById("tutTitle").textContent = TUT[tutI].t;
       document.getElementById("tutText").textContent = TUT[tutI].p;
-      document.getElementById("tutNext").textContent = tutI >= TUT.length - 1 ? "Играть" : "Далее";
+      document.getElementById("tutNext").textContent = tutI >= TUT.length - 1 ? "РРіСЂР°С‚СЊ" : "Р”Р°Р»РµРµ";
     }
     function closeTut() { document.getElementById("tut").style.display = "none"; }
     document.getElementById("tutNext").onclick = () => {
@@ -578,7 +578,7 @@
       const prompt = document.getElementById("prompt");
       if (t) {
         prompt.style.display = "block";
-        prompt.textContent = "E — рубить дрова" + (axeBoost > 0 ? " (топор!)" : "");
+        prompt.textContent = "E вЂ” СЂСѓР±РёС‚СЊ РґСЂРѕРІР°" + (axeBoost > 0 ? " (С‚РѕРїРѕСЂ!)" : "");
       } else prompt.style.display = "none";
 
       if ((now / 400 | 0) % 2 === 0) refreshHud();
@@ -589,6 +589,6 @@
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

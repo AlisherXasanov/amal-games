@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Брукхейвен RP — черновик</title>
+  <title>Р‘СЂСѓРєС…РµР№РІРµРЅ RP вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#102018;font-family:Segoe UI,system-ui,sans-serif;color:#fff;user-select:none}
@@ -71,31 +71,31 @@
   </style>
 </head>
 <body>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
   <div id="tutorial">
-    <h1>Брукхейвен RP · как играть</h1>
+    <h1>Р‘СЂСѓРєС…РµР№РІРµРЅ RP В· РєР°Рє РёРіСЂР°С‚СЊ</h1>
     <div class="steps">
-      <div class="step" id="s1">1) Спавн<em>ты уже здесь · жёлтая площадь</em></div>
-      <div class="step" id="s2">2) Возьми бесплатный дом<em>кнопка «Дома» или E у зелёного участка</em></div>
-      <div class="step" id="s3">3) Заспавнь машину<em>кнопка «Машины» → бесплатный седан</em></div>
-      <div class="step" id="s4">4) Зайди в дом<em>подойди к двери · E</em></div>
+      <div class="step" id="s1">1) РЎРїР°РІРЅ<em>С‚С‹ СѓР¶Рµ Р·РґРµСЃСЊ В· Р¶С‘Р»С‚Р°СЏ РїР»РѕС‰Р°РґСЊ</em></div>
+      <div class="step" id="s2">2) Р’РѕР·СЊРјРё Р±РµСЃРїР»Р°С‚РЅС‹Р№ РґРѕРј<em>РєРЅРѕРїРєР° В«Р”РѕРјР°В» РёР»Рё E Сѓ Р·РµР»С‘РЅРѕРіРѕ СѓС‡Р°СЃС‚РєР°</em></div>
+      <div class="step" id="s3">3) Р—Р°СЃРїР°РІРЅСЊ РјР°С€РёРЅСѓ<em>РєРЅРѕРїРєР° В«РњР°С€РёРЅС‹В» в†’ Р±РµСЃРїР»Р°С‚РЅС‹Р№ СЃРµРґР°РЅ</em></div>
+      <div class="step" id="s4">4) Р—Р°Р№РґРё РІ РґРѕРј<em>РїРѕРґРѕР№РґРё Рє РґРІРµСЂРё В· E</em></div>
     </div>
   </div>
   <div id="hud">
-    <h2>Город</h2>
-    Монеты: <b id="coins">120</b><br/>
-    Где ты: <span id="loc">спавн</span><br/>
-    Твой дом: <span id="house">нет</span>
-    <div id="note">Один ПК · NPC-жители ходят по городу (как «игроки»)</div>
+    <h2>Р“РѕСЂРѕРґ</h2>
+    РњРѕРЅРµС‚С‹: <b id="coins">120</b><br/>
+    Р“РґРµ С‚С‹: <span id="loc">СЃРїР°РІРЅ</span><br/>
+    РўРІРѕР№ РґРѕРј: <span id="house">РЅРµС‚</span>
+    <div id="note">РћРґРёРЅ РџРљ В· NPC-Р¶РёС‚РµР»Рё С…РѕРґСЏС‚ РїРѕ РіРѕСЂРѕРґСѓ (РєР°Рє В«РёРіСЂРѕРєРёВ»)</div>
   </div>
   <div id="toast"></div>
   <div id="prompt"></div>
   <div id="panel">
-    <button type="button" id="btnSpawn" class="blue">Спавн</button>
-    <button type="button" id="btnHome" class="green">Мой дом</button>
-    <button type="button" id="btnCars" class="purple">Машины</button>
-    <button type="button" id="btnPlots">Дома</button>
+    <button type="button" id="btnSpawn" class="blue">РЎРїР°РІРЅ</button>
+    <button type="button" id="btnHome" class="green">РњРѕР№ РґРѕРј</button>
+    <button type="button" id="btnCars" class="purple">РњР°С€РёРЅС‹</button>
+    <button type="button" id="btnPlots">Р”РѕРјР°</button>
   </div>
   <div id="sheet"></div>
 
@@ -269,7 +269,7 @@
     }
 
     // NPC "players"
-    const NPC_NAMES = ["Артём", "Лиза", "Макс", "Соня", "Кирилл", "Ника", "Даня", "Мира"];
+    const NPC_NAMES = ["РђСЂС‚С‘Рј", "Р›РёР·Р°", "РњР°РєСЃ", "РЎРѕРЅСЏ", "РљРёСЂРёР»Р»", "РќРёРєР°", "Р”Р°РЅСЏ", "РњРёСЂР°"];
     const NPC_SHIRTS = [0xf87171, 0x60a5fa, 0xfbbf24, 0xc084fc, 0x4ade80, 0xfb923c, 0xf472b6, 0x22d3ee];
     const npcs = [];
     for (let i = 0; i < 8; i++) {
@@ -308,7 +308,7 @@
       const free = idx % 3 !== 0;
       const price = free ? 0 : 40 + (idx % 5) * 20;
       const color = COLORS[idx % COLORS.length];
-      const name = (free ? "Бесплатный дом #" : "Дом за монеты #") + (idx + 1);
+      const name = (free ? "Р‘РµСЃРїР»Р°С‚РЅС‹Р№ РґРѕРј #" : "Р”РѕРј Р·Р° РјРѕРЅРµС‚С‹ #") + (idx + 1);
 
       const group = new THREE.Group();
       group.position.set(def.x, 0, def.z);
@@ -340,7 +340,7 @@
       const sign = box(2.2, 1.1, 0.12, free ? 0x16a34a : 0xd97706, 0, 1.2, 5.2, group);
       const emptyOnly = [lot, sign];
 
-      // Interior: living room + bedroom with ONE bed, sofa — not dozens of beds
+      // Interior: living room + bedroom with ONE bed, sofa вЂ” not dozens of beds
       const interior = new THREE.Group();
       interior.visible = false;
       box(7.4, 0.12, 6.4, 0xd6b48a, 0, 0.08, 0, interior);
@@ -412,11 +412,11 @@
     function syncUI() {
       document.getElementById("coins").textContent = coins;
       document.getElementById("loc").textContent = inCar
-        ? "в машине"
+        ? "РІ РјР°С€РёРЅРµ"
         : inside
-        ? inside.name + " (внутри)"
-        : "улица";
-      document.getElementById("house").textContent = myPlot ? myPlot.name : "нет";
+        ? inside.name + " (РІРЅСѓС‚СЂРё)"
+        : "СѓР»РёС†Р°";
+      document.getElementById("house").textContent = myPlot ? myPlot.name : "РЅРµС‚";
       syncTut();
     }
 
@@ -443,11 +443,11 @@
 
     function claimPlot(plot) {
       if (plot.owned) {
-        toast(plot === myPlot ? "Это уже твой дом" : "Участок занят");
+        toast(plot === myPlot ? "Р­С‚Рѕ СѓР¶Рµ С‚РІРѕР№ РґРѕРј" : "РЈС‡Р°СЃС‚РѕРє Р·Р°РЅСЏС‚");
         return;
       }
       if (!plot.free && coins < plot.price) {
-        toast("Нужно " + plot.price + " монет");
+        toast("РќСѓР¶РЅРѕ " + plot.price + " РјРѕРЅРµС‚");
         return;
       }
       if (!plot.free) coins -= plot.price;
@@ -461,14 +461,14 @@
         plot.x, 0.12, plot.z
       ).rotation.x = -Math.PI / 2;
       tut.house = true;
-      toast(plot.free ? "Бесплатный дом твой! → шаг 3: машина" : "Дом куплен!");
+      toast(plot.free ? "Р‘РµСЃРїР»Р°С‚РЅС‹Р№ РґРѕРј С‚РІРѕР№! в†’ С€Р°Рі 3: РјР°С€РёРЅР°" : "Р”РѕРј РєСѓРїР»РµРЅ!");
       syncUI();
       closeSheet();
     }
 
     function enterHouse(plot) {
       if (!plot.built) {
-        toast("Сначала займи участок (кнопка «Дома»)");
+        toast("РЎРЅР°С‡Р°Р»Р° Р·Р°Р№РјРё СѓС‡Р°СЃС‚РѕРє (РєРЅРѕРїРєР° В«Р”РѕРјР°В»)");
         return;
       }
       inside = plot;
@@ -484,7 +484,7 @@
       scene.fog.far = 30;
       scene.fog.color.set(0x2a2018);
       tut.enter = true;
-      toast("Внутри · диван + одна кровать · E у двери — выйти");
+      toast("Р’РЅСѓС‚СЂРё В· РґРёРІР°РЅ + РѕРґРЅР° РєСЂРѕРІР°С‚СЊ В· E Сѓ РґРІРµСЂРё вЂ” РІС‹Р№С‚Рё");
       syncUI();
     }
 
@@ -501,7 +501,7 @@
       scene.fog.near = 100;
       scene.fog.far = 280;
       scene.fog.color.set(0x87b8e8);
-      toast("На улице");
+      toast("РќР° СѓР»РёС†Рµ");
       syncUI();
     }
 
@@ -511,15 +511,15 @@
       player.state.locked = false;
       player.mesh.position.set(x, 0, z);
       player.state.vx = player.state.vz = player.state.vy = 0;
-      toast(label || "Телепорт");
+      toast(label || "РўРµР»РµРїРѕСЂС‚");
       syncUI();
     }
 
     const CAR_TYPES = [
-      { id: "sedan", name: "Седан", color: 0x3b82f6, price: 0 },
-      { id: "sport", name: "Спорткар", color: 0xef4444, price: 35 },
-      { id: "suv", name: "Джип", color: 0x16a34a, price: 50 },
-      { id: "taxi", name: "Такси", color: 0xfbbf24, price: 20 },
+      { id: "sedan", name: "РЎРµРґР°РЅ", color: 0x3b82f6, price: 0 },
+      { id: "sport", name: "РЎРїРѕСЂС‚РєР°СЂ", color: 0xef4444, price: 35 },
+      { id: "suv", name: "Р”Р¶РёРї", color: 0x16a34a, price: 50 },
+      { id: "taxi", name: "РўР°РєСЃРё", color: 0xfbbf24, price: 20 },
     ];
 
     function destroyCar() {
@@ -531,7 +531,7 @@
 
     function spawnCar(type) {
       if (!type.free && type.price > 0 && coins < type.price) {
-        toast("Нужно " + type.price + " монет");
+        toast("РќСѓР¶РЅРѕ " + type.price + " РјРѕРЅРµС‚");
         return;
       }
       if (type.price > 0) coins -= type.price;
@@ -555,7 +555,7 @@
       scene.add(g);
       car = { group: g, type: type, speed: type.id === "sport" ? 22 : type.id === "suv" ? 14 : 17 };
       tut.car = true;
-      toast("Машина: " + type.name + " · подойди и E");
+      toast("РњР°С€РёРЅР°: " + type.name + " В· РїРѕРґРѕР№РґРё Рё E");
       syncUI();
       closeSheet();
     }
@@ -565,7 +565,7 @@
       inCar = true;
       player.mesh.visible = false;
       player.state.locked = true;
-      toast("За рулём · WASD · E выйти");
+      toast("Р—Р° СЂСѓР»С‘Рј В· WASD В· E РІС‹Р№С‚Рё");
       syncUI();
     }
 
@@ -576,7 +576,7 @@
       player.state.locked = false;
       const g = car.group;
       player.mesh.position.set(g.position.x + 2.2, 0, g.position.z);
-      if (!silent) toast("Вышел из машины");
+      if (!silent) toast("Р’С‹С€РµР» РёР· РјР°С€РёРЅС‹");
       syncUI();
     }
 
@@ -599,27 +599,27 @@
     }
 
     document.getElementById("btnSpawn").onclick = () =>
-      teleport(CITY_SPAWN.x, CITY_SPAWN.z, "Спавн города");
+      teleport(CITY_SPAWN.x, CITY_SPAWN.z, "РЎРїР°РІРЅ РіРѕСЂРѕРґР°");
     document.getElementById("btnHome").onclick = () => {
       if (!myPlot) {
-        toast("Сначала возьми дом");
+        toast("РЎРЅР°С‡Р°Р»Р° РІРѕР·СЊРјРё РґРѕРј");
         openPlots();
         return;
       }
-      teleport(myPlot.door.x, myPlot.door.z + 2, "У своего дома");
+      teleport(myPlot.door.x, myPlot.door.z + 2, "РЈ СЃРІРѕРµРіРѕ РґРѕРјР°");
     };
     document.getElementById("btnCars").onclick = () => {
       openSheet(
-        "Спавн машины",
+        "РЎРїР°РІРЅ РјР°С€РёРЅС‹",
         CAR_TYPES.map((t) => ({
-          label: t.name + (t.price ? " — " + t.price + " монет" : " — бесплатно"),
+          label: t.name + (t.price ? " вЂ” " + t.price + " РјРѕРЅРµС‚" : " вЂ” Р±РµСЃРїР»Р°С‚РЅРѕ"),
           run: () => spawnCar(t),
         })).concat([
           {
-            label: "Убрать машину",
+            label: "РЈР±СЂР°С‚СЊ РјР°С€РёРЅСѓ",
             run: () => {
               destroyCar();
-              toast("Машина убрана");
+              toast("РњР°С€РёРЅР° СѓР±СЂР°РЅР°");
               closeSheet();
             },
           },
@@ -633,19 +633,19 @@
         .concat(plots.filter((p) => !p.owned && !p.free).slice(0, 8));
       const list = freeFirst.map((p) => ({
         label:
-          (p.owned ? (p === myPlot ? "★ Твой: " : "Занят: ") : p.free ? "FREE: " : p.price + "🪙: ") +
+          (p.owned ? (p === myPlot ? "в… РўРІРѕР№: " : "Р—Р°РЅСЏС‚: ") : p.free ? "FREE: " : p.price + "рџЄ™: ") +
           p.name,
         run: () => {
           if (p.owned && p === myPlot) {
-            teleport(p.door.x, p.door.z + 2, "У твоего дома");
+            teleport(p.door.x, p.door.z + 2, "РЈ С‚РІРѕРµРіРѕ РґРѕРјР°");
             closeSheet();
           } else if (!p.owned) {
             claimPlot(p);
-            teleport(p.door.x, p.door.z + 2, "У нового дома");
-          } else toast("Занято");
+            teleport(p.door.x, p.door.z + 2, "РЈ РЅРѕРІРѕРіРѕ РґРѕРјР°");
+          } else toast("Р—Р°РЅСЏС‚Рѕ");
         },
       }));
-      openSheet("Дома (зелёные = бесплатно)", list);
+      openSheet("Р”РѕРјР° (Р·РµР»С‘РЅС‹Рµ = Р±РµСЃРїР»Р°С‚РЅРѕ)", list);
     }
     document.getElementById("btnPlots").onclick = openPlots;
 
@@ -679,7 +679,7 @@
       else if (act.type === "shop") {
         coins += 15;
         syncUI();
-        toast("Подработка +15 монет");
+        toast("РџРѕРґСЂР°Р±РѕС‚РєР° +15 РјРѕРЅРµС‚");
       }
     }
 
@@ -723,7 +723,7 @@
         if (deadT <= 0) {
           if (inside) exitHouse();
           exitCar(true);
-          teleport(CITY_SPAWN.x, CITY_SPAWN.z, "Респавн");
+          teleport(CITY_SPAWN.x, CITY_SPAWN.z, "Р РµСЃРїР°РІРЅ");
           wetCooldown = 1;
         }
       }
@@ -788,12 +788,12 @@
           if (inCar) car.group.position.set(pondCenter.x - 12, 0, pondCenter.z);
           else player.mesh.position.set(pondCenter.x - 12, 0, pondCenter.z);
           wetCooldown = 1.2;
-          toast("Пруд · хозяин не тонет");
+          toast("РџСЂСѓРґ В· С…РѕР·СЏРёРЅ РЅРµ С‚РѕРЅРµС‚");
         } else {
           coins = Math.max(0, coins - 8);
           syncUI();
           deadT = 1.5;
-          toast("Утонул · респавн");
+          toast("РЈС‚РѕРЅСѓР» В· СЂРµСЃРїР°РІРЅ");
         }
       }
 
@@ -802,17 +802,17 @@
         promptEl.style.display = "block";
         promptEl.textContent =
           act.type === "door"
-            ? "E — войти в дом"
+            ? "E вЂ” РІРѕР№С‚Рё РІ РґРѕРј"
             : act.type === "exit"
-            ? "E — выйти"
+            ? "E вЂ” РІС‹Р№С‚Рё"
             : act.type === "claimHere"
-            ? "E — занять " + (act.plot.free ? "(бесплатно)" : act.plot.price + " монет")
+            ? "E вЂ” Р·Р°РЅСЏС‚СЊ " + (act.plot.free ? "(Р±РµСЃРїР»Р°С‚РЅРѕ)" : act.plot.price + " РјРѕРЅРµС‚")
             : act.type === "enterCar"
-            ? "E — сесть в машину"
+            ? "E вЂ” СЃРµСЃС‚СЊ РІ РјР°С€РёРЅСѓ"
             : act.type === "exitCar"
-            ? "E — выйти из машины"
+            ? "E вЂ” РІС‹Р№С‚Рё РёР· РјР°С€РёРЅС‹"
             : act.type === "shop"
-            ? "E — подработка +15"
+            ? "E вЂ” РїРѕРґСЂР°Р±РѕС‚РєР° +15"
             : "E";
       } else promptEl.style.display = "none";
 
@@ -820,12 +820,12 @@
     }
 
     syncUI();
-    toast("Шаг 1 ✓ · возьми бесплатный дом (Дома)");
+    toast("РЁР°Рі 1 вњ“ В· РІРѕР·СЊРјРё Р±РµСЃРїР»Р°С‚РЅС‹Р№ РґРѕРј (Р”РѕРјР°)");
     animate(performance.now());
   })();
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

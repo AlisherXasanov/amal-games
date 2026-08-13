@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Blox Fruits — черновик</title>
+  <title>Blox Fruits вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#0a2a4a;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
@@ -43,31 +43,31 @@
 <body>
   <div id="hud">
     <h1>Blox Fruits</h1>
-    Ур. <b id="lvl">1</b> · Beli: <b id="beli">0</b><br/>
-    Фрукт: <b id="fruit">нет</b> · Остров: <b id="isle">Стартовый</b><br/>
-    Квест: <span id="quest">убей 3 пирата (0/3)</span>
+    РЈСЂ. <b id="lvl">1</b> В· Beli: <b id="beli">0</b><br/>
+    Р¤СЂСѓРєС‚: <b id="fruit">РЅРµС‚</b> В· РћСЃС‚СЂРѕРІ: <b id="isle">РЎС‚Р°СЂС‚РѕРІС‹Р№</b><br/>
+    РљРІРµСЃС‚: <span id="quest">СѓР±РµР№ 3 РїРёСЂР°С‚Р° (0/3)</span>
     <div class="bar"><i id="hpFill"></i></div>
   </div>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
   <div id="toast"></div>
   <div id="prompt"></div>
   <div id="skills">
-    <button type="button" id="btnEat" class="grn">Съесть фрукт</button>
-    <button type="button" id="btnAtk">ЛКМ удар</button>
-    <button type="button" id="btnQ" class="blu">Q навык</button>
-    <button type="button" id="btnE" class="pur">E навык</button>
-    <button type="button" id="btnIslands" class="grn">Острова</button>
+    <button type="button" id="btnEat" class="grn">РЎСЉРµСЃС‚СЊ С„СЂСѓРєС‚</button>
+    <button type="button" id="btnAtk">Р›РљРњ СѓРґР°СЂ</button>
+    <button type="button" id="btnQ" class="blu">Q РЅР°РІС‹Рє</button>
+    <button type="button" id="btnE" class="pur">E РЅР°РІС‹Рє</button>
+    <button type="button" id="btnIslands" class="grn">РћСЃС‚СЂРѕРІР°</button>
   </div>
-  <div id="sheet"><h3>Телепорт на остров</h3><div id="islandBtns"></div></div>
+  <div id="sheet"><h3>РўРµР»РµРїРѕСЂС‚ РЅР° РѕСЃС‚СЂРѕРІ</h3><div id="islandBtns"></div></div>
   <div id="tut">
     <div class="box">
       <div id="stepDots"></div>
-      <h2 id="tutTitle">Привет!</h2>
+      <h2 id="tutTitle">РџСЂРёРІРµС‚!</h2>
       <p id="tutText"></p>
       <div class="row">
-        <button type="button" class="skip" id="tutSkip">Пропустить</button>
-        <button type="button" class="next" id="tutNext">Далее</button>
+        <button type="button" class="skip" id="tutSkip">РџСЂРѕРїСѓСЃС‚РёС‚СЊ</button>
+        <button type="button" class="next" id="tutNext">Р”Р°Р»РµРµ</button>
       </div>
     </div>
   </div>
@@ -85,18 +85,18 @@
     }
 
     const FRUITS = [
-      { id: "flame", name: "Пламя", color: 0xff5722, dmg: 22 },
-      { id: "ice", name: "Лёд", color: 0x4fc3f7, dmg: 18 },
-      { id: "quake", name: "Тряска", color: 0x8d6e63, dmg: 28 },
-      { id: "abyss", name: "Сфера бездны", color: 0x7c3aed, dmg: 32, special: true }
+      { id: "flame", name: "РџР»Р°РјСЏ", color: 0xff5722, dmg: 22 },
+      { id: "ice", name: "Р›С‘Рґ", color: 0x4fc3f7, dmg: 18 },
+      { id: "quake", name: "РўСЂСЏСЃРєР°", color: 0x8d6e63, dmg: 28 },
+      { id: "abyss", name: "РЎС„РµСЂР° Р±РµР·РґРЅС‹", color: 0x7c3aed, dmg: 32, special: true }
     ];
 
     const ISLANDS = [
-      { id: "start", name: "Стартовый", x: 0, z: 0, r: 22, color: 0xd7ccc8, accent: 0x81c784 },
-      { id: "jungle", name: "Джунгли", x: 70, z: -20, r: 18, color: 0x33691e, accent: 0x1b5e20 },
-      { id: "desert", name: "Пустыня", x: -65, z: 35, r: 17, color: 0xedc9a0, accent: 0xd4a017 },
-      { id: "snow", name: "Снежный", x: 40, z: 75, r: 16, color: 0xe8eef5, accent: 0x90caf9 },
-      { id: "abyss", name: "Тёмный", x: -50, z: -70, r: 19, color: 0x1a1030, accent: 0x7c3aed }
+      { id: "start", name: "РЎС‚Р°СЂС‚РѕРІС‹Р№", x: 0, z: 0, r: 22, color: 0xd7ccc8, accent: 0x81c784 },
+      { id: "jungle", name: "Р”Р¶СѓРЅРіР»Рё", x: 70, z: -20, r: 18, color: 0x33691e, accent: 0x1b5e20 },
+      { id: "desert", name: "РџСѓСЃС‚С‹РЅСЏ", x: -65, z: 35, r: 17, color: 0xedc9a0, accent: 0xd4a017 },
+      { id: "snow", name: "РЎРЅРµР¶РЅС‹Р№", x: 40, z: 75, r: 16, color: 0xe8eef5, accent: 0x90caf9 },
+      { id: "abyss", name: "РўС‘РјРЅС‹Р№", x: -50, z: -70, r: 19, color: 0x1a1030, accent: 0x7c3aed }
     ];
 
     const scene = new THREE.Scene();
@@ -110,7 +110,7 @@
     document.body.appendChild(renderer.domElement);
     const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
       distance: 14, pitch: 0.42, lookOffsetY: 1.35, minDist: 5, maxDist: 42,
-      hintText: "Камера: ПКМ · колёсико · на телефоне палец"
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· РєРѕР»С‘СЃРёРєРѕ В· РЅР° С‚РµР»РµС„РѕРЅРµ РїР°Р»РµС†"
     });
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -247,7 +247,7 @@
 
     let hp = 100, maxHp = 100, beli = 0, level = 1, xp = 0;
     let fruit = null;
-    let heldFruit = null; // подобран, ещё не съеден
+    let heldFruit = null; // РїРѕРґРѕР±СЂР°РЅ, РµС‰С‘ РЅРµ СЃСЉРµРґРµРЅ
     let questKills = 0;
     let dead = false;
     let cdBasic = 0, cdQ = 0, cdE = 0;
@@ -265,14 +265,14 @@
     function refreshHud() {
       document.getElementById("lvl").textContent = level;
       document.getElementById("beli").textContent = beli;
-      document.getElementById("fruit").textContent = fruit ? fruit.name : (heldFruit ? ("в руках: " + heldFruit.name + " — СЪЕШЬ") : "нет");
+      document.getElementById("fruit").textContent = fruit ? fruit.name : (heldFruit ? ("РІ СЂСѓРєР°С…: " + heldFruit.name + " вЂ” РЎРЄР•РЁР¬") : "РЅРµС‚");
       const eatBtn = document.getElementById("btnEat");
       if (eatBtn) eatBtn.disabled = !(heldFruit && !fruit);
       document.getElementById("quest").textContent =
-        questKills >= 3 ? "квест выполнен ✓ (+Beli)" : "убей 3 пирата (" + questKills + "/3)";
+        questKills >= 3 ? "РєРІРµСЃС‚ РІС‹РїРѕР»РЅРµРЅ вњ“ (+Beli)" : "СѓР±РµР№ 3 РїРёСЂР°С‚Р° (" + questKills + "/3)";
       document.getElementById("hpFill").style.width = Math.max(0, (hp / maxHp) * 100) + "%";
       const cur = nearestIsland(player.mesh.position.x, player.mesh.position.z);
-      document.getElementById("isle").textContent = cur ? cur.name : "море";
+      document.getElementById("isle").textContent = cur ? cur.name : "РјРѕСЂРµ";
     }
     function nearestIsland(x, z) {
       let best = null, bd = 1e9;
@@ -289,7 +289,7 @@
         level++;
         maxHp += 10;
         hp = maxHp;
-        toast("Уровень " + level + "!", 2);
+        toast("РЈСЂРѕРІРµРЅСЊ " + level + "!", 2);
       }
       refreshHud();
     }
@@ -320,11 +320,11 @@
         if (d < 2.2) near = f;
       });
       if (!near) return false;
-      if (fruit) { toast("Сначала используй текущий фрукт / уже съеден", 1.5); return true; }
+      if (fruit) { toast("РЎРЅР°С‡Р°Р»Р° РёСЃРїРѕР»СЊР·СѓР№ С‚РµРєСѓС‰РёР№ С„СЂСѓРєС‚ / СѓР¶Рµ СЃСЉРµРґРµРЅ", 1.5); return true; }
       near.taken = true;
       scene.remove(near.mesh);
       heldFruit = near.def;
-      toast("Подобрал: " + heldFruit.name + " · нажми «Съесть фрукт»", 2.5);
+      toast("РџРѕРґРѕР±СЂР°Р»: " + heldFruit.name + " В· РЅР°Р¶РјРё В«РЎСЉРµСЃС‚СЊ С„СЂСѓРєС‚В»", 2.5);
       refreshHud();
       setTimeout(() => {
         near.taken = false;
@@ -334,11 +334,11 @@
       return true;
     }
     function eatFruit() {
-      if (!heldFruit) { toast("Сначала подбери фрукт (E у сферы)", 1.8); return; }
-      if (fruit) { toast("Фрукт уже съеден: " + fruit.name, 1.6); return; }
+      if (!heldFruit) { toast("РЎРЅР°С‡Р°Р»Р° РїРѕРґР±РµСЂРё С„СЂСѓРєС‚ (E Сѓ СЃС„РµСЂС‹)", 1.8); return; }
+      if (fruit) { toast("Р¤СЂСѓРєС‚ СѓР¶Рµ СЃСЉРµРґРµРЅ: " + fruit.name, 1.6); return; }
       fruit = heldFruit;
       heldFruit = null;
-      toast("Съеден фрукт: " + fruit.name + "! Теперь ЛКМ / Q / E", 2.4);
+      toast("РЎСЉРµРґРµРЅ С„СЂСѓРєС‚: " + fruit.name + "! РўРµРїРµСЂСЊ Р›РљРњ / Q / E", 2.4);
       refreshHud();
     }
     function facingDir() {
@@ -363,7 +363,7 @@
       refreshHud();
       if (hp <= 0) {
         dead = true;
-        toast("Ты погиб · возрождение на Стартовом", 2.5);
+        toast("РўС‹ РїРѕРіРёР± В· РІРѕР·СЂРѕР¶РґРµРЅРёРµ РЅР° РЎС‚Р°СЂС‚РѕРІРѕРј", 2.5);
         setTimeout(() => {
           player.mesh.position.set(0, 0, 6);
           hp = maxHp;
@@ -385,8 +385,8 @@
         questKills = Math.min(3, questKills + 1);
         if (questKills === 3) {
           beli += 100;
-          toast("Квест: 3 пирата! +100 Beli", 2.5);
-        } else toast("+пират · +" + (25 + level * 5) + " Beli", 1.4);
+          toast("РљРІРµСЃС‚: 3 РїРёСЂР°С‚Р°! +100 Beli", 2.5);
+        } else toast("+РїРёСЂР°С‚ В· +" + (25 + level * 5) + " Beli", 1.4);
         addXp(18);
         refreshHud();
         setTimeout(() => {
@@ -416,7 +416,7 @@
 
     function fireSkillQ() {
       if (cdQ > 0 || dead) return;
-      if (!fruit) { toast("Собери фрукт на острове!", 1.6); return; }
+      if (!fruit) { toast("РЎРѕР±РµСЂРё С„СЂСѓРєС‚ РЅР° РѕСЃС‚СЂРѕРІРµ!", 1.6); return; }
       cdQ = 1.4;
       const dir = facingDir();
       if (fruit.id === "abyss") {
@@ -429,10 +429,10 @@
           player.mesh.position.z + dir.z * 1.4
         );
         projectiles.push({ mesh: ball, vx: dir.x * 22, vz: dir.z * 22, life: 1.6, dmg: fruit.dmg, aoe: true, radius: 5 });
-        toast("Бездна: теневой шар!", 1.1);
+        toast("Р‘РµР·РґРЅР°: С‚РµРЅРµРІРѕР№ С€Р°СЂ!", 1.1);
       } else if (fruit.id === "quake") {
         spawnAoe(player.mesh.position.x, player.mesh.position.z, 5.5, fruit.dmg, fruit.color, 0.45);
-        toast("Тряска!", 1);
+        toast("РўСЂСЏСЃРєР°!", 1);
       } else {
         const ball = mesh(
           new THREE.SphereGeometry(0.38, 8, 8),
@@ -450,11 +450,11 @@
       // pad takes priority when near
       const pad = nearPad();
       if (pad) { openIslands(); return; }
-      if (!fruit) { toast("Нужен фрукт для E-навыка", 1.4); return; }
+      if (!fruit) { toast("РќСѓР¶РµРЅ С„СЂСѓРєС‚ РґР»СЏ E-РЅР°РІС‹РєР°", 1.4); return; }
       cdE = 2.2;
       if (fruit.id === "abyss") {
         spawnAoe(player.mesh.position.x, player.mesh.position.z, 7, fruit.dmg * 1.15, 0x6d28d9, 0.55);
-        toast("Бездна: вспышка пустоты!", 1.2);
+        toast("Р‘РµР·РґРЅР°: РІСЃРїС‹С€РєР° РїСѓСЃС‚РѕС‚С‹!", 1.2);
       } else if (fruit.id === "flame") {
         const dir = facingDir();
         for (let i = 0; i < 3; i++) {
@@ -497,7 +497,7 @@
     function teleportTo(isl) {
       player.mesh.position.set(isl.x, 0, isl.z + 4);
       document.getElementById("sheet").classList.remove("open");
-      toast("Остров: " + isl.name, 1.5);
+      toast("РћСЃС‚СЂРѕРІ: " + isl.name, 1.5);
       refreshHud();
     }
 
@@ -522,13 +522,13 @@
     document.getElementById("btnIslands").onclick = () => openIslands();
 
     addEventListener("keydown", (e) => {
-      if (e.code === "KeyQ" && !e.repeat) { if (!fruit) toast("Сначала съешь фрукт", 1.5); else fireSkillQ(); }
+      if (e.code === "KeyQ" && !e.repeat) { if (!fruit) toast("РЎРЅР°С‡Р°Р»Р° СЃСЉРµС€СЊ С„СЂСѓРєС‚", 1.5); else fireSkillQ(); }
       if (e.code === "KeyE" && !e.repeat) {
         if (typeof tryPickupFruit === "function" && tryPickupFruit()) return;
         const pad = nearPad();
         if (pad) openIslands();
         else if (fruit) fireSkillE();
-        else toast("Подбери и съешь фрукт, чтобы использовать E", 1.8);
+        else toast("РџРѕРґР±РµСЂРё Рё СЃСЉРµС€СЊ С„СЂСѓРєС‚, С‡С‚РѕР±С‹ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ E", 1.8);
       }
     });
     addEventListener("pointerdown", (e) => {
@@ -539,10 +539,10 @@
 
     // Tutorial
     const TUT = [
-      { t: "Как играть", p: "1) Подойди к светящейся сфере 2) E — подобрать 3) Кнопка Съесть фрукт 4) Потом ЛКМ / Q / E. Меню игр — справа сверху." },
-      { t: "Фрукты и навыки", p: "Собери светящуюся сферу. ЛКМ — базовый удар, Q — навык 1, E — навык 2. «Сфера бездны» на Тёмном острове бьёт снарядом и AoE." },
-      { t: "Путешествия", p: "Встань на голубой пад и нажми E — или кнопку «Острова». Квест: убей 3 пирата за Beli. Пираты — люди, их мало." },
-      { t: "Готово!", p: "Хозяин бессмертен и летает (Пробел↑ / Shift↓). Обычный игрок теряет HP от пиратов. Удачи в море!" }
+      { t: "РљР°Рє РёРіСЂР°С‚СЊ", p: "1) РџРѕРґРѕР№РґРё Рє СЃРІРµС‚СЏС‰РµР№СЃСЏ СЃС„РµСЂРµ 2) E вЂ” РїРѕРґРѕР±СЂР°С‚СЊ 3) РљРЅРѕРїРєР° РЎСЉРµСЃС‚СЊ С„СЂСѓРєС‚ 4) РџРѕС‚РѕРј Р›РљРњ / Q / E. РњРµРЅСЋ РёРіСЂ вЂ” СЃРїСЂР°РІР° СЃРІРµСЂС…Сѓ." },
+      { t: "Р¤СЂСѓРєС‚С‹ Рё РЅР°РІС‹РєРё", p: "РЎРѕР±РµСЂРё СЃРІРµС‚СЏС‰СѓСЋСЃСЏ СЃС„РµСЂСѓ. Р›РљРњ вЂ” Р±Р°Р·РѕРІС‹Р№ СѓРґР°СЂ, Q вЂ” РЅР°РІС‹Рє 1, E вЂ” РЅР°РІС‹Рє 2. В«РЎС„РµСЂР° Р±РµР·РґРЅС‹В» РЅР° РўС‘РјРЅРѕРј РѕСЃС‚СЂРѕРІРµ Р±СЊС‘С‚ СЃРЅР°СЂСЏРґРѕРј Рё AoE." },
+      { t: "РџСѓС‚РµС€РµСЃС‚РІРёСЏ", p: "Р’СЃС‚Р°РЅСЊ РЅР° РіРѕР»СѓР±РѕР№ РїР°Рґ Рё РЅР°Р¶РјРё E вЂ” РёР»Рё РєРЅРѕРїРєСѓ В«РћСЃС‚СЂРѕРІР°В». РљРІРµСЃС‚: СѓР±РµР№ 3 РїРёСЂР°С‚Р° Р·Р° Beli. РџРёСЂР°С‚С‹ вЂ” Р»СЋРґРё, РёС… РјР°Р»Рѕ." },
+      { t: "Р“РѕС‚РѕРІРѕ!", p: "РҐРѕР·СЏРёРЅ Р±РµСЃСЃРјРµСЂС‚РµРЅ Рё Р»РµС‚Р°РµС‚ (РџСЂРѕР±РµР»в†‘ / Shiftв†“). РћР±С‹С‡РЅС‹Р№ РёРіСЂРѕРє С‚РµСЂСЏРµС‚ HP РѕС‚ РїРёСЂР°С‚РѕРІ. РЈРґР°С‡Рё РІ РјРѕСЂРµ!" }
     ];
     let tutI = 0;
     const dots = document.getElementById("stepDots");
@@ -554,7 +554,7 @@
       });
       document.getElementById("tutTitle").textContent = TUT[tutI].t;
       document.getElementById("tutText").textContent = TUT[tutI].p;
-      document.getElementById("tutNext").textContent = tutI >= TUT.length - 1 ? "Играть" : "Далее";
+      document.getElementById("tutNext").textContent = tutI >= TUT.length - 1 ? "РРіСЂР°С‚СЊ" : "Р”Р°Р»РµРµ";
     }
     function closeTut() { document.getElementById("tut").style.display = "none"; }
     document.getElementById("tutNext").onclick = () => {
@@ -634,7 +634,7 @@
         }
       }
 
-      // pirates AI — max 1–2 aggressive near player
+      // pirates AI вЂ” max 1вЂ“2 aggressive near player
       let aggroCount = 0;
       pirates.forEach((p) => {
         if (!p.alive) return;
@@ -653,7 +653,7 @@
         }
 
         if (AmalDraftOwner.isOwner()) {
-          // ignore damaging owner — wander / bounce if too close
+          // ignore damaging owner вЂ” wander / bounce if too close
           if (dist < 1.6) {
             const L = dist || 1;
             p.mesh.position.x -= (dx / L) * 4 * dt;
@@ -689,7 +689,7 @@
       const prompt = document.getElementById("prompt");
       if (pad) {
         prompt.style.display = "block";
-        if (!fruit && !heldFruit) { let nf=null; fruitPickups.forEach(f=>{ if(!f.taken && Math.hypot(pos.x-f.mesh.position.x,pos.z-f.mesh.position.z)<2.2) nf=f; }); if(nf){ prompt.style.display="block"; prompt.textContent="E — подобрать фрукт: "+nf.def.name; } else if (heldFruit){ prompt.style.display="block"; prompt.textContent="Нажми «Съесть фрукт» внизу"; } else prompt.textContent = "E — острова (сейчас: " + pad.island.name + ")";
+        if (!fruit && !heldFruit) { let nf=null; fruitPickups.forEach(f=>{ if(!f.taken && Math.hypot(pos.x-f.mesh.position.x,pos.z-f.mesh.position.z)<2.2) nf=f; }); if(nf){ prompt.style.display="block"; prompt.textContent="E вЂ” РїРѕРґРѕР±СЂР°С‚СЊ С„СЂСѓРєС‚: "+nf.def.name; } else if (heldFruit){ prompt.style.display="block"; prompt.textContent="РќР°Р¶РјРё В«РЎСЉРµСЃС‚СЊ С„СЂСѓРєС‚В» РІРЅРёР·Сѓ"; } else prompt.textContent = "E вЂ” РѕСЃС‚СЂРѕРІР° (СЃРµР№С‡Р°СЃ: " + pad.island.name + ")";
       } else prompt.style.display = "none";
 
       if (Math.floor(now / 500) % 2 === 0) refreshHud();
@@ -700,6 +700,6 @@
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

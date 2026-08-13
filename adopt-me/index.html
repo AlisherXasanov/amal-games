@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Adopt Me Lite — черновик</title>
+  <title>Adopt Me Lite вЂ” С‡РµСЂРЅРѕРІРёРє</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{overflow:hidden;background:#87ceeb;font-family:Segoe UI,system-ui,sans-serif;color:#0f172a}
@@ -22,21 +22,21 @@
 <body>
   <div id="hud">
     <b>Adopt Me Lite</b><br/>
-    Монеты: <span id="coins">40</span><br/>
-    Питомцы: <span id="pets">0</span> · Яйца: <span id="eggs">0</span><br/>
-    Где ты: <span id="loc">улица</span><br/>
-    <span id="status">Магазин яиц — жёлтый киоск · дом — синяя дверь</span>
+    РњРѕРЅРµС‚С‹: <span id="coins">40</span><br/>
+    РџРёС‚РѕРјС†С‹: <span id="pets">0</span> В· РЇР№С†Р°: <span id="eggs">0</span><br/>
+    Р“РґРµ С‚С‹: <span id="loc">СѓР»РёС†Р°</span><br/>
+    <span id="status">РњР°РіР°Р·РёРЅ СЏРёС† вЂ” Р¶С‘Р»С‚С‹Р№ РєРёРѕСЃРє В· РґРѕРј вЂ” СЃРёРЅСЏСЏ РґРІРµСЂСЊ</span>
   </div>
-  <div id="draft">черновик · не на сайте</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
-  <div id="rules">WASD — ход · ПКМ — камера · E — дверь / магазин / питомец<br/>Зайди в дом — внутри мебель. Корми / играй для счастья · хозяин: ∞ и полёт</div>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="rules">WASD вЂ” С…РѕРґ В· РџРљРњ вЂ” РєР°РјРµСЂР° В· E вЂ” РґРІРµСЂСЊ / РјР°РіР°Р·РёРЅ / РїРёС‚РѕРјРµС†<br/>Р—Р°Р№РґРё РІ РґРѕРј вЂ” РІРЅСѓС‚СЂРё РјРµР±РµР»СЊ. РљРѕСЂРјРё / РёРіСЂР°Р№ РґР»СЏ СЃС‡Р°СЃС‚СЊСЏ В· С…РѕР·СЏРёРЅ: в€ћ Рё РїРѕР»С‘С‚</div>
   <div id="panel">
-    <div id="panel-title" style="font-weight:800;margin-bottom:4px">Действие</div>
-    <button type="button" id="btn-buy">Купить яйцо (15🪙)</button>
-    <button type="button" id="btn-hatch">Вылупить яйцо</button>
-    <button type="button" id="btn-feed">Покормить (−5🪙)</button>
-    <button type="button" id="btn-play">Поиграть</button>
-    <button type="button" id="btn-sell" class="sell">Продать питомца</button>
+    <div id="panel-title" style="font-weight:800;margin-bottom:4px">Р”РµР№СЃС‚РІРёРµ</div>
+    <button type="button" id="btn-buy">РљСѓРїРёС‚СЊ СЏР№С†Рѕ (15рџЄ™)</button>
+    <button type="button" id="btn-hatch">Р’С‹Р»СѓРїРёС‚СЊ СЏР№С†Рѕ</button>
+    <button type="button" id="btn-feed">РџРѕРєРѕСЂРјРёС‚СЊ (в€’5рџЄ™)</button>
+    <button type="button" id="btn-play">РџРѕРёРіСЂР°С‚СЊ</button>
+    <button type="button" id="btn-sell" class="sell">РџСЂРѕРґР°С‚СЊ РїРёС‚РѕРјС†Р°</button>
   </div>
   <div id="toast"></div>
   <div id="prompt"></div>
@@ -54,11 +54,11 @@
     }
 
     const PET_KINDS = [
-      { name: "Пупсик", color: 0xf472b6 },
-      { name: "Лучик", color: 0xfbbf24 },
-      { name: "Мяутик", color: 0xa78bfa },
-      { name: "Бублик", color: 0x34d399 },
-      { name: "Снежок", color: 0x7dd3fc }
+      { name: "РџСѓРїСЃРёРє", color: 0xf472b6 },
+      { name: "Р›СѓС‡РёРє", color: 0xfbbf24 },
+      { name: "РњСЏСѓС‚РёРє", color: 0xa78bfa },
+      { name: "Р‘СѓР±Р»РёРє", color: 0x34d399 },
+      { name: "РЎРЅРµР¶РѕРє", color: 0x7dd3fc }
     ];
 
     const scene = new THREE.Scene();
@@ -76,7 +76,7 @@
       lookOffsetY: 1.35,
       minDist: 4,
       maxDist: 28,
-      hintText: "Камера: ПКМ · E — действие у магазина/дома"
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· E вЂ” РґРµР№СЃС‚РІРёРµ Сѓ РјР°РіР°Р·РёРЅР°/РґРѕРјР°"
     });
     addEventListener("resize", () => {
       camera.aspect = innerWidth / innerHeight;
@@ -149,7 +149,7 @@
     decorativeHouse(-14, 24, 0xfed7aa);
 
     // Player house with shell/interior (brookhaven-style)
-    const myDef = { x: -14, z: 12, color: 0x93c5fd, name: "Твой дом" };
+    const myDef = { x: -14, z: 12, color: 0x93c5fd, name: "РўРІРѕР№ РґРѕРј" };
     const myHouseGroup = new THREE.Group();
     myHouseGroup.position.set(myDef.x, 0, myDef.z);
     exteriorRoot.add(myHouseGroup);
@@ -352,10 +352,10 @@
       document.getElementById("coins").textContent = coins;
       document.getElementById("pets").textContent = pets.length;
       document.getElementById("eggs").textContent = eggCount;
-      document.getElementById("loc").textContent = inside ? "дом (внутри)" : "улица";
+      document.getElementById("loc").textContent = inside ? "РґРѕРј (РІРЅСѓС‚СЂРё)" : "СѓР»РёС†Р°";
       if (pets[0]) {
         document.getElementById("status").textContent =
-          pets[0].name + " · счастье " + Math.round(pets[0].happy) + "%" + (inside ? " · дома" : "");
+          pets[0].name + " В· СЃС‡Р°СЃС‚СЊРµ " + Math.round(pets[0].happy) + "%" + (inside ? " В· РґРѕРјР°" : "");
       }
     }
 
@@ -380,7 +380,7 @@
 
     function hatch() {
       if (eggCount <= 0) {
-        toast("Нет яиц");
+        toast("РќРµС‚ СЏРёС†");
         return;
       }
       eggCount--;
@@ -393,7 +393,7 @@
         mesh,
         sell: 20 + ((Math.random() * 15) | 0)
       });
-      toast("Вылупился " + kind.name + "!");
+      toast("Р’С‹Р»СѓРїРёР»СЃСЏ " + kind.name + "!");
       sync();
     }
 
@@ -402,7 +402,7 @@
       nearMode = mode;
       panel.classList.add("show");
       document.getElementById("panel-title").textContent =
-        mode === "shop" ? "Магазин яиц" : mode === "door" ? "Твой дом" : "Питомец";
+        mode === "shop" ? "РњР°РіР°Р·РёРЅ СЏРёС†" : mode === "door" ? "РўРІРѕР№ РґРѕРј" : "РџРёС‚РѕРјРµС†";
       document.getElementById("btn-buy").style.display = mode === "shop" ? "block" : "none";
       document.getElementById("btn-hatch").style.display = mode === "shop" || mode === "door" ? "block" : "none";
       document.getElementById("btn-feed").style.display = pets.length ? "block" : "none";
@@ -427,7 +427,7 @@
         if (g !== myHouseGroup) g.visible = false;
       });
       showPanel("door");
-      toast("Ты дома · E у двери — выйти");
+      toast("РўС‹ РґРѕРјР° В· E Сѓ РґРІРµСЂРё вЂ” РІС‹Р№С‚Рё");
       sync();
     }
 
@@ -442,36 +442,36 @@
       scene.fog.far = 130;
       scene.fog.color.set(0x87ceeb);
       hidePanel();
-      toast("На улице");
+      toast("РќР° СѓР»РёС†Рµ");
       sync();
     }
 
     document.getElementById("btn-buy").onclick = () => {
       if (coins < 15) {
-        toast("Мало монет");
+        toast("РњР°Р»Рѕ РјРѕРЅРµС‚");
         return;
       }
       coins -= 15;
       eggCount++;
-      toast("Яйцо куплено!");
+      toast("РЇР№С†Рѕ РєСѓРїР»РµРЅРѕ!");
       sync();
     };
     document.getElementById("btn-hatch").onclick = hatch;
     document.getElementById("btn-feed").onclick = () => {
       if (!pets[0]) return;
       if (coins < 5) {
-        toast("Нужно 5 монет");
+        toast("РќСѓР¶РЅРѕ 5 РјРѕРЅРµС‚");
         return;
       }
       coins -= 5;
       pets[0].happy = Math.min(100, pets[0].happy + 18);
-      toast(pets[0].name + " поел!");
+      toast(pets[0].name + " РїРѕРµР»!");
       sync();
     };
     document.getElementById("btn-play").onclick = () => {
       if (!pets[0]) return;
       pets[0].happy = Math.min(100, pets[0].happy + 12);
-      toast("Игра с " + pets[0].name + "!");
+      toast("РРіСЂР° СЃ " + pets[0].name + "!");
       sync();
     };
     document.getElementById("btn-sell").onclick = () => {
@@ -479,7 +479,7 @@
       const p = pets.shift();
       coins += p.sell;
       scene.remove(p.mesh);
-      toast("Продано за " + p.sell + "🪙");
+      toast("РџСЂРѕРґР°РЅРѕ Р·Р° " + p.sell + "рџЄ™");
       sync();
     };
 
@@ -500,7 +500,7 @@
 
       if (Math.hypot(px - shopZone.x, pz - shopZone.z) < shopZone.r) {
         showPanel("shop");
-        document.getElementById("status").textContent = "Магазин открыт";
+        document.getElementById("status").textContent = "РњР°РіР°Р·РёРЅ РѕС‚РєСЂС‹С‚";
         return;
       }
       if (Math.hypot(px - doorWorld.x, pz - doorWorld.z) < 2.4) {
@@ -552,13 +552,13 @@
       const pz = player.mesh.position.z;
       if (inside && Math.hypot(px - doorWorld.x, pz - doorWorld.z) < 2.8) {
         promptEl.style.display = "block";
-        promptEl.textContent = "E — выйти на улицу";
+        promptEl.textContent = "E вЂ” РІС‹Р№С‚Рё РЅР° СѓР»РёС†Сѓ";
       } else if (!inside && Math.hypot(px - doorWorld.x, pz - doorWorld.z) < 2.4) {
         promptEl.style.display = "block";
-        promptEl.textContent = "E — войти в дом";
+        promptEl.textContent = "E вЂ” РІРѕР№С‚Рё РІ РґРѕРј";
       } else if (!inside && Math.hypot(px - shopZone.x, pz - shopZone.z) < shopZone.r) {
         promptEl.style.display = "block";
-        promptEl.textContent = "E — магазин яиц";
+        promptEl.textContent = "E вЂ” РјР°РіР°Р·РёРЅ СЏРёС†";
       } else {
         promptEl.style.display = "none";
       }
@@ -567,12 +567,12 @@
       renderer.render(scene, camera);
     }
     sync();
-    toast("Большой район · зайди в дом через дверь (E)");
+    toast("Р‘РѕР»СЊС€РѕР№ СЂР°Р№РѕРЅ В· Р·Р°Р№РґРё РІ РґРѕРј С‡РµСЂРµР· РґРІРµСЂСЊ (E)");
     animate(performance.now());
   })();
   </script>
   <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
-  <script src="../shared/amal-3d-wip-lock.js?v=1" data-guard="1"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>
