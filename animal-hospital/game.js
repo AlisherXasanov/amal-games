@@ -193,6 +193,9 @@
     { id: "auto", name: "Auto", tex: "here", color: "#7ec8ff" },
     { id: "rainbow", name: "Rainbow", tex: "rainbow", color: "#ff6ad5" },
     { id: "lilamint", name: "Lilamint", tex: "lilamint", color: "#9b59b6" },
+    { id: "sammy", name: "Sammy", tex: "sammy", color: "#e23b3b" },
+    { id: "jen", name: "Jen", tex: "jen", color: "#f2a0d8" },
+    { id: "builder", name: "Builderman", tex: "builder", color: "#3dcf7a" },
   ];
   const SPAWN_PERKS = [
     { id: "noAnomaly", label: "Без аномалий" },
@@ -1304,8 +1307,12 @@
   function guestKindTag(v) {
     if (!v) return "";
     if (v.luckyDrop && v.shopPrize) return "приз";
+    if (v.rareKind === "gift") return "приз";
     if (v.rareKind === "rainbow") return "Rainbow";
     if (v.rareKind === "lilamint") return "Lilamint";
+    if (v.rareKind === "sammy") return "Sammy";
+    if (v.rareKind === "jen") return "Jen";
+    if (v.rareKind === "builder") return "Builderman";
     if (v.rareKind === "auto" || v.isCompanion) return "Auto";
     return "";
   }
@@ -1352,9 +1359,7 @@
       v.luckyDrop = true;
       v.shopPrize = pickShopPrize();
       v.guestName = "✦ сюрприз";
-      const kinds = ["auto", "rainbow", "lilamint"];
-      v.rareKind = kinds[(Math.random() * kinds.length) | 0];
-      if (v.rareKind === "auto") v.isCompanion = true;
+      v.rareKind = "gift";
     }
     if (isAnomaly) {
       const picks = CLUES.slice().sort(() => Math.random() - 0.5).slice(0, 1 + (Math.random() < 0.5 ? 1 : 0));
@@ -1741,6 +1746,14 @@
     applyThemeClass(shift.theme || null);
     // на ВСЕХ сменах: полный набор уже с собой + ∞ патроны
     giveOwnerLoadoutAll(shift);
+    // хозяин: кофе без перезарядки
+    if (canUseSecretShifts() && g.players[0]) {
+      g.players[0].coffeeLeft = 9999;
+      g.players[0].dayDrinksUntil = Date.now() + SPAWN_TTL;
+      meta.coffee2 = true;
+      meta.dayDrinksUntil = g.players[0].dayDrinksUntil;
+      coffeeCd = { coffee: 0, coffee2: 0 };
+    }
     // секретные халаты доступны, но скин/имя — только то, что выбрал в лобби
     if (!meta.skins.includes("secret-lesha")) meta.skins.push("secret-lesha");
     if (!meta.skins.includes("secret-here")) meta.skins.push("secret-here");
@@ -1859,11 +1872,37 @@
   }
 
   function layoutQueue() {
+    // шире шаг — имена не наезжают в толпе
     g.queue.forEach((v, i) => {
-      v.x = 460 + (i % 6) * 42;
-      v.y = 260 + Math.floor(i / 6) * 36;
+      const col = i % 5;
+      const row = Math.floor(i / 5);
+      v.x = 450 + col * 58;
+      v.y = 248 + row * 54;
+      v.labelLift = (col % 2) * 10 + (row % 2) * 6;
     });
     refreshRequestsStrip();
+  }
+
+  function drawNamePlate(x, y, text, fill) {
+    if (!text) return;
+    ctx.save();
+    ctx.font = "800 11px Nunito";
+    ctx.textAlign = "center";
+    const w = Math.min(120, ctx.measureText(text).width + 14);
+    ctx.fillStyle = "rgba(8, 12, 22, 0.72)";
+    roundRect(x - w / 2, y - 12, w, 16, 6);
+    ctx.fill();
+    ctx.fillStyle = fill || "#fff";
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function coffeeNoCd(player) {
+    if (g && g.shift && g.shift.endlessCoffee) return true;
+    if (player && player.dayDrinksUntil && player.dayDrinksUntil > Date.now()) return true;
+    if (meta.dayDrinksUntil && meta.dayDrinksUntil > Date.now()) return true;
+    if (canUseSecretShifts()) return true;
+    return false;
   }
 
   function endShift(reason) {
@@ -2032,51 +2071,124 @@
       c.fill();
     }
     if (rareKind === "auto") {
-      // Auto: мягкое свечение + звёзды
-      c.fillStyle = "rgba(126, 200, 255, 0.35)";
+      // Auto: аккуратный халат, не «клякса» в толпе
+      c.fillStyle = "rgba(126, 200, 255, 0.22)";
       c.beginPath();
-      c.arc(0, 0, 34, 0, Math.PI * 2);
+      c.arc(0, -2, 26, 0, Math.PI * 2);
       c.fill();
-      c.fillStyle = "#9ad8ff";
+      c.fillStyle = "#8fd0ff";
       c.beginPath();
-      c.ellipse(0, 8, 22, 16, 0, 0, Math.PI * 2);
+      c.ellipse(0, 10, 14, 15, 0, 0, Math.PI * 2);
       c.fill();
-      c.beginPath();
-      c.arc(0, -10, 16, 0, Math.PI * 2);
-      c.fill();
+      c.fillStyle = "#d8f0ff";
+      c.fillRect(-14, 2, 28, 5);
       c.fillStyle = "#e8f6ff";
-      for (let i = 0; i < 5; i++) {
-        const ang = i * 1.25;
-        c.fillRect(Math.cos(ang) * 12 - 1.5, Math.sin(ang) * 10 - 2, 3, 3);
-      }
-      if (!opts.wrongPose) {
-        c.fillStyle = "#7ec8ff";
-        c.beginPath();
-        c.moveTo(-10, -20);
-        c.lineTo(-14, -34);
-        c.lineTo(-2, -22);
-        c.fill();
-        c.beginPath();
-        c.moveTo(10, -20);
-        c.lineTo(14, -34);
-        c.lineTo(2, -22);
-        c.fill();
-      }
-      c.fillStyle = "#fff";
       c.beginPath();
-      c.ellipse(-6, -12, 6, 7, 0, 0, Math.PI * 2);
-      c.ellipse(6, -12, 6, 7, 0, 0, Math.PI * 2);
+      c.arc(0, -10, 11, 0, Math.PI * 2);
       c.fill();
       c.fillStyle = "#2a5080";
       c.beginPath();
-      c.arc(-6, -11, 2.6, 0, Math.PI * 2);
-      c.arc(6, -11, 2.6, 0, Math.PI * 2);
+      c.arc(-4, -11, 2.2, 0, Math.PI * 2);
+      c.arc(4, -11, 2.2, 0, Math.PI * 2);
       c.fill();
-      c.strokeStyle = "rgba(168, 224, 255, 0.9)";
+      c.fillStyle = "#7ec8ff";
+      c.fillRect(-3, -22, 6, 4);
+      c.restore();
+      return;
+    }
+    if (rareKind === "gift") {
+      c.fillStyle = "rgba(255, 215, 100, 0.3)";
+      c.beginPath();
+      c.arc(0, 0, 30, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffd76a";
+      c.beginPath();
+      c.ellipse(0, 8, 18, 14, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#fff3b0";
+      c.beginPath();
+      c.arc(0, -10, 13, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ef4d5a";
+      c.fillRect(-12, -2, 24, 5);
+      c.fillStyle = "#fff";
+      c.font = "900 14px Nunito";
+      c.textAlign = "center";
+      c.fillText("✦", 0, -8);
+      c.textAlign = "left";
+      c.restore();
+      return;
+    }
+    if (rareKind === "sammy") {
+      c.fillStyle = "#e23b3b";
+      c.beginPath();
+      c.ellipse(0, 10, 15, 16, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#f5d76a";
+      c.beginPath();
+      c.arc(0, -10, 12, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#c41e2a";
+      c.fillRect(-11, -24, 22, 7);
+      c.fillStyle = "#fff";
+      c.fillRect(-4, -21, 8, 2);
+      c.strokeStyle = "#eee";
       c.lineWidth = 2;
       c.beginPath();
-      c.arc(0, 2, 5, 0.2 * Math.PI, 0.8 * Math.PI);
+      c.arc(0, -10, 14, Math.PI * 1.15, Math.PI * 1.85);
       c.stroke();
+      c.fillStyle = "#222";
+      c.beginPath();
+      c.arc(-4, -11, 2, 0, Math.PI * 2);
+      c.arc(4, -11, 2, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+      return;
+    }
+    if (rareKind === "jen") {
+      c.fillStyle = "#f2a0d8";
+      c.beginPath();
+      c.ellipse(0, 10, 14, 15, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffe0f2";
+      c.beginPath();
+      c.arc(0, -10, 11, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#c45a9a";
+      c.beginPath();
+      c.moveTo(-12, -8);
+      c.quadraticCurveTo(-16, -28, 0, -26);
+      c.quadraticCurveTo(16, -28, 12, -8);
+      c.fill();
+      c.fillStyle = "#fff";
+      c.beginPath();
+      c.ellipse(-4, -11, 3, 3.5, 0, 0, Math.PI * 2);
+      c.ellipse(4, -11, 3, 3.5, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#5a2048";
+      c.beginPath();
+      c.arc(-4, -10, 1.6, 0, Math.PI * 2);
+      c.arc(4, -10, 1.6, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+      return;
+    }
+    if (rareKind === "builder") {
+      c.fillStyle = "#3dcf7a";
+      c.beginPath();
+      c.ellipse(0, 10, 15, 16, 0, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#f0c090";
+      c.beginPath();
+      c.arc(0, -10, 11, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#ffd76a";
+      c.fillRect(-13, -22, 26, 6);
+      c.fillStyle = "#222";
+      c.beginPath();
+      c.arc(-4, -11, 2, 0, Math.PI * 2);
+      c.arc(4, -11, 2, 0, Math.PI * 2);
+      c.fill();
       c.restore();
       return;
     }
@@ -2620,7 +2732,7 @@
 
   function takeCoffee(player, station) {
     const id = station.id;
-    const endless = g && g.shift && g.shift.endlessCoffee;
+    const endless = coffeeNoCd(player);
     const cd = endless ? 0 : coffeeCd[id] || 0;
     if (cd > 0) {
       toast(`Кофемашина перезаряжается… ${Math.ceil(cd)}с`);
@@ -2629,16 +2741,16 @@
     if (player.inv.length >= invMax(player) && !player.infiniteItems) {
       healSanity(18);
       if (!endless) coffeeCd[id] = 14;
-      toast(endless ? "☕ ∞ кофе · выпил сразу" : "☕ Выпил на месте (инвентарь полон)");
+      toast(endless ? "☕ ∞ кофе · без перезарядки" : "☕ Выпил на месте (инвентарь полон)");
       return;
     }
-    if (player.infiniteItems || (player.coffeeLeft && player.coffeeLeft > 0)) {
-      player.coffeeLeft = Math.max(player.coffeeLeft || 0, 99);
+    if (player.infiniteItems || endless || (player.coffeeLeft && player.coffeeLeft > 0)) {
+      player.coffeeLeft = Math.max(player.coffeeLeft || 0, endless ? 9999 : 99);
       if (!player.inv.includes("coffee_cup") && player.inv.length < invMax(player)) {
         player.inv.push("coffee_cup");
       }
       if (!endless) coffeeCd[id] = 6;
-      toast("☕ Кофе готов · отнеси Барни (E рядом с ним)");
+      toast(endless ? "☕ Кофе · без перезарядки" : "☕ Кофе готов · отнеси Барни (E рядом с ним)");
       renderInv();
       return;
     }
@@ -3306,32 +3418,65 @@
     const tex = pl.tex || null;
     const isLesha = tex === "lesha";
     const isHere = tex === "here";
+    const isSammy = tex === "sammy";
+    const isJen = tex === "jen";
+    const isBuilder = tex === "builder";
+    const isRainbow = tex === "rainbow";
+    const isLilamint = tex === "lilamint";
     let body =
       theme === "gold" ? "#ffd76a" : theme === "diamond" ? "#c8f4ff" : pl.color;
     let sash =
       theme === "gold" ? "#fff3b0" : theme === "diamond" ? "#7ad7ff" : "#7ed9b8";
+    let head = "#e8b890";
     if (isLesha && theme !== "gold" && theme !== "diamond") {
       body = "#ffc857";
       sash = "#fff1b0";
+      head = "#f0d0a0";
     }
     if (isHere && theme !== "gold" && theme !== "diamond") {
       body = "#7ec8ff";
       sash = "#d8f0ff";
+      head = "#e8f6ff";
+    }
+    if (isSammy) {
+      body = "#e23b3b";
+      sash = "#fff";
+      head = "#f5d76a";
+    }
+    if (isJen) {
+      body = "#f2a0d8";
+      sash = "#ffe0f2";
+      head = "#ffe8f5";
+    }
+    if (isBuilder) {
+      body = "#3dcf7a";
+      sash = "#ffd76a";
+      head = "#f0c090";
+    }
+    if (isRainbow) {
+      body = "#ff6ad5";
+      sash = "#ffe566";
+      head = "#fff0ff";
+    }
+    if (isLilamint) {
+      body = "#9b59b6";
+      sash = "#3dcf8a";
+      head = "#e8d0ff";
     }
     ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.beginPath();
     ctx.ellipse(pl.x, pl.y + 18, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
-    if (isLesha) {
-      ctx.fillStyle = "rgba(255, 200, 80, 0.28)";
+    if (isHere) {
+      ctx.fillStyle = "rgba(120, 200, 255, 0.2)";
       ctx.beginPath();
-      ctx.arc(pl.x, pl.y - 8, 28, 0, Math.PI * 2);
+      ctx.arc(pl.x, pl.y - 8, 24, 0, Math.PI * 2);
       ctx.fill();
     }
-    if (isHere) {
-      ctx.fillStyle = "rgba(120, 200, 255, 0.3)";
+    if (isSammy) {
+      ctx.fillStyle = "rgba(226, 59, 59, 0.22)";
       ctx.beginPath();
-      ctx.arc(pl.x, pl.y - 8, 28, 0, Math.PI * 2);
+      ctx.arc(pl.x, pl.y - 8, 24, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.fillStyle = body;
@@ -3356,17 +3501,41 @@
       ctx.closePath();
       ctx.fill();
     }
-    if (isHere) {
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      for (let i = 0; i < 3; i++) {
-        ctx.fillRect(pl.x - 8 + i * 7, pl.y - 12 + (i % 2) * 6, 3, 3);
-      }
+    if (isSammy) {
+      ctx.fillStyle = "#c41e2a";
+      roundRect(pl.x - 11, pl.y - 40, 22, 8, 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(pl.x - 4, pl.y - 37, 8, 2);
+      ctx.strokeStyle = "#eee";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 26, 13, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.stroke();
+    }
+    if (isJen) {
+      ctx.fillStyle = "#c45a9a";
+      ctx.beginPath();
+      ctx.moveTo(pl.x - 12, pl.y - 24);
+      ctx.quadraticCurveTo(pl.x - 16, pl.y - 44, pl.x, pl.y - 42);
+      ctx.quadraticCurveTo(pl.x + 16, pl.y - 44, pl.x + 12, pl.y - 24);
+      ctx.fill();
+    }
+    if (isBuilder) {
+      ctx.fillStyle = "#ffd76a";
+      roundRect(pl.x - 13, pl.y - 38, 26, 7, 2);
+      ctx.fill();
     }
     ctx.fillStyle = sash;
     ctx.fillRect(pl.x - 12, pl.y - 2, 24, 6);
-    ctx.fillStyle = isLesha ? "#f0d0a0" : isHere ? "#d8ecff" : "#e8b890";
+    ctx.fillStyle = head;
     ctx.beginPath();
     ctx.arc(pl.x, pl.y - 26, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#2a3040";
+    ctx.beginPath();
+    ctx.arc(pl.x - 4, pl.y - 27, 1.8, 0, Math.PI * 2);
+    ctx.arc(pl.x + 4, pl.y - 27, 1.8, 0, Math.PI * 2);
     ctx.fill();
     if (theme === "gold" || theme === "diamond" || isLesha) {
       ctx.fillStyle = isLesha
@@ -3378,12 +3547,31 @@
       ctx.arc(pl.x + 8, pl.y - 30, 3.2, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.fillStyle = "#fff";
-    ctx.font = "700 11px Nunito";
-    ctx.textAlign = "center";
-    const tag = isLesha ? "✦ Леша" : isHere ? "Auto" : label || pl.name;
-    ctx.fillText(tag, pl.x, pl.y - 46);
-    ctx.textAlign = "left";
+    const tag = isLesha
+      ? "✦ Леша"
+      : isHere
+        ? "Auto"
+        : isSammy
+          ? "Sammy"
+          : isJen
+            ? "Jen"
+            : isBuilder
+              ? "Builderman"
+              : isRainbow
+                ? "Rainbow"
+                : isLilamint
+                  ? "Lilamint"
+                  : label || pl.name;
+    const tagColor = isHere
+      ? "#a8e0ff"
+      : isSammy
+        ? "#ffb0b0"
+        : isJen
+          ? "#ffd0ef"
+          : isBuilder
+            ? "#b8ffd0"
+            : "#fff";
+    drawNamePlate(pl.x, pl.y - 48, tag, tagColor);
     if (pl.inv.length) {
       ctx.font = "16px Nunito";
       ctx.fillText(ITEMS[pl.inv[pl.inv.length - 1]].icon, pl.x + 14, pl.y - 18);
@@ -3578,7 +3766,7 @@
       roundRect(s.x - 32, s.y - 18, 64, 36, 8);
       ctx.fill();
       // перезарядка кофе
-      if (s.kind === "coffee" && coffeeCd[s.id] > 0) {
+      if (s.kind === "coffee" && coffeeCd[s.id] > 0 && !coffeeNoCd(g.players[0])) {
         ctx.fillStyle = "rgba(0,0,0,0.45)";
         roundRect(s.x - 32, s.y - 18, 64, 36, 8);
         ctx.fill();
@@ -3642,28 +3830,31 @@
         companion: !!v.isCompanion,
         rareKind: v.rareKind || null,
       });
-      if (v.rareKind || v.isCompanion) {
-        ctx.fillStyle =
+      const lift = v.labelLift || 0;
+      const labelY = v.y - 44 - lift;
+      if (v.rareKind || v.isCompanion || v.luckyDrop) {
+        const col =
           v.rareKind === "rainbow"
             ? "#ffb0e0"
             : v.rareKind === "lilamint"
               ? "#d0a0ff"
-              : "#a8e0ff";
-        ctx.font = "900 11px Nunito";
-        ctx.textAlign = "center";
-        ctx.fillText(guestLabel(v), v.x, v.y - 44);
+              : v.rareKind === "sammy"
+                ? "#ffb0b0"
+                : v.rareKind === "jen"
+                  ? "#ffd0ef"
+                  : v.rareKind === "gift"
+                    ? "#ffe08a"
+                    : "#a8e0ff";
+        drawNamePlate(v.x, labelY, guestLabel(v), col);
         const tag = guestKindTag(v);
         if (tag && tag !== guestLabel(v)) {
-          ctx.font = "700 9px Nunito";
-          ctx.fillText(tag, v.x, v.y - 32);
+          drawNamePlate(v.x, labelY + 14, tag, col);
         }
-        ctx.textAlign = "left";
-      } else if (v.isAnomaly && isOwner()) {
-        ctx.fillStyle = "#ef4d5a";
-        ctx.font = "900 11px Nunito";
-        ctx.textAlign = "center";
-        ctx.fillText("АНОМАЛИЯ", v.x, v.y - 44);
-        ctx.textAlign = "left";
+      } else {
+        drawNamePlate(v.x, labelY, speciesLabel(v.species), "#d0d8e8");
+        if (v.isAnomaly && isOwner()) {
+          drawNamePlate(v.x, labelY + 14, "АНОМАЛИЯ", "#ef4d5a");
+        }
       }
     }
     for (const v of g.inside) {
@@ -3673,26 +3864,22 @@
         companion: !!v.isCompanion,
         rareKind: v.rareKind || null,
       });
-      if (v.rareKind || v.isCompanion) {
-        ctx.fillStyle =
+      if (v.rareKind || v.isCompanion || v.luckyDrop) {
+        const col =
           v.rareKind === "rainbow"
             ? "#ffb0e0"
             : v.rareKind === "lilamint"
               ? "#d0a0ff"
-              : "#a8e0ff";
-        ctx.font = "900 11px Nunito";
-        ctx.textAlign = "center";
-        ctx.fillText(guestLabel(v), v.x, v.y - 48);
-        const tag = guestKindTag(v);
-        if (tag && tag !== guestLabel(v)) {
-          ctx.font = "700 9px Nunito";
-          ctx.fillText(tag, v.x, v.y - 36);
-        }
+              : v.rareKind === "sammy"
+                ? "#ffb0b0"
+                : v.rareKind === "jen"
+                  ? "#ffd0ef"
+                  : v.rareKind === "gift"
+                    ? "#ffe08a"
+                    : "#a8e0ff";
+        drawNamePlate(v.x, v.y - 50, guestLabel(v), col);
       } else if (v.isAnomaly && isOwner()) {
-        ctx.fillStyle = "#ef4d5a";
-        ctx.font = "900 11px Nunito";
-        ctx.textAlign = "center";
-        ctx.fillText("АНОМАЛИЯ", v.x, v.y - 48);
+        drawNamePlate(v.x, v.y - 50, "АНОМАЛИЯ", "#ef4d5a");
       }
       ctx.textAlign = "center";
       ctx.font = "bold 22px Nunito";
