@@ -528,6 +528,17 @@
     try {
       localStorage.setItem(ANIME_FLAG, on ? "1" : "0");
     } catch (_) {}
+    if (on) {
+      try {
+        localStorage.setItem("amal-rain-night-v1", "0");
+      } catch (_) {}
+      const rainOv = document.getElementById("amal-rain-overlay");
+      const rainBd = document.getElementById("amal-rain-badge");
+      if (rainOv) rainOv.remove();
+      if (rainBd) rainBd.remove();
+      document.documentElement.classList.remove("amal-rain-night");
+      document.body.classList.remove("theme-rain");
+    }
     applyAnimeDom(!!on);
     return !!on;
   }
@@ -536,11 +547,89 @@
     if (hasAnimeWorld()) applyAnimeDom(true);
   }
 
+  const RAIN_FLAG = "amal-rain-night-v1";
+
+  function hasRainNight() {
+    try {
+      return localStorage.getItem(RAIN_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function ensureRainStyle() {
+    if (document.getElementById("amal-rain-style")) return;
+    const s = document.createElement("style");
+    s.id = "amal-rain-style";
+    s.textContent =
+      "html.amal-rain-night body{filter:saturate(0.92) brightness(0.95)}" +
+      "#amal-rain-overlay{pointer-events:none;position:fixed;inset:0;z-index:9998;overflow:hidden;" +
+      "background:linear-gradient(180deg,rgba(20,40,70,.12),rgba(5,10,20,.2))}" +
+      "#amal-rain-overlay i{position:absolute;width:1px;height:14px;background:rgba(180,220,255,.45);" +
+      "animation:amalRain linear infinite}" +
+      "@keyframes amalRain{0%{transform:translateY(-10vh) translateX(0)}100%{transform:translateY(110vh) translateX(-30px)}}" +
+      "#amal-rain-badge{position:fixed;top:10px;right:10px;z-index:9999;padding:6px 10px;" +
+      "border-radius:8px;font:700 12px/1.2 system-ui,sans-serif;color:#e8f4ff;" +
+      "background:rgba(40,90,140,.75);pointer-events:none}";
+    document.head.appendChild(s);
+  }
+
+  function applyRainDom(on) {
+    if (typeof document === "undefined") return;
+    ensureRainStyle();
+    document.documentElement.classList.toggle("amal-rain-night", !!on);
+    document.body.classList.toggle("theme-rain", !!on);
+    let overlay = document.getElementById("amal-rain-overlay");
+    let badge = document.getElementById("amal-rain-badge");
+    if (on) {
+      applyAnimeDom(false);
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "amal-rain-overlay";
+        for (let i = 0; i < 28; i++) {
+          const p = document.createElement("i");
+          p.style.left = Math.random() * 100 + "%";
+          p.style.animationDuration = 0.7 + Math.random() * 0.9 + "s";
+          p.style.animationDelay = Math.random() * 2 + "s";
+          overlay.appendChild(p);
+        }
+        document.body.appendChild(overlay);
+      }
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "amal-rain-badge";
+        badge.textContent = "✦ ночная смена";
+        document.body.appendChild(badge);
+      }
+    } else {
+      if (overlay) overlay.remove();
+      if (badge) badge.remove();
+    }
+  }
+
+  function setRainNight(on) {
+    try {
+      localStorage.setItem(RAIN_FLAG, on ? "1" : "0");
+    } catch (_) {}
+    if (on) {
+      try {
+        localStorage.setItem(ANIME_FLAG, "0");
+      } catch (_) {}
+    }
+    applyRainDom(!!on);
+    return !!on;
+  }
+
+  function bootRainNight() {
+    if (hasRainNight()) applyRainDom(true);
+  }
+
   if (typeof document !== "undefined") {
     const boot = () => {
       bootGameUpdate();
       bootQuietHere();
       bootAnimeWorld();
+      bootRainNight();
     };
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", boot);
@@ -594,6 +683,8 @@
     armQuietHere,
     setAnimeWorld,
     hasAnimeWorld,
+    setRainNight,
+    hasRainNight,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);

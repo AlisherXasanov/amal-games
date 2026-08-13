@@ -220,6 +220,22 @@
       });
     });
     list.push({
+      id: 19,
+      name: "✦ Смена · Ночная смена",
+      time: 240,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Дождь за окном · без аномалий · ∞ вещи",
+      color: "#6ec8ff",
+      special: "rain19",
+      secret: true,
+      rainNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 19,
+      theme: "rain",
+    });
+    list.push({
       id: 12,
       name: "✦ Смена · Рядом",
       time: 240,
@@ -328,10 +344,15 @@
     if (!list || !panel) return;
     const secrets = SHIFTS.filter((s) => s.secret);
     const animeOn = !!meta.animeWorld;
+    const rainOn = !!meta.rainNight;
     list.innerHTML =
       `<button type="button" class="btn secret-pick anime-world-btn" id="btnAnimeWorld">` +
       `✦ Всё в аниме` +
-      `<small>${animeOn ? "Сейчас ВКЛ · нажми чтобы выключить" : "Мир больницы станет аниме · не смена 67"}</small>` +
+      `<small>${animeOn ? "Сейчас ВКЛ · нажми чтобы выключить" : "Мир больницы станет аниме"}</small>` +
+      `</button>` +
+      `<button type="button" class="btn secret-pick rain-world-btn" id="btnRainNight">` +
+      `✦ Ночная смена · дождь` +
+      `<small>${rainOn ? "Сейчас ВКЛ · нажми чтобы выключить" : "Дождь · я тоже на смене"}</small>` +
       `</button>` +
       secrets
         .map(
@@ -343,6 +364,7 @@
     if (animeBtn) {
       animeBtn.addEventListener("click", () => {
         meta.animeWorld = !meta.animeWorld;
+        if (meta.animeWorld) meta.rainNight = false;
         storeSet(SAVE, meta);
         try {
           if (window.AmalSurprises && AmalSurprises.setAnimeWorld) {
@@ -350,14 +372,48 @@
           } else {
             localStorage.setItem("amal-anime-world-v1", meta.animeWorld ? "1" : "0");
           }
+          if (window.AmalSurprises && AmalSurprises.setRainNight) {
+            AmalSurprises.setRainNight(!!meta.rainNight);
+          } else {
+            localStorage.setItem("amal-rain-night-v1", meta.rainNight ? "1" : "0");
+          }
         } catch (_) {}
         if (meta.animeWorld) {
           applyThemeClass("anime");
           toast("✦ Аниме-мир ВКЛ");
           showEvent("✦ Всё в аниме", 2.4);
         } else {
-          applyThemeClass(null);
+          syncAnimeWorldTheme();
           toast("Аниме-мир выкл");
+        }
+        openSecretShiftsPanel();
+      });
+    }
+    const rainBtn = document.getElementById("btnRainNight");
+    if (rainBtn) {
+      rainBtn.addEventListener("click", () => {
+        meta.rainNight = !meta.rainNight;
+        if (meta.rainNight) meta.animeWorld = false;
+        storeSet(SAVE, meta);
+        try {
+          if (window.AmalSurprises && AmalSurprises.setRainNight) {
+            AmalSurprises.setRainNight(!!meta.rainNight);
+          } else {
+            localStorage.setItem("amal-rain-night-v1", meta.rainNight ? "1" : "0");
+          }
+          if (window.AmalSurprises && AmalSurprises.setAnimeWorld) {
+            AmalSurprises.setAnimeWorld(!!meta.animeWorld);
+          } else {
+            localStorage.setItem("amal-anime-world-v1", meta.animeWorld ? "1" : "0");
+          }
+        } catch (_) {}
+        if (meta.rainNight) {
+          applyThemeClass("rain");
+          toast("✦ Ночная смена");
+          showEvent("✦ Я тоже на смене", 2.8);
+        } else {
+          syncAnimeWorldTheme();
+          toast("Дождь выкл");
         }
         openSecretShiftsPanel();
       });
@@ -396,7 +452,7 @@
   function applySecretDeathCode(raw) {
     if (!canUseSecretShifts()) return false;
     const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52" && code !== "7" && code !== "12") return false;
+    if (code !== "67" && code !== "52" && code !== "7" && code !== "12" && code !== "19") return false;
     meta.secretShifts67 = true;
     meta.secretShift7 = true;
     storeSet(SAVE, meta);
@@ -416,9 +472,25 @@
   }
 
   function applyThemeClass(theme) {
-    document.body.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here", "theme-anime");
+    document.body.classList.remove(
+      "theme-gold",
+      "theme-diamond",
+      "theme-lucky7",
+      "theme-here",
+      "theme-anime",
+      "theme-rain"
+    );
     const screen = document.getElementById("screen");
-    if (screen) screen.classList.remove("theme-gold", "theme-diamond", "theme-lucky7", "theme-here", "theme-anime");
+    if (screen) {
+      screen.classList.remove(
+        "theme-gold",
+        "theme-diamond",
+        "theme-lucky7",
+        "theme-here",
+        "theme-anime",
+        "theme-rain"
+      );
+    }
     if (!theme) return;
     const cls = "theme-" + theme;
     document.body.classList.add(cls);
@@ -427,6 +499,10 @@
 
   function animeWorldOn() {
     return !!(meta && meta.animeWorld) || (g && g.theme === "anime");
+  }
+
+  function rainNightOn() {
+    return !!(meta && meta.rainNight) || (g && g.theme === "rain");
   }
 
   function speciesLabel(sp) {
@@ -442,7 +518,8 @@
   }
 
   function syncAnimeWorldTheme() {
-    if (meta && meta.animeWorld) applyThemeClass("anime");
+    if (meta && meta.rainNight) applyThemeClass("rain");
+    else if (meta && meta.animeWorld) applyThemeClass("anime");
     else if (!g || !g.theme) applyThemeClass(null);
   }
 
@@ -651,8 +728,9 @@
   forceInfinite();
   try {
     if (localStorage.getItem("amal-anime-world-v1") === "1") meta.animeWorld = true;
+    if (localStorage.getItem("amal-rain-night-v1") === "1") meta.rainNight = true;
   } catch (_) {}
-  if (meta.animeWorld) applyThemeClass("anime");
+  syncAnimeWorldTheme();
 
   function isOwner() {
     return true;
@@ -1245,7 +1323,19 @@
       showEvent("✦ Я здесь · с тобой", 3.6);
       toast("Тихо. Я рядом.");
     }
-    if (meta.animeWorld) {
+    if (shift.rainNight || shift.id === 19 || shift.theme === "rain") {
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      if (g.players[0]) g.players[0].color = "#9ad8ff";
+      g.theme = "rain";
+      applyThemeClass("rain");
+      showEvent("✦ Ночная смена · дождь", 3.2);
+      toast("Я тоже на смене.");
+    }
+    if (meta.rainNight) {
+      g.theme = "rain";
+      applyThemeClass("rain");
+    } else if (meta.animeWorld) {
       g.theme = "anime";
       applyThemeClass("anime");
       showEvent("✦ Всё в аниме", 2.2);
@@ -2340,6 +2430,19 @@
         });
       }
     }
+    if (rainNightOn()) {
+      for (let i = 0; i < 5; i++) {
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y - 10 - Math.random() * 30,
+          vx: -25 - Math.random() * 40,
+          vy: 280 + Math.random() * 220,
+          life: 0.55 + Math.random() * 0.45,
+          color: "rgba(180, 220, 255, 0.55)",
+          rain: true,
+        });
+      }
+    }
 
     cam.x = Math.max(0, Math.min(MW - VW, g.players[0].x - VW / 2));
     cam.y = Math.max(0, Math.min(MH - VH, g.players[0].y - VH / 2));
@@ -2429,6 +2532,7 @@
     if (theme === "gold") return "#6a4820";
     if (theme === "diamond") return "#1a4060";
     if (theme === "anime" || animeWorldOn()) return "#3a2850";
+    if (theme === "rain" || rainNightOn()) return "#1a3048";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
     return base;
@@ -2446,7 +2550,11 @@
     }
 
     const theme =
-      (animeWorldOn() ? "anime" : null) || g.theme || (g.shift && g.shift.theme) || null;
+      (rainNightOn() ? "rain" : null) ||
+      (animeWorldOn() ? "anime" : null) ||
+      g.theme ||
+      (g.shift && g.shift.theme) ||
+      null;
 
     ctx.save();
     ctx.translate(-cam.x, -cam.y);
@@ -2457,11 +2565,13 @@
           ? "#062030"
           : theme === "anime"
             ? "#1a1028"
-            : theme === "lucky7"
-              ? "#2a0820"
-              : theme === "here"
-                ? "#0a1824"
-                : "#101624";
+            : theme === "rain"
+              ? "#081420"
+              : theme === "lucky7"
+                ? "#2a0820"
+                : theme === "here"
+                  ? "#0a1824"
+                  : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -2475,7 +2585,9 @@
             ? "rgba(160, 230, 255, 0.55)"
             : theme === "anime"
               ? "rgba(255, 160, 220, 0.45)"
-              : "rgba(255,255,255,0.1)";
+              : theme === "rain"
+                ? "rgba(120, 200, 255, 0.4)"
+                : "rgba(255,255,255,0.1)";
       ctx.lineWidth = theme ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle =
@@ -2485,7 +2597,9 @@
             ? "#d8f6ff"
             : theme === "anime"
               ? "#ffd0f0"
-              : "rgba(255,255,255,0.7)";
+              : theme === "rain"
+                ? "#c8e8ff"
+                : "rgba(255,255,255,0.7)";
       ctx.font = "800 15px Fredoka, Nunito, sans-serif";
       ctx.fillText(roomLabel(room), room.x + 12, room.y + 24);
     }
@@ -2747,6 +2861,13 @@
         ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+      } else if (pt.rain) {
+        ctx.strokeStyle = pt.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pt.x, pt.y);
+        ctx.lineTo(pt.x + pt.vx * 0.04, pt.y + 14);
+        ctx.stroke();
       } else {
         ctx.fillStyle = pt.color;
         ctx.beginPath();
@@ -2815,6 +2936,17 @@
       ctx.fillStyle = "rgba(255, 220, 245, 0.7)";
       ctx.font = "800 13px Fredoka, Nunito, sans-serif";
       ctx.fillText("✦ anime mode", 12, 22);
+    } else if (theme === "rain") {
+      ctx.fillStyle = "rgba(20, 50, 90, 0.22)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createLinearGradient(0, 0, 0, VH);
+      grd.addColorStop(0, "rgba(80, 140, 200, 0.12)");
+      grd.addColorStop(1, "rgba(10, 20, 40, 0.35)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(180, 220, 255, 0.75)";
+      ctx.font = "800 13px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ ночная смена", 12, 22);
     }
 
     if (g.sanity < 35) {
