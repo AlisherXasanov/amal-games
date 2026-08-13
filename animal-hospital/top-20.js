@@ -128,7 +128,7 @@
     if (!g || g.done) return;
     g.done = true;
     winText.textContent = text;
-    winCode.textContent = "TOP20 · " + String(((Date.now() / 1000) | 0) % 100000);
+    winCode.textContent = "BEST CONSOLE · " + String(((Date.now() / 1000) | 0) % 100000);
     win.hidden = false;
   }
 

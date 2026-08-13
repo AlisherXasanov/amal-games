@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>✦ Топ-20 · лучшие приложения</title>
-  <meta name="description" content="20 лучших мини-приложений: игры, рисовалка, бит-пad, оракул и ещё." />
+  <title>Best Console · 20 лучших игр</title>
+  <meta name="description" content="Best Console — лучшая консоль: 20 игр и приложений в одном месте." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./top-20.css?v=1" />
+  <link rel="stylesheet" href="./top-20.css?v=2" />
 </head>
 <body>
   <a class="back" href="./index.html">&larr; Больница</a>
@@ -17,32 +17,51 @@
 
   <div id="hub" class="screen">
     <div class="hub-scroll">
-      <p class="brand">✦ Топ-20</p>
-      <p class="sub">20 лучших мини-приложений. Игры, музыка, рисовалка, оракул — всё в одном месте.</p>
-      <div class="cards" id="cards"></div>
+      <div class="console-shell">
+        <div class="console-bezel">
+          <div class="console-led" aria-hidden="true"></div>
+          <p class="brand">BEST CONSOLE</p>
+          <p class="sub">Лучшая консоль · 20 игр · жми и играй</p>
+          <div class="cards" id="cards"></div>
+          <div class="console-bar">
+            <span class="dot"></span>
+            <span class="hint">выбери игру · старт</span>
+            <span class="dot"></span>
+          </div>
+        </div>
+        <div class="console-base">
+          <div class="joy"></div>
+          <div class="start-pill">START</div>
+          <div class="joy"></div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div id="play" class="screen" hidden>
-    <div class="topbar">
-      <button type="button" class="btn ghost" id="btnHub">← Меню</button>
-      <span id="playTitle">…</span>
-      <span id="playStat"></span>
+    <div class="play-frame">
+      <div class="topbar">
+        <button type="button" class="btn ghost" id="btnHub">← Консоль</button>
+        <span id="playTitle">…</span>
+        <span id="playStat"></span>
+      </div>
+      <div class="tv">
+        <canvas id="c" width="960" height="540"></canvas>
+      </div>
+      <div class="bubble" id="bubble" hidden></div>
+      <div class="ui-extra" id="uiExtra"></div>
     </div>
-    <canvas id="c" width="960" height="540"></canvas>
-    <div class="bubble" id="bubble" hidden></div>
-    <div class="ui-extra" id="uiExtra"></div>
   </div>
 
   <div id="win" class="screen overlay" hidden>
     <div class="win-card">
-      <p class="brand">✦ Готово</p>
+      <p class="brand">BEST CONSOLE</p>
       <p class="sub" id="winText"></p>
       <p class="code" id="winCode"></p>
-      <button type="button" class="btn" id="btnWinHub">В меню</button>
+      <button type="button" class="btn" id="btnWinHub">В консоль</button>
     </div>
   </div>
 
-  <script src="./top-20.js?v=1"></script>
+  <script src="./top-20.js?v=2"></script>
 </body>
 </html>
