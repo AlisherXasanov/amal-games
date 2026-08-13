@@ -214,3 +214,63 @@ canvas#c {
   border-bottom: 1px dashed rgba(13, 110, 95, 0.15);
 }
 .log li strong { color: var(--teal); }
+
+.result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 32, 28, 0.55);
+  backdrop-filter: blur(6px);
+  padding: 1rem;
+}
+.result-overlay[hidden] { display: none !important; }
+.result-card {
+  width: min(380px, 92vw);
+  padding: 1.4rem 1.3rem 1.2rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fffef8, #eef7f2);
+  border: 2px solid rgba(13, 110, 95, 0.25);
+  text-align: center;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+  animation: resultPop 0.28s ease-out;
+}
+@keyframes resultPop {
+  from { transform: scale(0.86); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.result-kicker {
+  font: 800 0.7rem Space Grotesk, Nunito, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.4rem;
+}
+.result-icon {
+  font-size: 3rem;
+  line-height: 1;
+  margin: 0.2rem 0 0.4rem;
+  filter: drop-shadow(0 6px 10px rgba(13, 110, 95, 0.25));
+}
+.result-title {
+  font: 700 1.35rem Fredoka, Nunito, sans-serif;
+  color: var(--ink);
+}
+.result-got {
+  margin-top: 0.55rem;
+  font: 800 12px Nunito, sans-serif;
+  color: var(--amber);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.result-body {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font: 600 14px/1.45 Nunito, sans-serif;
+}
+.result-pts {
+  margin: 0.75rem 0 0.9rem;
+  font: 800 1.1rem Space Grotesk, Nunito, sans-serif;
+  color: var(--teal);
+}

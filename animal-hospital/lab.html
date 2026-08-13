@@ -9,9 +9,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./lab.css?v=1" />
+  <link rel="stylesheet" href="./lab-skin.css?v=1" />
+  <link rel="stylesheet" href="./lab.css?v=2" />
 </head>
-<body>
+<body class="lab-skin">
   <a class="back" href="./lab-group.html">&larr; Группа · Лаборатория</a>
 
   <div id="menu" class="screen">
@@ -51,6 +52,19 @@
     </div>
   </div>
 
-  <script src="./lab.js?v=1"></script>
+  <div id="result" class="result-overlay" hidden>
+    <div class="result-card">
+      <p class="result-kicker" id="resultKicker">Результат изучения</p>
+      <div class="result-icon" id="resultIcon">🔬</div>
+      <p class="result-title" id="resultTitle">—</p>
+      <p class="result-got" id="resultGot">Ты получил:</p>
+      <p class="result-body" id="resultBody">—</p>
+      <p class="result-pts" id="resultPts">+0</p>
+      <button type="button" class="btn" id="btnResultOk">Понятно</button>
+    </div>
+  </div>
+
+  <script src="./lab-skin.js?v=1"></script>
+  <script src="./lab.js?v=2"></script>
 </body>
 </html>

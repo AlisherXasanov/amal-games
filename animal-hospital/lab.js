@@ -11,6 +11,13 @@
   const scoreEl = document.getElementById("score");
   const samplesEl = document.getElementById("samples");
   const logEl = document.getElementById("log");
+  const resultEl = document.getElementById("result");
+  const resultKicker = document.getElementById("resultKicker");
+  const resultIcon = document.getElementById("resultIcon");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultGot = document.getElementById("resultGot");
+  const resultBody = document.getElementById("resultBody");
+  const resultPts = document.getElementById("resultPts");
 
   const CATALOG = [
     { id: "fur", name: "Шерсть", icon: "🧶", color: "#d4a060", fact: "Мягкая. Пахнет парком." },
@@ -99,19 +106,37 @@
     return [a, b].sort().join("+");
   }
 
+  function showResult(opts) {
+    resultKicker.textContent = opts.kicker || "Результат";
+    resultIcon.textContent = opts.icon || "🔬";
+    resultTitle.textContent = opts.title || "—";
+    resultGot.textContent = opts.gotLabel || "Ты получил:";
+    resultBody.textContent = opts.body || "";
+    resultPts.textContent = opts.ptsLabel || "";
+    resultEl.hidden = false;
+  }
+
+  function hideResult() {
+    resultEl.hidden = true;
+  }
+
   function addDiscovery(title, text, pts) {
     const key = title;
+    let gained = pts || 1;
+    let isNew = false;
     if (!found[key]) {
       found[key] = true;
-      discoveries += pts || 1;
-      scoreEl.textContent = "открытий " + discoveries;
+      isNew = true;
+      discoveries += gained;
       log.unshift({ title, text });
       if (log.length > 24) log.pop();
       renderLog();
     } else {
+      gained = 1;
       discoveries += 1;
-      scoreEl.textContent = "открытий " + discoveries;
     }
+    scoreEl.textContent = "открытий " + discoveries;
+    return { isNew, gained, total: discoveries };
   }
 
   function renderLog() {
@@ -189,8 +214,16 @@
     scopeZoom = 1;
     beep(520, 0.08);
     burst(VW * 0.55, VH * 0.45, s.color, 14);
-    addDiscovery(s.name, s.fact, 2);
-    say(`🔬 ${s.name}: ${s.fact}`, 3);
+    const r = addDiscovery(s.name, s.fact, 2);
+    say(`🔬 Изучено: ${s.name}`, 2);
+    showResult({
+      kicker: "Результат изучения",
+      icon: s.icon,
+      title: s.name,
+      gotLabel: "Ты получил:",
+      body: s.fact + (r.isNew ? " · новое в журнале" : " · уже было, +1 за повтор"),
+      ptsLabel: "+" + r.gained + " · всего открытий " + r.total,
+    });
   }
 
   function mix() {
@@ -209,15 +242,18 @@
     burst(VW * 0.55, VH * 0.48, sa.color, 10);
     burst(VW * 0.58, VH * 0.42, sb.color, 10);
     const known = MIXES[key];
-    if (known) {
-      addDiscovery(known.title, known.text, 4);
-      say(`⚗️ ${known.title} — ${known.text}`, 3.4);
-    } else {
-      const title = sa.name + " × " + sb.name;
-      const text = "Странная смесь. Наука записывает и улыбается.";
-      addDiscovery(title, text, 2);
-      say(`⚗️ ${title}: ${text}`, 3);
-    }
+    const title = known ? known.title : sa.name + " × " + sb.name;
+    const text = known ? known.text : "Странная смесь. Наука записывает и улыбается.";
+    const r = addDiscovery(title, text, known ? 4 : 2);
+    say(`⚗️ Смесь готова: ${title}`, 2.2);
+    showResult({
+      kicker: "Результат смеси",
+      icon: sa.icon + sb.icon,
+      title: title,
+      gotLabel: "Ты получил:",
+      body: text + (r.isNew ? " · новое открытие!" : " · повторная смесь"),
+      ptsLabel: "+" + r.gained + " · всего открытий " + r.total,
+    });
   }
 
   function note() {
@@ -226,9 +262,17 @@
       return;
     }
     const s = byId(selected[0]);
-    addDiscovery("Заметка: " + s.name, "Аккуратно занесено в журнал.", 1);
+    const r = addDiscovery("Заметка: " + s.name, "Аккуратно занесено в журнал.", 1);
     beep(460, 0.06);
     say("📓 Записано: " + s.name);
+    showResult({
+      kicker: "Запись в журнал",
+      icon: "📓",
+      title: s.name,
+      gotLabel: "Ты получил:",
+      body: "Заметка про «" + s.name + "» сохранена.",
+      ptsLabel: "+" + r.gained + " · всего открытий " + r.total,
+    });
   }
 
   function newSample() {
@@ -238,8 +282,16 @@
     tray.push(pick.id);
     renderChips();
     beep(600, 0.05);
-    say("🎲 Новый образец: " + pick.icon + " " + pick.name);
+    say("🎲 Новый образец на столе");
     burst(120, 120, pick.color, 8);
+    showResult({
+      kicker: "Новый образец",
+      icon: pick.icon,
+      title: pick.name,
+      gotLabel: "Ты получил на стол:",
+      body: pick.fact + " Нажми «Изучить», чтобы узнать подробнее.",
+      ptsLabel: "ещё не изучен",
+    });
   }
 
   function drawLab() {
@@ -446,6 +498,10 @@
   document.getElementById("btnMix").onclick = mix;
   document.getElementById("btnNote").onclick = note;
   document.getElementById("btnNew").onclick = newSample;
+  document.getElementById("btnResultOk").onclick = hideResult;
+  resultEl.addEventListener("click", (e) => {
+    if (e.target === resultEl) hideResult();
+  });
 
   canvas.addEventListener("pointerdown", (e) => {
     if (!playing) return;
