@@ -5897,6 +5897,21 @@
   showEl(menu);
   showEl(secretDeathWrap);
   applyLobbyTheme();
+  const buildStampEl = document.getElementById("buildStamp");
+  if (buildStampEl) {
+    let bs = 0;
+    let bt = 0;
+    buildStampEl.addEventListener("click", () => {
+      const now = Date.now();
+      if (now - bt > 3500) bs = 0;
+      bt = now;
+      bs += 1;
+      if (bs >= 3) {
+        bs = 0;
+        location.href = "./lesha-quest.html";
+      }
+    });
+  }
   requestAnimationFrame(frame);
 
   try {
