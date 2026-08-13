@@ -1,0 +1,195 @@
+:root {
+  --cream: #f3efe6;
+  --muted: #9aa8c0;
+  --mint: #7ed9b8;
+  --me: #7ec8ff;
+  --you: #ffd76a;
+  --accent: #e8b4ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  color: var(--cream);
+  font-family: Nunito, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, #3a2860 0%, transparent 55%),
+    radial-gradient(ellipse 60% 45% at 100% 100%, #183048 0%, transparent 50%),
+    linear-gradient(165deg, #141028, #080610);
+  touch-action: none;
+  user-select: none;
+}
+
+.glow {
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 40% 30% at 25% 40%, rgba(126, 200, 255, 0.18), transparent 60%),
+    radial-gradient(ellipse 35% 30% at 75% 60%, rgba(255, 215, 106, 0.12), transparent 55%);
+  filter: blur(40px);
+}
+
+.back {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 40;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font: 600 13px/1 system-ui, sans-serif;
+  text-decoration: none;
+}
+.back.right { left: auto; right: 10px; }
+
+.screen {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.brand {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-size: clamp(1.45rem, 4vw, 1.9rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #fff0ff, #7ec8ff, #ffd76a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+  margin-bottom: 0.35rem;
+}
+
+.sub {
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+  max-width: 36rem;
+}
+
+.cards {
+  width: min(720px, 100%);
+  display: grid;
+  gap: 0.55rem;
+}
+
+.card {
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.35));
+  color: var(--cream);
+  cursor: pointer;
+  font: 700 1rem Nunito, sans-serif;
+  transition: border-color 0.15s, transform 0.12s;
+}
+.card:hover {
+  border-color: rgba(126, 200, 255, 0.5);
+  transform: translateX(3px);
+}
+.card strong { display: block; font-family: Fredoka, Nunito, sans-serif; font-size: 1.1rem; }
+.card small { display: block; margin-top: 0.25rem; color: var(--muted); font-weight: 600; font-size: 0.82rem; }
+
+#play {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: start;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  place-items: stretch;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font: 800 0.9rem Nunito, sans-serif;
+}
+
+#c {
+  width: 100%;
+  height: auto;
+  max-height: min(540px, 62dvh);
+  border-radius: 14px;
+  display: block;
+  background: #101624;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  max-width: min(420px, 88vw);
+  padding: 0.6rem 1rem;
+  border-radius: 14px;
+  background: rgba(12, 16, 28, 0.92);
+  border: 1px solid rgba(126, 200, 255, 0.35);
+  font: 700 0.92rem/1.4 Nunito, sans-serif;
+  text-align: center;
+  z-index: 5;
+}
+
+.ui-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+}
+
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 0.55rem 1rem;
+  font: 800 0.9rem Nunito, sans-serif;
+  cursor: pointer;
+  color: #1a1020;
+  background: linear-gradient(135deg, var(--mint), #5ec89a);
+}
+.btn.ghost {
+  color: var(--cream);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.btn.me {
+  background: linear-gradient(135deg, #7ec8ff, #a8e0ff);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 16, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+}
+.win-card {
+  width: min(400px, 92vw);
+  text-align: center;
+  padding: 1.2rem;
+  border-radius: 16px;
+  background: rgba(16, 14, 28, 0.95);
+  border: 1px solid rgba(255, 215, 106, 0.35);
+}
+.code {
+  font-family: Fredoka, Nunito, sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.12em;
+  color: #ffd76a;
+  margin: 0.6rem 0 1rem;
+}
+
+[hidden] { display: none !important; }
