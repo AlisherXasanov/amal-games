@@ -757,7 +757,7 @@
     { id: "surgery", name: "Операционная", x: 1340, y: 380, w: 380, h: 240, color: "#403038" },
     { id: "quarantine", name: "Карантин", x: 40, y: 660, w: 320, h: 280, color: "#3a2828" },
     { id: "pedia", name: "Педиатрия", x: 380, y: 660, w: 320, h: 280, color: "#304040" },
-    { id: "break", name: "Отдых / бар", x: 720, y: 660, w: 400, h: 280, color: "#2a3840" },
+    { id: "break", name: "Вилла · отдых", x: 720, y: 660, w: 400, h: 280, color: "#2a3840" },
     { id: "office", name: "Офис / полиция", x: 1140, y: 660, w: 300, h: 280, color: "#283848" },
     { id: "storage", name: "Склад бинтов", x: 1460, y: 660, w: 260, h: 280, color: "#383040" },
   ];
@@ -788,6 +788,7 @@
     { id: "office", x: 1280, y: 800, label: "Кабинет (офис)", kind: "office" },
     { id: "coffee", x: 820, y: 740, label: "Кофемашина 1", kind: "coffee" },
     { id: "barman", x: 960, y: 800, label: "Барни", kind: "barman" },
+    { id: "villaLight", x: 760, y: 700, label: "Свет виллы", kind: "villaLight" },
   ];
   const STATION_COFFEE2 = { id: "coffee2", x: 980, y: 740, label: "Кофемашина 2", kind: "coffee" };
   /** Убежище Барни — всегда одно и то же место на карте */
@@ -1152,6 +1153,46 @@
     btn.title = on
       ? "Без аномалий · нажми, чтобы снова получать"
       : "Аномалии включены · нажми, чтобы выключить";
+  }
+
+  function syncAnimalsFab() {
+    const btn = document.getElementById("btnAnimalsShift");
+    if (!btn) return;
+    const show = !!(g && (state === "play" || state === "desk") && canUseSecretShifts());
+    btn.hidden = !show;
+    if (!show) return;
+    const on = !g.noAnimals;
+    btn.classList.toggle("off", !on);
+    btn.textContent = on ? "🐾 ВКЛ" : "🐾 ВЫКЛ";
+    btn.title = on
+      ? "Животные в очереди · нажми, чтобы выключить"
+      : "Животных нет · нажми, чтобы включить";
+  }
+
+  function setNoAnimals(on, silent) {
+    if (!g) return;
+    g.noAnimals = !!on;
+    meta.noAnimals = !!on;
+    storeSet(SAVE, meta);
+    if (g.noAnimals) {
+      g.queue = [];
+      g.inside = [];
+      deskPatient = null;
+      focusPatient = null;
+      hideEl(deskPanel);
+      hideEl(needPanel);
+      if (state === "desk") state = "play";
+      layoutQueue();
+      refreshRequestsStrip();
+    }
+    syncAnimalsFab();
+    if (silent) return;
+    if (g.noAnimals) {
+      toast("🐾 Животные ВЫКЛ · очередь пустая");
+      showEvent("🐾 Выкл · сон без зверей", 2.2);
+    } else {
+      toast("🐾 Животные снова могут прийти");
+    }
   }
 
   function setOwnerQuiet(on, silent) {
@@ -2132,6 +2173,8 @@
       theme: shift.theme || null,
       noAnomalies: !!(shift.noAnomalies || shift.anomaly <= 0),
       ownerQuiet: false,
+      noAnimals: !!(meta && meta.noAnimals),
+      villaLights: meta.villaLights !== false,
       patientDeath: shiftAllowsDeath(shift),
       selfServe: !!shift.selfServe,
     };
@@ -2142,10 +2185,15 @@
     if (canUseSecretShifts()) {
       g.ownerQuiet = true;
       g.noAnomalies = true;
+      if (meta.noAnimals == null) {
+        g.noAnimals = true;
+        meta.noAnimals = true;
+        storeSet(SAVE, meta);
+      }
     }
 
     // бесконечная очередь: стартовая пачка + постоянный спавн дальше
-    const group = 5 + (shift.id >= 2 ? 2 : 0) + (shift.special === "mass" ? 4 : 0);
+    const group = g.noAnimals ? 0 : 5 + (shift.id >= 2 ? 2 : 0) + (shift.special === "mass" ? 4 : 0);
     const forceWeird = g.noAnomalies ? false : null;
     for (let i = 0; i < group; i++) {
       g.queue.push(makeVisitor(forceWeird === false ? false : i === 1 ? true : null));
@@ -2168,7 +2216,10 @@
     showEl(shiftTag);
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
     syncQuietFab();
-    if (canUseSecretShifts() && g.ownerQuiet) {
+    syncAnimalsFab();
+    if (canUseSecretShifts() && g.noAnimals) {
+      toast("🐾 Животные ВЫКЛ · кнопка слева включит");
+    } else if (canUseSecretShifts() && g.ownerQuiet) {
       toast("⚠ Без аномалий · кнопка слева выключит");
     }
     toast(
@@ -2407,6 +2458,8 @@
     hideEl(document.getElementById("secretShiftsPanel"));
     const quiet = document.getElementById("btnQuietShift");
     if (quiet) quiet.hidden = true;
+    const animals = document.getElementById("btnAnimalsShift");
+    if (animals) animals.hidden = true;
     refreshLobbyUI();
     showEl(menu);
     showEl(secretDeathWrap);
@@ -2487,7 +2540,7 @@
         const sel = p.selInv === i ? " selected" : "";
         const inf = p.infiniteItems ? " ∞" : "";
         slots.push(
-          `<button type="button" class="inv-slot${sel}" data-inv="${i}" title="${def.name}${inf}">${def.icon}<br>${def.name}</button>`
+          `<button type="button" class="inv-slot${sel}" data-inv="${i}" title="${def.name}${inf}">${def.icon}</button>`
         );
       } else if (!p.infiniteItems) {
         slots.push(`<div class="inv-slot empty">пусто</div>`);
@@ -2507,20 +2560,18 @@
       return;
     }
     const v = focusPatient;
-    needTitle.textContent = `${v.condition.icon} ${guestLabel(v)}${guestKindTag(v) ? " · " + guestKindTag(v) : ""}: ${v.condition.name}`;
+    needTitle.textContent = `${v.condition.icon} ${guestLabel(v)}`;
     needList.innerHTML = v.needs
       .map((id) => {
         const def = ITEMS[id];
         const done = v.delivered.includes(id);
         const mach = MACHINES.find((m) => m.gives.includes(id));
         const room = mach ? mach.room : "?";
-        const short = mach ? mach.short : "?";
         return `<div class="need-card ${done ? "done" : "todo"}">
           <div class="need-ico">${def.icon}</div>
           <div class="need-txt">
             <strong>${def.name}</strong>
-            <small>${done ? "готово ✓" : "📍 ИДИ В: " + room}</small>
-            <small class="need-mach">${done ? "" : "автомат «" + short + "» · жёлтая стрелка на карте"}</small>
+            <small>${done ? "✓" : room}</small>
           </div>
         </div>`;
       })
@@ -3243,6 +3294,15 @@
       return;
     }
 
+    const light = near(player.x, player.y, stations.filter((s) => s.kind === "villaLight"));
+    if (light) {
+      g.villaLights = !g.villaLights;
+      meta.villaLights = g.villaLights;
+      storeSet(SAVE, meta);
+      toast(g.villaLights ? "💡 Свет виллы ВКЛ" : "🌙 Свет виллы ВЫКЛ");
+      return;
+    }
+
     const bp = barneyPos();
     if (bp && Math.hypot(player.x - bp.x, player.y - bp.y) < 72) {
       talkToBarney(player);
@@ -3775,7 +3835,7 @@
     g.spawnCd -= dt;
     const qMax = 14;
     if (g.spawnCd <= 0) {
-      if (g.queue.length < qMax) {
+      if (!g.noAnimals && g.queue.length < qMax) {
         g.queue.push(makeVisitor());
         layoutQueue();
       }
@@ -3787,6 +3847,7 @@
     if (g.selfServe) autoAdmitSelfServe();
     if (g.relaxMode) {
       g.sanity = g.maxSanity;
+      if (!g.noAnimals) {
       const beds = getStations().filter((s) => s.kind === "treat");
       const free = Math.max(0, beds.length - g.inside.length);
       if (free > 0 && g.queue.length) {
@@ -3817,6 +3878,7 @@
         g.treated += 1;
         g.coins += 10;
         g.inside = g.inside.filter((p) => p.id !== v.id);
+      }
       }
       g.relaxMobCd = (g.relaxMobCd || 0) - dt;
       if (g.monsters && g.monsters.length && g.relaxMobCd <= 0) {
@@ -4207,24 +4269,28 @@
         ? "Auto"
         : isSammy
           ? "Sammy"
-          : isJen
-            ? "Jen"
-            : isBuilder
-              ? "Builderman"
-              : isRainbow
-                ? "Rainbow"
-                : isLilamint
-                  ? "Lilamint"
-                  : label || pl.name;
+          : isJendel
+            ? "Jendel"
+            : isWoodstock
+              ? "Woodstock"
+              : isBuilder
+                ? "Builderman"
+                : isRainbow
+                  ? "Rainbow"
+                  : isLilamint
+                    ? "Lilamint"
+                    : label || pl.name;
     const tagColor = isHere
       ? "#a8e0ff"
       : isSammy
         ? "#ffb0b0"
-        : isJen
-          ? "#ffd0ef"
-          : isBuilder
-            ? "#b8ffd0"
-            : "#fff";
+        : isJendel
+          ? "#9ec5ff"
+          : isWoodstock
+            ? "#ffe566"
+            : isBuilder
+              ? "#b8ffd0"
+              : "#fff";
     drawNamePlate(pl.x, pl.y - 48, tag, tagColor);
     if (pl.inv.length) {
       ctx.font = "16px Nunito";
@@ -4313,32 +4379,42 @@
       ctx.fillText(roomLabel(room), room.x + 12, room.y + 24);
     }
 
-    // machines — крупные иконки + стрелки к нужным
+    // machines — тонкие подсказки (не огромные линии на весь экран)
     const needIds =
       focusPatient && focusPatient.diagnosed
         ? focusPatient.needs.filter((id) => !focusPatient.delivered.includes(id))
         : [];
     const wantedMachines = MACHINES.filter((m) => m.gives.some((id) => needIds.includes(id)));
     const guideFrom = g.players[0];
+    const softGuide = !!(guideFrom && guideFrom.infiniteItems);
     for (const m of wantedMachines) {
+      if (softGuide) {
+        // у хозяина с ∞ — только маленькая метка у автомата, без длинных линий
+        ctx.save();
+        ctx.fillStyle = "rgba(255, 211, 106, 0.9)";
+        ctx.beginPath();
+        ctx.arc(m.x, m.y - 48, 5 + Math.sin(g.t * 6) * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        continue;
+      }
       ctx.save();
-      ctx.strokeStyle = "rgba(255, 211, 106, 0.85)";
-      ctx.lineWidth = 4;
-      ctx.setLineDash([10, 8]);
+      ctx.strokeStyle = "rgba(255, 211, 106, 0.45)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 8]);
       ctx.beginPath();
       ctx.moveTo(guideFrom.x, guideFrom.y);
       ctx.lineTo(m.x, m.y);
       ctx.stroke();
       ctx.setLineDash([]);
-      // стрелка у автомата
       const ang = Math.atan2(m.y - guideFrom.y, m.x - guideFrom.x);
       ctx.fillStyle = "#ffd36a";
-      ctx.translate(m.x, m.y - 55);
+      ctx.translate(m.x, m.y - 48);
       ctx.rotate(ang);
       ctx.beginPath();
-      ctx.moveTo(18, 0);
-      ctx.lineTo(-8, -10);
-      ctx.lineTo(-8, 10);
+      ctx.moveTo(10, 0);
+      ctx.lineTo(-5, -6);
+      ctx.lineTo(-5, 6);
       ctx.closePath();
       ctx.fill();
       ctx.restore();
@@ -4346,18 +4422,21 @@
 
     for (const m of MACHINES) {
       const wanted = m.gives.some((id) => needIds.includes(id));
-      const pulse = wanted ? 6 + Math.sin(g.t * 7) * 4 : 0;
+      const soft = !!(g.players[0] && g.players[0].infiniteItems);
+      const pulse = wanted && !soft ? 3 + Math.sin(g.t * 7) * 2 : 0;
       ctx.fillStyle = m.color || "#5a4a38";
       roundRect(m.x - 50 - pulse / 2, m.y - 40 - pulse / 2, 100 + pulse, 80 + pulse, 12);
       ctx.fill();
       if (wanted) {
-        ctx.strokeStyle = "#ffd36a";
-        ctx.lineWidth = 5;
+        ctx.strokeStyle = soft ? "rgba(255, 211, 106, 0.55)" : "#ffd36a";
+        ctx.lineWidth = soft ? 2 : 3;
         ctx.stroke();
-        ctx.fillStyle = "rgba(255, 211, 106, 0.92)";
-        ctx.font = "900 16px Nunito";
-        ctx.textAlign = "center";
-        ctx.fillText("⬇ СЮДА ⬇", m.x, m.y - 52 - pulse);
+        if (!soft) {
+          ctx.fillStyle = "rgba(255, 211, 106, 0.92)";
+          ctx.font = "900 14px Nunito";
+          ctx.textAlign = "center";
+          ctx.fillText("⬇", m.x, m.y - 48 - pulse);
+        }
       } else {
         ctx.strokeStyle = "rgba(255,255,255,0.2)";
         ctx.lineWidth = 2;
@@ -4416,6 +4495,7 @@
         s.kind === "coffee" ? "#8a5a3a" :
         s.kind === "barman" ? "#6a4060" :
         s.kind === "office" ? "#507070" :
+        s.kind === "villaLight" ? (g.villaLights ? "#ffe08a" : "#405060") :
         "#70a8c8";
       roundRect(s.x - 32, s.y - 18, 64, 36, 8);
       ctx.fill();
@@ -4433,8 +4513,21 @@
         ctx.fillStyle = "#101624";
         ctx.font = "700 10px Nunito";
         ctx.textAlign = "center";
-        ctx.fillText(s.label.split(" ")[0], s.x, s.y + 4);
+        ctx.fillText(
+          s.kind === "villaLight" ? (g.villaLights ? "💡 свет" : "🌙 свет") : s.label.split(" ")[0],
+          s.x,
+          s.y + 4
+        );
         ctx.textAlign = "left";
+      }
+    }
+
+    // вилла: свет выкл — затемнение зоны отдыха
+    if (g.villaLights === false) {
+      const villa = ROOMS.find((r) => r.id === "break");
+      if (villa) {
+        ctx.fillStyle = "rgba(0, 0, 12, 0.55)";
+        ctx.fillRect(villa.x, villa.y, villa.w, villa.h);
       }
     }
 
@@ -4753,6 +4846,20 @@
     btnQuietShift.addEventListener("click", () => {
       if (!g || !canUseSecretShifts()) return;
       setOwnerQuiet(!g.ownerQuiet);
+    });
+  }
+  const btnAnimalsShift = document.getElementById("btnAnimalsShift");
+  if (btnAnimalsShift) {
+    btnAnimalsShift.addEventListener("click", () => {
+      if (!g || !canUseSecretShifts()) return;
+      setNoAnimals(!g.noAnimals);
+    });
+  }
+  const btnNeedClose = document.getElementById("btnNeedClose");
+  if (btnNeedClose) {
+    btnNeedClose.addEventListener("click", () => {
+      focusPatient = null;
+      hideEl(needPanel);
     });
   }
   document.getElementById("btnAgain").addEventListener("click", startShift);

@@ -300,6 +300,28 @@ body.theme-parrot #app {
   background: rgba(12, 28, 22, 0.92);
   color: #9fe8c8;
 }
+.animals-fab {
+  position: absolute;
+  left: 0.55rem;
+  bottom: 11.5rem;
+  z-index: 8;
+  min-width: 72px;
+  height: 34px;
+  padding: 0 0.55rem;
+  border-radius: 10px;
+  border: 1px solid rgba(126, 217, 184, 0.5);
+  background: rgba(12, 28, 22, 0.92);
+  color: #9fe8c8;
+  font: 800 0.72rem Nunito, system-ui;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+.animals-fab.off {
+  border-color: rgba(154, 168, 192, 0.45);
+  background: rgba(18, 20, 28, 0.92);
+  color: #9aa8c0;
+}
 .btn.juice {
   background: linear-gradient(180deg, #ffe08a, #f0a83a);
   color: #3a2208;
@@ -827,36 +849,38 @@ body.theme-parrot #app {
   background: var(--card);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  padding: 0.35rem 0.5rem;
-  min-width: 140px;
+  padding: 0.25rem 0.4rem;
+  min-width: 96px;
+  max-width: min(300px, 46vw);
   pointer-events: none;
 }
 .inv-label {
-  font-size: 0.68rem;
+  font-size: 0.58rem;
   font-weight: 800;
   color: var(--muted);
   text-transform: uppercase;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.12rem;
 }
 .inv-slots {
   display: flex;
-  gap: 0.3rem;
+  gap: 0.2rem;
   flex-wrap: wrap;
-  max-width: min(520px, 70vw);
-  max-height: 7.2rem;
+  max-width: min(280px, 42vw);
+  max-height: 3.5rem;
   overflow: auto;
   pointer-events: auto;
 }
 .inv-slot {
-  min-width: 54px;
-  padding: 0.25rem 0.35rem;
-  border-radius: 8px;
+  min-width: 34px;
+  max-width: 42px;
+  padding: 0.15rem 0.18rem;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  font-size: 0.68rem;
+  font-size: 0.55rem;
   font-weight: 800;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.1;
   color: inherit;
   cursor: default;
 }
@@ -870,8 +894,8 @@ button.inv-slot {
   background: rgba(255, 215, 106, 0.18);
   box-shadow: 0 0 0 1px rgba(255, 215, 106, 0.35);
 }
-.inv-slot.weapon { border-color: #ffd36a; }
-.inv-slot.coffee { border-color: #c4a574; }
+.inv-slot.weapon { border-color: #ffd36a; min-width: 40px; }
+.inv-slot.coffee { border-color: #c4a574; min-width: 40px; }
 .inv-slot.empty { opacity: 0.35; }
 
 .need-panel {
@@ -881,38 +905,54 @@ button.inv-slot {
   top: auto;
   right: auto;
   z-index: 4;
-  width: min(280px, 52vw);
-  background: rgba(10, 14, 28, 0.94);
-  border: 2px solid rgba(255, 211, 106, 0.45);
-  border-radius: 14px;
-  padding: 0.65rem 0.75rem;
-  pointer-events: none;
-  max-height: 42vh;
+  width: min(160px, 36vw);
+  background: rgba(10, 14, 28, 0.9);
+  border: 1px solid rgba(255, 211, 106, 0.35);
+  border-radius: 10px;
+  padding: 0.3rem 0.35rem 0.35rem;
+  pointer-events: auto;
+  max-height: 16vh;
   overflow: auto;
 }
+.need-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+.need-x {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #c8d0e0;
+  font: 800 0.95rem Nunito, system-ui;
+  cursor: pointer;
+  line-height: 1;
+}
 .need-mach {
-  display: block;
-  color: #ffd36a !important;
-  font-size: 0.7rem !important;
+  display: none;
 }
 .need-title {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: var(--warn);
-  margin-bottom: 0.45rem;
-  line-height: 1.3;
+  margin-bottom: 0;
+  line-height: 1.2;
 }
 .need-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.18rem;
 }
 .need-card {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: 12px;
+  gap: 0.3rem;
+  padding: 0.18rem 0.28rem;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -925,23 +965,23 @@ button.inv-slot {
   border-color: rgba(94, 207, 138, 0.4);
 }
 .need-ico {
-  font-size: 1.85rem;
+  font-size: 1rem;
   line-height: 1;
-  width: 2.2rem;
+  width: 1.3rem;
   text-align: center;
 }
 .need-txt {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0;
   text-align: left;
 }
 .need-txt strong {
-  font-size: 0.88rem;
+  font-size: 0.68rem;
   color: var(--cream);
 }
 .need-txt small {
-  font-size: 0.72rem;
+  font-size: 0.58rem;
   color: var(--muted);
   font-weight: 700;
 }
