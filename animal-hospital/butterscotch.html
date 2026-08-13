@@ -3,27 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Butterscotch · пёс</title>
-  <meta name="description" content="Butterscotch — пёс с карамельной шерстью. Ухаживай за ним." />
+  <title>Buttersquish · Butterscotch</title>
+  <meta name="description" content="Buttersquish — мягкий пёс как Butter Squishy. Молли назвала его Butterscotch." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./butterscotch.css?v=4" />
+  <link rel="stylesheet" href="./butterscotch.css?v=5" />
 </head>
 <body>
   <a class="back" href="./index.html">&larr; Больница</a>
 
   <div id="menu" class="screen">
+    <p class="brand">Buttersquish</p>
+    <p class="sub">Мягкий пёс как <b>Butter Squishy</b> — бледно-жёлтый, squishy.<br />Молли назвала его <b>Butterscotch</b>. Он бездомный…</p>
+    <button type="button" class="btn" id="btnStart">Найти его</button>
+  </div>
+
+  <div id="choice" class="screen" hidden>
     <p class="brand">Butterscotch</p>
-    <p class="sub">Настоящий пёс · карамельно-золотая шерсть.<br />Корми, гладь, гуляй — заботься о нём.</p>
-    <button type="button" class="btn" id="btnStart">Играть</button>
+    <p class="sub" id="choiceText">Молли: «Он такой мягкий… как масло. Назовём Butterscotch.»</p>
+    <canvas id="cChoice" width="420" height="220"></canvas>
+    <div class="choice-row">
+      <button type="button" class="btn" id="btnHome">🏠 Взять домой</button>
+      <button type="button" class="btn ghost" id="btnStreet">🌧 Не брать</button>
+    </div>
+    <p class="hint">Не взять — всё равно ухаживать на улице.</p>
   </div>
 
   <div id="play" class="screen" hidden>
     <div class="topbar">
       <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
-      <span id="who">🐕 Butterscotch</span>
+      <span id="who">🧈 Butterscotch</span>
+      <span id="placeLabel">дома</span>
       <span id="love">❤ 0</span>
     </div>
     <canvas id="c" width="960" height="460"></canvas>
@@ -33,8 +45,8 @@
       <button type="button" class="act" data-act="feed">🍖 Кормить</button>
       <button type="button" class="act" data-act="water">💧 Вода</button>
       <button type="button" class="act" data-act="pet">🤚 Гладить</button>
-      <button type="button" class="act" data-act="walk">🚶 Гулять</button>
-      <button type="button" class="act" data-act="brush">✨ Шерсть</button>
+      <button type="button" class="act" data-act="squish">🧈 Squish</button>
+      <button type="button" class="act" data-act="blanket">🧣 Плед</button>
       <button type="button" class="act" data-act="sleep">😴 Спать</button>
       <button type="button" class="act" data-act="ball">🎾 Мячик</button>
     </div>
@@ -50,6 +62,6 @@
     </div>
   </div>
 
-  <script src="./butterscotch.js?v=4"></script>
+  <script src="./butterscotch.js?v=5"></script>
 </body>
 </html>

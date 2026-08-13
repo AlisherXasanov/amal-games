@@ -5,39 +5,54 @@
   const VH = 460;
   const canvas = document.getElementById("c");
   const ctx = canvas.getContext("2d");
+  const cChoice = document.getElementById("cChoice");
+  const ctxC = cChoice.getContext("2d");
+
   const menu = document.getElementById("menu");
+  const choice = document.getElementById("choice");
   const play = document.getElementById("play");
   const win = document.getElementById("win");
   const bubble = document.getElementById("bubble");
   const stats = document.getElementById("stats");
   const loveEl = document.getElementById("love");
+  const placeLabel = document.getElementById("placeLabel");
   const winText = document.getElementById("winText");
   const winCode = document.getElementById("winCode");
+
+  // Butter Squishy palette (viral salted-butter stick)
+  const COL = {
+    light: "#fff6a8",
+    mid: "#f5e06a",
+    deep: "#e0c838",
+    shade: "#c8a820",
+    blue: "#1e3a6e",
+    cream: "#fffef5",
+  };
 
   let love = 0;
   let bubbleT = 0;
   let playing = false;
   let done = false;
+  let atHome = true;
   let last = performance.now();
   let t = 0;
   let particles = [];
   let audioCtx = null;
   let wag = 0;
+  let squish = 0; // 0..1 compressed, then slow-rise
 
-  // Butterscotch = golden / caramel-coated dog (retriever-like)
-  const dog = {
+  const pet = {
     x: VW * 0.48,
-    y: VH * 0.62,
-    hunger: 55,
-    water: 60,
-    clean: 70,
-    happy: 65,
-    energy: 70,
-    coat: 75,
+    y: VH * 0.58,
+    hunger: 50,
+    water: 55,
+    soft: 80,
+    happy: 45,
+    warm: 50,
+    energy: 60,
     bob: 0,
     anim: 0,
     effect: null,
-    sit: false,
   };
 
   function say(text, sec) {
@@ -80,133 +95,165 @@
     }
   }
 
+  function showOnly(el) {
+    menu.hidden = el !== menu;
+    choice.hidden = el !== choice;
+    play.hidden = el !== play;
+    win.hidden = el !== win;
+  }
+
   function showMenu() {
     playing = false;
     done = false;
-    menu.hidden = false;
-    play.hidden = true;
-    win.hidden = true;
-    bubble.hidden = true;
+    showOnly(menu);
   }
 
-  function start() {
-    love = 0;
+  function startChoice() {
+    playing = false;
     done = false;
-    Object.assign(dog, {
-      hunger: 55,
-      water: 60,
-      clean: 70,
-      happy: 65,
-      energy: 70,
-      coat: 75,
+    love = 0;
+    loveEl.textContent = "❤ 0";
+    showOnly(choice);
+    drawChoicePreview();
+  }
+
+  function beginPlay(home) {
+    atHome = home;
+    placeLabel.textContent = home ? "дома" : "на улице";
+    Object.assign(pet, {
+      hunger: 50,
+      water: 55,
+      soft: 80,
+      happy: home ? 55 : 35,
+      warm: home ? 70 : 30,
+      energy: 60,
       bob: 0,
       anim: 0,
       effect: null,
-      sit: false,
-      x: VW * 0.48,
-      y: VH * 0.62,
     });
+    love = 0;
+    squish = 0;
     particles = [];
+    done = false;
     playing = true;
-    menu.hidden = true;
-    play.hidden = false;
-    win.hidden = true;
     loveEl.textContent = "❤ 0";
+    showOnly(play);
+    say(
+      home
+        ? "Молли: «Butterscotch дома! Он как Buttersquish — мягкий.»"
+        : "Молли: «Не берём… но он один на улице. Ухаживай.»",
+      3.2
+    );
     renderStats();
-    say("Вот Butterscotch — пёс с карамельной шерстью. Ухаживай за ним!", 3);
-    beep(320, 0.08);
+    draw();
   }
 
   function renderStats() {
-    stats.innerHTML = `
-      <h3>🐕 Butterscotch · пёс</h3>
-      голод <div class="bar"><i style="width:${dog.hunger}%;background:#ff9040"></i></div>
-      вода <div class="bar"><i style="width:${dog.water}%;background:#60b0ff"></i></div>
-      чистота <div class="bar"><i style="width:${dog.clean}%;background:#70c0e0"></i></div>
-      радость <div class="bar"><i style="width:${dog.happy}%;background:#ff80b0"></i></div>
-      шерсть <div class="bar"><i style="width:${dog.coat}%;background:#d4a060"></i></div>
-      энергия <div class="bar"><i style="width:${dog.energy}%;background:#80c060"></i></div>`;
+    const rows = [
+      ["Голод", pet.hunger, "#e07040"],
+      ["Вода", pet.water, "#5090d0"],
+      ["Мягкость", pet.soft, "#e8c83a"],
+      ["Радость", pet.happy, "#e070a0"],
+      ["Тепло", pet.warm, "#d08050"],
+      ["Силы", pet.energy, "#70a060"],
+    ];
+    stats.innerHTML =
+      "<h3>Butterscotch · Buttersquish</h3>" +
+      rows
+        .map(
+          ([n, v, c]) =>
+            `<div>${n} ${Math.round(v)}</div><div class="bar"><i style="width:${v}%;background:${c}"></i></div>`
+        )
+        .join("");
   }
 
   function doAct(act) {
     if (!playing || done) return;
+    pet.anim = 0.9;
+    pet.effect = act;
+    wag = 1.2;
 
     if (act === "feed") {
-      dog.hunger = clamp(dog.hunger + 28);
-      dog.happy = clamp(dog.happy + 8);
-      say("Butterscotch ест из миски. Хвост виляет!", 2.3);
-      burst(dog.x - 50, dog.y + 10, "#ffb040", 10);
+      pet.hunger = clamp(pet.hunger + 28);
+      pet.happy = clamp(pet.happy + 8);
+      love += 4;
+      say("Ням… Buttersquish доволен.");
+      beep(420, 0.08);
+      burst(pet.x, pet.y - 20, "#f5e06a", 8);
     } else if (act === "water") {
-      dog.water = clamp(dog.water + 30);
-      dog.happy = clamp(dog.happy + 4);
-      say("Пьёт водичку. Хороший пёс.", 2.2);
+      pet.water = clamp(pet.water + 30);
+      love += 3;
+      say("Глоток…");
+      beep(520, 0.07);
     } else if (act === "pet") {
-      dog.happy = clamp(dog.happy + 24);
-      dog.coat = clamp(dog.coat + 4);
-      wag = 1;
-      say("Гладим Butterscotch. Он прижимается.", 2.3);
-      burst(dog.x, dog.y - 30, "#ff90b8", 10);
-    } else if (act === "walk") {
-      dog.energy = clamp(dog.energy - 12);
-      dog.happy = clamp(dog.happy + 22);
-      dog.hunger = clamp(dog.hunger - 8);
-      dog.clean = clamp(dog.clean - 6);
-      say("Прогулка! Butterscotch бежит рядом.", 2.4);
-    } else if (act === "brush") {
-      dog.coat = clamp(dog.coat + 30);
-      dog.clean = clamp(dog.clean + 12);
-      dog.happy = clamp(dog.happy + 10);
-      say("Расчёсываем золотую шерсть. Блестит!", 2.3);
-      burst(dog.x, dog.y - 10, "#e8c080", 14);
+      pet.happy = clamp(pet.happy + 18);
+      pet.soft = clamp(pet.soft + 6);
+      love += 5;
+      say("Молли гладит Butterscotch…");
+      beep(640, 0.06);
+      burst(pet.x, pet.y - 30, "#ffb0c0", 10);
+    } else if (act === "squish") {
+      squish = 1;
+      pet.soft = clamp(pet.soft + 20);
+      pet.happy = clamp(pet.happy + 14);
+      love += 6;
+      say("Squish… slow rise… как Butter Squishy!");
+      beep(280, 0.12);
+      burst(pet.x, pet.y, "#fff6a8", 14);
+    } else if (act === "blanket") {
+      pet.warm = clamp(pet.warm + 32);
+      pet.happy = clamp(pet.happy + 10);
+      love += 5;
+      say(atHome ? "Плед на диване." : "Плед на улице — теплее.");
+      beep(360, 0.08);
     } else if (act === "sleep") {
-      dog.energy = clamp(dog.energy + 35);
-      dog.sit = true;
-      say("Butterscotch спит на лежанке. Zzz…", 2.3);
-      setTimeout(() => {
-        dog.sit = false;
-      }, 2000);
+      pet.energy = clamp(pet.energy + 35);
+      pet.happy = clamp(pet.happy + 6);
+      love += 4;
+      say("Zzz… мягкий как масло.");
+      beep(220, 0.15);
     } else if (act === "ball") {
-      dog.happy = clamp(dog.happy + 26);
-      dog.energy = clamp(dog.energy - 14);
-      wag = 1.2;
-      say("Мячик! Апорт! Butterscotch счастлив.", 2.3);
-      burst(dog.x + 40, dog.y - 40, "#40c060", 8);
+      pet.happy = clamp(pet.happy + 20);
+      pet.energy = clamp(pet.energy - 8);
+      love += 5;
+      wag = 2;
+      say("Мячик! Buttersquish прыгает.");
+      beep(700, 0.05);
+      burst(pet.x + 40, pet.y - 10, "#40c060", 8);
     }
 
-    dog.anim = 0.85;
-    dog.effect = act;
-    love += 3;
     loveEl.textContent = "❤ " + love;
-    beep(380, 0.06);
     renderStats();
-
-    if (love >= 40 && dog.hunger > 65 && dog.happy > 70 && dog.coat > 65) {
-      finish();
-    }
+    if (love >= 67 && !done) finish();
   }
 
   function finish() {
-    if (done) return;
     done = true;
     playing = false;
-    play.hidden = true;
-    win.hidden = false;
-    winText.textContent = "Butterscotch счастлив. Ты хороший хозяин для этого пса.";
-    winCode.textContent = "DOG · ❤ " + love;
+    winText.textContent = atHome
+      ? "Butterscotch дома. Молли права — он настоящий Buttersquish."
+      : "Ты не взял домой, но не бросил. Buttersquish знает добро.";
+    winCode.textContent = "код · SQUISH-" + (atHome ? "HOME" : "STREET");
+    showOnly(win);
   }
 
   function tick(dt) {
-    dog.bob += dt * 3;
+    pet.bob += dt * 2.2;
+    if (squish > 0) {
+      // slow-rise like Butter Squishy
+      squish = Math.max(0, squish - dt * 0.35);
+    }
     wag = Math.max(0, wag - dt);
-    if (dog.anim > 0) dog.anim -= dt;
-    else dog.effect = null;
+    if (pet.anim > 0) pet.anim -= dt;
+    else pet.effect = null;
 
-    dog.hunger = clamp(dog.hunger - dt * 1.5);
-    dog.water = clamp(dog.water - dt * 1.3);
-    dog.clean = clamp(dog.clean - dt * 1.0);
-    dog.happy = clamp(dog.happy - dt * 1.15);
-    dog.coat = clamp(dog.coat - dt * 0.85);
-    dog.energy = clamp(dog.energy - dt * 0.95);
+    const cold = atHome ? 1 : 1.35;
+    pet.hunger = clamp(pet.hunger - dt * 1.4);
+    pet.water = clamp(pet.water - dt * 1.25);
+    pet.soft = clamp(pet.soft - dt * 0.9);
+    pet.happy = clamp(pet.happy - dt * 1.1 * cold);
+    pet.warm = clamp(pet.warm - dt * 0.95 * cold);
+    pet.energy = clamp(pet.energy - dt * 0.85);
 
     for (const p of particles) {
       p.life -= dt;
@@ -219,231 +266,210 @@
     if (((t * 2) | 0) !== (((t - dt) * 2) | 0)) renderStats();
   }
 
-  function fur(c) {
-    // butterscotch / golden coat shades
-    return c || "#d4a060";
+  /** Draw Butter Squishy–style dog: pale butter stick body + dog face/ears/legs */
+  function drawButtersquish(g, cx, cy, scale, opts) {
+    opts = opts || {};
+    const s = scale || 1;
+    const sq = opts.squish || 0;
+    const wagAng = opts.wagAng || 0;
+    const bob = opts.bob || 0;
+    const happy = opts.happy !== false;
+
+    g.save();
+    g.translate(cx, cy + bob);
+    g.scale(s, s);
+
+    // squash vertically when squished (slow-rise recover)
+    const sy = 1 - sq * 0.38;
+    const sx = 1 + sq * 0.28;
+    g.scale(sx, sy);
+
+    // soft shadow
+    g.fillStyle = "rgba(0,0,0,0.12)";
+    g.beginPath();
+    g.ellipse(0, 78, 70, 14, 0, 0, Math.PI * 2);
+    g.fill();
+
+    // stubby dog legs (under butter body)
+    g.fillStyle = COL.deep;
+    const legY = 52;
+    [[-38, 0], [-12, 0], [14, 0], [38, 0]].forEach(([lx], i) => {
+      g.beginPath();
+      g.roundRect(lx - 9, legY, 18, 28, 6);
+      g.fill();
+      g.fillStyle = COL.shade;
+      g.beginPath();
+      g.ellipse(lx, legY + 28, 11, 5, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = COL.deep;
+    });
+
+    // main butter stick body — rounded rectangle like the toy
+    const bw = 118;
+    const bh = 78;
+    const grad = g.createLinearGradient(-bw / 2, -bh / 2, bw / 2, bh / 2);
+    grad.addColorStop(0, COL.light);
+    grad.addColorStop(0.45, COL.mid);
+    grad.addColorStop(1, COL.deep);
+    g.fillStyle = grad;
+    g.beginPath();
+    g.roundRect(-bw / 2, -bh / 2 + 8, bw, bh, 14);
+    g.fill();
+
+    // soft foam highlight (matte squishy look)
+    g.fillStyle = "rgba(255,255,255,0.35)";
+    g.beginPath();
+    g.roundRect(-bw / 2 + 10, -bh / 2 + 16, bw * 0.35, bh * 0.45, 10);
+    g.fill();
+
+    // "BUTTER" label band — like Butter Squishy packaging
+    g.fillStyle = "rgba(255,254,245,0.92)";
+    g.fillRect(-bw / 2 + 8, 2, bw - 16, 28);
+    g.strokeStyle = COL.blue;
+    g.lineWidth = 2;
+    g.strokeRect(-bw / 2 + 8, 2, bw - 16, 28);
+    g.fillStyle = COL.blue;
+    g.font = "800 16px Fredoka, Nunito, sans-serif";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText("BUTTER", 0, 16);
+    g.font = "700 8px Nunito, sans-serif";
+    g.fillText("4 oz · salted", 0, 26);
+
+    // dog ears on top of butter stick
+    g.fillStyle = COL.deep;
+    g.beginPath();
+    g.ellipse(-42, -bh / 2 + 4, 16, 28, 0.25, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.ellipse(42, -bh / 2 + 4, 16, 28, -0.25, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = COL.light;
+    g.beginPath();
+    g.ellipse(-42, -bh / 2 + 6, 8, 16, 0.25, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.ellipse(42, -bh / 2 + 6, 8, 16, -0.25, 0, Math.PI * 2);
+    g.fill();
+
+    // face on upper butter face
+    g.fillStyle = COL.cream;
+    g.beginPath();
+    g.ellipse(0, -18, 28, 22, 0, 0, Math.PI * 2);
+    g.fill();
+
+    // eyes
+    g.fillStyle = "#2a2010";
+    g.beginPath();
+    g.arc(-10, -22, 4.5, 0, Math.PI * 2);
+    g.arc(10, -22, 4.5, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#fff";
+    g.beginPath();
+    g.arc(-9, -23, 1.5, 0, Math.PI * 2);
+    g.arc(11, -23, 1.5, 0, Math.PI * 2);
+    g.fill();
+
+    // nose + smile
+    g.fillStyle = "#3a2818";
+    g.beginPath();
+    g.ellipse(0, -12, 5, 4, 0, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = "#5a4030";
+    g.lineWidth = 2;
+    g.beginPath();
+    g.arc(0, -6, 8, 0.15, Math.PI - 0.15);
+    g.stroke();
+
+    if (happy) {
+      g.fillStyle = "#e07080";
+      g.beginPath();
+      g.ellipse(0, 2, 5, 6, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    // fluffy butter tail
+    g.save();
+    g.translate(bw / 2 - 4, 10);
+    g.rotate(wagAng);
+    g.fillStyle = COL.mid;
+    g.beginPath();
+    g.ellipse(22, -6, 20, 11, -0.5, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = COL.light;
+    g.beginPath();
+    g.ellipse(30, -10, 10, 6, -0.5, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+
+    if (opts.hearts) {
+      g.font = "18px serif";
+      g.fillStyle = "#e07080";
+      g.fillText("♥", 40, -50);
+    }
+
+    g.restore();
   }
 
   function drawRoom() {
-    const g = ctx.createLinearGradient(0, 0, 0, VH);
-    g.addColorStop(0, "#b8d0e8");
-    g.addColorStop(0.55, "#d8e4f0");
-    g.addColorStop(1, "#c8b898");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, VW, VH);
+    if (atHome) {
+      const g = ctx.createLinearGradient(0, 0, 0, VH);
+      g.addColorStop(0, "#c8dcf0");
+      g.addColorStop(0.55, "#e8eef4");
+      g.addColorStop(1, "#d8c8a8");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "#c8a878";
+      ctx.fillRect(0, VH * 0.72, VW, VH * 0.28);
+      // window
+      ctx.fillStyle = "#a8d8f8";
+      ctx.fillRect(50, 50, 170, 120);
+      ctx.strokeStyle = "#8a7048";
+      ctx.lineWidth = 8;
+      ctx.strokeRect(50, 50, 170, 120);
+    } else {
+      const g = ctx.createLinearGradient(0, 0, 0, VH);
+      g.addColorStop(0, "#6a8098");
+      g.addColorStop(0.5, "#90a0b0");
+      g.addColorStop(1, "#687068");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "#505858";
+      ctx.fillRect(0, VH * 0.7, VW, VH * 0.3);
+      // rain
+      ctx.strokeStyle = "rgba(200,220,240,0.35)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 40; i++) {
+        const rx = ((t * 80 + i * 37) % VW);
+        const ry = ((t * 140 + i * 53) % (VH * 0.7));
+        ctx.beginPath();
+        ctx.moveTo(rx, ry);
+        ctx.lineTo(rx - 2, ry + 12);
+        ctx.stroke();
+      }
+      // cardboard box
+      ctx.fillStyle = "#c8a878";
+      ctx.fillRect(pet.x + 70, pet.y + 20, 70, 40);
+      ctx.fillStyle = "#a88858";
+      ctx.fillRect(pet.x + 70, pet.y + 10, 70, 14);
+    }
 
-    // floor
-    ctx.fillStyle = "#c8a878";
-    ctx.fillRect(0, VH * 0.72, VW, VH * 0.28);
-    ctx.fillStyle = "#b89868";
-    for (let x = 0; x < VW; x += 48) ctx.fillRect(x, VH * 0.72, 2, VH * 0.28);
-
-    // window
-    ctx.fillStyle = "#a8d8f8";
-    ctx.fillRect(50, 50, 170, 120);
-    ctx.strokeStyle = "#8a7048";
-    ctx.lineWidth = 8;
-    ctx.strokeRect(50, 50, 170, 120);
-    ctx.beginPath();
-    ctx.moveTo(135, 50);
-    ctx.lineTo(135, 170);
-    ctx.moveTo(50, 110);
-    ctx.lineTo(220, 110);
-    ctx.stroke();
-
-    // sun
-    ctx.fillStyle = "#ffe080";
-    ctx.beginPath();
-    ctx.arc(160, 90, 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    // dog bed
-    ctx.fillStyle = "#e8b878";
-    ctx.beginPath();
-    ctx.ellipse(dog.x + 90, dog.y + 28, 55, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#d4a060";
-    ctx.beginPath();
-    ctx.ellipse(dog.x + 90, dog.y + 22, 40, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // bowls
-    ctx.fillStyle = "#9098a0";
-    ctx.beginPath();
-    ctx.ellipse(dog.x - 85, dog.y + 32, 20, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#70a0d0";
-    ctx.beginPath();
-    ctx.ellipse(dog.x - 85, dog.y + 30, 14, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#a0a8b0";
-    ctx.beginPath();
-    ctx.ellipse(dog.x - 125, dog.y + 32, 20, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // ball
-    ctx.fillStyle = "#40c060";
-    ctx.beginPath();
-    ctx.arc(VW - 120, VH * 0.78, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.fillStyle = "#605040";
+    ctx.fillStyle = COL.blue;
     ctx.font = "700 14px Fredoka, Nunito, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("Butterscotch · золотистый пёс", 24, 36);
-  }
-
-  function drawDog() {
-    const bob = dog.sit ? 8 : Math.sin(dog.bob) * 3;
-    const wagAng = Math.sin(t * (8 + wag * 10)) * (0.35 + wag * 0.5);
-    ctx.save();
-    ctx.translate(dog.x, dog.y + bob);
-
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,0.14)";
-    ctx.beginPath();
-    ctx.ellipse(0, 42, 48, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // hind / body — fluffy golden retriever shape
-    const coatShine = 0.15 + (dog.coat / 100) * 0.2;
-    const body = ctx.createRadialGradient(-10, -5, 8, 0, 5, 55);
-    body.addColorStop(0, "#f0d080");
-    body.addColorStop(0.45, "#d4a060");
-    body.addColorStop(1, "#b87838");
-    ctx.fillStyle = body;
-    ctx.beginPath();
-    ctx.ellipse(5, 5, 52, 34, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // chest fluff lighter
-    ctx.fillStyle = `rgba(245, 230, 190, ${0.55 + coatShine})`;
-    ctx.beginPath();
-    ctx.ellipse(-8, 12, 22, 18, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // feathering on belly
-    ctx.fillStyle = "#e8c070";
-    ctx.beginPath();
-    ctx.ellipse(10, 28, 30, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // head
-    const head = ctx.createRadialGradient(-35, -18, 5, -38, -10, 36);
-    head.addColorStop(0, "#f0d090");
-    head.addColorStop(0.6, "#d4a060");
-    head.addColorStop(1, "#c08040");
-    ctx.fillStyle = head;
-    ctx.beginPath();
-    ctx.ellipse(-38, -8, 32, 28, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // muzzle
-    ctx.fillStyle = "#f5e6c8";
-    ctx.beginPath();
-    ctx.ellipse(-58, 0, 16, 13, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#3a2818";
-    ctx.beginPath();
-    ctx.ellipse(-68, -1, 6, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // floppy ears (retriever)
-    ctx.fillStyle = "#c88840";
-    ctx.beginPath();
-    ctx.ellipse(-48, -8, 12, 26, 0.35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(-22, -6, 12, 26, -0.25, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e8b870";
-    ctx.beginPath();
-    ctx.ellipse(-48, -6, 7, 16, 0.35, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(-22, -4, 7, 16, -0.25, 0, Math.PI * 2);
-    ctx.fill();
-
-    // eyes — kind
-    ctx.fillStyle = "#2a2018";
-    ctx.beginPath();
-    ctx.arc(-46, -12, 4, 0, Math.PI * 2);
-    ctx.arc(-32, -12, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(-45, -13, 1.4, 0, Math.PI * 2);
-    ctx.arc(-31, -13, 1.4, 0, Math.PI * 2);
-    ctx.fill();
-
-    // smile
-    ctx.strokeStyle = "#5a4030";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(-58, 4, 7, 0.15, Math.PI - 0.15);
-    ctx.stroke();
-
-    // tongue if happy
-    if (dog.happy > 55) {
-      ctx.fillStyle = "#e07080";
-      ctx.beginPath();
-      ctx.ellipse(-58, 12, 5, 7, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    // front legs
-    ctx.fillStyle = "#d4a060";
-    if (dog.sit) {
-      ctx.fillRect(-30, 20, 16, 28);
-      ctx.fillRect(-8, 20, 16, 28);
-    } else {
-      ctx.fillRect(-34, 28, 15, 30);
-      ctx.fillRect(-12, 28, 15, 30);
-      ctx.fillRect(12, 28, 15, 30);
-      ctx.fillRect(32, 28, 14, 30);
-    }
-    // paws
-    ctx.fillStyle = "#c09050";
-    ctx.beginPath();
-    ctx.ellipse(-26, 58, 10, 5, 0, 0, Math.PI * 2);
-    ctx.ellipse(-4, 58, 10, 5, 0, 0, Math.PI * 2);
-    if (!dog.sit) {
-      ctx.ellipse(20, 58, 10, 5, 0, 0, Math.PI * 2);
-      ctx.ellipse(40, 58, 9, 5, 0, 0, Math.PI * 2);
-    }
-    ctx.fill();
-
-    // fluffy tail — wagging
-    ctx.save();
-    ctx.translate(48, -2);
-    ctx.rotate(wagAng);
-    ctx.fillStyle = "#d4a060";
-    ctx.beginPath();
-    ctx.ellipse(18, -8, 22, 10, -0.6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e8c080";
-    ctx.beginPath();
-    ctx.ellipse(28, -12, 12, 6, -0.6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // name
-    ctx.fillStyle = "#705030";
-    ctx.font = "800 13px Fredoka, Nunito, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Butterscotch", 0, -48);
-
-    if (dog.effect === "pet" || dog.effect === "ball") {
-      ctx.font = "18px serif";
-      ctx.fillText("♥", 30, -30);
-    }
-
-    ctx.restore();
+    ctx.fillText("Buttersquish · не ириска · Butter Squishy пёс", 24, 36);
   }
 
   function draw() {
     drawRoom();
-    drawDog();
+    const wagAng = Math.sin(t * (8 + wag * 10)) * (0.3 + wag * 0.45);
+    drawButtersquish(ctx, pet.x, pet.y, 1.15, {
+      squish,
+      wagAng,
+      bob: Math.sin(pet.bob) * 3,
+      happy: pet.happy > 40,
+      hearts: pet.effect === "pet" || pet.effect === "squish",
+    });
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, p.life);
       ctx.fillStyle = p.color;
@@ -452,6 +478,22 @@
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+  }
+
+  function drawChoicePreview() {
+    ctxC.clearRect(0, 0, 420, 220);
+    const bg = ctxC.createLinearGradient(0, 0, 0, 220);
+    bg.addColorStop(0, "#b8d0e8");
+    bg.addColorStop(1, "#c8b898");
+    ctxC.fillStyle = bg;
+    ctxC.fillRect(0, 0, 420, 220);
+    ctxC.fillStyle = "#b89868";
+    ctxC.fillRect(0, 160, 420, 60);
+    drawButtersquish(ctxC, 210, 100, 0.85, { squish: 0.15, wagAng: 0.2, happy: true });
+    ctxC.fillStyle = COL.blue;
+    ctxC.font = "700 13px Nunito, sans-serif";
+    ctxC.textAlign = "center";
+    ctxC.fillText("Молли нашла Buttersquish…", 210, 200);
   }
 
   function frame(now) {
@@ -469,10 +511,26 @@
     requestAnimationFrame(frame);
   }
 
-  document.getElementById("btnStart").onclick = start;
+  // roundRect polyfill
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      this.moveTo(x + rr, y);
+      this.arcTo(x + w, y, x + w, y + h, rr);
+      this.arcTo(x + w, y + h, x, y + h, rr);
+      this.arcTo(x, y + h, x, y, rr);
+      this.arcTo(x, y, x + w, y, rr);
+      this.closePath();
+      return this;
+    };
+  }
+
+  document.getElementById("btnStart").onclick = startChoice;
+  document.getElementById("btnHome").onclick = () => beginPlay(true);
+  document.getElementById("btnStreet").onclick = () => beginPlay(false);
   document.getElementById("btnMenu").onclick = showMenu;
   document.getElementById("btnWinMenu").onclick = showMenu;
-  document.getElementById("btnAgain").onclick = start;
+  document.getElementById("btnAgain").onclick = startChoice;
   document.querySelectorAll(".act").forEach((btn) => {
     btn.addEventListener("click", () => doAct(btn.dataset.act));
   });
