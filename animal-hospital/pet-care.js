@@ -284,12 +284,58 @@
       beep(200, 0.1);
       love += 1;
       say(line(p.id, "sleep"), 2.5);
+    } else if (act === "min") {
+      setPetLevel(p, "min");
+      say(p.id === "cat" ? "Кот на минимуме… всё плохо." : "Корги на минимуме… гав…", 2.5);
+      beep(120, 0.12);
+    } else if (act === "max") {
+      setPetLevel(p, "max");
+      say(p.id === "cat" ? "Кот на максимуме! К небу!" : "Корги на максимуме! Taxi → SKY!", 2.8);
+      beep(660, 0.1);
+    } else if (act === "minAll") {
+      for (const pet of pets) setPetLevel(pet, "min");
+      say("Всем минимум. Комната грустнеет…", 2.8);
+      beep(100, 0.14);
+    } else if (act === "maxAll") {
+      for (const pet of pets) setPetLevel(pet, "max");
+      say("Всем максимум! Небо открывается!", 3);
+      beep(784, 0.12);
     }
 
     loveLabel.textContent = "❤ " + love;
     renderPanel();
     checkSkyState();
     if (love >= 50 && day >= 3 && !pets.every(isFull)) finish(false);
+  }
+
+  function setPetLevel(p, level) {
+    if (level === "max") {
+      p.hunger = 100;
+      p.clean = 100;
+      p.happy = 100;
+      p.energy = 100;
+      p.power = 100;
+      p.anim = 1;
+      p.effect = "play";
+      p.glow = 1;
+      burst(p.x, p.y - 40, "#ffe080", 18);
+      burst(p.x, p.y - 20, "#a0d0ff", 12);
+      love += 5;
+    } else {
+      p.hunger = 5;
+      p.clean = 5;
+      p.happy = 5;
+      p.energy = 5;
+      p.power = 5;
+      p.sky = false;
+      p.float = 0;
+      p.glow = 0;
+      p.anim = 0.8;
+      p.effect = null;
+      p.y = p.baseY;
+      burst(p.x, p.y - 20, "#606080", 10);
+      skyTriggered = false;
+    }
   }
 
   function checkSkyState() {

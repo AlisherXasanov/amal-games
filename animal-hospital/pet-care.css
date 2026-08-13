@@ -245,6 +245,13 @@ canvas {
 }
 .act:active { transform: translateY(1px); }
 .act:hover { border-color: rgba(255, 154, 74, 0.45); }
+.act.extrem {
+  border-style: dashed;
+  font-size: 13px;
+  background: rgba(255, 248, 240, 0.95);
+}
+.act.extrem.min { border-color: rgba(80, 80, 120, 0.25); color: #505080; }
+.act.extrem.max { border-color: rgba(255, 154, 74, 0.45); color: #c06020; background: #fff4e8; }
 
 .overlay {
   position: fixed;
