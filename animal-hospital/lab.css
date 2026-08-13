@@ -1,0 +1,216 @@
+:root {
+  --teal: #0d6e5f;
+  --mint: #7ed9b8;
+  --amber: #f0b429;
+  --coral: #e25a3c;
+  --ink: #102018;
+  --muted: #5a6a62;
+  --paper: #f3efe6;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: Nunito, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 70% 45% at 20% 0%, rgba(126, 217, 184, 0.35), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 10%, rgba(240, 180, 41, 0.22), transparent 50%),
+    linear-gradient(165deg, #e8f4ef, #d5e4dc);
+  touch-action: none;
+  user-select: none;
+}
+
+.back {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 40;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #345048;
+  font: 700 13px Nunito, sans-serif;
+  text-decoration: none;
+}
+
+.screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  align-content: center;
+  gap: 0.65rem;
+}
+.screen[hidden] { display: none !important; }
+
+.eyebrow {
+  font: 800 0.7rem Space Grotesk, Nunito, sans-serif;
+  letter-spacing: 0.18em;
+  color: var(--teal);
+  text-align: center;
+}
+
+.brand {
+  font-family: Fredoka, Space Grotesk, sans-serif;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  font-weight: 700;
+  text-align: center;
+  color: var(--teal);
+}
+
+.sub {
+  text-align: center;
+  color: var(--muted);
+  max-width: 30rem;
+  font: 600 14px/1.45 Nunito, sans-serif;
+}
+
+.linkish {
+  color: var(--teal);
+  font: 700 13px Nunito, sans-serif;
+  text-decoration: none;
+}
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font: 700 15px Nunito, sans-serif;
+  color: #f3efe6;
+  background: linear-gradient(135deg, #0d6e5f, #0a5248);
+  margin: 4px;
+}
+.btn.ghost {
+  color: #345048;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+#play.screen {
+  padding: 0.5rem;
+  gap: 8px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.topbar {
+  width: min(960px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  font: 700 14px Nunito, sans-serif;
+}
+#score { margin-left: auto; color: var(--teal); }
+
+canvas#c {
+  display: block;
+  width: min(100vw - 1rem, 960px);
+  height: auto;
+  aspect-ratio: 960 / 500;
+  border-radius: 16px;
+  box-shadow: 0 14px 36px rgba(16, 40, 32, 0.16);
+  background: #1a2e28;
+}
+
+.bubble {
+  position: fixed;
+  left: 50%;
+  bottom: 120px;
+  transform: translateX(-50%);
+  z-index: 25;
+  max-width: min(480px, 90vw);
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 2px solid rgba(13, 110, 95, 0.35);
+  text-align: center;
+  font: 700 14px/1.4 Nunito, sans-serif;
+  pointer-events: none;
+}
+
+.panel {
+  width: min(960px, 100%);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 1.2fr;
+  gap: 10px;
+  padding-bottom: 2.8rem;
+}
+@media (max-width: 800px) {
+  .panel { grid-template-columns: 1fr; }
+}
+
+.col {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(13, 110, 95, 0.12);
+}
+.col.wide { min-height: 120px; }
+.col h3 {
+  font: 800 12px Space Grotesk, Nunito, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  appearance: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font: 800 12px Nunito, sans-serif;
+  background: #e8f4ef;
+  color: #204038;
+}
+.chip.on {
+  border-color: var(--amber);
+  background: #fff6d8;
+}
+.chip.slot2 {
+  border-color: var(--coral);
+  background: #ffe8e0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.act {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font: 800 12px Nunito, sans-serif;
+  color: #204038;
+  background: #e8f4ef;
+}
+.act:hover { background: #d4ebe2; }
+
+.log {
+  list-style: none;
+  max-height: 140px;
+  overflow-y: auto;
+  font: 600 12px/1.45 Nunito, sans-serif;
+  color: #345048;
+}
+.log li {
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(13, 110, 95, 0.15);
+}
+.log li strong { color: var(--teal); }
