@@ -588,6 +588,11 @@
       showEvent("✦ Попугай · первый секретный код", 2.8);
       return true;
     }
+    const iskraCodes = ["искра", "iskra", "spark", "sparks"];
+    if (iskraCodes.includes(code)) {
+      unlockIskraWord();
+      return true;
+    }
     const coolCodes = ["cool", "кул", "куул", "coolcool", "кулл", "ice", "лед", "лёд"];
     if (coolCodes.includes(code) || code === "88") {
       unlockCoolSurprise(true);
@@ -605,6 +610,20 @@
     refreshLobbyUI();
     persistLobby();
     toast("Смена: " + (pick ? pick.name : code));
+    return true;
+  }
+
+  function unlockIskraWord() {
+    const first = !meta.secretIskra;
+    meta.secretIskra = true;
+    meta.secretShifts67 = true;
+    storeSet(SAVE, meta);
+    if (first) {
+      toast("✦ искра · слово принято · сюрприз позже");
+      showEvent("✦ Искра · секретное слово записано", 2.6);
+    } else {
+      toast("✦ искра · уже знаю");
+    }
     return true;
   }
 
@@ -974,10 +993,13 @@
     if (g && /^Digit[1-9]$/.test(e.code)) {
       selectInvSlot(g.players[0], Number(e.code.slice(5)) - 1);
     }
-    // секретный набор букв cool / кул
+    // секретный набор букв cool / кул / искра
     if (canUseSecretShifts() && e.key && e.key.length === 1 && /[a-zа-яё]/i.test(e.key)) {
-      coolTypeBuf = (coolTypeBuf + e.key.toLowerCase().replace("ё", "е")).slice(-12);
-      if (/cool|куул|кул$/.test(coolTypeBuf)) {
+      coolTypeBuf = (coolTypeBuf + e.key.toLowerCase().replace("ё", "е")).slice(-16);
+      if (/искра|iskra|spark/.test(coolTypeBuf)) {
+        coolTypeBuf = "";
+        unlockIskraWord();
+      } else if (/cool|куул|кул$/.test(coolTypeBuf)) {
         coolTypeBuf = "";
         unlockCoolSurprise(true);
       }
