@@ -2,24 +2,15 @@
   "use strict";
 
   const VW = 960;
-  const VH = 480;
+  const VH = 420;
   const SCALE = 1.55;
   const HIT_R = 55;
   const SELL_X = 820;
+  const PRICE_COMMON = 25;
+  const PRICE_RARE = 60;
+  const PRICE_MAKE = 20;
 
-  const canvas = document.getElementById("c");
-  const ctx = canvas.getContext("2d");
-  const menu = document.getElementById("menu");
-  const play = document.getElementById("play");
-  const outro = document.getElementById("outro");
-  const panel = document.getElementById("panel");
-  const bubble = document.getElementById("bubble");
-  const moneyEl = document.getElementById("money");
-  const scoreEl = document.getElementById("score");
-  const outroText = document.getElementById("outroText");
-  const outroCode = document.getElementById("outroCode");
-  const outroHint = document.getElementById("outroHint");
-
+  const RARE_NAMES = ["Золотой", "Царский", "Алмазный", "Огненный", "Лунный"];
   const NAMES = ["Петя", "Варя", "Боря", "Лёля", "Тёма", "Миша", "Зоя", "Кира", "Стёпа", "Нюша"];
 
   let money = 100;
@@ -101,23 +92,28 @@
     return { x: 200 + Math.random() * 400, y: 180 + Math.random() * 120 };
   }
 
-  function makeDumpling(kind) {
+  function makeDumpling(kind, rare) {
     const spot = freeSpot();
+    const isRare = !!rare;
     return {
       id: Date.now() + Math.random(),
-      name: NAMES[(Math.random() * NAMES.length) | 0],
-      kind,
-      hunger: 55 + Math.random() * 20,
+      name: isRare
+        ? RARE_NAMES[(Math.random() * RARE_NAMES.length) | 0]
+        : NAMES[(Math.random() * NAMES.length) | 0],
+      kind, // bought | homemade
+      rare: isRare,
+      hunger: 55 + Math.random() * 20 + (isRare ? 10 : 0),
       clean: 60 + Math.random() * 25,
-      happy: 50 + Math.random() * 30,
-      cooked: kind === "bought" ? 40 : 10,
+      happy: 50 + Math.random() * 30 + (isRare ? 15 : 0),
+      cooked: kind === "bought" ? (isRare ? 55 : 40) : 10,
       bob: Math.random() * 6,
       anim: 0,
       effect: null,
       x: spot.x,
       y: spot.y,
-      scale: SCALE,
+      scale: SCALE * (isRare ? 1.12 : 1),
       carried: false,
+      baseValue: isRare ? 55 : 18,
     };
   }
 
@@ -131,10 +127,10 @@
   }
 
   function start() {
-    money = 100;
+    money = 120;
     score = 0;
     cared = made = eaten = bought = sold = 0;
-    dumplings = [makeDumpling("homemade"), makeDumpling("bought")];
+    dumplings = [makeDumpling("homemade", false), makeDumpling("bought", true)];
     active = 0;
     particles = [];
     done = false;
@@ -144,7 +140,7 @@
     outro.hidden = true;
     syncHud();
     renderPanel();
-    say("Тяни пельмени! Неси в зону ПРОДАЖА справа. Шоколад ∞.", 3.5);
+    say("Кнопки сверху! Обычный / Редкий · Варить · Продать. Тащи в зону 💰.", 3.5);
     draw();
   }
 
@@ -159,7 +155,17 @@
 
   function sellPrice(d) {
     const avg = (d.hunger + d.clean + d.happy + d.cooked) / 4;
-    return 15 + Math.round(avg * 0.45) + (d.kind === "homemade" ? 5 : 0);
+    const rareBonus = d.rare ? 40 : 0;
+    const homeBonus = d.kind === "homemade" ? 8 : 0;
+    return d.baseValue + Math.round(avg * (d.rare ? 0.7 : 0.4)) + rareBonus + homeBonus;
+  }
+
+  function moodLabel(d) {
+    const avg = (d.hunger + d.clean + d.happy) / 3;
+    if (avg >= 80) return "😊 отлично";
+    if (avg >= 55) return "🙂 норм";
+    if (avg >= 30) return "😐 так себе";
+    return "😢 плохо";
   }
 
   function removeAt(i) {
@@ -172,11 +178,14 @@
     if (!d) return;
     const price = sellPrice(d);
     money += price;
-    score += 4;
+    score += d.rare ? 8 : 4;
     sold++;
-    burst(d.x, d.y, "#ffd040", 18);
-    beep(500, 0.08);
-    say("Продали «" + d.name + "» за " + price + "💰!", 2.4);
+    burst(d.x, d.y, d.rare ? "#ffd040" : "#ffb070", 18);
+    beep(d.rare ? 620 : 500, 0.08);
+    say(
+      (d.rare ? "✨ Редкий " : "") + "«" + d.name + "» продан за " + price + "💰!",
+      2.5
+    );
     removeAt(i);
     syncHud();
     renderPanel();
@@ -187,13 +196,14 @@
     panel.innerHTML = dumplings
       .map((d, i) => {
         const avg = ((d.hunger + d.clean + d.happy + d.cooked) / 4) | 0;
-        return `<button type="button" class="card ${i === active ? "active" : ""}" data-i="${i}">
+        return `<button type="button" class="card ${i === active ? "active" : ""} ${d.rare ? "rare" : ""}" data-i="${i}">
+          <span class="tag ${d.rare ? "rare" : "common"}">${d.rare ? "✨ редкий" : "обычный"}</span>
           <strong>${d.kind === "bought" ? "🛒" : "✋"} ${d.name}</strong>
+          <div>${moodLabel(d)}</div>
           сытость <div class="bar"><i style="width:${d.hunger}%"></i></div>
-          чистота <div class="bar"><i style="width:${d.clean}%;background:linear-gradient(90deg,#7ec8ff,#4080ff)"></i></div>
           радость <div class="bar"><i style="width:${d.happy}%;background:linear-gradient(90deg,#ff90b8,#ff6080)"></i></div>
           готовность <div class="bar"><i style="width:${d.cooked}%;background:linear-gradient(90deg,#80e060,#40a040)"></i></div>
-          <span>${avg}% · продать ${sellPrice(d)}💰</span>
+          <span>продать ${sellPrice(d)}💰</span>
         </button>`;
       })
       .join("");
@@ -201,7 +211,11 @@
       el.onclick = () => {
         active = +el.dataset.i;
         renderPanel();
-        say("Выбран: " + dumplings[active].name + " · тяни на кухне", 1.6);
+        const d = dumplings[active];
+        say(
+          (d.rare ? "✨ Редкий · " : "") + d.name + " · настроение: " + moodLabel(d) + " · " + sellPrice(d) + "💰",
+          2
+        );
       };
     });
   }
@@ -213,41 +227,52 @@
   function doAct(act) {
     if (done) return;
 
-    if (act === "buy") {
-      if (money < 30) {
-        say("Мало денег. Продай кого-нибудь.", 2);
+    if (act === "buy" || act === "buyRare") {
+      const rare = act === "buyRare";
+      const cost = rare ? PRICE_RARE : PRICE_COMMON;
+      if (money < cost) {
+        say("Мало денег. Нужно " + cost + "💰.", 2);
         return;
       }
       if (dumplings.length >= 8) {
         say("Кухня полная! Унеси и продай.", 2);
         return;
       }
-      money -= 30;
+      money -= cost;
       bought++;
-      dumplings.push(makeDumpling("bought"));
+      dumplings.push(makeDumpling("bought", rare));
       active = dumplings.length - 1;
-      beep(360, 0.08);
-      say("Купили «" + cur().name + "»! Тащи куда хочешь.", 2.2);
+      beep(rare ? 520 : 360, 0.08);
+      say(
+        (rare ? "✨ Купили РЕДКОГО «" : "Купили обычного «") + cur().name + "» за " + cost + "!",
+        2.3
+      );
       syncHud();
       renderPanel();
       return;
     }
 
     if (act === "make") {
-      if (money < 20) {
-        say("Нужно 20 монет.", 2);
+      if (money < PRICE_MAKE) {
+        say("Нужно " + PRICE_MAKE + " монет.", 2);
         return;
       }
       if (dumplings.length >= 8) {
         say("Слишком много! Продай или съешь.", 2);
         return;
       }
-      money -= 20;
+      money -= PRICE_MAKE;
       made++;
-      dumplings.push(makeDumpling("homemade"));
+      const rare = Math.random() < 0.18;
+      dumplings.push(makeDumpling("homemade", rare));
       active = dumplings.length - 1;
       beep(420, 0.08);
-      say("Слепили «" + cur().name + "»!", 2.2);
+      say(
+        rare
+          ? "✨ Слепили РЕДКОГО «" + cur().name + "»!"
+          : "Слепили обычного «" + cur().name + "»!",
+        2.3
+      );
       syncHud();
       renderPanel();
       return;
@@ -436,10 +461,24 @@
     ctx.fill();
 
     const cookedTint = d.cooked / 100;
-    ctx.fillStyle = `rgb(${240 - cookedTint * 30}, ${216 - cookedTint * 40}, ${176 - cookedTint * 50})`;
+    if (d.rare) {
+      ctx.fillStyle = `rgb(${255 - cookedTint * 20}, ${220 - cookedTint * 30}, ${120 - cookedTint * 20})`;
+    } else {
+      ctx.fillStyle = `rgb(${240 - cookedTint * 30}, ${216 - cookedTint * 40}, ${176 - cookedTint * 50})`;
+    }
     ctx.beginPath();
     ctx.ellipse(0, 0, 42, 34, 0, 0, Math.PI * 2);
     ctx.fill();
+
+    if (d.rare) {
+      ctx.strokeStyle = "rgba(255, 200, 40, 0.85)";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.fillStyle = "#fff8c0";
+      ctx.font = "800 10px Nunito, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("RARE", 0, -38);
+    }
 
     ctx.strokeStyle = "rgba(160, 120, 80, 0.45)";
     ctx.lineWidth = 2.5;
@@ -589,6 +628,13 @@
   document.getElementById("btnStart").onclick = start;
   document.getElementById("btnMenu").onclick = showMenu;
   document.getElementById("btnOutroMenu").onclick = showMenu;
+  document.getElementById("moodToggle").onclick = () => {
+    const wrap = document.querySelector(".mood-wrap");
+    wrap.classList.toggle("collapsed");
+    document.getElementById("moodToggle").textContent = wrap.classList.contains("collapsed")
+      ? "Настроение ▸"
+      : "Настроение ▾";
+  };
   document.querySelectorAll(".act").forEach((btn) => {
     btn.addEventListener("click", () => doAct(btn.dataset.act));
   });
