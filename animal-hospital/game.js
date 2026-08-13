@@ -1149,6 +1149,30 @@
     };
   }
 
+  function grantInfiniteAmmo(player) {
+    if (!player) return;
+    player.infiniteAmmo = true;
+    if (!player.weapon) {
+      player.weapon = makeWeapon({ weapon: "gun" });
+    }
+    if (player.weapon) {
+      player.weapon.ammo = player.weapon.maxAmmo;
+      player.weapon.reloadCd = 0;
+    }
+  }
+
+  function spendAmmo(player) {
+    const w = player && player.weapon;
+    if (!w) return false;
+    if (player.infiniteAmmo) {
+      w.ammo = w.maxAmmo;
+      return true;
+    }
+    if (w.ammo <= 0) return false;
+    w.ammo -= 1;
+    return true;
+  }
+
   function makePlayer(cls, x, y, isAi, name, color) {
     return {
       x,
@@ -1238,6 +1262,13 @@
       toast("Нет оружия");
       return;
     }
+    if (player.infiniteAmmo) {
+      w.ammo = w.maxAmmo;
+      w.reloadCd = 0;
+      toast(`${w.icon} ∞ патроны`);
+      renderInv();
+      return;
+    }
     if (w.reloadCd > 0) {
       toast(`Перезарядка… ${w.reloadCd.toFixed(1)}с`);
       return;
@@ -1303,17 +1334,16 @@
 
     // огнетушитель — тушит огонь
     if (w.fire && g.firePatient && Math.hypot(g.firePatient.x - player.x, g.firePatient.y - player.y) < w.range) {
-      if (w.ammo <= 0) {
+      if (!spendAmmo(player)) {
         toast("Пусто — R перезарядка");
         return;
       }
-      w.ammo -= 1;
       w.cool = 0.25;
       g.firePatient = null;
       healSanity(6);
       toast("🧯 Пожар потушен!");
       hideEl(eventBanner);
-      if (w.ammo <= 0) w.reloadCd = w.reloadTime;
+      if (!player.infiniteAmmo && w.ammo <= 0) w.reloadCd = w.reloadTime;
       renderInv();
       return;
     }
@@ -1326,14 +1356,13 @@
       toast(w.melee ? "Подойди ближе к аномалии" : "Нет цели · аномалию у окна можно бить сразу (F)");
       return;
     }
-    if (w.ammo <= 0) {
+    if (!spendAmmo(player)) {
       toast("Нет патронов — нажми R");
       return;
     }
 
     const tx = m ? m.x : qAnom.x;
     const ty = m ? m.y : qAnom.y;
-    w.ammo -= 1;
     w.cool = w.type === "gun" ? 0.35 : 0.2;
     g.particles.push({
       x: player.x,
@@ -1346,7 +1375,7 @@
 
     if (qAnom) {
       eliminateQueueAnomaly(player, qAnom);
-      if (w.ammo <= 0 && w.type === "gun") toast("Магазин пуст — R перезарядка");
+      if (!player.infiniteAmmo && w.ammo <= 0 && w.type === "gun") toast("Магазин пуст — R перезарядка");
       renderInv();
       return;
     }
@@ -1360,7 +1389,7 @@
     } else {
       toast("Попадание!");
     }
-    if (w.ammo <= 0 && w.type === "gun") {
+    if (!player.infiniteAmmo && w.ammo <= 0 && w.type === "gun") {
       toast("Магазин пуст — R перезарядка");
     }
     renderInv();
@@ -1535,9 +1564,10 @@
       g.theme = "parrot";
       g.immortal = false;
       g.patientDeath = true;
+      for (const pl of g.players) grantInfiniteAmmo(pl);
       applyThemeClass("parrot");
-      showEvent("✦ Попугай · обычная смена · лечи вовремя", 3.0);
-      toast("Не те вещи / долго ждёт = смерть");
+      showEvent("✦ Попугай · ∞ патроны · лечи вовремя", 3.0);
+      toast("∞ патроны · не те вещи / долго ждёт = смерть");
     }
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
@@ -1630,8 +1660,9 @@
     if (p.weapon) {
       const w = p.weapon;
       const reload = w.reloadCd > 0 ? ` ⏳${w.reloadCd.toFixed(1)}` : "";
+      const ammoTxt = p.infiniteAmmo ? "∞" : `${w.ammo}/${w.maxAmmo}`;
       slots.push(
-        `<div class="inv-slot" style="border-color:#ffd36a">${w.icon}<br>${w.ammo}/${w.maxAmmo}${reload}</div>`
+        `<div class="inv-slot" style="border-color:#ffd36a">${w.icon}<br>${ammoTxt}${reload}</div>`
       );
     }
     if (p.infiniteItems) {
