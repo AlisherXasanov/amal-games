@@ -108,6 +108,7 @@
     xray: { id: "xray", name: "Рентген-плёнка", icon: "📷", machine: "m_xray" },
     splint: { id: "splint", name: "Шина", icon: "🦴", machine: "m_bandage" },
     coffee_cup: { id: "coffee_cup", name: "Стакан кофе", icon: "☕", machine: null },
+    juice_cup: { id: "juice_cup", name: "Сок", icon: "🧃", machine: null },
   };
 
   const CONDITIONS = [
@@ -185,11 +186,20 @@
     { id: "hereMe", name: "Auto", classId: "nurse", desc: "Тихий напарник · особая текстура", secret: true, tex: "here" },
   ];
 
-  /** Редкие гости — только ручной спавн хозяина (ник + персонаж) */
-  const RARE_GUESTS = [
-    { id: "auto", name: "Auto", color: "#7ec8ff", giftCoffee: true },
-    { id: "rainbow", name: "Rainbow", color: "#ff6ad5", giftCoffee: false },
-    { id: "lilamint", name: "Lilamint", color: "#9b59b6", giftCoffee: false },
+  /** Персонажи и перки — только ручной спавн хозяина по нику (24 ч) */
+  const SPAWN_STORE = "animal-hospital-spawn-players-v1";
+  const SPAWN_TTL = 86400000;
+  const SPAWN_CHARACTERS = [
+    { id: "auto", name: "Auto", tex: "here", color: "#7ec8ff" },
+    { id: "rainbow", name: "Rainbow", tex: "rainbow", color: "#ff6ad5" },
+    { id: "lilamint", name: "Lilamint", tex: "lilamint", color: "#9b59b6" },
+  ];
+  const SPAWN_PERKS = [
+    { id: "noAnomaly", label: "Без аномалий" },
+    { id: "endlessReason", label: "∞ рассудок" },
+    { id: "rainbow", label: "Rainbow · радужные вещи" },
+    { id: "secretRainbow", label: "Секрет Rainbow · + ∞ рассудок" },
+    { id: "dayDrinks", label: "Кофе/сок на день · без перезарядки" },
   ];
 
   const SHIFT_TEMPLATES = [
@@ -264,7 +274,7 @@
       name: "✦ Смена · Попугай",
       time: 200,
       anomaly: 0.3,
-      eventRate: 0.14,
+      eventRate: 0.08,
       tag: "Тропики · как обычная смена · смерть при ошибке",
       color: "#ff6a4a",
       special: "parrot33",
@@ -272,6 +282,7 @@
       parrotShift: true,
       patientDeath: true,
       theme: "parrot",
+      pace: 5,
     });
     list.push({
       id: 19,
@@ -994,6 +1005,12 @@
     if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
     const btnAll = document.getElementById("btnAllSecrets");
     if (btnAll) btnAll.hidden = !canUseSecretShifts();
+    const spawnPanel = document.getElementById("spawnPlayersPanel");
+    if (spawnPanel) {
+      if (canUseSecretShifts()) showEl(spawnPanel);
+      else hideEl(spawnPanel);
+    }
+    renderSpawnActiveList();
   }
 
   function persistLobby() {
@@ -1093,6 +1110,7 @@
 
   window.addEventListener("amal-power", () => applySiteOwnerBoost());
   window.addEventListener("amal-powers-applied", () => applySiteOwnerBoost());
+  applySpawnPerksOnLoad();
 
   refreshLobbyUI();
 
@@ -1100,27 +1118,199 @@
     return arr[(Math.random() * arr.length) | 0];
   }
 
-  function rareGuestDef(id) {
-    return RARE_GUESTS.find((r) => r.id === id) || null;
+  function getPlayerNick() {
+    try {
+      if (window.AmalHub && typeof AmalHub.getNick === "function") {
+        const n = AmalHub.getNick();
+        if (n) return String(n).trim();
+      }
+    } catch (_) {}
+    return "";
+  }
+
+  function loadSpawnRegistry() {
+    const list = storeGet(SPAWN_STORE, []);
+    const now = Date.now();
+    const fresh = (Array.isArray(list) ? list : []).filter((e) => e && e.expiresAt > now);
+    if (fresh.length !== list.length) storeSet(SPAWN_STORE, fresh);
+    return fresh;
+  }
+
+  function saveSpawnRegistry(list) {
+    storeSet(SPAWN_STORE, list);
+  }
+
+  function findSpawnForNick(nick) {
+    const n = String(nick || "")
+      .trim()
+      .toLowerCase();
+    if (!n) return null;
+    return loadSpawnRegistry().find((e) => String(e.nick || "").toLowerCase() === n) || null;
+  }
+
+  function getMySpawnEntry() {
+    return findSpawnForNick(getPlayerNick());
+  }
+
+  function pickShopPrize() {
+    const classes = CLASSES.filter((c) => c.cost > 0 && c.id !== "admin");
+    const skins = SKINS.filter((s) => s.secret || s.id !== "default");
+    if (Math.random() < 0.55 && classes.length) {
+      const c = rand(classes);
+      return { kind: "class", id: c.id, name: c.name };
+    }
+    if (skins.length) {
+      const s = rand(skins);
+      return { kind: "skin", id: s.id, name: s.name };
+    }
+    const c = rand(classes);
+    return { kind: "class", id: c.id, name: c.name };
+  }
+
+  function grantShopPrizeToAdmin(prize, fromLabel) {
+    if (!prize) return;
+    if (prize.kind === "class") {
+      if (!meta.unlocked.includes(prize.id)) meta.unlocked.push(prize.id);
+    } else if (prize.kind === "skin") {
+      if (!meta.skins.includes(prize.id)) meta.skins.push(prize.id);
+    }
+    storeSet(SAVE, meta);
+    showEvent(`🎁 Админу команды · ${prize.name}`, 3.2);
+    toast(`${fromLabel || "Гость"} выбил: ${prize.name}`);
+    refreshLobbyUI();
+  }
+
+  function spawnCharacterDef(id) {
+    return SPAWN_CHARACTERS.find((r) => r.id === id) || null;
+  }
+
+  function applySpawnPerksOnLoad() {
+    const entry = getMySpawnEntry();
+    if (!entry) return;
+    const p = entry.perks || {};
+    if (p.dayDrinks) {
+      meta.coffee2 = true;
+      meta.dayDrinksUntil = entry.expiresAt;
+    }
+    if (p.rainbow || p.secretRainbow) meta.rainbowSpawn = true;
+    if (p.secretRainbow) meta.secretRainbow = true;
+    storeSet(SAVE, meta);
+  }
+
+  function applySpawnPerksToGame() {
+    const entry = getMySpawnEntry();
+    if (!entry || !g || !g.players[0]) return;
+    const p = entry.perks || {};
+    const ch = spawnCharacterDef(entry.character) || SPAWN_CHARACTERS[0];
+    const pl = g.players[0];
+    pl.tex = ch.tex;
+    pl.color = ch.color;
+    pl.name = entry.nick;
+    if (p.noAnomaly) g.noAnomalies = true;
+    if (p.endlessReason || p.secretRainbow) {
+      g.immortal = true;
+      g.maxSanity = Math.max(g.maxSanity, 999);
+      g.sanity = g.maxSanity;
+    }
+    if (p.dayDrinks) {
+      pl.dayDrinksUntil = entry.expiresAt;
+      pl.coffeeLeft = 9999;
+      meta.coffee2 = true;
+      meta.dayDrinksUntil = entry.expiresAt;
+    }
+    if (p.rainbow || p.secretRainbow) {
+      g.rainbowLoot = true;
+      pl.rainbowSpawn = true;
+      meta.rainbowSpawn = true;
+      if (!meta.skins.includes("secret-neon")) meta.skins.push("secret-neon");
+    }
+    if (p.secretRainbow) {
+      g.secretRainbow = true;
+      meta.secretRainbow = true;
+      if (!meta.skins.includes("secret-gold")) meta.skins.push("secret-gold");
+      if (!meta.skins.includes("secret-void")) meta.skins.push("secret-void");
+    }
+    storeSet(SAVE, meta);
+    toast(`✦ ${entry.nick} · ${ch.name} · перки на сутки`);
+  }
+
+  function renderSpawnActiveList() {
+    const ul = document.getElementById("spawnActiveList");
+    if (!ul) return;
+    const list = loadSpawnRegistry();
+    if (!list.length) {
+      ul.innerHTML = "<li class=\"spawn-empty\">Пока никого — заспавни по нику</li>";
+      return;
+    }
+    ul.innerHTML = list
+      .slice()
+      .reverse()
+      .map((e) => {
+        const ch = spawnCharacterDef(e.character);
+        const perks = SPAWN_PERKS.filter((p) => e.perks && e.perks[p.id])
+          .map((p) => p.label)
+          .join(" · ");
+        const left = Math.max(0, Math.ceil((e.expiresAt - Date.now()) / 3600000));
+        return `<li><strong>${e.nick}</strong> · ${(ch && ch.name) || "?"}<br><small>${perks || "—"} · ${left}ч</small></li>`;
+      })
+      .join("");
+  }
+
+  function spawnPlayerRegistry(nick, characterId, perkIds) {
+    if (!canUseSecretShifts()) {
+      toast("Только хозяин");
+      return false;
+    }
+    const name = String(nick || "").trim().slice(0, 24);
+    if (!name) {
+      toast("Напиши ник игрока");
+      return false;
+    }
+    const ch = spawnCharacterDef(characterId) || SPAWN_CHARACTERS[0];
+    const perks = {};
+    for (const id of perkIds) perks[id] = true;
+    if (perks.secretRainbow) perks.endlessReason = true;
+    const entry = {
+      nick: name,
+      character: ch.id,
+      perks,
+      spawnedAt: Date.now(),
+      expiresAt: Date.now() + SPAWN_TTL,
+    };
+    const list = loadSpawnRegistry().filter((e) => String(e.nick || "").toLowerCase() !== name.toLowerCase());
+    list.push(entry);
+    saveSpawnRegistry(list);
+    try {
+      if (window.AmalHub && typeof AmalHub.giveGiftToPlayer === "function") {
+        AmalHub.giveGiftToPlayer({
+          nick: name,
+          game: "animal-hospital",
+          giftId: perks.secretRainbow ? "rainbow-hello" : perks.rainbow ? "lucky-box" : "party-boost",
+        });
+      }
+    } catch (_) {}
+    renderSpawnActiveList();
+    toast(`${ch.name} · ${name} · на 24 ч`);
+    return true;
   }
 
   function guestLabel(v) {
     if (!v) return "";
     if (v.guestName) return v.guestName;
-    const rare = rareGuestDef(v.rareKind);
-    if (rare) return rare.name;
-    if (v.isCompanion) return "Auto";
+    if (v.luckyDrop) return "✦ сюрприз";
     return speciesLabel(v.species);
   }
 
   function guestKindTag(v) {
-    const rare = rareGuestDef(v && v.rareKind);
-    if (rare) return rare.name;
-    if (v && v.isCompanion) return "Auto";
+    if (!v) return "";
+    if (v.luckyDrop && v.shopPrize) return "приз";
+    if (v.rareKind === "rainbow") return "Rainbow";
+    if (v.rareKind === "lilamint") return "Lilamint";
+    if (v.rareKind === "auto" || v.isCompanion) return "Auto";
     return "";
   }
 
-  function makeVisitor(forceAnomaly, opts) {
+  function makeVisitor(forceAnomaly) {
     const sp = rand(SPECIES);
     const shift = (g && g.shift) || selectedShift;
     let isAnomaly;
@@ -1151,19 +1341,20 @@
       y: 270,
       bob: Math.random() * 10,
       bed: null,
-      isCompanion: false,
-      rareKind: null,
+      luckyDrop: false,
+      shopPrize: null,
       guestName: "",
+      rareKind: null,
+      isCompanion: false,
     };
-    // редкие гости только руками хозяина — сами не появляются
-    if (opts && opts.rareKind) {
-      const rare = rareGuestDef(opts.rareKind);
-      if (rare) {
-        v.rareKind = rare.id;
-        v.guestName = String(opts.guestName || "").trim().slice(0, 24);
-        v.isCompanion = !!rare.giftCoffee;
-        v.isAnomaly = false;
-      }
+    // 10%: секретный гость с призом из магазина → админу команды после лечения
+    if (!isAnomaly && Math.random() < 0.1) {
+      v.luckyDrop = true;
+      v.shopPrize = pickShopPrize();
+      v.guestName = "✦ сюрприз";
+      const kinds = ["auto", "rainbow", "lilamint"];
+      v.rareKind = kinds[(Math.random() * kinds.length) | 0];
+      if (v.rareKind === "auto") v.isCompanion = true;
     }
     if (isAnomaly) {
       const picks = CLUES.slice().sort(() => Math.random() - 0.5).slice(0, 1 + (Math.random() < 0.5 ? 1 : 0));
@@ -1179,40 +1370,6 @@
       }
     }
     return v;
-  }
-
-  function spawnOwnerGuest(kindId, nick) {
-    if (!g || state !== "play") {
-      toast("Сначала открой смену");
-      return false;
-    }
-    if (!isOwner()) {
-      toast("Только хозяин");
-      return false;
-    }
-    const rare = rareGuestDef(kindId);
-    if (!rare) {
-      toast("Неизвестный персонаж");
-      return false;
-    }
-    const name = String(nick || "").trim().slice(0, 24);
-    if (!name) {
-      toast("Напиши ник гостя");
-      return false;
-    }
-    const v = makeVisitor(false, { rareKind: rare.id, guestName: name });
-    g.queue.push(v);
-    layoutQueue();
-    showEvent(`✦ ${name} · ${rare.name}`, 2.6);
-    toast(`${rare.name} · ${name} в очереди`);
-    return true;
-  }
-
-  function syncRareSpawnPanel() {
-    const panel = document.getElementById("rareSpawnPanel");
-    if (!panel) return;
-    if (state === "play" && isOwner()) showEl(panel);
-    else hideEl(panel);
   }
 
   function makeWeapon(cls) {
@@ -1568,7 +1725,6 @@
     hideEl(eventBanner);
     showEl(hud);
     showEl(queueStrip);
-    syncRareSpawnPanel();
     shiftTag.textContent = shift.name + " — " + shift.tag;
     shiftTag.style.borderColor = shift.color;
     showEl(shiftTag);
@@ -1686,6 +1842,7 @@
       showEvent("✦ Попугай · ∞ вещи · ∞ патроны", 3.0);
       toast("∞ уже с собой · лечи вовремя");
     }
+    applySpawnPerksToGame();
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
     renderInv();
@@ -1727,7 +1884,6 @@
     hideEl(eventBanner);
     hideEl(shiftTag);
     hideEl(queueStrip);
-    hideEl(document.getElementById("rareSpawnPanel"));
     endTitle.textContent = reason === "insanity" ? "Рассудок 0 — провал" : "Смена окончена";
     endSub.innerHTML =
       `${g.shift.name}<br>Вылечено: ${g.treated} · Аномалий: ${g.blocked} · Пропущено: ${g.leaked}` +
@@ -1752,7 +1908,6 @@
     hideEl(queueStrip);
     hideEl(shopPanel);
     hideEl(exchangePanel);
-    hideEl(document.getElementById("rareSpawnPanel"));
     hideEl(document.getElementById("secretShiftsPanel"));
     refreshLobbyUI();
     showEl(menu);
@@ -2324,7 +2479,9 @@
       g.treated += 1;
       g.coins += 22 + patient.needs.length * 4;
       healSanity(player.cls.treatSanity);
-      if (patient.isCompanion || patient.rareKind === "auto") {
+      if (patient.luckyDrop && patient.shopPrize) {
+        grantShopPrizeToAdmin(patient.shopPrize, guestLabel(patient));
+      } else if (patient.isCompanion || patient.rareKind === "auto") {
         player.coffeeLeft = Math.max(player.coffeeLeft || 0, 99);
         meta.coffee2 = true;
         storeSet(SAVE, meta);
@@ -2771,6 +2928,18 @@
 
   function spawnEvent() {
     if (!g) return;
+    if (g.monsters && g.monsters.length >= 3) {
+      // не раздувать пачку монстров
+      if (Math.random() < 0.5 && g.inside.length) {
+        const p = rand(g.inside);
+        g.firePatient = { x: p.x, y: p.y, id: p.id };
+        showEvent("🔥 Пациент горит! Потуши (Пожарный / E)", 4);
+      } else {
+        g.headBanger = { x: 600, y: 200, t: 12 };
+        showEvent("Голова стучит в стекло ресепшена!", 3.5);
+      }
+      return;
+    }
     const roll = Math.random();
     if (g.shift.special === "ceiling" && roll < 0.4) {
       g.lookUpWarn = 5;
@@ -2866,11 +3035,14 @@
       }
     }
 
-    hurtSanity(
-      g.shift && g.shift.noDayDrain
-        ? 0
-        : dt * (0.55 + g.shift.id * 0.12 + (g.monsters.length ? 1.2 + g.monsters.length * 0.35 : 0))
-    );
+    {
+      const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
+      hurtSanity(
+        g.shift && g.shift.noDayDrain
+          ? 0
+          : dt * (0.55 + pace * 0.12 + (g.monsters.length ? 1.2 + g.monsters.length * 0.35 : 0))
+      );
+    }
     if (state === "end") return;
 
     if (!g.endless && g.left <= 0) {
@@ -2902,7 +3074,9 @@
         g.queue.push(makeVisitor());
         layoutQueue();
       }
-      g.spawnCd = Math.max(2.2, 5.5 - g.shift.id * 0.35);
+      // не использовать сырой id (33/52/67) — иначе очередь и ивенты ломаются
+      const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
+      g.spawnCd = Math.max(2.4, 5.5 - pace * 0.28);
     }
 
     if (g.selfServe) autoAdmitSelfServe();
@@ -2937,8 +3111,10 @@
 
     g.eventCd -= dt;
     if (g.eventCd <= 0 && g.shift.eventRate > 0) {
-      if (Math.random() < g.shift.eventRate + 0.15) spawnEvent();
-      g.eventCd = 14 - g.shift.id;
+      if (Math.random() < Math.min(0.55, g.shift.eventRate + 0.08)) spawnEvent();
+      // было: 14 - shift.id → на смене 33 eventCd=-19 → монстры каждый кадр
+      const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
+      g.eventCd = Math.max(11, 18 - pace * 0.55);
     }
 
     for (const m of g.monsters.slice()) {
@@ -3766,26 +3942,46 @@
     if (secretDeathGo) secretDeathGo.addEventListener("click", submitSecretDeath);
   }
 
-  const rareKindSelect = document.getElementById("rareKindSelect");
-  if (rareKindSelect) {
-    rareKindSelect.innerHTML = RARE_GUESTS.map(
-      (r) => `<option value="${r.id}">${r.name}</option>`
+  const spawnCharSelect = document.getElementById("spawnCharSelect");
+  const spawnPerksBox = document.getElementById("spawnPerksBox");
+  const spawnNickInput = document.getElementById("spawnNickInput");
+  const btnSpawnPlayer = document.getElementById("btnSpawnPlayer");
+  if (spawnCharSelect) {
+    spawnCharSelect.innerHTML = SPAWN_CHARACTERS.map(
+      (c) => `<option value="${c.id}">${c.name}</option>`
     ).join("");
   }
-  const rareNickInput = document.getElementById("rareNickInput");
-  const btnRareSpawn = document.getElementById("btnRareSpawn");
-  const doRareSpawn = () => {
-    const kind = rareKindSelect ? rareKindSelect.value : "auto";
-    const nick = rareNickInput ? rareNickInput.value : "";
-    if (spawnOwnerGuest(kind, nick) && rareNickInput) rareNickInput.value = "";
+  if (spawnPerksBox) {
+    spawnPerksBox.innerHTML = SPAWN_PERKS.map(
+      (p) =>
+        `<label class="spawn-perk"><input type="checkbox" data-perk="${p.id}" /> ${p.label}</label>`
+    ).join("");
+  }
+  const doSpawnPlayer = () => {
+    const nick = spawnNickInput ? spawnNickInput.value : "";
+    const ch = spawnCharSelect ? spawnCharSelect.value : "auto";
+    const perkIds = [];
+    if (spawnPerksBox) {
+      spawnPerksBox.querySelectorAll("input[data-perk]:checked").forEach((el) => {
+        perkIds.push(el.getAttribute("data-perk"));
+      });
+    }
+    if (spawnPlayerRegistry(nick, ch, perkIds) && spawnNickInput) {
+      spawnNickInput.value = "";
+      if (spawnPerksBox) {
+        spawnPerksBox.querySelectorAll("input[data-perk]").forEach((el) => {
+          el.checked = false;
+        });
+      }
+    }
   };
-  if (btnRareSpawn) btnRareSpawn.addEventListener("click", doRareSpawn);
-  if (rareNickInput) {
-    rareNickInput.addEventListener("keydown", (e) => {
+  if (btnSpawnPlayer) btnSpawnPlayer.addEventListener("click", doSpawnPlayer);
+  if (spawnNickInput) {
+    spawnNickInput.addEventListener("keydown", (e) => {
       e.stopPropagation();
       if (e.code === "Enter" || e.key === "Enter") {
         e.preventDefault();
-        doRareSpawn();
+        doSpawnPlayer();
       }
     });
   }
@@ -3801,7 +3997,6 @@
   hideEl(shopPanel);
   hideEl(exchangePanel);
   hideEl(document.getElementById("secretShiftsPanel"));
-  hideEl(document.getElementById("rareSpawnPanel"));
   showEl(menu);
   showEl(secretDeathWrap);
   requestAnimationFrame(frame);
