@@ -3,93 +3,159 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amal's Games</title>
-  <meta name="description" content="Браузерные игры Amal: Kick Buddy, Coin Arsenal, X-Buggy, Melon Playground и другие — играй бесплатно." />
+  <title>Amal's Lab · игры</title>
+  <meta name="description" content="Лаборатория Amal: все браузерные игры в одном месте. Изучай, играй, открывай." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #0a0a0f;
-      color: #e4e4e7;
-      min-height: 100dvh;
+    :root {
+      --teal: #0d6e5f;
+      --mint: #7ed9b8;
+      --amber: #f0b429;
+      --coral: #e25a3c;
+      --ink: #102018;
+      --muted: #5a6a62;
+      --paper: #f3efe6;
     }
+    body {
+      font-family: Nunito, system-ui, sans-serif;
+      color: var(--ink);
+      min-height: 100dvh;
+      background:
+        radial-gradient(ellipse 70% 40% at 15% 0%, rgba(126,217,184,.45), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 5%, rgba(240,180,41,.28), transparent 50%),
+        repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(13,110,95,.045) 28px),
+        repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(13,110,95,.045) 28px),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc 55%, #c8dcd2);
+    }
+    .lab-top {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      padding: 0.45rem 1rem;
+      background: linear-gradient(90deg, #0d6e5f, #146b5c 45%, #0a5248);
+      color: #f3efe6;
+      font: 800 12px/1.2 Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.06em;
+      box-shadow: 0 6px 20px rgba(13,110,95,.28);
+    }
+    .lab-top .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 10px var(--amber);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .55; transform: scale(.85); }
+    }
+    .lab-top a { color: var(--mint); text-decoration: none; font-weight: 800; }
     header {
       text-align: center;
-      padding: 3rem 1rem 1rem;
+      padding: 2.2rem 1rem 1.2rem;
+      max-width: 44rem;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.2em;
+      color: var(--teal);
     }
     header h1 {
-      font-size: clamp(1.8rem, 5vw, 3rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, #6ee7b7, #3b82f6, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: clamp(2rem, 5.5vw, 3.1rem);
+      font-weight: 700;
+      color: var(--teal);
+      margin: 0.35rem 0 0.5rem;
     }
-    header p {
-      margin-top: .5rem;
-      color: #71717a;
-      font-size: .95rem;
+    header .sub {
+      color: var(--muted);
+      font: 600 15px/1.5 Nunito, sans-serif;
     }
     .games-count {
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
       margin-top: 1rem;
-      padding: 0.4rem 0.9rem;
+      padding: 0.4rem 0.95rem;
       border-radius: 999px;
-      border: 1px solid #3f3f46;
-      background: #18181b;
-      color: #e4e4e7;
-      font-size: 0.9rem;
-      font-weight: 700;
+      background: var(--ink);
+      color: var(--mint);
+      font: 800 0.9rem Space Grotesk, Nunito, sans-serif;
     }
-    .games-count strong {
-      color: #6ee7b7;
-      font-size: 1.05rem;
+    .games-count strong { color: var(--amber); font-size: 1.05rem; }
+    .lab-links {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
     }
+    .lab-links a {
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(13,110,95,.2);
+      color: var(--teal);
+      font: 800 13px Nunito, sans-serif;
+      text-decoration: none;
+    }
+    .lab-links a.primary {
+      background: linear-gradient(135deg, #0d6e5f, #0a5248);
+      color: #f3efe6;
+      border-color: transparent;
+    }
+    .hint {
+      margin-top: 0.85rem;
+      color: var(--muted);
+      font: 600 13px/1.45 Nunito, sans-serif;
+    }
+    .hint strong { color: var(--ink); }
     .section-title {
       max-width: 1100px;
-      margin: 0.5rem auto 0;
+      margin: 1.1rem auto 0;
       padding: 0 1rem;
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      font: 800 0.75rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #a1a1aa;
+      color: var(--teal);
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.1rem;
       max-width: 1100px;
-      margin: 1rem auto 2rem;
+      margin: 0.85rem auto 1.75rem;
       padding: 0 1rem;
     }
-    .grid.all {
-      margin-bottom: 3rem;
-    }
+    .grid.all { margin-bottom: 2.5rem; }
     .card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 1rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.14);
+      border-radius: 16px;
       overflow: hidden;
-      transition: transform .2s, box-shadow .2s;
+      transition: transform .18s, box-shadow .18s;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 8px 22px rgba(16,40,32,.06);
     }
     .card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 30px rgba(99,102,241,.25);
+      box-shadow: 0 16px 36px rgba(13,110,95,.16);
+      border-color: rgba(13,110,95,.35);
     }
     .card.featured {
-      border-color: #52525b;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+      border-color: rgba(13,110,95,.35);
+      box-shadow: 0 0 0 2px rgba(13,110,95,.1), 0 10px 26px rgba(16,40,32,.08);
     }
     .card-img {
       width: 100%;
@@ -97,114 +163,141 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.5rem;
+      font-size: 3.2rem;
+      position: relative;
     }
-    .card-img.snake  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
-    .card-img.terra   { background: linear-gradient(135deg, #78350f, #451a03); }
-    .card-img.ladder  { background: linear-gradient(135deg, #1e3a5f, #0f2744); }
-    .card-img.blockbust { background: linear-gradient(135deg, #5b4305, #4c1d95); }
-    .card-img.brawl { background: linear-gradient(135deg, #0b1c28, #c47a00); }
-    .card-img.courier { background: linear-gradient(135deg, #0a1a3a, #1a0a3a); }
-    .card-img.melon { background: linear-gradient(135deg, #145a32, #96281b); }
-    .card-img.xbuggy { background: linear-gradient(135deg, #7a4010, #c45a18); }
-    .card-img.arsenal { background: linear-gradient(135deg, #0a2a28, #3a0a4a); }
-    .card-img.buddy { background: linear-gradient(135deg, #e8d9a8, #c48a40); }
-    .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #4a1a08); }
-    .card-img.zvp2 { background: linear-gradient(135deg, #244818, #6a2e0c 55%, #1a2430); }
-    .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #5a9e3a 55%, #8b5a2b); }
-    .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #3d2a18 60%, #0c1612); }
-    .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #143a3f 55%, #3a8f88); }
-    .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #e25a3c 55%, #f0b429); }
-    .card-img.echo { background: linear-gradient(135deg, #152238, #2a1830 55%, #0b1020); }
-    .card-img.night { background: linear-gradient(135deg, #1a1230, #3a2060 55%, #0c0814); }
-    .card-img.ghost { background: linear-gradient(135deg, #2a1a3a, #1e3a32 55%, #120e18); }
-    .card-img.roof { background: linear-gradient(135deg, #5a4030, #7ed9b8 45%, #2a2438); }
-    .card-img.oldpc { background: linear-gradient(135deg, #008080, #c0c0c0 45%, #000080); }
+    .card-img::after {
+      content: "";
+      position: absolute;
+      inset: auto 12px 10px auto;
+      width: 14px; height: 22px;
+      border-radius: 4px 4px 2px 2px;
+      background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(126,217,184,.55));
+      border: 1px solid rgba(255,255,255,.35);
+      opacity: .7;
+    }
+    .card-img.snake  { background: linear-gradient(135deg, #0d6e5f, #312e81); }
+    .card-img.terra   { background: linear-gradient(135deg, #0d6e5f, #78350f); }
+    .card-img.ladder  { background: linear-gradient(135deg, #146b5c, #1e3a5f); }
+    .card-img.blockbust { background: linear-gradient(135deg, #0d6e5f, #f0b429); }
+    .card-img.brawl { background: linear-gradient(135deg, #0d6e5f, #c47a00); }
+    .card-img.courier { background: linear-gradient(135deg, #0a5248, #1a0a3a); }
+    .card-img.melon { background: linear-gradient(135deg, #0d6e5f, #145a32); }
+    .card-img.xbuggy { background: linear-gradient(135deg, #0d6e5f, #c45a18); }
+    .card-img.arsenal { background: linear-gradient(135deg, #0a2a28, #0d6e5f); }
+    .card-img.buddy { background: linear-gradient(135deg, #7ed9b8, #c48a40); }
+    .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #0d6e5f); }
+    .card-img.zvp2 { background: linear-gradient(135deg, #244818, #0d6e5f); }
+    .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #0d6e5f); }
+    .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #0d6e5f); }
+    .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #0d6e5f); }
+    .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #f0b429); }
+    .card-img.echo { background: linear-gradient(135deg, #0d6e5f, #2a1830); }
+    .card-img.night { background: linear-gradient(135deg, #0d6e5f, #3a2060); }
+    .card-img.ghost { background: linear-gradient(135deg, #0d6e5f, #1e3a32); }
+    .card-img.roof { background: linear-gradient(135deg, #5a4030, #7ed9b8); }
+    .card-img.oldpc { background: linear-gradient(135deg, #0d6e5f, #008080); }
     .card-body {
-      padding: 1.25rem;
+      padding: 1.05rem 1.15rem 1.2rem;
       flex: 1;
       display: flex;
       flex-direction: column;
+      background: linear-gradient(180deg, #fffef8, #f3faf6);
     }
     .card-body h2 {
-      font-size: 1.15rem;
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: 1.12rem;
       font-weight: 700;
+      color: var(--ink);
     }
     .card-body p {
-      margin-top: .4rem;
+      margin-top: .35rem;
       font-size: .85rem;
-      color: #a1a1aa;
+      color: var(--muted);
       flex: 1;
+      font-weight: 600;
+      line-height: 1.4;
     }
     .badge {
       display: inline-block;
-      margin-bottom: 0.45rem;
-      padding: 0.2rem 0.5rem;
+      margin-bottom: 0.4rem;
+      padding: 0.2rem 0.55rem;
       border-radius: 999px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      background: #27272a;
-      color: #fafafa;
+      background: rgba(13,110,95,.12);
+      color: var(--teal);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .badge.new { background: #eab308; color: #111; }
-    .badge.update { background: #22c55e; color: #052e16; }
+    .badge.new { background: var(--amber); color: #1a1400; }
+    .badge.update { background: var(--mint); color: #052e16; }
     .play-btn {
       display: inline-block;
-      margin-top: 1rem;
-      padding: .55rem 1.2rem;
-      border-radius: .5rem;
-      font-weight: 600;
-      font-size: .9rem;
+      margin-top: 0.9rem;
+      padding: .5rem 1.05rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: .85rem;
       text-align: center;
-      color: #fff;
-      transition: opacity .15s;
+      color: #f3efe6 !important;
+      background: linear-gradient(135deg, #0d6e5f, #0a5248) !important;
+      transition: filter .15s, transform .15s;
+      width: fit-content;
     }
-    .play-btn:hover { opacity: .85; }
-    .play-btn.snake  { background: #6366f1; }
-    .play-btn.terra   { background: #d97706; }
-    .play-btn.ladder  { background: #3b82f6; }
-    .play-btn.blockbust { background: #eab308; color: #111; }
-    .play-btn.brawl { background: #ffd23f; color: #102018; }
-    .play-btn.courier { background: #3de7ff; color: #041018; }
-    .play-btn.melon { background: #2ed573; color: #06210c; }
-    .play-btn.xbuggy { background: #ff6b2c; color: #2a1200; }
-    .play-btn.arsenal { background: #00f5d4; color: #041816; }
-    .play-btn.buddy { background: #e05030; color: #fff8f0; }
-    .play-btn.zvp { background: #6aaa3a; color: #0a1808; }
-    .play-btn.zvp2 { background: #9ac84a; color: #0a1808; }
-    .play-btn.craft { background: #5a9e3a; color: #0a1808; }
-    .play-btn.hideout { background: #e8c547; color: #0c1612; }
-    .play-btn.hospital { background: #7ed9b8; color: #0c2a28; }
-    .play-btn.createlab { background: #0d6e5f; color: #f3efe6; }
-    .play-btn.echo { background: #7ec8ff; color: #081018; }
-    .play-btn.night { background: #c9a0ff; color: #140c22; }
-    .play-btn.ghost { background: #f0c36a; color: #1a1008; }
-    .play-btn.roof { background: #7ed9b8; color: #0c2a28; }
-    .play-btn.oldpc { background: #c0c0c0; color: #000080; }
+    .play-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
     footer {
       text-align: center;
-      padding: 1rem;
-      color: #52525b;
+      padding: 1.25rem 1rem 2rem;
+      color: var(--muted);
       font-size: .8rem;
+      font-weight: 700;
+    }
+    .vials {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 1rem;
+      opacity: .9;
+    }
+    .vials span {
+      width: 12px; height: 28px;
+      border-radius: 4px 4px 3px 3px;
+      border: 1px solid rgba(13,110,95,.25);
+      background: linear-gradient(180deg, rgba(255,255,255,.5), var(--c, var(--mint)));
+      box-shadow: 0 4px 10px rgba(13,110,95,.12);
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Amal's Games</h1>
-    <p>Все игры открыты для всех — выбирай и играй в браузере</p>
-    <p class="games-count" id="games-count">Игр в каталоге: <strong>—</strong></p>
-    <p style="margin-top:0.85rem;max-width:36rem;margin-left:auto;margin-right:auto;color:#a1a1aa;font-size:0.9rem">
-      Сначала напиши <strong style="color:#e4e4e7">ник</strong> (кнопка 📝). Можно отправить <strong style="color:#e4e4e7">заметку Амалю</strong> из любой игры.
-    </p>
-    <p style="margin-top:0.75rem">
-      <a href="create-lab/" style="color:#6ee7b7;font-weight:600;text-decoration:none">Create Lab</a>
-      ·
-      <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру</a>
-    </p>
-  </header>
+  <div class="lab-top">
+    <span class="dot" aria-hidden="true"></span>
+    <span>🧪 AMAL LAB · все игры как в лаборатории</span>
+    <a href="animal-hospital/lab-group.html">группа Lab</a>
+    <span class="dot" aria-hidden="true"></span>
+  </div>
 
-  <p class="section-title">Roblox-стиль (3D) — новое</p>
+  <header>
+    <p class="eyebrow">LAB CATALOG</p>
+    <h1>Amal's Laboratory</h1>
+    <p class="sub">Не просто список игр — лаборатория. Здесь всё, что ты разработал: изучай, запускай, открывай.</p>
+    <p class="games-count" id="games-count">образцов в каталоге: <strong>—</strong></p>
+    <div class="lab-links">
+      <a class="primary" href="animal-hospital/lab.html">🧪 Лаборатория</a>
+      <a href="animal-hospital/lab-group.html">Группа · все мини</a>
+      <a href="animal-hospital/">Animal Hospital</a>
+      <a href="create-lab/">Create Lab</a>
+    </div>
+    <p class="hint">Сначала напиши <strong>ник</strong> (кнопка 📝). Можно отправить <strong>заметку Амалю</strong> из любой игры.</p>
+    <div class="vials" aria-hidden="true">
+      <span style="--c:#e25a3c"></span>
+      <span style="--c:#70c8f0"></span>
+      <span style="--c:#f0b429"></span>
+      <span style="--c:#7ed9b8"></span>
+      <span style="--c:#c8b8e8"></span>
+    </div>
+  </header>
+  <p class="section-title">Пробирки · Roblox-стиль (3D)</p>
   <div class="grid all" style="margin-bottom:0.5rem">
     <a class="card featured" href="obby/">
       <div class="card-img" style="background:linear-gradient(135deg,#4ade80,#3b82f6)">🏃</div>
@@ -271,7 +364,7 @@
     </a>
   </div>
 
-  <p class="section-title">Все игры</p>
+  <p class="section-title">Стеллаж · все образцы</p>
   <div class="grid all">
     <a class="card featured" href="old-pc/">
       <div class="card-img oldpc">🖥️</div>
@@ -617,7 +710,7 @@
     (() => {
       const n = document.querySelectorAll("a.card[href]").length;
       const el = document.getElementById("games-count");
-      if (el) el.innerHTML = "Игр в каталоге: <strong>" + n + "</strong>";
+      if (el) el.innerHTML = "образцов в каталоге: <strong>" + n + "</strong>";
     })();
   </script>
   <script src="./owner-cheats.js"></script>
