@@ -55,6 +55,10 @@ html, body {
   align-content: center;
   gap: 0.75rem;
 }
+.screen[hidden],
+.overlay[hidden] {
+  display: none !important;
+}
 
 .brand {
   font-family: Fredoka, Nunito, sans-serif;
@@ -110,6 +114,8 @@ html, body {
 #play.screen {
   padding: 0.5rem;
   gap: 8px;
+  overflow-y: auto;
+  align-content: start;
 }
 
 .topbar {
@@ -249,7 +255,6 @@ canvas {
   background: rgba(40, 30, 50, 0.45);
   backdrop-filter: blur(6px);
 }
-.overlay[hidden] { display: none !important; }
 
 .win-card {
   width: min(400px, 92vw);
