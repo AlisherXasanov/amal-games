@@ -54,6 +54,21 @@ body.theme-lucky7 #app {
 #screen.theme-diamond {
   box-shadow: 0 18px 50px rgba(80, 200, 255, 0.35), 0 0 0 2px rgba(160, 230, 255, 0.5);
 }
+body.theme-cool,
+body.theme-cool #app {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, #4ef0ff 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, #3060ff 0%, transparent 50%),
+    linear-gradient(165deg, #082838, #04101c) !important;
+}
+#screen.theme-cool {
+  box-shadow: 0 18px 50px rgba(80, 240, 255, 0.4), 0 0 0 2px rgba(140, 255, 255, 0.55);
+  animation: coolPulse 2.4s ease-in-out infinite;
+}
+@keyframes coolPulse {
+  0%, 100% { filter: saturate(1.05) brightness(1); }
+  50% { filter: saturate(1.2) brightness(1.06); }
+}
 #screen.theme-lucky7 {
   box-shadow: 0 18px 50px rgba(255, 80, 200, 0.35), 0 0 0 2px rgba(255, 120, 220, 0.5);
 }

@@ -162,6 +162,7 @@
     { id: "secret-void", name: "⭐ Секретный войд", color: "#c080ff", secret: true },
     { id: "secret-agent", name: "⭐ Скин агента", color: "#304050", secret: true },
     { id: "secret-neon", name: "⭐ Неон-аномалия", color: "#40ffc0", secret: true },
+    { id: "secret-cool", name: "⭐ Халат Куул", color: "#7af0ff", secret: true, tex: "cool" },
     { id: "secret-parrot", name: "⭐ Халат попугая", color: "#ff6a4a", secret: true },
     { id: "secret-lesha", name: "⭐ Халат Леши", color: "#ffc857", secret: true, tex: "lesha" },
     { id: "secret-here", name: "⭐ Халат Auto", color: "#7ec8ff", secret: true, tex: "here" },
@@ -356,6 +357,24 @@
       vipKit: true,
       coffeeGift: 52,
       theme: "gold",
+    });
+    list.push({
+      id: 88,
+      name: "✦ Смена · Куул · Ледяная ночь",
+      time: 888,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Секрет · лёд · северное сияние · ∞ вещи",
+      color: "#7af0ff",
+      special: "cool88",
+      secret: true,
+      coolNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 88,
+      bonusCoins: 88,
+      theme: "cool",
+      pace: 3,
     });
     list.push({
       id: 67,
@@ -569,6 +588,11 @@
       showEvent("✦ Попугай · первый секретный код", 2.8);
       return true;
     }
+    const coolCodes = ["cool", "кул", "куул", "coolcool", "кулл", "ice", "лед", "лёд"];
+    if (coolCodes.includes(code) || code === "88") {
+      unlockCoolSurprise(true);
+      return true;
+    }
     if (code !== "67" && code !== "52" && code !== "7" && code !== "12" && code !== "19" && code !== "33") {
       toast("Неизвестный код");
       return false;
@@ -584,6 +608,85 @@
     return true;
   }
 
+  function unlockCoolSurprise(fromCode) {
+    meta.coolNight = true;
+    meta.secretShifts67 = true;
+    if (!meta.skins) meta.skins = [];
+    if (!meta.skins.includes("secret-cool")) meta.skins.push("secret-cool");
+    const coolSkin = SKINS.find((s) => s.id === "secret-cool");
+    if (coolSkin) {
+      selectedSkin = coolSkin;
+      meta.skinId = coolSkin.id;
+    }
+    const pick = SHIFTS.find((s) => s.id === 88);
+    if (pick) selectedShift = pick;
+    storeSet(SAVE, meta);
+    refreshLobbyUI();
+    persistLobby();
+    applyThemeClass("cool");
+    if (g && (state === "play" || state === "desk")) {
+      fireCoolBurst();
+    } else {
+      toast("❄ Куул · смена 88 открыта");
+      showEvent("❄ КУУУЛ · ледяной сюрприз готов · открой смену", 3.2);
+    }
+    return true;
+  }
+
+  function fireCoolBurst() {
+    if (!g) return;
+    g.theme = "cool";
+    g.coolBurst = 4.5;
+    g.coolFreeze = 8;
+    g.noAnomalies = true;
+    g.ownerQuiet = true;
+    g.coins = (g.coins || 0) + 88;
+    g.sanity = g.maxSanity;
+    g.immortal = true;
+    applyThemeClass("cool");
+    if (g.players[0]) {
+      const coolSkin = SKINS.find((s) => s.id === "secret-cool");
+      g.players[0].tex = "cool";
+      g.players[0].color = (coolSkin && coolSkin.color) || "#7af0ff";
+      g.players[0].coffeeLeft = Math.max(g.players[0].coffeeLeft || 0, 88);
+      g.players[0].infiniteItems = true;
+      grantInfiniteAmmo(g.players[0]);
+    }
+    // заморозить / убрать монстров с ледяным взрывом
+    if (g.monsters && g.monsters.length) {
+      for (const m of g.monsters.slice()) {
+        for (let i = 0; i < 14; i++) {
+          g.particles.push({
+            x: m.x,
+            y: m.y,
+            vx: (Math.random() - 0.5) * 220,
+            vy: (Math.random() - 0.5) * 220,
+            life: 0.7 + Math.random() * 0.4,
+            color: Math.random() < 0.5 ? "#7af0ff" : "#e8ffff",
+          });
+        }
+      }
+      g.monsters = [];
+    }
+    const px = g.players[0] ? g.players[0].x : 600;
+    const py = g.players[0] ? g.players[0].y : 400;
+    for (let i = 0; i < 80; i++) {
+      const a = (i / 80) * Math.PI * 2;
+      g.particles.push({
+        x: px,
+        y: py,
+        vx: Math.cos(a) * (90 + Math.random() * 160),
+        vy: Math.sin(a) * (90 + Math.random() * 160),
+        life: 0.9 + Math.random() * 0.8,
+        color: i % 3 === 0 ? "#fff" : i % 3 === 1 ? "#7af0ff" : "#a8ffe0",
+      });
+    }
+    syncQuietFab();
+    renderInv();
+    showEvent("❄❄❄ КУУУУУУЛ · ледяная ночь · аномалии заморожены", 4.2);
+    toast("❄ +88 · халат Куул · сияние");
+  }
+
   function unlockSecretShifts67() {
     return applySecretDeathCode("67");
   }
@@ -596,7 +699,8 @@
       shift.diamondNight ||
       shift.lucky7 ||
       shift.rainNight ||
-      shift.hereWithYou
+      shift.hereWithYou ||
+      shift.coolNight
     );
   }
 
@@ -680,7 +784,8 @@
       "theme-here",
       "theme-anime",
       "theme-rain",
-      "theme-parrot"
+      "theme-parrot",
+      "theme-cool"
     );
     const screen = document.getElementById("screen");
     if (screen) {
@@ -691,7 +796,8 @@
         "theme-here",
         "theme-anime",
         "theme-rain",
-        "theme-parrot"
+        "theme-parrot",
+        "theme-cool"
       );
     }
     if (!theme) return;
@@ -850,6 +956,7 @@
   let reload1 = false;
   let shoot2 = false;
   let reload2 = false;
+  let coolTypeBuf = "";
 
   window.addEventListener("keydown", (e) => {
     keys[e.code] = true;
@@ -866,6 +973,14 @@
     if (e.code === "BracketRight" && g) cycleInv(g.players[0], 1);
     if (g && /^Digit[1-9]$/.test(e.code)) {
       selectInvSlot(g.players[0], Number(e.code.slice(5)) - 1);
+    }
+    // секретный набор букв cool / кул
+    if (canUseSecretShifts() && e.key && e.key.length === 1 && /[a-zа-яё]/i.test(e.key)) {
+      coolTypeBuf = (coolTypeBuf + e.key.toLowerCase().replace("ё", "е")).slice(-12);
+      if (/cool|куул|кул$/.test(coolTypeBuf)) {
+        coolTypeBuf = "";
+        unlockCoolSurprise(true);
+      }
     }
     if (e.code === "KeyF") shoot1 = true;
     if (e.code === "KeyR") reload1 = true;
@@ -2392,6 +2507,15 @@
       showEvent("✦ Попугай · ∞ вещи · ∞ патроны", 3.0);
       toast("∞ уже с собой · лечи вовремя");
     }
+    if (shift.coolNight || shift.id === 88 || shift.theme === "cool") {
+      g.theme = "cool";
+      g.immortal = true;
+      if (!meta.skins.includes("secret-cool")) meta.skins.push("secret-cool");
+      meta.coolNight = true;
+      storeSet(SAVE, meta);
+      giveOwnerLoadoutAll(shift);
+      fireCoolBurst();
+    }
     applySpawnPerksToGame();
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
@@ -3792,6 +3916,11 @@
     g.t += dt;
     tickCreatorRivalry(dt);
     if (g.rivalryFlash > 0) g.rivalryFlash -= dt;
+    if (g.coolBurst > 0) g.coolBurst -= dt;
+    if (g.coolFreeze > 0) {
+      g.coolFreeze -= dt;
+      if (g.monsters && g.monsters.length) g.monsters = [];
+    }
     if (!g.endless) g.left -= dt;
     for (const k of Object.keys(coffeeCd)) {
       if (coffeeCd[k] > 0) coffeeCd[k] -= dt;
@@ -4160,6 +4289,7 @@
     const isSammy = tex === "sammy";
     const isJendel = tex === "jendel" || tex === "jen";
     const isWoodstock = tex === "woodstock";
+    const isCool = tex === "cool";
     const isBuilder = tex === "builder";
     const isRainbow = tex === "rainbow";
     const isLilamint = tex === "lilamint";
@@ -4193,6 +4323,11 @@
       sash = "#ffb020";
       head = "#ffe566";
     }
+    if (isCool) {
+      body = "#7af0ff";
+      sash = "#e8ffff";
+      head = "#d8f8ff";
+    }
     if (isBuilder) {
       body = "#3dcf7a";
       sash = "#ffd76a";
@@ -4222,6 +4357,12 @@
       ctx.fillStyle = "rgba(226, 59, 59, 0.22)";
       ctx.beginPath();
       ctx.arc(pl.x, pl.y - 8, 24, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (isCool) {
+      ctx.fillStyle = "rgba(122, 240, 255, 0.28)";
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 8, 26 + Math.sin((g && g.t) || 0) * 2, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.fillStyle = body;
@@ -4315,13 +4456,15 @@
             ? "Jendel"
             : isWoodstock
               ? "Woodstock"
-              : isBuilder
-                ? "Builderman"
-                : isRainbow
-                  ? "Rainbow"
-                  : isLilamint
-                    ? "Lilamint"
-                    : label || pl.name;
+              : isCool
+                ? "Куул"
+                : isBuilder
+                  ? "Builderman"
+                  : isRainbow
+                    ? "Rainbow"
+                    : isLilamint
+                      ? "Lilamint"
+                      : label || pl.name;
     const tagColor = isHere
       ? "#a8e0ff"
       : isSammy
@@ -4330,9 +4473,11 @@
           ? "#9ec5ff"
           : isWoodstock
             ? "#ffe566"
-            : isBuilder
-              ? "#b8ffd0"
-              : "#fff";
+            : isCool
+              ? "#7af0ff"
+              : isBuilder
+                ? "#b8ffd0"
+                : "#fff";
     drawNamePlate(pl.x, pl.y - 48, tag, tagColor);
     if (pl.inv.length) {
       ctx.font = "16px Nunito";
@@ -4349,6 +4494,7 @@
     if (theme === "anime") return "#3a2850";
     if (theme === "rain") return "#1a3048";
     if (theme === "parrot") return "#4a3020";
+    if (theme === "cool") return "#143848";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
     return base;
@@ -4857,6 +5003,49 @@
       ctx.fillStyle = "rgba(255, 210, 140, 0.85)";
       ctx.font = "800 13px Fredoka, Nunito, sans-serif";
       ctx.fillText("✦ попугай", 12, 22);
+    } else if (theme === "cool") {
+      ctx.fillStyle = "rgba(40, 180, 255, 0.14)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createLinearGradient(0, 0, VW, VH);
+      grd.addColorStop(0, "rgba(80, 255, 220, 0.2)");
+      grd.addColorStop(0.5, "rgba(120, 180, 255, 0.12)");
+      grd.addColorStop(1, "rgba(180, 100, 255, 0.18)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      // северное сияние
+      for (let i = 0; i < 5; i++) {
+        const y = 40 + i * 28 + Math.sin(g.t * 1.4 + i) * 10;
+        ctx.strokeStyle = `rgba(${80 + i * 30}, ${220 - i * 20}, 255, ${0.18 + Math.sin(g.t + i) * 0.08})`;
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        for (let x = 0; x <= VW; x += 40) {
+          ctx.lineTo(x, y + Math.sin(g.t * 2 + x * 0.02 + i) * 16);
+        }
+        ctx.stroke();
+      }
+      // снег
+      ctx.fillStyle = "rgba(230, 250, 255, 0.85)";
+      for (let i = 0; i < 36; i++) {
+        const x = ((Math.sin(i * 12.1) * 0.5 + 0.5) * VW + g.t * (20 + (i % 5) * 8)) % VW;
+        const y = ((g.t * (30 + (i % 7) * 10) + i * 37) % (VH + 20)) - 10;
+        ctx.fillRect(x, y, 2 + (i % 2), 2 + (i % 2));
+      }
+      ctx.fillStyle = "rgba(200, 255, 255, 0.95)";
+      ctx.font = "900 18px Fredoka, Nunito, sans-serif";
+      ctx.fillText("❄ КУУУЛ", 12, 26);
+      if (g.coolBurst > 0) {
+        const a = Math.min(1, g.coolBurst / 2) * 0.35;
+        ctx.fillStyle = `rgba(180, 240, 255, ${a})`;
+        ctx.fillRect(0, 0, VW, VH);
+        ctx.fillStyle = `rgba(255, 255, 255, ${a * 1.4})`;
+        ctx.font = "900 64px Fredoka, Nunito, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("КУ", VW / 2, VH / 2);
+        ctx.font = "800 28px Fredoka, Nunito, sans-serif";
+        ctx.fillText("❄ ледяной сюрприз ❄", VW / 2, VH / 2 + 42);
+        ctx.textAlign = "left";
+      }
     }
 
     if (g.sanity < 35) {
