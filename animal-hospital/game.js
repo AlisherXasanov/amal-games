@@ -1269,6 +1269,33 @@
     btn.hidden = !show;
   }
 
+  function kukusSpam() {
+    if (!ensureShiftPlaying()) return;
+    // Кукус всегда пробивает «животные выкл» — только ручной спам
+    const wasNoAnimals = !!g.noAnimals;
+    if (wasNoAnimals) g.noAnimals = false;
+
+    let n = 0;
+    const secrets = SPAWN_CHARACTERS.concat(ROBOX_CREATORS);
+    for (const ch of secrets) {
+      const v = spawnQueueGuest({ rareKind: ch.id, name: ch.name });
+      if (v) n += 1;
+    }
+    for (let i = 0; i < 4; i++) {
+      if (spawnQueueGuest({ normal: true })) n += 1;
+    }
+    for (let i = 0; i < 3; i++) {
+      if (spawnQueueGuest({ anomaly: true })) n += 1;
+    }
+    spawnTrayAnomalyMonster();
+    if (wasNoAnimals) g.noAnimals = true;
+    layoutQueue();
+    refreshDeskIfOpen();
+    syncAnimalsFab();
+    showEvent(`🐔 Кукус · спам ×${n} · секреты + обычные + аномалии`, 2.8);
+    toast(`🐔 Кукус · +${n} в очередь (жми ещё)`);
+  }
+
   function applyTrayCharacter(charId) {
     const ch = spawnCharacterDef(charId);
     if (!ch) {
@@ -1295,7 +1322,7 @@
       refreshLobbyUI();
     }
     // 2) заспавнить в очередь (если смена открыта)
-    if (g && state === "play") {
+    if (g && (state === "play" || state === "desk")) {
       const v = spawnQueueGuest({ rareKind: ch.id, name: ch.name });
       if (v) {
         showEvent(`✦ ${ch.name} в очереди`, 2.2);
@@ -1308,6 +1335,10 @@
   }
 
   function giveTrayItem(itemId) {
+    if (itemId === "kukus") {
+      kukusSpam();
+      return;
+    }
     if (itemId === "animal") {
       const v = spawnQueueGuest({ normal: true });
       if (v) {
@@ -1396,6 +1427,15 @@
       ).join("");
       creators.querySelectorAll("[data-char]").forEach((btn) => {
         btn.addEventListener("click", () => applyTrayCharacter(btn.getAttribute("data-char")));
+      });
+    }
+    const kukusRow = document.getElementById("secretTrayKukus");
+    if (kukusRow && !kukusRow.dataset.ready) {
+      kukusRow.dataset.ready = "1";
+      kukusRow.innerHTML =
+        `<button type="button" class="secret-tray-chip kukus-btn" data-item="kukus">🐔 Кукус · СПАМ</button>`;
+      kukusRow.querySelectorAll("[data-item]").forEach((btn) => {
+        btn.addEventListener("click", () => giveTrayItem(btn.getAttribute("data-item")));
       });
     }
     if (spawnRow && !spawnRow.dataset.ready) {
