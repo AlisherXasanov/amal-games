@@ -24,8 +24,8 @@
     },
     {
       id: "cinema",
-      title: "2 · Кино-скины",
-      desc: "Ты видишь кролика · я — акулу · разные образы в одной комнате",
+      title: "2 · Кино · Океан",
+      desc: "Короткий фильм: ты в лодке · я акула · я должен тебя съесть",
     },
     {
       id: "doors",
@@ -211,124 +211,298 @@
     }
   }
 
-  // ——— 2 CINEMA ———
+  // ——— 2 CINEMA · OCEAN MOVIE ———
   function startCinema() {
     g = {
       done: false,
       t: 0,
-      you: { x: 360, y: 300, bob: 0, form: "rabbit", icon: "🐰" },
-      me: { x: 560, y: 300, bob: 0, form: "shark", icon: "🦈" },
-      formsYou: [
-        { id: "rabbit", icon: "🐰", name: "Кролик", color: "#ffe8f0" },
-        { id: "bird", icon: "🐦", name: "Птица", color: "#7ed9b8" },
-        { id: "fox", icon: "🦊", name: "Лиса", color: "#ff9a4a" },
-        { id: "cat", icon: "🐱", name: "Кот", color: "#ffd76a" },
-      ],
-      formsMe: [
-        { id: "shark", icon: "🦈", name: "Акула", color: "#5a90c8" },
-        { id: "robot", icon: "🤖", name: "Робот", color: "#80c0d0" },
-        { id: "ghost", icon: "👻", name: "Призрак", color: "#d8e0ff" },
-        { id: "dragon", icon: "🐉", name: "Дракон", color: "#70c080" },
-      ],
-      swaps: 0,
-      need: 4,
-      particles: [],
+      phase: "intro", // intro | play | eat | escape
+      introT: 3.2,
+      you: { x: 200, y: 300, bob: 0 }, // boat
+      me: { x: 780, y: 380, bob: 0, angle: Math.PI }, // shark
+      bubbles: [],
+      waves: 0,
+      survive: 0,
+      needSurvive: 45,
+      role: "prey", // prey = you boat, me shark; swap = reverse
     };
-    syncCinemaStat();
+    playStat.textContent = "Фильм · Океан";
     uiExtra.innerHTML = `
-      <button type="button" class="btn" id="btnYouForm">Сменить ТЕБЯ</button>
-      <button type="button" class="btn me" id="btnMeForm">Сменить МЕНЯ</button>`;
-    document.getElementById("btnYouForm").onclick = () => cycleForm("you");
-    document.getElementById("btnMeForm").onclick = () => cycleForm("me");
-    say("Как в кино: ты — один образ, я — другой. Смените по очереди.", 3.5);
+      <button type="button" class="btn me" id="btnRole">Сменить роли</button>
+      <span class="sub" style="margin:0" id="roleHint">Ты — лодка · я — акула</span>`;
+    document.getElementById("btnRole").onclick = () => {
+      if (g.done || g.phase !== "play") return;
+      g.role = g.role === "prey" ? "hunter" : "prey";
+      const hint = document.getElementById("roleHint");
+      if (g.role === "prey") {
+        hint.textContent = "Ты — лодка · я — акула";
+        say("Снова: ты плывёшь, я охочусь.", 2.4);
+      } else {
+        hint.textContent = "Ты — акула · я — в лодке";
+        say("Теперь ты акула. Догони меня!", 2.4);
+      }
+      // swap positions roughly
+      const tx = g.you.x;
+      const ty = g.you.y;
+      g.you.x = g.me.x;
+      g.you.y = g.me.y;
+      g.me.x = tx;
+      g.me.y = ty;
+    };
+    say("✦ Фильм «Океан». Ты в лодке. Я — акула. Я должен тебя съесть.", 3.5);
   }
 
-  function syncCinemaStat() {
-    const y = g.formsYou.find((f) => f.id === g.you.form);
-    const m = g.formsMe.find((f) => f.id === g.me.form);
-    playStat.textContent = `${y.icon} ты · ${m.icon} я · смен: ${g.swaps}/${g.need}`;
+  function cinemaPrey() {
+    return g.role === "prey" ? g.you : g.me;
   }
-
-  function cycleForm(who) {
-    if (g.done) return;
-    if (who === "you") {
-      const i = g.formsYou.findIndex((f) => f.id === g.you.form);
-      const n = g.formsYou[(i + 1) % g.formsYou.length];
-      g.you.form = n.id;
-      g.you.icon = n.icon;
-      say("Теперь ты — " + n.name, 2);
-    } else {
-      const i = g.formsMe.findIndex((f) => f.id === g.me.form);
-      const n = g.formsMe[(i + 1) % g.formsMe.length];
-      g.me.form = n.id;
-      g.me.icon = n.icon;
-      say("Теперь я — " + n.name, 2);
-    }
-    g.swaps += 1;
-    syncCinemaStat();
-    if (g.swaps >= g.need) finish("Кино-скины. Мы разные — и это помнится.");
+  function cinemaHunter() {
+    return g.role === "prey" ? g.me : g.you;
   }
 
   function updateCinema(dt) {
-    move(g.you, dt, 200);
-    clamp(g.you, 80, 100, 880, 480);
-    g.me.x += (g.you.x + 80 - g.me.x) * Math.min(1, dt * 3);
-    g.me.y += (g.you.y - g.me.y) * Math.min(1, dt * 3);
-    g.me.bob += dt * 8;
-    if (Math.random() < 0.2) {
-      g.particles.push({
-        x: g.you.x,
-        y: g.you.y,
-        vx: (Math.random() - 0.5) * 40,
-        vy: -20 - Math.random() * 30,
-        life: 0.4,
-        color: g.formsYou.find((f) => f.id === g.you.form).color,
-      });
-      g.particles.push({
-        x: g.me.x,
-        y: g.me.y,
-        vx: (Math.random() - 0.5) * 40,
-        vy: -20 - Math.random() * 30,
-        life: 0.4,
-        color: g.formsMe.find((f) => f.id === g.me.form).color,
+    g.waves += dt;
+    if (g.phase === "intro") {
+      g.introT -= dt;
+      if (g.introT <= 0) {
+        g.phase = "play";
+        say("Плыви! WASD. Не дай акуле…", 2.5);
+      }
+      return;
+    }
+    if (g.phase !== "play") return;
+
+    // player always controls "you"
+    move(g.you, dt, g.role === "hunter" ? 230 : 185);
+    clamp(g.you, 70, 100, 890, 480);
+
+    // AI controls "me"
+    const prey = cinemaPrey();
+    const hunter = cinemaHunter();
+    if (g.role === "prey") {
+      // me = shark chases you
+      const dx = prey.x - hunter.x;
+      const dy = prey.y - hunter.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const spd = 155 + Math.min(80, g.survive * 1.2);
+      hunter.x += (dx / dist) * spd * dt;
+      hunter.y += (dy / dist) * spd * dt;
+      hunter.angle = Math.atan2(dy, dx);
+      hunter.bob += dt * 10;
+      g.survive += dt;
+      playStat.textContent = "⏱ " + Math.ceil(g.needSurvive - g.survive) + "с · акула близко";
+    } else {
+      // me = boat flees from you (shark)
+      const dx = hunter.x - prey.x;
+      const dy = hunter.y - prey.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const spd = 170;
+      // flee opposite
+      prey.x -= (dx / dist) * spd * dt;
+      prey.y -= (dy / dist) * spd * dt;
+      clamp(prey, 70, 100, 890, 480);
+      prey.bob += dt * 8;
+      g.survive += dt;
+      playStat.textContent = "Ты акула · догони лодку";
+    }
+
+    clamp(g.me, 70, 100, 890, 480);
+
+    // bubbles
+    if (Math.random() < 0.35) {
+      g.bubbles.push({
+        x: g.me.x + (Math.random() - 0.5) * 20,
+        y: g.me.y + (Math.random() - 0.5) * 10,
+        life: 0.6 + Math.random() * 0.4,
+        vy: -30 - Math.random() * 40,
       });
     }
-    for (const p of g.particles) {
-      p.life -= dt;
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
+    for (const b of g.bubbles) {
+      b.life -= dt;
+      b.y += b.vy * dt;
     }
-    g.particles = g.particles.filter((p) => p.life > 0);
+    g.bubbles = g.bubbles.filter((b) => b.life > 0);
+
+    const d = Math.hypot(g.you.x - g.me.x, g.you.y - g.me.y);
+    if (d < 38) {
+      g.phase = "eat";
+      if (g.role === "prey") {
+        say("Хрусть. Фильм окончен. Акула победила.", 3);
+        setTimeout(() => finish("Океан · конец. Я съел тебя. Это кино."), 900);
+      } else {
+        say("Хрусть! Ты съел лодку. Ты — акула.", 3);
+        setTimeout(() => finish("Океан · конец. Ты съел меня. Жуткий фильм."), 900);
+      }
+      return;
+    }
+
+    // survive ending only when you're the boat
+    if (g.role === "prey" && g.survive >= g.needSurvive) {
+      g.phase = "escape";
+      say("Ты уплыл к берегу. Акула осталась голодной.", 3);
+      setTimeout(() => finish("Океан · хэппи-энд. Лодка спаслась."), 900);
+    }
+  }
+
+  function drawBoat(p, label) {
+    const b = Math.sin(p.bob || g.waves * 3) * 2;
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + 14, 22, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // hull
+    ctx.fillStyle = "#c08040";
+    ctx.beginPath();
+    ctx.moveTo(p.x - 22, p.y + 4 + b);
+    ctx.lineTo(p.x + 22, p.y + 4 + b);
+    ctx.lineTo(p.x + 14, p.y + 14 + b);
+    ctx.lineTo(p.x - 14, p.y + 14 + b);
+    ctx.closePath();
+    ctx.fill();
+    // little person
+    ctx.fillStyle = "#ffd76a";
+    roundRect(p.x - 6, p.y - 14 + b, 12, 16, 4);
+    ctx.fill();
+    ctx.fillStyle = "#e8b890";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 18 + b, 6, 0, Math.PI * 2);
+    ctx.fill();
+    // oar
+    ctx.strokeStyle = "#a07040";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x + 8, p.y - 4 + b);
+    ctx.lineTo(p.x + 26, p.y + 10 + b);
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 11px Nunito";
+    ctx.textAlign = "center";
+    ctx.fillText(label, p.x, p.y - 32 + b);
+    ctx.textAlign = "left";
+  }
+
+  function drawShark(p, label) {
+    const ang = p.angle || 0;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(ang);
+    // body
+    ctx.fillStyle = "#4a7aa8";
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 28, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // fin
+    ctx.beginPath();
+    ctx.moveTo(-2, -10);
+    ctx.lineTo(6, -26);
+    ctx.lineTo(12, -8);
+    ctx.fill();
+    // tail
+    ctx.beginPath();
+    ctx.moveTo(-26, 0);
+    ctx.lineTo(-40, -12);
+    ctx.lineTo(-34, 0);
+    ctx.lineTo(-40, 12);
+    ctx.closePath();
+    ctx.fill();
+    // belly
+    ctx.fillStyle = "#b8d8f0";
+    ctx.beginPath();
+    ctx.ellipse(4, 4, 16, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // eye
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(16, -3, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#102030";
+    ctx.beginPath();
+    ctx.arc(17, -3, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    // teeth hint
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(24, 2);
+    ctx.lineTo(28, 6);
+    ctx.lineTo(22, 6);
+    ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = "#fff";
+    ctx.font = "800 11px Nunito";
+    ctx.textAlign = "center";
+    ctx.fillText(label, p.x, p.y - 36);
+    ctx.textAlign = "left";
   }
 
   function drawCinema() {
-    ctx.fillStyle = "#1a2030";
-    roundRect(50, 60, 860, 420, 18);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.font = "800 13px Nunito";
-    ctx.fillText("кино · разные образы", 70, 88);
-    for (const p of g.particles) {
-      ctx.globalAlpha = p.life * 2;
-      ctx.fillStyle = p.color;
+    // ocean
+    const grd = ctx.createLinearGradient(0, 0, 0, VH);
+    grd.addColorStop(0, "#1a5080");
+    grd.addColorStop(0.45, "#0a3860");
+    grd.addColorStop(1, "#041828");
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, VW, VH);
+
+    // waves
+    for (let i = 0; i < 6; i++) {
+      const y = 80 + i * 70;
+      ctx.strokeStyle = `rgba(120, 200, 255, ${0.12 + (i % 2) * 0.06})`;
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
+      ctx.moveTo(0, y);
+      for (let x = 0; x <= VW; x += 30) {
+        ctx.lineTo(x, y + Math.sin(g.waves * 2 + x * 0.02 + i) * 8);
+      }
+      ctx.stroke();
     }
-    const yc = g.formsYou.find((f) => f.id === g.you.form).color;
-    const mc = g.formsMe.find((f) => f.id === g.me.form).color;
-    // aura
-    ctx.fillStyle = yc + "44";
-    ctx.beginPath();
-    ctx.arc(g.you.x, g.you.y - 8, 28, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = mc + "44";
-    ctx.beginPath();
-    ctx.arc(g.me.x, g.me.y - 8, 28, 0, Math.PI * 2);
-    ctx.fill();
-    drawPerson(g.me, mc, "Я · " + g.me.icon);
-    drawPerson(g.you, yc, "Ты · " + g.you.icon);
+
+    // title card
+    if (g.phase === "intro") {
+      ctx.fillStyle = "rgba(0,0,0,0.45)";
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "#e8f4ff";
+      ctx.font = "900 42px Fredoka, Nunito";
+      ctx.textAlign = "center";
+      ctx.fillText("ОКЕАН", VW / 2, VH / 2 - 10);
+      ctx.font = "700 16px Nunito";
+      ctx.fillStyle = "rgba(200,230,255,0.85)";
+      ctx.fillText("короткий фильм · акула и лодка", VW / 2, VH / 2 + 28);
+      ctx.textAlign = "left";
+      return;
+    }
+
+    // bubbles
+    for (const b of g.bubbles) {
+      ctx.strokeStyle = `rgba(180, 230, 255, ${b.life})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 3, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // shore hint right
+    ctx.fillStyle = "rgba(255, 220, 140, 0.15)";
+    ctx.fillRect(VW - 40, 0, 40, VH);
+    ctx.fillStyle = "rgba(255, 230, 160, 0.5)";
+    ctx.font = "700 11px Nunito";
+    ctx.fillText("берег", VW - 36, 30);
+
+    if (g.role === "prey") {
+      drawShark(g.me, "Я · акула");
+      drawBoat(g.you, "Ты · лодка");
+    } else {
+      drawBoat(g.me, "Я · лодка");
+      drawShark(g.you, "Ты · акула");
+    }
+
+    if (g.phase === "eat") {
+      ctx.fillStyle = "rgba(80,0,20,0.35)";
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "#ffb0b0";
+      ctx.font = "900 36px Fredoka, Nunito";
+      ctx.textAlign = "center";
+      ctx.fillText("СЪЕЛ", VW / 2, VH / 2);
+      ctx.textAlign = "left";
+    }
   }
 
   // ——— 3 DOORS ———
