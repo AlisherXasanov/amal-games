@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>СкажиИгру — Меню</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Comfortaa:wght@700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="studio.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="menu.html">СкажиИгру</a>
+    <div class="top-right">
+      <div class="clock-box">
+        <span id="clock-now">--:--</span>
+      </div>
+      <button type="button" class="btn ghost" id="btn-reload">↻</button>
+    </div>
+  </header>
+  <main class="studio menu-page">
+    <section class="hero-block">
+      <p class="eyebrow">Главное меню</p>
+      <h1>СкажиИгру</h1>
+      <p class="lede">Эрохека слушает тебя, создаёт игры и говорит на выбранном языке.</p>
+      <p class="season-line"><span class="season-pill" id="season-badge">Лето</span></p>
+    </section>
+    <section class="menu-grid">
+      <a class="menu-card primary" href="studio.html">
+        <strong>Студия</strong>
+        <span>Создать игру голосом</span>
+      </a>
+      <a class="menu-card primary" href="erihoka.html">
+        <strong>Игры Эрихоки</strong>
+        <span>Морской бой, Sea Borker, Hikinoliki и боты</span>
+      </a>
+      <a class="menu-card" href="test.html">
+        <strong>Тест-экран</strong>
+        <span>Посмотреть, как вышла игра</span>
+      </a>
+      <a class="menu-card" href="mysite.html">
+        <strong>Мой сайт</strong>
+        <span>Твоя страница с играми</span>
+      </a>
+      <a class="menu-card" href="./">
+        <strong>Презентация</strong>
+        <span>Предложение проекта</span>
+      </a>
+      <a class="menu-card" href="../">
+        <strong>Amal's Games</strong>
+        <span>Каталог всех игр</span>
+      </a>
+    </section>
+  </main>
+  <script src="i18n.js"></script>
+  <script src="season.js"></script>
+  <script>
+    if (window.SkazhiSeason) SkazhiSeason.apply();
+    const clock = document.getElementById("clock-now");
+    function tick() {
+      const n = new Date();
+      clock.textContent = n.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+    tick();
+    setInterval(tick, 1000);
+    document.getElementById("btn-reload").onclick = () => location.reload();
+  </script>
+</body>
+</html>

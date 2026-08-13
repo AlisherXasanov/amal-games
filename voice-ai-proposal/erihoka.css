@@ -1,0 +1,279 @@
+/* Games from Erihoka — play vs Eri Hoka & bots */
+:root {
+  --eh-bg: #0c1a2e;
+  --eh-bg2: #16324f;
+  --eh-ink: #f4f7fb;
+  --eh-muted: #9bb0c7;
+  --eh-brand: #3dd6c6;
+  --eh-accent: #ff8a3d;
+  --eh-eri: #a78bfa;
+  --eh-card: rgba(255, 255, 255, 0.08);
+  --eh-line: rgba(255, 255, 255, 0.14);
+  --eh-font: "Nunito", system-ui, sans-serif;
+  --eh-display: "Comfortaa", system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body.erihoka {
+  min-height: 100dvh;
+  font-family: var(--eh-font);
+  color: var(--eh-ink);
+  background:
+    radial-gradient(900px 500px at 10% -10%, #1e4d6b 0%, transparent 55%),
+    radial-gradient(700px 400px at 100% 0%, #3b2a6b 0%, transparent 50%),
+    linear-gradient(165deg, var(--eh-bg), var(--eh-bg2));
+}
+
+.eh-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+.eh-top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.eh-brand {
+  font-family: var(--eh-display);
+  font-weight: 700;
+  color: var(--eh-ink);
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+
+.eh-brand span {
+  color: var(--eh-eri);
+}
+
+.eh-back {
+  color: var(--eh-muted);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.eh-main {
+  position: relative;
+  z-index: 1;
+  width: min(920px, calc(100% - 1.5rem));
+  margin: 0 auto 2rem;
+}
+
+.eh-hero {
+  text-align: center;
+  padding: 1rem 0 1.5rem;
+}
+
+.eh-hero .eyebrow {
+  color: var(--eh-brand);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+}
+
+.eh-hero h1 {
+  font-family: var(--eh-display);
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  margin: 0.35rem 0;
+}
+
+.eh-hero p {
+  color: var(--eh-muted);
+  max-width: 36rem;
+  margin: 0.4rem auto 0;
+  line-height: 1.45;
+}
+
+.eh-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .eh-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .eh-grid .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.eh-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1.2rem 1.25rem;
+  border-radius: 18px;
+  background: var(--eh-card);
+  border: 1px solid var(--eh-line);
+  text-decoration: none;
+  color: var(--eh-ink);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.eh-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--eh-brand) 50%, white);
+}
+
+.eh-card .tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--eh-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.eh-card strong {
+  font-family: var(--eh-display);
+  font-size: 1.25rem;
+}
+
+.eh-card span {
+  color: var(--eh-muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.eh-panel {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: var(--eh-card);
+  border: 1px solid var(--eh-line);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.eh-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.eh-row label {
+  color: var(--eh-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-right: 0.25rem;
+}
+
+.eh-btn {
+  appearance: none;
+  border: 1px solid var(--eh-line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--eh-ink);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.eh-btn:hover {
+  border-color: var(--eh-brand);
+}
+
+.eh-btn.active {
+  background: color-mix(in srgb, var(--eh-eri) 35%, transparent);
+  border-color: var(--eh-eri);
+}
+
+.eh-btn.primary {
+  background: linear-gradient(135deg, var(--eh-brand), #2bb8a8);
+  color: #06241f;
+  border: none;
+}
+
+.eh-btn.accent {
+  background: linear-gradient(135deg, var(--eh-accent), #ff6b1a);
+  color: #2a1200;
+  border: none;
+}
+
+.eh-score {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  font-weight: 800;
+}
+
+.eh-score .you {
+  color: var(--eh-brand);
+}
+
+.eh-score .bot {
+  color: var(--eh-eri);
+}
+
+.eh-stage-wrap {
+  margin-top: 0.75rem;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--eh-line);
+  background: #061018;
+  touch-action: none;
+}
+
+.eh-stage-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.eh-hint {
+  color: var(--eh-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.eh-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(6, 16, 24, 0.72);
+  text-align: center;
+  padding: 1rem;
+  z-index: 3;
+}
+
+.eh-overlay.hidden {
+  display: none;
+}
+
+.eh-overlay h2 {
+  font-family: var(--eh-display);
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.eh-overlay p {
+  color: var(--eh-muted);
+  margin-bottom: 0.9rem;
+}
+
+.eh-stage-box {
+  position: relative;
+}

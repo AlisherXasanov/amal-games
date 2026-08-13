@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sea Borker — Игры Эрихоки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="erihoka.css" />
+</head>
+<body class="erihoka">
+  <div class="eh-noise" aria-hidden="true"></div>
+  <header class="eh-top">
+    <a class="eh-brand" href="erihoka.html">Игры <span>Эрихоки</span></a>
+    <a class="eh-back" href="erihoka.html">← К играм</a>
+  </header>
+  <main class="eh-main">
+    <section class="eh-hero">
+      <p class="eyebrow">Море</p>
+      <h1>Sea Borker</h1>
+      <p>Управляй боркером стрелками или WASD. Собирай пузыри 30 секунд. Кто собрал больше — победил!</p>
+    </section>
+    <div class="eh-panel">
+      <div class="eh-row" id="opp-row">
+        <label>Противник:</label>
+        <button type="button" class="eh-btn" data-bot="eri">Эри Хока</button>
+        <button type="button" class="eh-btn" data-bot="easy">Лёгкий бот</button>
+        <button type="button" class="eh-btn" data-bot="hard">Сильный бот</button>
+      </div>
+      <div class="eh-score">
+        <span class="you">Ты: <b id="score-you">0</b></span>
+        <span class="bot"><span id="bot-name">Эри Хока</span>: <b id="score-bot">0</b></span>
+        <span>Время: <b id="time-left">30</b></span>
+      </div>
+      <div class="eh-row">
+        <button type="button" class="eh-btn primary" id="btn-start">Играть</button>
+      </div>
+      <p class="eh-hint">На телефоне: касайся экрана, чтобы плыть туда. На компьютере: стрелки или WASD.</p>
+    </div>
+    <div class="eh-stage-box eh-stage-wrap">
+      <canvas id="game" width="800" height="420"></canvas>
+      <div class="eh-overlay" id="overlay">
+        <div>
+          <h2 id="overlay-title">Sea Borker</h2>
+          <p id="overlay-msg">Выбери противника и нажми «Играть»</p>
+          <button type="button" class="eh-btn accent" id="btn-again">Играть</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="erihoka-bots.js"></script>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width;
+    const H = canvas.height;
+
+    let bot = ErihokaBots.eri;
+    const getBot = ErihokaUI.bindOpponent(document.getElementById("opp-row"), (b) => {
+      bot = b;
+      document.getElementById("bot-name").textContent = b.name;
+    });
+
+    const keys = Object.create(null);
+    let touchTarget = null;
+    let running = false;
+    let you = { x: 120, y: H / 2, r: 22, score: 0 };
+    let foe = { x: W - 120, y: H / 2, r: 22, score: 0 };
+    let bubbles = [];
+    let timeLeft = 30;
+    let last = 0;
+    let spawnAcc = 0;
+
+    function reset() {
+      you = { x: 120, y: H / 2, r: 22, score: 0 };
+      foe = { x: W - 120, y: H / 2, r: 22, score: 0 };
+      bubbles = [];
+      timeLeft = 30;
+      spawnAcc = 0;
+      updateHud();
+    }
+
+    function updateHud() {
+      document.getElementById("score-you").textContent = you.score;
+      document.getElementById("score-bot").textContent = foe.score;
+      document.getElementById("time-left").textContent = Math.ceil(timeLeft);
+      document.getElementById("bot-name").textContent = bot.name;
+    }
+
+    function spawnBubble() {
+      bubbles.push({
+        x: 40 + Math.random() * (W - 80),
+        y: 40 + Math.random() * (H - 80),
+        r: 10 + Math.random() * 8,
+        life: 4 + Math.random() * 3,
+      });
+    }
+
+    function moveToward(ent, tx, ty, speed) {
+      const dx = tx - ent.x;
+      const dy = ty - ent.y;
+      const d = Math.hypot(dx, dy) || 1;
+      ent.x += (dx / d) * speed;
+      ent.y += (dy / d) * speed;
+      ent.x = Math.max(ent.r, Math.min(W - ent.r, ent.x));
+      ent.y = Math.max(ent.r, Math.min(H - ent.r, ent.y));
+    }
+
+    function nearestBubble(ent) {
+      let best = null;
+      let bestD = Infinity;
+      for (const b of bubbles) {
+        const d = Math.hypot(b.x - ent.x, b.y - ent.y);
+        if (d < bestD) {
+          bestD = d;
+          best = b;
+        }
+      }
+      return best;
+    }
+
+    function tryCollect(ent) {
+      for (let i = bubbles.length - 1; i >= 0; i--) {
+        const b = bubbles[i];
+        if (Math.hypot(b.x - ent.x, b.y - ent.y) < ent.r + b.r) {
+          bubbles.splice(i, 1);
+          ent.score += 1;
+        }
+      }
+    }
+
+    function endGame() {
+      running = false;
+      const title = you.score > foe.score ? "Ты победил!" : you.score < foe.score ? bot.name + " победил!" : "Ничья!";
+      document.getElementById("overlay-title").textContent = title;
+      document.getElementById("overlay-msg").textContent = "Ты: " + you.score + " · " + bot.name + ": " + foe.score;
+      document.getElementById("overlay").classList.remove("hidden");
+    }
+
+    function start() {
+      bot = getBot();
+      reset();
+      document.getElementById("overlay").classList.add("hidden");
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+
+    function loop(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      timeLeft -= dt;
+      if (timeLeft <= 0) {
+        timeLeft = 0;
+        updateHud();
+        endGame();
+        draw();
+        return;
+      }
+
+      spawnAcc += dt;
+      while (spawnAcc > 0.55) {
+        spawnAcc -= 0.55;
+        if (bubbles.length < 10) spawnBubble();
+      }
+      for (const b of bubbles) b.life -= dt;
+      bubbles = bubbles.filter((b) => b.life > 0);
+
+      let vx = 0;
+      let vy = 0;
+      if (keys.ArrowLeft || keys.a || keys.A) vx -= 1;
+      if (keys.ArrowRight || keys.d || keys.D) vx += 1;
+      if (keys.ArrowUp || keys.w || keys.W) vy -= 1;
+      if (keys.ArrowDown || keys.s || keys.S) vy += 1;
+      if (touchTarget) {
+        moveToward(you, touchTarget.x, touchTarget.y, 220 * dt);
+      } else if (vx || vy) {
+        const n = Math.hypot(vx, vy) || 1;
+        you.x += (vx / n) * 220 * dt;
+        you.y += (vy / n) * 220 * dt;
+        you.x = Math.max(you.r, Math.min(W - you.r, you.x));
+        you.y = Math.max(you.r, Math.min(H - you.r, you.y));
+      }
+
+      const target = nearestBubble(foe);
+      if (target && Math.random() < 0.35 + bot.react * 0.6) {
+        moveToward(foe, target.x, target.y, (140 + bot.speed * 120) * dt);
+      } else {
+        moveToward(foe, foe.x + (Math.random() - 0.5) * 40, foe.y + (Math.random() - 0.5) * 40, 40 * dt);
+      }
+
+      tryCollect(you);
+      tryCollect(foe);
+      updateHud();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function drawFish(ent, color, faceRight) {
+      ctx.save();
+      ctx.translate(ent.x, ent.y);
+      if (!faceRight) ctx.scale(-1, 1);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, ent.r, ent.r * 0.7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-ent.r, 0);
+      ctx.lineTo(-ent.r - 12, -10);
+      ctx.lineTo(-ent.r - 12, 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(ent.r * 0.35, -4, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(ent.r * 0.45, -4, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#0a3a55");
+      g.addColorStop(1, "#062233");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 18; i++) {
+        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.beginPath();
+        ctx.arc((i * 97) % W, (i * 53) % H, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (const b of bubbles) {
+        ctx.strokeStyle = "rgba(180,240,255,0.85)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = "rgba(180,240,255,0.15)";
+        ctx.fill();
+      }
+      drawFish(you, "#3dd6c6", true);
+      drawFish(foe, bot.color, false);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+    });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+    function canvasPos(e) {
+      const r = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return {
+        x: ((t.clientX - r.left) / r.width) * W,
+        y: ((t.clientY - r.top) / r.height) * H,
+      };
+    }
+    canvas.addEventListener("pointerdown", (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      touchTarget = canvasPos(e);
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (touchTarget) touchTarget = canvasPos(e);
+    });
+    canvas.addEventListener("pointerup", () => { touchTarget = null; });
+    canvas.addEventListener("pointercancel", () => { touchTarget = null; });
+
+    document.getElementById("btn-start").onclick = start;
+    document.getElementById("btn-again").onclick = start;
+    draw();
+  </script>
+</body>
+</html>

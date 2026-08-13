@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тест-экран — СкажиИгру</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="studio.css" />
+  <style>
+    .test-frame {
+      width: 100%;
+      min-height: 70vh;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #081218;
+      overflow: hidden;
+    }
+    .test-frame iframe {
+      width: 100%;
+      height: min(72vh, 640px);
+      border: 0;
+      display: block;
+      background: #081218;
+    }
+    .test-empty {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="menu.html">СкажиИгру</a>
+    <div class="top-right">
+      <div class="clock-box"><span id="clock-now">--:--</span></div>
+      <a class="btn ghost" href="menu.html">Меню</a>
+      <a class="btn ghost" href="studio.html">Студия</a>
+      <button type="button" class="btn ghost" id="btn-reload">↻</button>
+    </div>
+  </header>
+  <main class="studio">
+    <section class="hero-block">
+      <p class="eyebrow">Тест-экран</p>
+      <h1>Как вышла игра</h1>
+      <p class="lede">Здесь можно проверить игру. Если что-то не так — вернись в студию и скажи Эрохеке по-новому.</p>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <h2 id="test-title">Выбери игру</h2>
+        <p id="test-sub">Последние игры из студии</p>
+      </div>
+      <div id="test-picks" class="actions"></div>
+      <div class="test-frame" id="test-frame">
+        <p class="test-empty" id="test-empty">Пока нет игры для теста. Создай её в студии.</p>
+      </div>
+    </section>
+  </main>
+  <script src="season.js"></script>
+  <script>
+    if (window.SkazhiSeason) SkazhiSeason.apply();
+    const clock = document.getElementById("clock-now");
+    function tick() {
+      clock.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+    tick();
+    setInterval(tick, 1000);
+    document.getElementById("btn-reload").onclick = () => location.reload();
+
+    const games = JSON.parse(localStorage.getItem("skazhigru-games-v1") || "[]");
+    const picks = document.getElementById("test-picks");
+    const frame = document.getElementById("test-frame");
+    const empty = document.getElementById("test-empty");
+    const params = new URLSearchParams(location.search);
+    let active = params.get("id") || (games[0] && games[0].id);
+
+    function load(id) {
+      active = id;
+      const g = games.find((x) => x.id === id);
+      if (!g) return;
+      document.getElementById("test-title").textContent = g.name;
+      document.getElementById("test-sub").textContent = g.prompt || "";
+      empty.remove();
+      frame.innerHTML = `<iframe title="test" src="play.html?id=${encodeURIComponent(id)}"></iframe>`;
+      [...picks.querySelectorAll("button")].forEach((b) => {
+        b.classList.toggle("primary", b.dataset.id === id);
+      });
+    }
+
+    if (!games.length) {
+      picks.innerHTML = `<a class="btn primary" href="studio.html">В студию</a>`;
+    } else {
+      picks.innerHTML = games
+        .slice(0, 8)
+        .map(
+          (g) =>
+            `<button type="button" class="btn${g.id === active ? " primary" : ""}" data-id="${g.id}">${g.name.replace(/</g, "&lt;")}</button>`
+        )
+        .join("") + `<a class="btn ghost" href="studio.html">Новая идея</a>`;
+      picks.querySelectorAll("button[data-id]").forEach((btn) => {
+        btn.onclick = () => load(btn.dataset.id);
+      });
+      if (active) load(active);
+    }
+  </script>
+</body>
+</html>

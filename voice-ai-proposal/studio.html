@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>СкажиИгру — Студия</title>
+  <meta name="description" content="Create games for free by voice. Free for everyone." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="studio.css?v=12" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="brand" href="menu.html" data-i18n="brand">СкажиИгру</a>
+    <div class="top-right">
+      <div class="clock-panel" aria-live="polite">
+        <div class="clock-card kids">
+          <span class="clock-tag" data-i18n="timeKids">Для детей</span>
+          <strong id="clock-kids">—</strong>
+          <span class="clock-sub" id="clock-kids-left" data-i18n="timeIdleKids">Можно говорить когда хочешь</span>
+        </div>
+        <div class="clock-card adults">
+          <span class="clock-tag" data-i18n="timeAdults">Обычные часы</span>
+          <strong id="clock-adults">19:00:00</strong>
+          <span class="clock-sub"><span data-i18n="clockLeft">Время речи</span>: <b id="clock-left">∞</b></span>
+        </div>
+      </div>
+      <a class="btn ghost" href="menu.html" data-i18n="mainMenu">Меню</a>
+      <button type="button" class="btn ghost" id="btn-reload" data-i18n="reload" onclick="location.reload()">Обновить</button>
+    </div>
+  </header>
+
+  <div class="lang-bar" aria-label="Languages">
+    <span class="lang-label" data-i18n="langLabel">Язык</span>
+    <div class="lang-btns" id="lang-btns"></div>
+  </div>
+
+  <main class="studio">
+    <section class="hero-block">
+      <p class="eyebrow" data-i18n="eyebrow">Студия</p>
+      <h1 data-i18n="heroTitle">Просто нажми микрофон и скажи</h1>
+      <p class="lede" data-i18n="heroLede">Писать не нужно. Сказал — и всё делается само. Если не хочешь говорить, можно написать.</p>
+
+      <div class="free-banner" role="note">
+        <div class="free-art" aria-hidden="true">
+          <div class="free-badge">
+            <span class="free-badge-ribbon"></span>
+            <span class="free-badge-core">
+              <span class="free-badge-word" data-i18n="freeWord">FREE</span>
+              <span class="free-badge-sub" data-i18n="freeWordSub">0 ¤</span>
+            </span>
+            <span class="free-badge-leaf l1"></span>
+            <span class="free-badge-leaf l2"></span>
+            <span class="free-badge-star st1"></span>
+            <span class="free-badge-star st2"></span>
+          </div>
+        </div>
+        <div class="free-orbit" aria-hidden="true">
+          <span class="free-smile">☺</span>
+          <span class="free-spark s1"></span>
+          <span class="free-spark s2"></span>
+          <span class="free-spark s3"></span>
+        </div>
+        <div class="free-copy">
+          <p class="free-kicker" data-i18n="freeDecor">играй · твори · делись</p>
+          <p class="free-text" data-i18n-html="freeHtml">Здесь можно <strong>бесплатно</strong> создавать игры — для всех, без оплаты. Ура, сайт свободный!</p>
+        </div>
+      </div>
+      <p class="season-line"><span class="season-pill" id="season-badge">Лето</span> <span data-i18n="seasonHint">Тема меняется сама по времени года</span></p>
+    </section>
+
+    <section class="panel voice-hero" aria-labelledby="game-title">
+      <div class="panel-head">
+        <h2 id="game-title" data-i18n="gameTitle">Создать игру</h2>
+        <p data-i18n="gameSub">Можно голосом или просто написать идею.</p>
+      </div>
+
+      <div class="listen-meter" id="listen-meter" hidden>
+        <div class="listen-meter-bar"><i id="listen-bar"></i></div>
+        <p id="listen-caption" data-i18n="listenCaption">Эрохека слушает…</p>
+        <p class="listen-kids" id="listen-kids-left"></p>
+      </div>
+
+      <div class="voice-row-actions">
+        <button type="button" class="mic-big" id="btn-mic" aria-pressed="false">
+          <span class="mic-big-icon" aria-hidden="true"></span>
+          <span class="mic-big-label" id="mic-label" data-i18n="micLabel">Нажми и говори</span>
+        </button>
+        <a class="test-big" id="btn-test-game" href="test.html">
+          <span class="test-big-icon" aria-hidden="true">▶</span>
+          <span class="test-big-label" data-i18n="testScreen">Попробуй игру</span>
+          <span class="test-big-hint" data-i18n="testHint">Нажми сюда, чтобы попробовать игру, которую ты сделал</span>
+        </a>
+      </div>
+      <p class="hint center" id="mic-hint">Нажми микрофон → говори → замолчи или нажми «Стоп»</p>
+
+      <div class="live-write" id="live-write">
+        <p class="heard-label">Твои слова</p>
+        <p id="ears-status" class="ears-status">Уши: загружаю…</p>
+        <p id="heard-text" class="live-write-text is-empty">…</p>
+        <p class="live-write-status" id="live-write-status">Можно написать внизу — микрофон не обязателен</p>
+      </div>
+
+      <div class="type-now" id="type-now">
+        <p class="type-now-title">Напиши идею игры сюда</p>
+        <p class="type-now-hint">Если микрофон не работает — просто пиши. Это тоже правильно.</p>
+        <label class="type-now-label">
+          <span class="sr-only">Идея игры</span>
+          <textarea id="game-prompt" rows="3" maxlength="400" data-i18n-placeholder="promptPh" placeholder="Например: зелёная змейка"></textarea>
+        </label>
+        <label class="type-now-name">
+          <span data-i18n="gameName">Название (необязательно)</span>
+          <input id="game-name" type="text" maxlength="40" data-i18n-placeholder="gameNamePh" placeholder="Моя игра" />
+        </label>
+        <button type="button" class="btn primary type-now-btn" id="btn-make-game" data-i18n="makeText">Создать игру</button>
+      </div>
+
+      <div class="heard" id="heard-box" hidden></div>
+
+      <div class="confirm-box" id="confirm-box" hidden>
+        <p class="confirm-title" data-i18n="confirmTitle">Так ты сказал? Проверь, всё ли верно</p>
+        <textarea id="confirm-text" rows="3" maxlength="400"></textarea>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-confirm-yes" data-i18n="confirmYes">Да, всё верно</button>
+          <button type="button" class="btn" id="btn-confirm-retry" data-i18n="confirmRetry">Сказать заново</button>
+          <button type="button" class="btn ghost" id="btn-confirm-edit" data-i18n="confirmEdit">Исправить текст</button>
+        </div>
+      </div>
+
+      <div class="actions center-actions">
+        <button type="button" class="btn primary" id="btn-play-game" hidden data-i18n="playNow">Играть сейчас</button>
+        <a class="btn ghost" id="btn-open-site" href="mysite.html" data-i18n="openSite">Открыть мой сайт</a>
+      </div>
+      <p class="status center" id="game-status" aria-live="polite"></p>
+      <div class="speak-box" id="ai-speak" hidden>
+        <p id="ai-text"></p>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="site-title">
+      <div class="panel-head">
+        <h2 id="site-title" data-i18n="siteTitle">Мой сайт</h2>
+        <p data-i18n="siteSub">Тоже можно голосом: скажи название сайта.</p>
+      </div>
+
+      <button type="button" class="btn mic" id="btn-site-mic" aria-pressed="false" data-i18n="siteMic">Микрофон для сайта</button>
+      <p class="hint" id="site-mic-hint" data-i18n="siteMicHint">Скажи название или описание сайта</p>
+      <p class="status" id="site-status" aria-live="polite"></p>
+
+      <details class="optional" id="site-write-box" open>
+        <summary data-i18n="siteOptional">Или написать сайт текстом</summary>
+        <div class="optional-body">
+          <label>
+            <span data-i18n="siteName">Название сайта</span>
+            <input id="site-name" type="text" maxlength="60" data-i18n-placeholder="siteNamePh" placeholder="Например: Мир Амаля" />
+          </label>
+          <label>
+            <span data-i18n="siteAbout">Коротко о сайте</span>
+            <textarea id="site-about" rows="3" maxlength="280" data-i18n-placeholder="siteAboutPh" placeholder="О чём твой сайт…"></textarea>
+          </label>
+          <button type="button" class="btn" id="btn-save-site" data-i18n="saveSite">Сохранить сайт</button>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel list-panel" aria-labelledby="list-title">
+      <div class="panel-head">
+        <h2 id="list-title" data-i18n="listTitle">Мои игры</h2>
+        <p data-i18n="listSub">Всё, что ты создал голосом или текстом.</p>
+      </div>
+      <div id="game-list" class="game-list"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" hidden>
+    <p class="toast-title" id="toast-title">Эрохека закончила</p>
+    <p class="toast-body" id="toast-body">Посмотри, что получилось.</p>
+    <div class="actions">
+      <button type="button" class="btn primary" id="toast-test" data-i18n="seeResult">Смотреть результат</button>
+      <button type="button" class="btn ghost" id="toast-close" data-i18n="close">Закрыть</button>
+    </div>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="season.js"></script>
+  <script type="module" src="whisper-stt.js?v=12"></script>
+  <script src="studio.js?v=12"></script>
+</body>
+</html>

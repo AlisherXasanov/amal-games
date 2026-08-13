@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Звёздный бой — Игры Эрихоки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="erihoka.css" />
+</head>
+<body class="erihoka">
+  <div class="eh-noise" aria-hidden="true"></div>
+  <header class="eh-top">
+    <a class="eh-brand" href="erihoka.html">Игры <span>Эрихоки</span></a>
+    <a class="eh-back" href="erihoka.html">← К играм</a>
+  </header>
+  <main class="eh-main">
+    <section class="eh-hero">
+      <p class="eyebrow">Дуэль</p>
+      <h1>Звёздный бой</h1>
+      <p>Бегай и хватай жёлтые звёзды. Первый до 8 очков побеждает Эри Хоку или другого бота.</p>
+    </section>
+    <div class="eh-panel">
+      <div class="eh-row" id="opp-row">
+        <label>Противник:</label>
+        <button type="button" class="eh-btn" data-bot="eri">Эри Хока</button>
+        <button type="button" class="eh-btn" data-bot="easy">Лёгкий бот</button>
+        <button type="button" class="eh-btn" data-bot="hard">Сильный бот</button>
+      </div>
+      <div class="eh-score">
+        <span class="you">Ты: <b id="score-you">0</b> / 8</span>
+        <span class="bot"><span id="bot-name">Эри Хока</span>: <b id="score-bot">0</b> / 8</span>
+      </div>
+      <div class="eh-row">
+        <button type="button" class="eh-btn primary" id="btn-start">Играть</button>
+      </div>
+      <p class="eh-hint">Стрелки / WASD или касание экрана. Звезда появляется снова после сбора.</p>
+    </div>
+    <div class="eh-stage-box eh-stage-wrap">
+      <canvas id="game" width="800" height="420"></canvas>
+      <div class="eh-overlay" id="overlay">
+        <div>
+          <h2 id="overlay-title">Звёздный бой</h2>
+          <p id="overlay-msg">Выбери противника и нажми «Играть»</p>
+          <button type="button" class="eh-btn accent" id="btn-again">Играть</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="erihoka-bots.js"></script>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width;
+    const H = canvas.height;
+    const GOAL = 8;
+
+    let bot = ErihokaBots.eri;
+    const getBot = ErihokaUI.bindOpponent(document.getElementById("opp-row"), (b) => {
+      bot = b;
+      document.getElementById("bot-name").textContent = b.name;
+    });
+
+    const keys = Object.create(null);
+    let touchTarget = null;
+    let running = false;
+    let you, foe, star;
+    let last = 0;
+
+    function placeStar() {
+      return {
+        x: 80 + Math.random() * (W - 160),
+        y: 80 + Math.random() * (H - 160),
+        r: 16,
+        spin: 0,
+      };
+    }
+
+    function reset() {
+      you = { x: 100, y: H / 2, r: 20, score: 0 };
+      foe = { x: W - 100, y: H / 2, r: 20, score: 0 };
+      star = placeStar();
+      updateHud();
+    }
+
+    function updateHud() {
+      document.getElementById("score-you").textContent = you.score;
+      document.getElementById("score-bot").textContent = foe.score;
+      document.getElementById("bot-name").textContent = bot.name;
+    }
+
+    function moveToward(ent, tx, ty, speed) {
+      const dx = tx - ent.x;
+      const dy = ty - ent.y;
+      const d = Math.hypot(dx, dy) || 1;
+      ent.x += (dx / d) * speed;
+      ent.y += (dy / d) * speed;
+      ent.x = Math.max(ent.r, Math.min(W - ent.r, ent.x));
+      ent.y = Math.max(ent.r, Math.min(H - ent.r, ent.y));
+    }
+
+    function endGame(who) {
+      running = false;
+      document.getElementById("overlay-title").textContent = who === "you" ? "Ты победил!" : bot.name + " победил!";
+      document.getElementById("overlay-msg").textContent = "Ты: " + you.score + " · " + bot.name + ": " + foe.score;
+      document.getElementById("overlay").classList.remove("hidden");
+    }
+
+    function start() {
+      bot = getBot();
+      reset();
+      document.getElementById("overlay").classList.add("hidden");
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+
+    function checkStar(ent, who) {
+      if (Math.hypot(ent.x - star.x, ent.y - star.y) < ent.r + star.r) {
+        ent.score += 1;
+        star = placeStar();
+        updateHud();
+        if (ent.score >= GOAL) endGame(who);
+      }
+    }
+
+    function loop(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      star.spin += dt * 4;
+
+      let vx = 0;
+      let vy = 0;
+      if (keys.ArrowLeft || keys.a || keys.A) vx -= 1;
+      if (keys.ArrowRight || keys.d || keys.D) vx += 1;
+      if (keys.ArrowUp || keys.w || keys.W) vy -= 1;
+      if (keys.ArrowDown || keys.s || keys.S) vy += 1;
+      if (touchTarget) {
+        moveToward(you, touchTarget.x, touchTarget.y, 260 * dt);
+      } else if (vx || vy) {
+        const n = Math.hypot(vx, vy) || 1;
+        you.x += (vx / n) * 260 * dt;
+        you.y += (vy / n) * 260 * dt;
+        you.x = Math.max(you.r, Math.min(W - you.r, you.x));
+        you.y = Math.max(you.r, Math.min(H - you.r, you.y));
+      }
+
+      if (Math.random() < 0.5 + bot.react * 0.45) {
+        moveToward(foe, star.x, star.y, (150 + bot.speed * 140) * dt);
+      } else {
+        moveToward(foe, foe.x + (Math.random() - 0.5) * 60, foe.y + (Math.random() - 0.5) * 60, 50 * dt);
+      }
+
+      checkStar(you, "you");
+      if (running) checkStar(foe, "bot");
+      draw();
+      if (running) requestAnimationFrame(loop);
+    }
+
+    function drawPlayer(ent, color, label) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(ent.x, ent.y, ent.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(ent.x - 6, ent.y - 4, 3.5, 0, Math.PI * 2);
+      ctx.arc(ent.x + 6, ent.y - 4, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(ent.x - 5, ent.y - 4, 1.6, 0, Math.PI * 2);
+      ctx.arc(ent.x + 7, ent.y - 4, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.font = "bold 12px Nunito, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(label, ent.x, ent.y - ent.r - 8);
+    }
+
+    function drawStar(s) {
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      ctx.rotate(s.spin);
+      ctx.fillStyle = "#fbbf24";
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const a = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+        const r = i === 0 ? s.r : s.r;
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        const a2 = a + Math.PI / 5;
+        ctx.lineTo(Math.cos(a2) * (r * 0.45), Math.sin(a2) * (r * 0.45));
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, "#0b1020");
+      g.addColorStop(1, "#1a1030");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = "rgba(255,255,255," + (0.08 + (i % 5) * 0.03) + ")";
+        ctx.beginPath();
+        ctx.arc((i * 83) % W, (i * 47) % H, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if (star) drawStar(star);
+      if (you) drawPlayer(you, "#3dd6c6", "Ты");
+      if (foe) drawPlayer(foe, bot.color, bot.name);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+    });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+    function canvasPos(e) {
+      const r = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return {
+        x: ((t.clientX - r.left) / r.width) * W,
+        y: ((t.clientY - r.top) / r.height) * H,
+      };
+    }
+    canvas.addEventListener("pointerdown", (e) => {
+      canvas.setPointerCapture(e.pointerId);
+      touchTarget = canvasPos(e);
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (touchTarget) touchTarget = canvasPos(e);
+    });
+    canvas.addEventListener("pointerup", () => { touchTarget = null; });
+    canvas.addEventListener("pointercancel", () => { touchTarget = null; });
+
+    document.getElementById("btn-start").onclick = start;
+    document.getElementById("btn-again").onclick = start;
+    reset();
+    draw();
+  </script>
+</body>
+</html>

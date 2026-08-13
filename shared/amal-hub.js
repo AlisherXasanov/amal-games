@@ -3145,4 +3145,22 @@
   } else {
     boot();
   }
+
+  try {
+    if (!document.querySelector('script[src*="amal-site-faq.js"]')) {
+      var sFaq = document.createElement("script");
+      sFaq.src = (function () {
+        try {
+          var p = location.pathname || "";
+          if (p.indexOf("/animal-hospital/") !== -1) return "../shared/amal-site-faq.js?v=1";
+          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-site-faq.js?v=1";
+          return "../shared/amal-site-faq.js?v=1";
+        } catch (e) {
+          return "../shared/amal-site-faq.js?v=1";
+        }
+      })();
+      document.head.appendChild(sFaq);
+    }
+  } catch (eFaq) {}
+
 })(typeof window !== "undefined" ? window : globalThis);
