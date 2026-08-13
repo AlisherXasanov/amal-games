@@ -378,6 +378,10 @@
       const g = new URLSearchParams(location.search).get("guest");
       if (g === "1" || g === "true" || g === "yes") return false;
     } catch (_) {}
+    // в этой игре хозяин всегда может секреты (локальный Amal)
+    try {
+      if (typeof isOwner === "function" && isOwner()) return true;
+    } catch (_) {}
     try {
       if (window.AmalHub) {
         if (typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
@@ -1024,20 +1028,96 @@
     else hideEl(tray);
   }
 
+  function ensureShiftPlaying() {
+    if (g && state === "play") return true;
+    toast("Сначала открой смену");
+    return false;
+  }
+
+  function spawnQueueGuest(opts) {
+    if (!ensureShiftPlaying()) return null;
+    let forceAnomaly = null;
+    if (opts && opts.anomaly) forceAnomaly = true;
+    if (opts && opts.normal) forceAnomaly = false;
+    const v = makeVisitor(forceAnomaly, { skipLucky: true });
+    if (opts && opts.rareKind) {
+      const ch = spawnCharacterDef(opts.rareKind);
+      const id = (ch && ch.id) || opts.rareKind;
+      if (ch && ch.tex === "here") v.rareKind = "auto";
+      else if (ch && ch.tex) v.rareKind = ch.tex === "builder" ? "builder" : ch.tex;
+      else v.rareKind = id;
+      v.guestName = opts.name || (ch && ch.name) || String(id);
+      v.isAnomaly = false;
+      v.isCompanion = v.rareKind === "auto";
+      v.luckyDrop = false;
+      v.shopPrize = null;
+      v.hollow = false;
+      v.distort = false;
+      v.twitch = false;
+    }
+    if (opts && opts.anomaly) {
+      v.isAnomaly = true;
+      v.rareKind = null;
+      v.guestName = "";
+      if (!v.hollow && !v.distort && !v.twitch) {
+        v.hollow = true;
+        v.twitch = true;
+      }
+    }
+    g.queue.push(v);
+    layoutQueue();
+    return v;
+  }
+
+  function spawnTrayAnomalyMonster() {
+    if (!ensureShiftPlaying()) return;
+    if (!g.monsters) g.monsters = [];
+    const kinds = ["ghost", "stalker", "skinwalker", "slime"];
+    const kind = kinds[(Math.random() * kinds.length) | 0];
+    const p = g.players[0];
+    const x = (p ? p.x : 400) + (Math.random() * 120 - 60);
+    const y = (p ? p.y : 300) + (Math.random() * 80 - 40);
+    g.monsters.push(spawnMonster(kind, x, y, 14));
+    showEvent("👾 Аномалия рядом", 2.2);
+    toast("Аномалия заспавнена");
+  }
+
+  function setRelaxMode(on) {
+    if (!ensureShiftPlaying()) return;
+    g.relaxMode = !!on;
+    if (g.relaxMode) {
+      g.immortal = true;
+      g.sanity = g.maxSanity;
+      if (g.players[0]) {
+        g.players[0].infiniteItems = true;
+        g.players[0].coffeeLeft = 9999;
+        grantInfiniteAmmo(g.players[0]);
+      }
+      showEvent("◌ Режим отдыха · самолечение", 2.8);
+      toast("Сиди спокойно · звери сами");
+    } else {
+      toast("Режим отдыха выкл");
+    }
+  }
+
   function applyTrayCharacter(charId) {
     const ch = spawnCharacterDef(charId);
-    if (!ch) return;
+    if (!ch) {
+      toast("Нет такого персонажа");
+      return;
+    }
+    // 1) надеть на себя
+    meta.trayTex = ch.tex;
+    meta.trayChar = ch.id;
+    storeSet(SAVE, meta);
     if (g && g.players[0]) {
       g.players[0].tex = ch.tex;
       g.players[0].color = ch.color;
-      g.players[0].name = ch.name === "Auto" ? "Auto" : ch.name;
+      g.players[0].name = ch.name;
     }
     const skin =
       SKINS.find((s) => s.tex === ch.tex) ||
-      (ch.id === "auto" ? SKINS.find((s) => s.id === "secret-here") : null) ||
-      (ch.id === "sammy" || ch.id === "jen" || ch.id === "builder"
-        ? null
-        : SKINS.find((s) => s.id === "secret-" + ch.id));
+      (ch.id === "auto" ? SKINS.find((s) => s.id === "secret-here") : null);
     if (skin) {
       selectedSkin = skin;
       meta.skinId = skin.id;
@@ -1045,11 +1125,48 @@
       storeSet(SAVE, meta);
       refreshLobbyUI();
     }
-    toast(`Персонаж · ${ch.name}`);
-    showEvent(`✦ ${ch.name}`, 1.8);
+    // 2) заспавнить в очередь (если смена открыта)
+    if (g && state === "play") {
+      const v = spawnQueueGuest({ rareKind: ch.id, name: ch.name });
+      if (v) {
+        showEvent(`✦ ${ch.name} в очереди`, 2.2);
+        toast(`${ch.name} · заспавнен`);
+        return;
+      }
+    }
+    toast(`Персонаж · ${ch.name} · открой смену, чтобы заспавнить в очередь`);
+    showEvent(`✦ ${ch.name}`, 1.6);
   }
 
   function giveTrayItem(itemId) {
+    if (itemId === "animal") {
+      const v = spawnQueueGuest({ normal: true });
+      if (v) {
+        showEvent("🐾 Животное в очереди", 1.8);
+        toast("Животное заспавнено");
+      }
+      return;
+    }
+    if (itemId === "anomalyGuest") {
+      const v = spawnQueueGuest({ anomaly: true });
+      if (v) {
+        showEvent("⚠ Аномалия-пациент", 1.8);
+        toast("Аномалия в очереди");
+      }
+      return;
+    }
+    if (itemId === "anomalyMob") {
+      spawnTrayAnomalyMonster();
+      return;
+    }
+    if (itemId === "relaxOn") {
+      setRelaxMode(true);
+      return;
+    }
+    if (itemId === "relaxOff") {
+      setRelaxMode(false);
+      return;
+    }
     if (!g || !g.players[0]) {
       toast("Сначала открой смену");
       return;
@@ -1086,6 +1203,7 @@
   function bootSecretTray() {
     const chars = document.getElementById("secretTrayChars");
     const items = document.getElementById("secretTrayItems");
+    const spawnRow = document.getElementById("secretTraySpawn");
     const fab = document.getElementById("btnSecretTray");
     const panel = document.getElementById("secretTrayPanel");
     const closeBtn = document.getElementById("btnSecretTrayClose");
@@ -1097,6 +1215,22 @@
       ).join("");
       chars.querySelectorAll("[data-char]").forEach((btn) => {
         btn.addEventListener("click", () => applyTrayCharacter(btn.getAttribute("data-char")));
+      });
+    }
+    if (spawnRow && !spawnRow.dataset.ready) {
+      spawnRow.dataset.ready = "1";
+      const pack = [
+        { id: "animal", label: "🐾 Животное" },
+        { id: "anomalyGuest", label: "⚠ Аномалия" },
+        { id: "anomalyMob", label: "👾 Монстр" },
+        { id: "relaxOn", label: "◌ Отдых ВКЛ" },
+        { id: "relaxOff", label: "Отдых ВЫКЛ" },
+      ];
+      spawnRow.innerHTML = pack
+        .map((it) => `<button type="button" class="secret-tray-chip" data-item="${it.id}">${it.label}</button>`)
+        .join("");
+      spawnRow.querySelectorAll("[data-item]").forEach((btn) => {
+        btn.addEventListener("click", () => giveTrayItem(btn.getAttribute("data-item")));
       });
     }
     if (items && !items.dataset.ready) {
@@ -1427,7 +1561,7 @@
     return "";
   }
 
-  function makeVisitor(forceAnomaly) {
+  function makeVisitor(forceAnomaly, opts) {
     const sp = rand(SPECIES);
     const shift = (g && g.shift) || selectedShift;
     let isAnomaly;
@@ -1464,8 +1598,8 @@
       rareKind: null,
       isCompanion: false,
     };
-    // 10%: секретный гость с призом из магазина → админу команды после лечения
-    if (!isAnomaly && Math.random() < 0.1) {
+    // 10%: секретный гость с призом — не при ручном спавне
+    if (!isAnomaly && !(opts && opts.skipLucky) && Math.random() < 0.1) {
       v.luckyDrop = true;
       v.shopPrize = pickShopPrize();
       v.guestName = "✦ сюрприз";
@@ -1872,6 +2006,15 @@
       g.players[0].tex = selectedSkin.tex;
       g.players[0].color = selectedSkin.color;
     }
+    if (g.players[0] && meta.trayTex) {
+      const ch = spawnCharacterDef(meta.trayChar) || SPAWN_CHARACTERS.find((c) => c.tex === meta.trayTex);
+      g.players[0].tex = meta.trayTex;
+      if (ch) {
+        g.players[0].color = ch.color;
+        g.players[0].name = ch.name;
+      }
+    }
+    g.relaxMode = false;
     if (mode === "pair" && g.players[1] && selectedBuddy && selectedBuddy.tex) {
       g.players[1].tex = selectedBuddy.tex;
       if (selectedBuddy.tex === "here") {
@@ -3302,6 +3445,46 @@
     }
 
     if (g.selfServe) autoAdmitSelfServe();
+    if (g.relaxMode) {
+      g.sanity = g.maxSanity;
+      const beds = getStations().filter((s) => s.kind === "treat");
+      const free = Math.max(0, beds.length - g.inside.length);
+      if (free > 0 && g.queue.length) {
+        const idx = g.queue.findIndex((v) => !v.isAnomaly);
+        if (idx >= 0) {
+          const v = g.queue.splice(idx, 1)[0];
+          layoutQueue();
+          placePatientInside(v);
+          v.selfServe = true;
+          v.diagnosed = true;
+          v.selfBuyCd = 0.45;
+        } else {
+          // аномалию в очереди — тихо убрать шторкой
+          const bad = g.queue.shift();
+          layoutQueue();
+          if (bad) {
+            g.blocked += 1;
+            g.coins += 8;
+          }
+        }
+      }
+      for (const v of g.inside.slice()) {
+        if (!v.diagnosed) {
+          v.diagnosed = true;
+          v.selfServe = true;
+        }
+        v.delivered = v.needs.slice();
+        g.treated += 1;
+        g.coins += 10;
+        g.inside = g.inside.filter((p) => p.id !== v.id);
+      }
+      g.relaxMobCd = (g.relaxMobCd || 0) - dt;
+      if (g.monsters && g.monsters.length && g.relaxMobCd <= 0) {
+        g.monsters.shift();
+        g.blocked += 1;
+        g.relaxMobCd = 0.9;
+      }
+    }
 
     // пациенты: таймер жизни + самообслуживание
     for (const v of g.inside.slice()) {
