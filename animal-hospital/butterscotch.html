@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Buttersquish · парк</title>
+  <meta name="description" content="Buttersquish гуляет в парке. Без голода — только игры и друзья." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./butterscotch.css?v=6" />
+  <link rel="stylesheet" href="./lab-skin.css?v=1" />
+</head>
+<body class="lab-skin">
+  <a class="back" href="./index.html">&larr; Больница</a>
+
+  <div id="menu" class="screen">
+    <p class="brand">Buttersquish</p>
+    <p class="sub">Питомец как <b>Butter Squishy</b>. Молли гуляет с ним в парке.<br />
+      <b>Не надо кормить</b> — шкалы не падают. Просто играй, бегай, знакомись.</p>
+    <button type="button" class="btn" id="btnStart">В парк</button>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+      <span id="who">🧈 Butterscotch</span>
+      <span id="placeLabel">парк</span>
+      <span id="fun">✨ веселье 0</span>
+    </div>
+    <canvas id="c" width="960" height="500" tabindex="0"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <p class="hint" id="hint">← → или A D — ходить · пробел — мячик · клик по другу — поиграть</p>
+    <div class="actions">
+      <button type="button" class="act" data-act="walk">🚶 Гулять</button>
+      <button type="button" class="act" data-act="ball">🎾 Мячик</button>
+      <button type="button" class="act" data-act="squish">🧈 Squish</button>
+      <button type="button" class="act" data-act="run">💨 Бегать</button>
+      <button type="button" class="act" data-act="chill">😌 Лежать</button>
+      <button type="button" class="act" data-act="call">👋 Позвать друга</button>
+    </div>
+  </div>
+
+  <script src="./butterscotch.js?v=6"></script>
+  <script src="./lab-skin.js?v=1"></script>
+</body>
+</html>

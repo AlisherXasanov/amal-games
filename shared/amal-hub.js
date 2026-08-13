@@ -17,6 +17,10 @@
     registry: "amal-hub-registry-v1",
     abuse: "amal-hub-abuse-v1",
     pendingGifts: "amal-hub-pending-gifts-v1",
+    faceSeeds: "amal-hub-face-seeds-v1",
+    ownerGiftQueue: "amal-hub-owner-gift-queue-v1",
+    lastGiftByNick: "amal-hub-last-gift-by-nick-v1",
+    nickGuest: "amal-hub-nick-guest-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
@@ -59,6 +63,31 @@
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-12-owner-wave",
+      title: "Сюрпризы хозяина · волна по играм",
+      body: "Больше сюрпризов для хозяина и команды. Обновление отмечается во многих играх хаба — зайди в игру и увидишь приветствие.",
+    },
+    {
+      id: "2026-08-12-utf8-team-pack",
+      title: "Русский текст · сюрпризы команды",
+      body: "Починена кодировка меню больницы. Сюрпризы команды теперь не только в одной игре — сразу пак на несколько игр.",
+    },
+    {
+      id: "2026-08-12-dm-fix",
+      title: "Написать игроку — починка",
+      body: "Личные сообщения реально доходят (не только сохраняются). Можно нажать «Себе (тест)» и сразу увидеть сообщение.",
+    },
+    {
+      id: "2026-08-12-presence-fix",
+      title: "Кто играет — починка",
+      body: "Гость больше не скрывается из‑за ника хозяина. Подарки и админка доходят надёжнее. Есть кнопка теста гостя.",
+    },
+    {
+      id: "2026-08-12-player-profile",
+      title: "Профиль игрока у хозяина",
+      body: "В «Кто играет» и на живой карте жми игрока: видно профиль, можно обновить лицо и выдать другой подарок.",
+    },
     {
       id: "2026-08-11-no-black-admin-things",
       title: "Без чёрного экрана · эксклюзивы админам",
@@ -181,9 +210,128 @@
     }
   }
 
-  function faceUrl(nick) {
-    const seed = encodeURIComponent(String(nick || "player").slice(0, 24));
-    return "https://api.dicebear.com/7.x/adventurer/svg?seed=" + seed + "&size=128";
+  function loadFaceSeeds() {
+    const map = storeGet(KEYS.faceSeeds, {});
+    return map && typeof map === "object" ? map : {};
+  }
+
+  function saveFaceSeeds(map) {
+    storeSet(KEYS.faceSeeds, map);
+  }
+
+  function faceSeedFor(nick) {
+    const key = String(nick || "player").trim().slice(0, NICK_MAX);
+    const map = loadFaceSeeds();
+    return map[key] || key || "player";
+  }
+
+  function faceUrl(nick, bust) {
+    const seed = encodeURIComponent(String(faceSeedFor(nick)).slice(0, 48));
+    let url = "https://api.dicebear.com/7.x/adventurer/svg?seed=" + seed + "&size=128";
+    if (bust) url += "&t=" + encodeURIComponent(String(bust));
+    return url;
+  }
+
+  function applyFaceSeed(nick, seed) {
+    const key = String(nick || "").trim().slice(0, NICK_MAX);
+    if (key.length < NICK_MIN) return;
+    const map = loadFaceSeeds();
+    map[key] = String(seed || key).slice(0, 48);
+    saveFaceSeeds(map);
+  }
+
+  function refreshPlayerProfile(nick) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const key = String(nick || "").trim().slice(0, NICK_MAX);
+    if (key.length < NICK_MIN) return { ok: false, error: "Нет ника" };
+    const seed = key + "-" + Math.random().toString(36).slice(2, 10) + "-" + Date.now().toString(36);
+    applyFaceSeed(key, seed);
+    const payload = { type: "face-refresh", nick: key, seed, at: Date.now() };
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn.open) conn.send(payload);
+      } catch {
+        /* ignore */
+      }
+    });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+    showHubToast("🔄 Профиль обновлён: " + key);
+    return { ok: true, seed, nick: key };
+  }
+
+  function findPlayerByNick(nick) {
+    const key = String(nick || "").trim().toLowerCase();
+    if (!key) return null;
+    return (
+      recentPlayers(1000 * 60 * 60 * 24).find((p) => String(p.nick || "").toLowerCase() === key) ||
+      Object.values(livePlayers).find((p) => String(p.nick || "").toLowerCase() === key) ||
+      null
+    );
+  }
+
+  function loadOwnerGiftQueue() {
+    const list = storeGet(KEYS.ownerGiftQueue, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveOwnerGiftQueue(list) {
+    storeSet(KEYS.ownerGiftQueue, list.slice(0, 60));
+  }
+
+  function queueOwnerGift(payload) {
+    if (!payload || !payload.toNick) return;
+    const list = loadOwnerGiftQueue().filter(
+      (g) => !(g && g.toNick === payload.toNick && g.game === payload.game && g.at === payload.at)
+    );
+    list.unshift(payload);
+    saveOwnerGiftQueue(list);
+  }
+
+  function deliverQueuedGiftsForNick(nick) {
+    if (!isOwner() || !nick) return;
+    const want = String(nick).toLowerCase();
+    const list = loadOwnerGiftQueue();
+    const keep = [];
+    list.forEach((g) => {
+      if (!g || String(g.toNick || "").toLowerCase() !== want) {
+        keep.push(g);
+        return;
+      }
+      let sent = 0;
+      hostConnections.forEach((conn) => {
+        try {
+          if (conn.open) {
+            conn.send(g);
+            sent += 1;
+          }
+        } catch {
+          /* ignore */
+        }
+      });
+      try {
+        if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(g);
+      } catch {
+        /* ignore */
+      }
+      // оставляем в очереди коротко, если никто не подключён
+      if (!sent && Date.now() - (g.at || 0) < 1000 * 60 * 60 * 6) keep.push(g);
+    });
+    saveOwnerGiftQueue(keep);
+  }
+
+  function lastGiftIdFor(nick) {
+    const map = storeGet(KEYS.lastGiftByNick, {}) || {};
+    return map[String(nick || "").toLowerCase()] || "";
+  }
+
+  function rememberLastGift(nick, giftId) {
+    const map = storeGet(KEYS.lastGiftByNick, {}) || {};
+    map[String(nick || "").toLowerCase()] = giftId;
+    storeSet(KEYS.lastGiftByNick, map);
   }
 
   function canGrantAdmin() {
@@ -386,19 +534,22 @@
       if (isGrantRevoked(payload.id)) {
         return { ok: false, message: "Эту админку уже отменили" };
       }
-      const nick = getNick();
-      if (!nick) {
-        setNick(payload.nick);
-      } else if (nick.toLowerCase() !== String(payload.nick).toLowerCase()) {
+      // Ссылка для друга: если ты хозяин без guest — не забирай чужую админку себе
+      if (isOwner() && !isGuestMode()) {
         return {
           ok: false,
-          message: "Ссылка для ника «" + payload.nick + "», а у тебя «" + nick + "». Смени ник.",
+          message: "Это ссылка для игрока «" + payload.nick + "». Открой её в режиме гостя или на другом устройстве.",
         };
       }
+      const want = String(payload.nick || "").trim();
+      const urlNick = (params.get("nick") || want).trim();
+      if (urlNick) setNick(urlNick);
       applyPower(payload.game, payload.id, payload.exp);
+      bumpPresence();
+      flushPendingGifts();
       return {
         ok: true,
-        message: "Админка включена в игре: " + gameTitle(payload.game),
+        message: "Админка включена в игре: " + gameTitle(payload.game) + " · ник «" + getNick() + "»",
         game: payload.game,
       };
     } catch {
@@ -595,6 +746,10 @@
   }
 
   function getNick() {
+    if (isGuestMode()) {
+      const g = storeGet(KEYS.nickGuest, "");
+      if (typeof g === "string" && g.trim()) return g.trim();
+    }
     const n = storeGet(KEYS.nick, "");
     return typeof n === "string" ? n.trim() : "";
   }
@@ -614,16 +769,17 @@
     if (nick.length < NICK_MIN) return { ok: false, error: "Минимум " + NICK_MIN + " символа" };
     if (/[<>]/.test(nick)) return { ok: false, error: "Без < >" };
     const prev = getNick();
-    storeSet(KEYS.nick, nick);
+    if (isGuestMode()) storeSet(KEYS.nickGuest, nick);
+    else storeSet(KEYS.nick, nick);
     const reg = registerEverywhere(nick, gameIdFromPath());
     if (!isOwner()) bumpPresence();
     else removeSelfFromPresence();
     if (reg.isNew && !isOwner()) {
       broadcastRegistration(reg.entry);
     } else if (!reg.isNew && prev.toLowerCase() === nick.toLowerCase()) {
-      // повторный вход
       bumpPresence();
     }
+    flushPendingGifts();
     return { ok: true, nick, isNew: !!reg.isNew, registeredAt: reg.entry && reg.entry.firstAt };
   }
 
@@ -677,7 +833,15 @@
 
   function upsertLivePlayer(data) {
     if (!data || !data.nick) return;
-    if (isOwner() && String(data.nick).toLowerCase() === (getNick() || "").toLowerCase()) return;
+    // Хозяин сам себя в список не пишет; чужих с тем же ником — пишет
+    if (
+      isOwner() &&
+      data.role !== "guest" &&
+      !data.liveGuest &&
+      String(data.nick).toLowerCase() === (getNick() || "").toLowerCase()
+    ) {
+      return;
+    }
     const nick = String(data.nick).trim().slice(0, NICK_MAX);
     if (nick.length < NICK_MIN) return;
     livePlayers[nick] = {
@@ -686,6 +850,7 @@
       gameTitle: gameTitle(data.game || "portal"),
       at: data.at || Date.now(),
       live: true,
+      role: data.role || "guest",
     };
     // Дублируем в localStorage хозяина, чтобы список не пустел сразу
     if (isOwner()) {
@@ -748,6 +913,13 @@
 
   function giftById(id) {
     return OWNER_GIFTS.find((g) => g.id === id) || OWNER_GIFTS[0];
+  }
+
+  function pickOtherGiftId(nick) {
+    const last = lastGiftIdFor(nick);
+    const pool = OWNER_GIFTS.filter((g) => g.id !== last);
+    const list = pool.length ? pool : OWNER_GIFTS;
+    return list[Math.floor(Math.random() * list.length)].id;
   }
 
   function loadPendingGifts() {
@@ -972,6 +1144,11 @@
       return;
     }
     applyOwnerGiftLocally(payload);
+    savePendingGifts(
+      loadPendingGifts().filter(
+        (g) => !(g && String(g.toNick || "").toLowerCase() === me && g.game === game && g.at === payload.at)
+      )
+    );
     showHubToast("🎁 Получено: " + (payload.label || "подарок"));
   }
 
@@ -1032,6 +1209,16 @@
     if ((getNick() || "").toLowerCase() === nick.toLowerCase() && gameIdFromPath() === game) {
       applyOwnerGiftLocally(payload);
     }
+    // всегда кладём в pending — гость заберёт при входе / смене ника (тот же браузер или после peer)
+    try {
+      const pending = loadPendingGifts().filter(
+        (g) => !(g && g.toNick === payload.toNick && g.game === payload.game && g.at === payload.at)
+      );
+      pending.unshift(payload);
+      savePendingGifts(pending);
+    } catch {
+      /* ignore */
+    }
     addNote(
       "🎁 Выдал «" + gift.label + "» → " + nick + " · " + gameTitle(game) + "\n" + gift.detail,
       { fromAdmin: true, toNick: nick, game }
@@ -1042,6 +1229,8 @@
       }
     } catch (_) {}
     showHubToast("🎁 Выдано " + nick + ": " + gift.label + " · " + gameTitle(game));
+    rememberLastGift(nick, gift.id);
+    queueOwnerGift(payload);
     return { ok: true, count: n, payload, gift };
   }
 
@@ -1095,6 +1284,7 @@
     const payload = {
       type: "admin-msg",
       text: body,
+      toNick: "*всем*",
       at: Date.now(),
       fromNick: getNick() || "Amal",
       fromGame: gameIdFromPath(),
@@ -1118,6 +1308,88 @@
     showHubToast("📢 " + body);
     addNote(body, { fromAdmin: true, toNick: "*всем*", game: gameIdFromPath() });
     return { ok: true, count: n };
+  }
+
+  function receiveAdminMessage(payload) {
+    if (!payload || !payload.text) return;
+    const me = (getNick() || "").toLowerCase();
+    const to = String(payload.toNick || "").trim().toLowerCase();
+    if (to && to !== "*всем*" && me && to !== me) return;
+    if (!me && to && to !== "*всем*") return;
+
+    const list = loadNotes();
+    const note = {
+      id: "n-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      nick: payload.fromNick || "Amal",
+      game: payload.fromGame || gameIdFromPath(),
+      text: String(payload.text).slice(0, 500),
+      at: payload.at || Date.now(),
+      fromAdmin: true,
+      toNick: getNick() || payload.toNick || null,
+      status: "new",
+    };
+    // не дублируем одну и ту же доставку
+    if (
+      list.some(
+        (n) =>
+          n &&
+          n.fromAdmin &&
+          n.text === note.text &&
+          Math.abs((n.at || 0) - (note.at || 0)) < 2000 &&
+          String(n.toNick || "").toLowerCase() === String(note.toNick || "").toLowerCase()
+      )
+    ) {
+      showHubToast("👑 " + (payload.fromNick || "Амаль") + ": " + note.text);
+      return;
+    }
+    list.push(note);
+    saveNotes(list);
+    showHubToast("👑 " + (payload.fromNick || "Амаль") + ": " + note.text);
+    if (open && (view === "note" || adminPage === "write" || adminPage === "inbox")) paint();
+  }
+
+  function sendAdminDm(toRaw, textRaw) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const nick = String(toRaw || "").trim().slice(0, NICK_MAX);
+    if (nick.length < NICK_MIN) return { ok: false, error: "Укажи ник игрока" };
+    const body = String(textRaw || "").trim().slice(0, 500);
+    if (!body) return { ok: false, error: "Напиши текст" };
+
+    const payload = {
+      type: "admin-msg",
+      text: body,
+      toNick: nick,
+      at: Date.now(),
+      fromNick: getNick() || "Amal",
+      fromGame: gameIdFromPath(),
+    };
+
+    let n = 0;
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn.open) {
+          conn.send(payload);
+          n += 1;
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+
+    addNote(body, { fromAdmin: true, toNick: nick, game: gameIdFromPath() });
+
+    // проверка «написать себе» — сразу видно всплывашку
+    if ((getNick() || "").toLowerCase() === nick.toLowerCase()) {
+      showHubToast("👑 Себе: " + body);
+    } else {
+      showHubToast("✉️ Отправлено → " + nick);
+    }
+    return { ok: true, count: n, nick, text: body };
   }
 
   function updateSameGameStrip() {
@@ -1161,7 +1433,7 @@
 
   function maybeRepaintPlayers() {
     updateSameGameStrip();
-    if (!open || (adminPage !== "players" && adminPage !== "live")) return;
+    if (!open || (adminPage !== "players" && adminPage !== "live" && adminPage !== "profile")) return;
     const now = Date.now();
     if (now - lastPlayersPaint < 800) return;
     lastPlayersPaint = now;
@@ -1190,11 +1462,14 @@
     const nick = getNick();
     if (!nick) return;
     const payload = {
+      type: "presence",
       nick,
       game: gameIdFromPath(),
       gameTitle: gameTitle(gameIdFromPath()),
       at: Date.now(),
       live: true,
+      role: "guest",
+      liveGuest: true,
     };
     const map = loadPresence();
     map[nick] = payload;
@@ -1234,7 +1509,13 @@
     });
     return Object.values(merged)
       .filter((p) => p && p.at && now - p.at < age)
-      .filter((p) => String(p.nick || "").toLowerCase() !== myNick)
+      .filter((p) => {
+        // хозяин не скрывает гостей даже с похожим ником, если это помечено как guest
+        if (p.role === "guest" || p.liveGuest) return true;
+        if (isOwner() && String(p.nick || "").toLowerCase() === myNick) return false;
+        if (!isOwner() && String(p.nick || "").toLowerCase() === myNick) return false;
+        return true;
+      })
       .sort((a, b) => b.at - a.at);
   }
 
@@ -1270,16 +1551,25 @@
             receiveOwnerGift(data);
             return;
           }
+          if (data.type === "face-refresh" && data.nick && data.seed) {
+            applyFaceSeed(data.nick, data.seed);
+            if (isOwner()) maybeRepaintPlayers();
+            else if ((getNick() || "").toLowerCase() === String(data.nick).toLowerCase()) {
+              showHubToast("🔄 Хозяин обновил твой профиль");
+            }
+            return;
+          }
           if (data.type === "admin-abuse") {
             startAdminAbuseFromRemote(data);
             return;
           }
           if (data.type === "admin-msg" && data.text) {
-            showHubToast("👑 " + (data.fromNick || "Амаль") + ": " + data.text);
+            receiveAdminMessage(data);
             return;
           }
           if (isOwner()) {
             upsertLivePlayer(data);
+            if (data.nick) deliverQueuedGiftsForNick(data.nick);
             if (data.type === "register" && data.nick) {
               const reg = registerEverywhere(data.nick, data.game);
               if (reg.isNew) notifyOwnerAboutRegistration(reg.entry);
@@ -1308,6 +1598,14 @@
 
   function startPresenceHost() {
     presenceStatus = "hosting";
+    try {
+      if (presencePeer) {
+        presencePeer.destroy();
+        presencePeer = null;
+      }
+    } catch {
+      /* ignore */
+    }
     presencePeer = new global.Peer(PRESENCE_HOST_ID, { debug: 0 });
     presencePeer.on("open", () => {
       presenceReady = true;
@@ -1315,18 +1613,66 @@
       maybeRepaintPlayers();
     });
     presencePeer.on("error", (err) => {
-      // Если id занят — слушаем как клиент к себе не нужно; пробуем случайный + label
-      if (String(err && err.type) === "unavailable-id") {
+      const t = String(err && err.type);
+      if (t === "unavailable-id") {
+        // ID занят другим окном хозяина — подключаемся как наблюдатель к нему
+        presenceStatus = "online-alt";
+        try {
+          presencePeer.destroy();
+        } catch {
+          /* ignore */
+        }
         presencePeer = new global.Peer(undefined, { debug: 0 });
         presencePeer.on("open", () => {
           presenceStatus = "online-alt";
+          // слушаем локальный BroadcastChannel; peer-host уже в другом окне
         });
-        presencePeer.on("connection", onHostConnection);
+        presencePeer.on("error", () => {
+          presenceStatus = "error";
+          setTimeout(() => {
+            if (isOwner()) startPresenceHost();
+          }, 8000);
+        });
       } else {
         presenceStatus = "error";
+        setTimeout(() => {
+          if (isOwner() && presenceStatus === "error") startPresenceHost();
+        }, 6000);
       }
     });
     presencePeer.on("connection", onHostConnection);
+  }
+
+  function injectTestGuest(nickRaw) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const nick = String(nickRaw || "ТестГость")
+      .trim()
+      .slice(0, NICK_MAX) || "ТестГость";
+    const payload = {
+      type: "presence",
+      nick,
+      game: gameIdFromPath(),
+      gameTitle: gameTitle(gameIdFromPath()),
+      at: Date.now(),
+      live: true,
+      role: "guest",
+      liveGuest: true,
+    };
+    upsertLivePlayer(payload);
+    showHubToast("Тестовый гость: " + nick);
+    return { ok: true, nick };
+  }
+
+  function guestTestLink() {
+    try {
+      const u = new URL(location.href);
+      u.searchParams.delete("owner");
+      u.searchParams.set("guest", "1");
+      u.searchParams.set("nick", "Гость" + Math.floor(100 + Math.random() * 899));
+      return u.toString();
+    } catch {
+      return "./?guest=1";
+    }
   }
 
   function onHostConnection(conn) {
@@ -1336,6 +1682,7 @@
       if (data.type === "presence" || data.nick) {
         const wasNew = !livePlayers[data.nick];
         upsertLivePlayer(data);
+        deliverQueuedGiftsForNick(data.nick);
         if (data.type === "register" && data.nick) {
           const reg = registerEverywhere(data.nick, data.game);
           if (reg.isNew) {
@@ -1407,6 +1754,13 @@
           receiveOwnerGift(data);
           return;
         }
+        if (data.type === "face-refresh" && data.nick && data.seed) {
+          applyFaceSeed(data.nick, data.seed);
+          if ((getNick() || "").toLowerCase() === String(data.nick).toLowerCase()) {
+            showHubToast("🔄 Хозяин обновил твой профиль");
+          }
+          return;
+        }
         if (data.type === "admin-abuse") {
           startAdminAbuseFromRemote(data);
           showHubToast("🔥 " + (data.text || "Admin Abuse"));
@@ -1414,7 +1768,7 @@
           if (/admin\s*abuse|админ\s*абуз|abuse/i.test(data.text)) {
             startAdminAbuseFromRemote({ ...data, game: data.fromGame || data.game });
           } else {
-            showHubToast("👑 " + (data.fromNick || "Амаль") + ": " + data.text);
+            receiveAdminMessage(data);
           }
         }
       });
@@ -1525,6 +1879,13 @@
 .amal-hub-face .on{margin-top:6px;font-size:10px;font-weight:800;color:#86efac}
 .amal-hub-face.offline .on{color:#fca5a5}
 .amal-hub-face.offline img{filter:grayscale(.4);opacity:.75}
+.amal-hub-face[data-amal="open-profile"]{cursor:pointer}
+.amal-hub-profile{text-align:center;padding:8px 0 4px}
+.amal-hub-profile img{width:112px;height:112px;border-radius:50%;border:3px solid rgba(251,191,36,.55);background:#0f172a;object-fit:cover;box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.amal-hub-profile .nm{margin-top:10px;font-size:1.35rem;font-weight:900}
+.amal-hub-profile .gm{margin-top:4px;font-size:13px;opacity:.75;font-weight:700}
+.amal-hub-profile .on{margin-top:8px}
+.amal-hub-list li[data-amal="open-profile"]{cursor:pointer}
 `;
     document.head.appendChild(css);
   }
@@ -1550,6 +1911,8 @@
   let msg = "";
   let err = "";
   let replyTo = "";
+  let profileNick = "";
+  let profileFaceBust = 0;
 
   function closeUi() {
     if (gateMode && !getNick()) return;
@@ -1750,7 +2113,7 @@
       return `
         <div class="amal-hub-hero"><div class="badge">👥</div><div>
           <h2>Кто играет</h2>
-          <p class="sub">Жми на игрока — написать или дать админку</p>
+          <p class="sub">Жми на игрока — профиль, обновить лицо, выдать другое</p>
         </div></div>
         <div style="margin-top:10px">${onlinePill} · свежих: <b>${liveCount}</b></div>
         <ul class="amal-hub-list">${
@@ -1758,12 +2121,17 @@
             ? players
                 .map(
                   (p) =>
-                    `<li><div class="meta">${fmtTime(p.at)}${
+                    `<li data-amal="open-profile" data-nick="${escapeHtml(p.nick)}"><div class="meta">${fmtTime(p.at)}${
                       p.live || Date.now() - p.at < 120000 ? " · онлайн" : ""
-                    }</div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px;opacity:.75">Игра: ${escapeHtml(
-                      p.gameTitle || p.game,
-                    )}</div>
+                    }</div>
+                    <div style="display:flex;gap:10px;align-items:center">
+                      <img src="${faceUrl(p.nick)}" alt="" width="44" height="44" style="border-radius:50%;border:2px solid rgba(251,191,36,.45);background:#0f172a;flex:0 0 auto" />
+                      <div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px;opacity:.75">Игра: ${escapeHtml(
+                        p.gameTitle || p.game,
+                      )}</div></div>
+                    </div>
                     <div class="amal-hub-row" style="margin-top:8px">
+                      <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">👤 Профиль</button>
                       <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️ Написать</button>
                       ${
                         fullOwner
@@ -1777,12 +2145,60 @@
                     </div></li>`,
                 )
                 .join("")
-            : `<li class="meta">Пока пусто. Оставь вкладку хозяина открытой — гости появятся сами.</li>`
+            : `<li class="meta">Пока пусто.</li>`
         }</ul>
+        <div class="amal-hub-help" style="margin-top:10px">Хозяин в списке не показывается. Гость должен открыть игру с ником (другое окно/телефон). Для проверки жми кнопки ниже.</div>
         <div class="amal-hub-row" style="margin-top:10px">
+          <button type="button" class="primary" data-amal="admin-test-guest">＋ Тестовый гость</button>
+          <button type="button" data-amal="admin-open-guest">Открыть окно гостя</button>
           <button type="button" data-amal="admin-clear-presence">Очистить список</button>
         </div>
         ${back}`;
+    }
+
+    if (adminPage === "profile" && fullOwner) {
+      const nick = profileNick || replyTo || "";
+      const p = findPlayerByNick(nick) || {
+        nick,
+        game: gameIdFromPath(),
+        gameTitle: gameTitle(gameIdFromPath()),
+        at: Date.now(),
+        live: false,
+      };
+      const online = !!(p.live || (p.at && Date.now() - p.at < 120000));
+      const lastGift = giftById(lastGiftIdFor(nick) || "mega-sun");
+      return `
+        <div class="amal-hub-hero"><div class="badge">👤</div><div>
+          <h2>Профиль игрока</h2>
+          <p class="sub">Обновить лицо · выдать что-то другое</p>
+        </div></div>
+        <div class="amal-hub-profile">
+          <img src="${faceUrl(p.nick, profileFaceBust || Date.now())}" alt="" />
+          <div class="nm">${escapeHtml(p.nick || "—")}</div>
+          <div class="gm">${escapeHtml(p.gameTitle || p.game || "—")}</div>
+          <div class="on"><span class="amal-hub-pill ${online ? "" : "off"}">${
+            online ? "● сейчас играет" : "○ был недавно / оффлайн"
+          }</span></div>
+          <div class="sub" style="margin-top:10px">Последний подарок: <b>${escapeHtml(lastGift.label)}</b></div>
+        </div>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row" style="margin-top:12px">
+          <button type="button" class="primary" data-amal="profile-refresh" data-nick="${escapeHtml(
+            p.nick,
+          )}" style="flex:1">🔄 Обновить профиль</button>
+        </div>
+        <div class="amal-hub-row">
+          <button type="button" class="primary" data-amal="profile-gift-other" data-nick="${escapeHtml(
+            p.nick,
+          )}" style="flex:1">🎁 Выдать другое</button>
+        </div>
+        <div class="amal-hub-row">
+          <button type="button" data-amal="gift-pick-nick" data-nick="${escapeHtml(p.nick)}">🎁 Выбрать подарок</button>
+          <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️ Написать</button>
+          <button type="button" data-amal="quick-grant-nick" data-nick="${escapeHtml(p.nick)}">⚡ Админка</button>
+        </div>
+        <div class="amal-hub-row"><button type="button" data-amal="admin-players" style="flex:1">← Кто играет</button><button type="button" data-amal="close">Закрыть</button></div>`;
     }
 
     if (adminPage === "registry") {
@@ -1847,7 +2263,9 @@
       return `
         <div class="amal-hub-hero"><div class="badge">✉️</div><div>
           <h2>Написать</h2>
-          <p class="sub">Одному игроку по нику</p>
+          <p class="sub">Одному игроку по нику · себе тоже можно (ник хозяина: ${escapeHtml(
+            getNick() || "Amal",
+          )})</p>
         </div></div>
         <input id="amal-admin-to" maxlength="${NICK_MAX}" placeholder="Ник" value="${escapeHtml(replyTo || "")}" />
         <textarea id="amal-admin-note" maxlength="500" placeholder="Текст сообщения..."></textarea>
@@ -1855,6 +2273,7 @@
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
         <div class="amal-hub-row">
           <button type="button" class="primary" data-amal="admin-send" style="flex:1">Отправить</button>
+          <button type="button" data-amal="admin-send-self">Себе (тест)</button>
         </div>
         ${back}`;
     }
@@ -1874,12 +2293,15 @@
             ? list
                 .map((p) => {
                   const online = p.live || Date.now() - p.at < 120000;
-                  return `<div class="amal-hub-face ${online ? "" : "offline"}">
+                  return `<div class="amal-hub-face ${online ? "" : "offline"}" data-amal="open-profile" data-nick="${escapeHtml(
+                    p.nick,
+                  )}">
                     <img src="${faceUrl(p.nick)}" alt="" loading="lazy" />
                     <div class="nm">${escapeHtml(p.nick)}</div>
                     <div class="gm">${escapeHtml(p.gameTitle || p.game)}</div>
                     <div class="on">${online ? "● сейчас играет" : "○ был недавно"}</div>
                     <div class="amal-hub-row" style="margin-top:8px;justify-content:center">
+                      <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">👤</button>
                       <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️</button>
                       <button type="button" class="primary" data-amal="quick-grant-nick" data-nick="${escapeHtml(p.nick)}">⚡</button>
                     </div>
@@ -2122,8 +2544,59 @@
         }
         if (act === "gift-pick-nick") {
           replyTo = el.getAttribute("data-nick") || "";
-          const input = root.querySelector("#amal-gift-nick");
-          if (input) input.value = replyTo;
+          profileNick = replyTo;
+          adminPage = "gift";
+          open = true;
+          view = "admin";
+          paint();
+          return;
+        }
+        if (act === "open-profile") {
+          if (!isOwner()) return;
+          profileNick = el.getAttribute("data-nick") || "";
+          replyTo = profileNick;
+          profileFaceBust = Date.now();
+          adminPage = "profile";
+          open = true;
+          view = "admin";
+          err = "";
+          msg = "";
+          paint();
+          return;
+        }
+        if (act === "profile-refresh") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || profileNick || "";
+          const res = refreshPlayerProfile(nick);
+          if (!res.ok) {
+            err = res.error || "Не вышло";
+            msg = "";
+          } else {
+            err = "";
+            msg = "Профиль обновлён — новое лицо";
+            profileNick = nick;
+            profileFaceBust = Date.now();
+          }
+          adminPage = "profile";
+          paint();
+          return;
+        }
+        if (act === "profile-gift-other") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || profileNick || "";
+          const p = findPlayerByNick(nick);
+          const game = (p && p.game) || gameIdFromPath();
+          const giftId = pickOtherGiftId(nick);
+          const res = giveGiftToPlayer({ nick, game, giftId });
+          if (!res.ok) {
+            err = res.error || "Не вышло";
+            msg = "";
+          } else {
+            err = "";
+            msg = "Выдано другое: «" + res.gift.label + "» → " + nick;
+          }
+          profileNick = nick;
+          adminPage = "profile";
           paint();
           return;
         }
@@ -2229,6 +2702,34 @@
           msg = "Список игроков очищен";
           paint();
         }
+        if (act === "admin-test-guest") {
+          if (!isOwner()) return;
+          const res = injectTestGuest("ТестГость");
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok ? "В списке: " + res.nick + " — открой профиль и выдай подарок" : "";
+          adminPage = "players";
+          open = true;
+          view = "admin";
+          paint();
+          return;
+        }
+        if (act === "admin-open-guest") {
+          if (!isOwner()) return;
+          const link = guestTestLink();
+          try {
+            global.open(link, "_blank", "noopener,noreferrer");
+          } catch {
+            /* ignore */
+          }
+          msg = "Открыл окно гостя. Там сохрани ник — и он появится здесь.";
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link);
+          } catch {
+            /* ignore */
+          }
+          paint();
+          return;
+        }
         if (act === "quick-grant-nick") {
           if (!canGrantAdmin()) return;
           const nick = el.getAttribute("data-nick") || "";
@@ -2293,6 +2794,19 @@
           open = true;
           view = "admin";
           paint();
+        }
+        if (act === "admin-send-self") {
+          if (!isOwner()) return;
+          replyTo = getNick() || "Amal";
+          const area = root.querySelector("#amal-admin-note");
+          const body =
+            (area && area.value && area.value.trim()) || "Тест: сообщение себе от хозяина";
+          const res = sendAdminDm(replyTo, body);
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok ? "Проверка себе отправлена — смотри жёлтое сообщение сверху" : "";
+          adminPage = "write";
+          paint();
+          return;
         }
         if (act === "grant-pick") {
           if (!canGrantAdmin()) return;
@@ -2421,11 +2935,7 @@
           if (!isOwner()) return;
           const text = root.querySelector("#amal-admin-note");
           const to = root.querySelector("#amal-admin-to");
-          const res = addNote(text && text.value, {
-            fromAdmin: true,
-            toNick: (to && to.value.trim()) || null,
-            game: gameIdFromPath(),
-          });
+          const res = sendAdminDm(to && to.value, text && text.value);
           if (!res.ok) {
             err = res.error;
             msg = "";
@@ -2433,8 +2943,18 @@
             return;
           }
           err = "";
-          msg = "Ответ сохранён";
+          msg =
+            "Отправлено игроку «" +
+            res.nick +
+            "»" +
+            ((getNick() || "").toLowerCase() === res.nick.toLowerCase()
+              ? " · проверка себе: смотри всплывающее сообщение сверху"
+              : res.count
+                ? " · онлайн: " + res.count
+                : " · сохранено, увидит когда будет онлайн / в заметках");
+          if (text) text.value = "";
           paint();
+          return;
         }
         if (act === "reply") {
           replyTo = el.getAttribute("data-to") || "";
@@ -2530,9 +3050,54 @@
         paint();
       }
     } catch (_) {}
+
+    // тихие коды хозяина / админ-команды на любой игре
+    let teamDigitBuf = "";
+    global.addEventListener("keydown", (e) => {
+      if (!isOwner() && !isGameAdmin()) return;
+      const digit =
+        e.code === "Digit6" || e.code === "Numpad6"
+          ? "6"
+          : e.code === "Digit7" || e.code === "Numpad7"
+            ? "7"
+            : e.code === "Digit5" || e.code === "Numpad5"
+              ? "5"
+              : e.code === "Digit2" || e.code === "Numpad2"
+                ? "2"
+                : "";
+      if (!digit) {
+        if (e.key && e.key.length === 1) teamDigitBuf = "";
+        return;
+      }
+      teamDigitBuf = (teamDigitBuf + digit).slice(-2);
+      try {
+        if (teamDigitBuf === "67" && global.AmalSurprises && AmalSurprises.giveTeamPack) {
+          teamDigitBuf = "";
+          const res = AmalSurprises.giveTeamPack({ to: getNick() || "админ-команда" });
+          if (res && res.already) showHubToast("Командный пак уже открыт");
+          else if (res && res.ok) showHubToast("✨ Команде — сразу несколько сюрпризов");
+          return;
+        }
+        if (teamDigitBuf === "77" && isOwner() && global.AmalSurprises && AmalSurprises.giveOwnerWave) {
+          teamDigitBuf = "";
+          const res = AmalSurprises.giveOwnerWave({ to: getNick() || "хозяин" });
+          if (res && res.already) showHubToast("Волна обновлений уже активна");
+          else if (res && res.ok) showHubToast("👑 Волна сюрпризов по играм хаба");
+          return;
+        }
+        if (teamDigitBuf === "52" && isOwner() && global.AmalSurprises && AmalSurprises.giveOwnerWave) {
+          teamDigitBuf = "";
+          const res = AmalSurprises.giveOwnerWave({ to: getNick() || "хозяин", force: true });
+          if (res && res.ok) showHubToast("👑 Волна сюрпризов обновлена");
+        }
+      } catch {
+        /* ignore */
+      }
+    });
+
     setInterval(bumpPresence, 8000);
     setInterval(() => {
-      if (open && adminPage === "live" && isOwner()) paint();
+      if (open && (adminPage === "live" || adminPage === "players" || adminPage === "profile") && isOwner()) paint();
     }, 3000);
     global.addEventListener("amal-owner-changed", () => {
       try {
@@ -2567,6 +3132,11 @@
     startAdminAbuse,
     giveGiftToPlayer,
     playersInThisGame,
+    refreshPlayerProfile,
+    findPlayerByNick,
+    injectTestGuest,
+    guestTestLink,
+    sendAdminDm,
     CHANGELOG,
   };
 
@@ -2575,4 +3145,22 @@
   } else {
     boot();
   }
+
+  try {
+    if (!document.querySelector('script[src*="amal-site-faq.js"]')) {
+      var sFaq = document.createElement("script");
+      sFaq.src = (function () {
+        try {
+          var p = location.pathname || "";
+          if (p.indexOf("/animal-hospital/") !== -1) return "../shared/amal-site-faq.js?v=1";
+          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-site-faq.js?v=1";
+          return "../shared/amal-site-faq.js?v=1";
+        } catch (e) {
+          return "../shared/amal-site-faq.js?v=1";
+        }
+      })();
+      document.head.appendChild(sFaq);
+    }
+  } catch (eFaq) {}
+
 })(typeof window !== "undefined" ? window : globalThis);

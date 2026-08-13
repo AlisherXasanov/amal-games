@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Группа · Лаборатория</title>
+  <meta name="description" content="Группа Лаборатория: все мини-игры Animal Hospital в одном списке." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      color: #102018;
+      font-family: Nunito, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 70% 40% at 15% 0%, rgba(126,217,184,.4), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 5%, rgba(240,180,41,.25), transparent 50%),
+        repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(13,110,95,.04) 28px),
+        repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(13,110,95,.04) 28px),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc);
+      padding: 1.25rem 1rem 3rem;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 1rem;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(0,0,0,.08);
+      color: #345048;
+      font: 700 13px Nunito, sans-serif;
+      text-decoration: none;
+    }
+    .hero { text-align: center; margin: 0.5rem auto 1.5rem; max-width: 40rem; }
+    .eyebrow {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.18em;
+      color: #0d6e5f;
+    }
+    h1 {
+      font: 700 clamp(1.8rem, 5vw, 2.5rem) Fredoka, sans-serif;
+      color: #0d6e5f;
+      margin: 0.35rem 0;
+    }
+    .sub { color: #5a6a62; font: 600 14px/1.45 Nunito, sans-serif; }
+    .count {
+      display: inline-block;
+      margin-top: 0.8rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: #102018;
+      color: #7ed9b8;
+      font: 800 13px Space Grotesk, Nunito, sans-serif;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    a.card {
+      text-decoration: none;
+      color: inherit;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.12);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 160px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    a.card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(16,40,32,.12);
+    }
+    a.card.featured { border-color: #0d6e5f; box-shadow: 0 0 0 2px rgba(13,110,95,.15); }
+    .thumb {
+      height: 72px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+    }
+    .body { padding: 0.85rem 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
+    .body h2 { font: 700 1.05rem Fredoka, Nunito, sans-serif; color: #102018; }
+    .body p { margin-top: 0.3rem; color: #5a6a62; font: 600 12px/1.4 Nunito, sans-serif; flex: 1; }
+    .go {
+      margin-top: 0.7rem;
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      background: #0d6e5f;
+      color: #f3efe6;
+      font: 800 12px Nunito, sans-serif;
+      width: fit-content;
+    }
+    .sec {
+      max-width: 1000px;
+      margin: 1.4rem auto 0.55rem;
+      font: 800 0.75rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5a6a62;
+    }
+    .faq {
+      max-width: 720px;
+      margin: 1rem auto 1.2rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.14);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 0.35rem;
+    }
+    .faq h2 { font: 700 1.1rem Fredoka, Nunito, sans-serif; color: #0d6e5f; margin-bottom: 0.4rem; }
+    .faq details { border-top: 1px dashed rgba(13,110,95,.16); padding: 0.55rem 0; }
+    .faq summary { cursor: pointer; font: 800 13px Nunito, sans-serif; }
+    .faq details p { margin-top: 0.35rem; color: #5a6a62; font: 600 13px/1.4 Nunito, sans-serif; padding-left: 0.5rem; }
+  </style>
+</head>
+<body>
+  <a class="back" href="../">&larr; Все игры Amal</a>
+
+  <header class="hero">
+    <p class="eyebrow">LAB GROUP</p>
+    <h1>Лаборатория</h1>
+    <p class="sub">Здесь собраны <b>все</b> мини-игры из Animal Hospital — не только главная больница. Выбирай и играй.</p>
+    <p class="count" id="count">игр: —</p>
+  </header>
+
+  <section class="faq" aria-label="Вопросы внутри">
+    <h2>❓ Вопросы · внутри</h2>
+    <details open>
+      <summary>Где 3D-игры?</summary>
+      <p>На полке <a href="../portal-3d/#faq">3D · под замком</a>. Игрокам пока нельзя — ещё дорабатываются. Админ может войти.</p>
+    </details>
+    <details>
+      <summary>Что открыто сейчас?</summary>
+      <p>Эта группа: Лаборатория, Animal Hospital, Buttersquish, пельмени и остальные мини — играй свободно.</p>
+    </details>
+    <details>
+      <summary>Butterscotch выглядит по-старому?</summary>
+      <p>Жми Ctrl+F5. Нужен парк Buttersquish без шкал голода.</p>
+    </details>
+  </section>
+
+  <p class="sec">Главное</p>
+  <div class="grid" id="main"></div>
+
+  <p class="sec">Все мини-игры</p>
+  <div class="grid" id="all"></div>
+
+  <script>
+    const GAMES = [
+      { href: "./lab.html", icon: "🧪", title: "Лаборатория", desc: "Изучай образцы, смешивай, пиши журнал. Новая игра.", featured: true, thumb: "linear-gradient(135deg,#0d6e5f,#f0b429)" },
+      { href: "./index.html", icon: "🐾", title: "Animal Hospital", desc: "Главная больница: смены, аномалии, магазин.", featured: true, thumb: "linear-gradient(135deg,#2a6f6a,#143a3f)" },
+      { href: "./butterscotch.html", icon: "🧈", title: "Buttersquish", desc: "Парк с питомцем. Без голода — только веселье.", thumb: "linear-gradient(135deg,#f5e06a,#1e3a6e)" },
+      { href: "./dumplings.html", icon: "🥟", title: "Пельмени", desc: "Лепи, таскай, продавай пельмени.", thumb: "linear-gradient(135deg,#c05040,#e8d8c0)" },
+      { href: "./batyr-mish.html", icon: "🥋", title: "Батырский Миш", desc: "Миш, пёс, лес и школа, эмоции.", thumb: "linear-gradient(135deg,#1a6058,#7ed9b8)" },
+      { href: "./pet-care.html", icon: "🐱", title: "Питомцы", desc: "Кот и корги-такси. Уход и игры.", thumb: "linear-gradient(135deg,#ff9a4a,#ffe0c0)" },
+      { href: "./boop-toy.html", icon: "👆", title: "Boop Toy", desc: "Тыкай и бупай игрушку.", thumb: "linear-gradient(135deg,#fb7185,#fda4af)" },
+      { href: "./crows-roar.html", icon: "🐦‍⬛", title: "Crow's Roar", desc: "Крики ворона в веб-стиле.", thumb: "linear-gradient(135deg,#111827,#4b5563)" },
+      { href: "./lesha-games.html", icon: "🎬", title: "Ocean Cinema", desc: "Акула против лодки / кино Лёши.", thumb: "linear-gradient(135deg,#0ea5e9,#0c4a6e)" },
+      { href: "./lesha-quest.html", icon: "🗺️", title: "Lesha Quest", desc: "Квест Лёши.", thumb: "linear-gradient(135deg,#15803d,#14532d)" },
+      { href: "./only-us.html", icon: "💜", title: "Only Us", desc: "Только мы.", thumb: "linear-gradient(135deg,#7c3aed,#312e81)" },
+      { href: "./looks-sammy-jen.html", icon: "👀", title: "Sammy & Jen", desc: "Превью образов Sammy и Jen.", thumb: "linear-gradient(135deg,#f472b6,#c084fc)" },
+      { href: "./looks-roblox.html", icon: "🧱", title: "Roblox Looks", desc: "Превью образов в Roblox-стиле.", thumb: "linear-gradient(135deg,#ef4444,#f97316)" },
+      { href: "./thanks-outro.html", icon: "🙏", title: "Thanks Outro", desc: "Титры / спасибо.", thumb: "linear-gradient(135deg,#64748b,#0f172a)" },
+    ];
+
+    function card(g) {
+      return `<a class="card${g.featured ? " featured" : ""}" href="${g.href}">
+        <div class="thumb" style="background:${g.thumb}">${g.icon}</div>
+        <div class="body">
+          <h2>${g.title}</h2>
+          <p>${g.desc}</p>
+          <span class="go">Играть</span>
+        </div>
+      </a>`;
+    }
+
+    const main = GAMES.filter((g) => g.featured);
+    const rest = GAMES.filter((g) => !g.featured);
+    document.getElementById("main").innerHTML = main.map(card).join("");
+    document.getElementById("all").innerHTML = rest.map(card).join("");
+    document.getElementById("count").textContent = "игр в группе: " + GAMES.length;
+  </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>✦ Игры для Леши · все идеи</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./lesha-games.css?v=2" />
+  <link rel="stylesheet" href="./lab-skin.css?v=1" />
+</head>
+<body class="lab-skin">
+  <a class="back" href="./index.html">&larr; Больница</a>
+  <a class="back right" href="./only-us.html">Только ты и я &rarr;</a>
+  <div class="glow" aria-hidden="true"></div>
+
+  <div id="hub" class="screen">
+    <p class="brand">✦ Все идеи · для тебя</p>
+    <p class="sub">Пять мини-игр. Без гостей. Выбери любую.</p>
+    <div class="cards" id="cards"></div>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnHub">← Меню</button>
+      <span id="playTitle">…</span>
+      <span id="playStat"></span>
+    </div>
+    <canvas id="c" width="960" height="540"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <div class="ui-extra" id="uiExtra"></div>
+  </div>
+
+  <div id="win" class="screen overlay" hidden>
+    <div class="win-card">
+      <p class="brand">✦ Готово</p>
+      <p class="sub" id="winText"></p>
+      <p class="code" id="winCode"></p>
+      <button type="button" class="btn" id="btnWinHub">В меню</button>
+    </div>
+  </div>
+
+  <script src="./lesha-games.js?v=2"></script>
+  <script src="./lab-skin.js?v=1"></script>
+</body>
+</html>

@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Р—РѕРјР±Рё РїСЂРѕС‚РёРІ СЂР°СЃС‚РµРЅРёР№ 2</title>
-  <meta name="description" content="PVZ-2: Р°Р»СЊРјР°РЅР°С…, РєРѕРѕРї, РіРёР±СЂРёРґС‹ Р·РѕРјР±Рё, Р°Р»Р»РµСЂРіРёРё РЅР° СЂР°Р·РЅС‹Рµ СЂР°СЃС‚РµРЅРёСЏ, РёРЅСЃС‚СЂСѓРјРµРЅС‚С‹ С…РѕР·СЏРёРЅР°." />
+  <title>Зомби против растений 2</title>
+  <meta name="description" content="PVZ-2: альманах, кооп, гибриды зомби, аллергии на разные растения, инструменты хозяина." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,55 +12,55 @@
   <link rel="stylesheet" href="./style.css?v=15" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
+  <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
     <section class="screen menu" id="screenMenu">
       <div class="menu-layout">
         <div class="menu-panel">
-          <p class="brand">Р—РѕРјР±Рё РїСЂРѕС‚РёРІ СЂР°СЃС‚РµРЅРёР№</p>
-          <h1>Р§Р°СЃС‚СЊ 2</h1>
-          <p class="tagline">РњРёСЂС‹ В· С‚РёРїС‹ В· РєРѕРѕРї</p>
+          <p class="brand">Зомби против растений</p>
+          <h1>Часть 2</h1>
+          <p class="tagline">Миры · типы · кооп</p>
           <p class="desc">
-            РРіСЂР°Р№ РІСЃРµРјРё СЂР°СЃС‚РµРЅРёСЏРјРё РёР· Р°Р»СЊРјР°РЅР°С…Р° PvZ 2. РћРіРѕРЅСЊ, Р»С‘Рґ, СЌР»РµРєС‚СЂРёС‡РµСЃС‚РІРѕ,
-            РѕСЂРµС…Рё Рё РґСЂСѓРіРёРµ С‚РёРїС‹ СЂР°Р±РѕС‚Р°СЋС‚ РЅР° РїРѕР»Рµ. РњРѕР¶РЅРѕ РІРґРІРѕС‘Рј РЅР° РѕРґРЅРѕРј СЌРєСЂР°РЅРµ.
+            Играй всеми растениями из альманаха PvZ 2. Огонь, лёд, электричество,
+            орехи и другие типы работают на поле. Можно вдвоём на одном экране.
           </p>
-          <p class="stat" id="plantCount">Р Р°СЃС‚РµРЅРёР№: вЂ”</p>
+          <p class="stat" id="plantCount">Растений: —</p>
 
           <label class="field">
-            <span>Р РµР¶РёРј</span>
+            <span>Режим</span>
             <select id="modeSelect">
-              <option value="solo">РЎРѕР»Рѕ</option>
-              <option value="coop">Р’РґРІРѕС‘Рј (Р»РѕРєР°Р»СЊРЅРѕ)</option>
+              <option value="solo">Соло</option>
+              <option value="coop">Вдвоём (локально)</option>
             </select>
           </label>
 
           <label class="field check">
             <input type="checkbox" id="testMode" checked />
-            <span>РўРµСЃС‚: в€ћ РєРѕСЃРёР»РєРё, в€ћ СЃРѕР»РЅС†Рµ, Р±С‹СЃС‚СЂС‹Рµ РІРѕР»РЅС‹</span>
+            <span>Тест: ∞ косилки, ∞ солнце, быстрые волны</span>
           </label>
 
           <div class="menu-tools">
-            <button type="button" class="btn btn-ghost" id="btnMuteMenu">рџ”Љ Р—РІСѓРє</button>
+            <button type="button" class="btn btn-ghost" id="btnMuteMenu">🔊 Звук</button>
           </div>
 
-          <button type="button" class="btn btn-primary" id="btnPlay">в–¶ РРіСЂР°С‚СЊ</button>
-          <button type="button" class="btn btn-ghost" id="btnAlmanac">РђР»СЊРјР°РЅР°С… СЂР°СЃС‚РµРЅРёР№</button>
-          <a class="btn btn-ghost" href="../zombie-vs-plants/">Р§Р°СЃС‚СЊ 1</a>
+          <button type="button" class="btn btn-primary" id="btnPlay">▶ Играть</button>
+          <button type="button" class="btn btn-ghost" id="btnAlmanac">Альманах растений</button>
+          <a class="btn btn-ghost" href="../zombie-vs-plants/">Часть 1</a>
         </div>
 
         <aside class="promo-side" id="promoBox">
-          <h3 class="promo-side-title">РџСЂРѕРјРѕРєРѕРґ</h3>
-          <p class="promo-side-sub">РґР»СЏ РґСЂСѓР·РµР№ В· РЅРµ Р°РґРјРёРЅРєР°</p>
-          <p class="promo-code-hint" id="promoCodeHint">РљРѕРґ: <strong>РџРћРџРЈР“РђР™</strong> (РёР»Рё PARROT)</p>
+          <h3 class="promo-side-title">Промокод</h3>
+          <p class="promo-side-sub">для друзей · не админка</p>
+          <p class="promo-code-hint" id="promoCodeHint">Код: <strong>ПОПУГАЙ</strong> (или PARROT)</p>
           <div class="promo-row">
-            <input type="text" id="promoInput" placeholder="Р’РІРµРґРё РєРѕРґвЂ¦" autocomplete="off" maxlength="40" />
-            <button type="button" class="btn btn-ghost" id="btnPromo">РћРє</button>
+            <input type="text" id="promoInput" placeholder="Введи код…" autocomplete="off" maxlength="40" />
+            <button type="button" class="btn btn-ghost" id="btnPromo">Ок</button>
           </div>
-          <p class="promo-hint" id="promoHint">Р”СЂСѓР·СЊСЏРј РґР°С‘С‚ Р·Р°РјРµРґР»РµРЅРёРµ Рё СЃСЋСЂРїСЂРёР·С‹. РЈ С…РѕР·СЏРёРЅР° вЂ” РѕС‚РґРµР»СЊРЅС‹Р№ вќ„ РЎС‚РѕРї РІСЂРµРјРµРЅРё РІ Р±РѕСЋ.</p>
+          <p class="promo-hint" id="promoHint">Друзьям даёт замедление и сюрпризы. У хозяина — отдельный ❄ Стоп времени в бою.</p>
           <ul class="ability-list" id="abilityList" hidden></ul>
           <div class="surprise-journal" id="surpriseJournal" hidden>
-            <h4 class="surprise-journal-title">Р–СѓСЂРЅР°Р» СЃСЋСЂРїСЂРёР·РѕРІ</h4>
+            <h4 class="surprise-journal-title">Журнал сюрпризов</h4>
             <div id="surpriseJournalBody"></div>
           </div>
         </aside>
@@ -70,16 +70,16 @@
     <section class="screen almanac" id="screenAlmanac" hidden>
       <div class="almanac-wrap">
         <header class="almanac-head">
-          <button type="button" class="btn-back" id="btnBackMenu">&larr; РњРµРЅСЋ</button>
+          <button type="button" class="btn-back" id="btnBackMenu">&larr; Меню</button>
           <div>
-            <h2>РђР»СЊРјР°РЅР°С…</h2>
-            <p class="sub" id="almanacSub">Р’СЃРµ СЂР°СЃС‚РµРЅРёСЏ PvZ 2</p>
+            <h2>Альманах</h2>
+            <p class="sub" id="almanacSub">Все растения PvZ 2</p>
           </div>
         </header>
         <div class="type-filters" id="typeFilters"></div>
         <label class="search-wrap">
-          <span>РџРѕРёСЃРє</span>
-          <input type="search" id="plantSearch" placeholder="Р“РѕСЂРѕС…РѕСЃС‚СЂРµР», Fire, Р»С‘РґвЂ¦" autocomplete="off" />
+          <span>Поиск</span>
+          <input type="search" id="plantSearch" placeholder="Горохострел, Fire, лёд…" autocomplete="off" />
         </label>
         <div class="plant-grid" id="plantGrid"></div>
       </div>
@@ -88,62 +88,62 @@
     <section class="screen play" id="screenPlay" hidden>
       <div class="play-shell">
         <div class="hud">
-          <div class="hud-sun" title="РЎРѕР»РЅС†Рµ">вЂпёЏ <strong id="sunText">150</strong></div>
-          <div class="hud-wave" id="waveText">Р’РѕР»РЅР° 1</div>
-          <div class="hud-mode" id="modeText">РЎРѕР»Рѕ</div>
-          <button type="button" class="btn-sm" id="btnPause" title="РџР°СѓР·Р° / СЃС‚РѕРї РІСЂРµРјРµРЅРё">вЏё</button>
-          <button type="button" class="btn-sm" id="btnFreeze" title="РџРѕР»РЅС‹Р№ СЃС‚РѕРї РІСЂРµРјРµРЅРё (С…РѕР·СЏРёРЅ)" hidden>вќ„ РЎС‚РѕРї</button>
-          <button type="button" class="btn-sm" id="btnMute" title="Р—РІСѓРє">рџ”Љ</button>
-          <button type="button" class="btn-sm" id="btnShovel">рџЄЏ Р›РѕРїР°С‚Р°</button>
-          <button type="button" class="btn-sm" id="btnNutTool" hidden>рџҐњ РћСЂРµС…</button>
-          <button type="button" class="btn-sm ghost" id="btnQuit">РњРµРЅСЋ</button>
+          <div class="hud-sun" title="Солнце">☀️ <strong id="sunText">150</strong></div>
+          <div class="hud-wave" id="waveText">Волна 1</div>
+          <div class="hud-mode" id="modeText">Соло</div>
+          <button type="button" class="btn-sm" id="btnPause" title="Пауза / стоп времени">⏸</button>
+          <button type="button" class="btn-sm" id="btnFreeze" title="Полный стоп времени (хозяин)" hidden>❄ Стоп</button>
+          <button type="button" class="btn-sm" id="btnMute" title="Звук">🔊</button>
+          <button type="button" class="btn-sm" id="btnShovel">🪏 Лопата</button>
+          <button type="button" class="btn-sm" id="btnNutTool" hidden>🥜 Орех</button>
+          <button type="button" class="btn-sm ghost" id="btnQuit">Меню</button>
         </div>
         <div class="ability-bar" id="abilityBar" hidden></div>
         <div class="nut-bar" id="nutBar" hidden>
-          <span class="nut-bar-label">РўРѕР»СЊРєРѕ С…РѕР·СЏРёРЅ вЂ” СЌС„С„РµРєС‚ РѕСЂРµС…Р°:</span>
-          <button type="button" class="nut-mode active" data-nut="normal" id="nutModeNormal">РћР±С‹С‡РЅС‹Р№</button>
-          <button type="button" class="nut-mode" data-nut="poison" id="nutModePoison">в пёЏ РЇРґ</button>
-          <button type="button" class="nut-mode" data-nut="kill" id="nutModeKill">рџ’Ђ РЎРјРµСЂС‚СЊ</button>
+          <span class="nut-bar-label">Только хозяин — эффект ореха:</span>
+          <button type="button" class="nut-mode active" data-nut="normal" id="nutModeNormal">Обычный</button>
+          <button type="button" class="nut-mode" data-nut="poison" id="nutModePoison">☠️ Яд</button>
+          <button type="button" class="nut-mode" data-nut="kill" id="nutModeKill">💀 Смерть</button>
         </div>
         <div class="zombie-bar" id="zombieBar" hidden>
-          <span class="nut-bar-label">РўРѕР»СЊРєРѕ С…РѕР·СЏРёРЅ вЂ” Р·РѕРјР±Рё:</span>
-          <button type="button" class="z-tool" data-ztool="kill" id="zToolKill">в  РЈР±РёС‚СЊ</button>
-          <button type="button" class="z-tool" data-ztool="cure" id="zToolCure">рџ’‰ РЎРїР°СЃС‚Рё</button>
-          <button type="button" class="z-tool" data-ztool="spawn" id="zToolSpawn">пј‹ РЎРїР°РІРЅ</button>
-          <button type="button" class="z-tool" data-ztool="noreload" id="zToolNoreload">вЏі Р‘РµР· РїРµСЂРµР·Р°СЂСЏРґРєРё</button>
+          <span class="nut-bar-label">Только хозяин — зомби:</span>
+          <button type="button" class="z-tool" data-ztool="kill" id="zToolKill">☠ Убить</button>
+          <button type="button" class="z-tool" data-ztool="cure" id="zToolCure">💉 Спасти</button>
+          <button type="button" class="z-tool" data-ztool="spawn" id="zToolSpawn">＋ Спавн</button>
+          <button type="button" class="z-tool" data-ztool="noreload" id="zToolNoreload">⏳ Без перезарядки</button>
           <div class="z-pick" id="zombiePick">
-            <span class="z-pick-label">РўРёРї:</span>
+            <span class="z-pick-label">Тип:</span>
             <div class="z-kinds" id="zombieKinds"></div>
-            <span class="z-pick-label">Р СЏРґ:</span>
+            <span class="z-pick-label">Ряд:</span>
             <div class="z-rows" id="zombieRows"></div>
-            <span class="z-pick-label">РђР»Р»РµСЂРіРёСЏ:</span>
+            <span class="z-pick-label">Аллергия:</span>
             <div class="z-allergies" id="zombieAllergies"></div>
           </div>
         </div>
         <div class="seed-bar" id="seedBar"></div>
         <p class="coop-hint" id="coopHint" hidden>
-          Р’РґРІРѕС‘Рј: РРіСЂРѕРє 1 вЂ” РєР»РёРє РїРѕ РєР»РµС‚РєРµ В· РРіСЂРѕРє 2 вЂ” Shift+РєР»РёРє В· РѕР±С‰РёР№ Р±Р°РЅРє СЃРѕР»РЅС†Р°
+          Вдвоём: Игрок 1 — клик по клетке · Игрок 2 — Shift+клик · общий банк солнца
         </p>
         <canvas id="gameCanvas" width="900" height="520"></canvas>
-        <p class="hint" id="playHint">Р’С‹Р±РµСЂРё СЂР°СЃС‚РµРЅРёРµ СЃРІРµСЂС…Сѓ Рё РєР»РёРєРЅРё РїРѕ РєР»РµС‚РєРµ</p>
+        <p class="hint" id="playHint">Выбери растение сверху и кликни по клетке</p>
       </div>
     </section>
 
     <section class="screen end" id="screenEnd" hidden>
       <div class="menu-panel">
-        <h2 id="endTitle">РџРѕР±РµРґР°!</h2>
+        <h2 id="endTitle">Победа!</h2>
         <p class="desc" id="endSub"></p>
-        <button type="button" class="btn btn-primary" id="btnAgain">Р•С‰С‘ СЂР°Р·</button>
-        <button type="button" class="btn btn-ghost" id="btnEndMenu">Р’ РјРµРЅСЋ</button>
+        <button type="button" class="btn btn-primary" id="btnAgain">Ещё раз</button>
+        <button type="button" class="btn btn-ghost" id="btnEndMenu">В меню</button>
       </div>
     </section>
   </div>
 
   <div class="toast" id="toast" hidden></div>
 
-  <script src="../shared/amal-surprises.js?v=1"></script>
-  <script src="../shared/amal-owner-powers.js?v=16"></script>
-  <script src="../shared/amal-hub.js?v=23"></script>
+  <script src="../shared/amal-surprises.js?v=5"></script>
+  <script src="../shared/amal-owner-powers.js?v=17"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
   <script src="./plants-data.js?v=9"></script>
   <script src="./promo.js?v=3"></script>
   <script src="./game.js?v=16"></script>

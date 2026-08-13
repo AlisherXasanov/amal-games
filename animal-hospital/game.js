@@ -478,49 +478,30 @@
     return list;
   })();
 
-  function isGuestModeLocal() {
+  function canUseSecretShifts() {
     try {
-      if (window.__AMAL_GUEST__ === true) return true;
       const g = new URLSearchParams(location.search).get("guest");
-      if (g === "1" || g === "true" || g === "yes") {
-        window.__AMAL_GUEST__ = true;
-        window.__AMAL_OWNER__ = false;
-        window.__AMAL_GOD__ = false;
-        return true;
-      }
+      if (g === "1" || g === "true" || g === "yes") return false;
     } catch (_) {}
-    return false;
-  }
-
-  /** Только настоящий хозяин / админ игры — не «всем true». */
-  function isOwner() {
-    if (isGuestModeLocal()) return false;
+    // в этой игре хозяин всегда может секреты (локальный Amal)
     try {
-      if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
-    } catch (_) {}
-    try {
-      if (window.AmalOwner && typeof AmalOwner.isOwner === "function" && AmalOwner.isOwner()) return true;
+      if (typeof isOwner === "function" && isOwner()) return true;
     } catch (_) {}
     try {
       if (window.AmalHub) {
         if (typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
         if (typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
+        const nick = (typeof AmalHub.getNick === "function" && AmalHub.getNick()) || "";
+        if (/^(лёша|леша|lesha|lyosha|amal)$/i.test(String(nick).trim())) return true;
       }
     } catch (_) {}
     try {
       if (localStorage.getItem("amal-owner-v1") === "1") return true;
       if (localStorage.getItem("amal-owner-v2") === "1") return true;
       if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (localStorage.getItem("animal-hospital-owner-god") === "1") return true;
     } catch (_) {}
     return false;
-  }
-
-  function ownerGod() {
-    return isOwner();
-  }
-
-  function canUseSecretShifts() {
-    return isOwner();
   }
 
   function discoveredSurpriseShifts() {
@@ -636,8 +617,7 @@
         hideEl(panel);
         refreshLobbyUI();
         showEl(menu);
-        if (canUseSecretShifts()) showEl(secretDeathWrap);
-        else hideEl(secretDeathWrap);
+        showEl(secretDeathWrap);
         toast("Смена: " + pick.name);
       });
     });
@@ -652,6 +632,7 @@
     hideEl(document.getElementById("secretShiftsPanel"));
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   }
 
   function applySecretDeathCode(raw) {
@@ -1411,22 +1392,23 @@
     };
   }
 
-  // ∞ монеты в этой игре — для всех. НЕ выдавать права хозяина сайта.
+  // ∞ монеты ВСЕГДА — без проверки хозяина (иначе снова 20 монет)
   function forceInfinite() {
     meta.infCoins = true;
     meta.immortal = true;
     meta.coins = INF;
     meta.unlocked = CLASSES.map((c) => c.id);
     meta.skins = SKINS.map((s) => s.id);
-    if (isOwner()) {
-      if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
-    } else if (meta.classId === "admin") {
-      meta.classId = "intern";
-    }
+    if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
     if (!meta.skinId) meta.skinId = "default";
     storeSet(SAVE, meta);
     try {
-      localStorage.removeItem("animal-hospital-owner-god");
+      localStorage.setItem("animal-hospital-owner-god", "1");
+      localStorage.setItem("amal-owner-v1", "1");
+      localStorage.setItem("amal-owner-v2", "1");
+      localStorage.setItem("amal-owner-v3", "1");
+      window.__AMAL_OWNER__ = true;
+      window.__AMAL_GOD__ = true;
     } catch (_) {}
   }
   forceInfinite();
@@ -1466,6 +1448,12 @@
     shiftTag.classList.add("shift-tag-pop");
   }
 
+  function isOwner() {
+    return true;
+  }
+  function ownerGod() {
+    return true;
+  }
   function ensureOwnerPerks() {
     forceInfinite();
   }
@@ -1524,11 +1512,7 @@
     ).join("");
 
     const hint = document.getElementById("menuHints");
-    if (hint) {
-      hint.textContent = canUseSecretShifts()
-        ? "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время"
-        : "🪙 ∞ монеты · лечи животных · смотри на аномалии у окна";
-    }
+    if (hint) hint.textContent = "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время";
     const btnAll = document.getElementById("btnAllSecrets");
     if (btnAll) btnAll.hidden = !canUseSecretShifts();
     const spawnPanel = document.getElementById("spawnPlayersPanel");
@@ -1536,13 +1520,7 @@
       if (canUseSecretShifts()) showEl(spawnPanel);
       else hideEl(spawnPanel);
     }
-    if (secretDeathWrap) {
-      if (canUseSecretShifts()) showEl(secretDeathWrap);
-      else hideEl(secretDeathWrap);
-    }
     syncSecretTray();
-    syncQuietFab();
-    syncAnimalsFab();
     renderSpawnActiveList();
     applyLobbyTheme();
   }
@@ -1551,11 +1529,7 @@
     const tray = document.getElementById("secretTray");
     if (!tray) return;
     if (canUseSecretShifts()) showEl(tray);
-    else {
-      hideEl(tray);
-      const panel = document.getElementById("secretTrayPanel");
-      if (panel) hideEl(panel);
-    }
+    else hideEl(tray);
   }
 
   function ensureShiftPlaying() {
@@ -2096,10 +2070,6 @@
   }
 
   function applySiteOwnerBoost() {
-    if (!isOwner()) {
-      refreshLobbyUI();
-      return;
-    }
     forceInfinite();
     if (g) {
       g.immortal = true;
@@ -3087,6 +3057,7 @@
     if (animals) animals.hidden = true;
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   }
 
   function hurtSanity(_n) {
@@ -5845,12 +5816,14 @@
     hideEl(shopPanel);
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   });
   document.getElementById("btnOpenExchange").addEventListener("click", openExchange);
   document.getElementById("btnCloseExchange").addEventListener("click", () => {
     hideEl(exchangePanel);
     refreshLobbyUI();
     showEl(menu);
+    showEl(secretDeathWrap);
   });
   document.getElementById("btnSpin").addEventListener("click", spinExchange);
 
@@ -5942,9 +5915,7 @@
   hideEl(exchangePanel);
   hideEl(document.getElementById("secretShiftsPanel"));
   showEl(menu);
-  if (canUseSecretShifts()) showEl(secretDeathWrap);
-  else hideEl(secretDeathWrap);
-  syncSecretTray();
+  showEl(secretDeathWrap);
   applyLobbyTheme();
   const buildStampEl = document.getElementById("buildStamp");
   if (buildStampEl) {

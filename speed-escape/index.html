@@ -1,0 +1,454 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>+1 Speed Escape вЂ” С‡РµСЂРЅРѕРІРёРє</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#2a1040;font-family:Segoe UI,system-ui,sans-serif;color:#fff}
+    #hud{position:fixed;top:12px;left:12px;z-index:10;text-shadow:0 1px 4px #000;font-size:14px;line-height:1.55;max-width:min(400px,75vw)}
+    #hud b{font-size:18px}
+    #draft{position:fixed;top:12px;right:12px;z-index:10;font-size:11px;opacity:.75;background:rgba(0,0,0,.45);padding:6px 10px;border-radius:8px}
+    #rules{position:fixed;bottom:12px;left:12px;z-index:10;font-size:12px;opacity:.9;text-shadow:0 1px 3px #000;max-width:92vw}
+    #toast{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:16px 28px;border-radius:14px;background:rgba(40,10,50,.92);border:1px solid #f472b6;font-size:20px;font-weight:800;display:none;text-align:center;pointer-events:none}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <b>+1 Speed Escape</b><br/>
+    Р”РёСЃС‚Р°РЅС†РёСЏ: <span id="dist">0</span> Рј В· РЎРєРѕСЂРѕСЃС‚СЊ: <span id="spd">1</span><br/>
+    Р РµРєРѕСЂРґ: <span id="best">0</span> Рј<br/>
+    <span id="status">Р‘РµРіРё РІРїРµСЂС‘Рґ В· РїР°РґС‹ +1 В· РёР·Р±РµРіР°Р№ РїСЂРµРїСЏС‚СЃС‚РІРёР№</span>
+  </div>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="rules">РђРІС‚Рѕ-Р±РµРі РІРїРµСЂС‘Рґ В· WASD РїРѕРјРѕРіР°РµС‚ В· РџРљРњ вЂ” РєР°РјРµСЂР°<br/>РџСЂРµРїСЏС‚СЃС‚РІРёРµ = РіРёР±РµР»СЊ Рё СЃР±СЂРѕСЃ (С…РѕР·СЏРёРЅ РїСЂРѕС…РѕРґРёС‚ РЅР°РІС‹Р»РµС‚).</div>
+  <div id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
+  <script src="../shared/amal-walk-player.js?v=3"></script>
+  <script src="../shared/amal-draft-owner.js?v=2"></script>
+  <script>
+  (function () {
+    if (!THREE.CapsuleGeometry) {
+      THREE.CapsuleGeometry = function (r, len, c, seg) {
+        return new THREE.CylinderGeometry(r, r, (len || 1) + r * 2, seg || 8);
+      };
+    }
+
+    const BEST_KEY = "speed-escape-best-v1";
+    const LANE_HALF = 5.2;
+    const SEG_LEN = 26;
+    const START_Z = 0;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x3b1a55);
+    scene.fog = new THREE.Fog(0x3b1a55, 45, 130);
+    const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.1, 240);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 12,
+      pitch: 0.36,
+      yaw: Math.PI,
+      lookOffsetY: 1.35,
+      minDist: 5,
+      maxDist: 28,
+      hintText: "РљР°РјРµСЂР°: РџРљРњ В· РєРѕР»С‘СЃРёРєРѕ"
+    });
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0xffd6f5, 0.62));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.85);
+    sun.position.set(4, 22, -10);
+    scene.add(sun);
+
+    const candyColors = [0xff6bcb, 0x7dd3fc, 0xfde047, 0xa3e635, 0xc4b5fd, 0xfb923c];
+    const floorMat = new THREE.MeshLambertMaterial({ color: 0xf9a8d4 });
+    const wallMatL = new THREE.MeshLambertMaterial({ color: 0x67e8f9 });
+    const wallMatR = new THREE.MeshLambertMaterial({ color: 0xfbbf24 });
+    const stripeMat = new THREE.MeshLambertMaterial({ color: 0xfbcfe8 });
+
+    const segments = [];
+    const pads = [];
+    const obstacles = [];
+    let nextSegZ = -8;
+    let segIndex = 0;
+
+    function makeSegment(z0) {
+      const g = new THREE.Group();
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(LANE_HALF * 2 + 1.4, 0.35, SEG_LEN), floorMat);
+      floor.position.set(0, -0.15, z0 - SEG_LEN / 2);
+      g.add(floor);
+      // center stripe
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.04, SEG_LEN * 0.92), stripeMat);
+      stripe.position.set(0, 0.04, z0 - SEG_LEN / 2);
+      g.add(stripe);
+      const wl = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2.8, SEG_LEN), wallMatL);
+      wl.position.set(-LANE_HALF - 0.45, 1.25, z0 - SEG_LEN / 2);
+      g.add(wl);
+      const wr = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2.8, SEG_LEN), wallMatR);
+      wr.position.set(LANE_HALF + 0.45, 1.25, z0 - SEG_LEN / 2);
+      g.add(wr);
+
+      // candy decor along walls
+      for (let i = 0; i < 7; i++) {
+        const c = new THREE.Mesh(
+          new THREE.SphereGeometry(0.32 + (i % 3) * 0.06, 10, 10),
+          new THREE.MeshLambertMaterial({
+            color: candyColors[(segIndex + i) % candyColors.length],
+            emissive: candyColors[(segIndex + i) % candyColors.length],
+            emissiveIntensity: 0.22
+          })
+        );
+        const side = i % 2 ? 1 : -1;
+        c.position.set(side * (LANE_HALF + 0.2), 2.5 + (i % 2) * 0.3, z0 - 2 - i * 3.4);
+        g.add(c);
+        // lollipop stick
+        const stick = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.06, 0.06, 1.2, 6),
+          new THREE.MeshLambertMaterial({ color: 0xffffff })
+        );
+        stick.position.set(side * (LANE_HALF + 0.2), 1.7, z0 - 2 - i * 3.4);
+        g.add(stick);
+      }
+      // arch every other segment
+      if (segIndex % 2 === 1) {
+        const arch = new THREE.Mesh(
+          new THREE.TorusGeometry(LANE_HALF + 0.2, 0.28, 8, 24, Math.PI),
+          new THREE.MeshLambertMaterial({
+            color: candyColors[segIndex % candyColors.length],
+            emissive: candyColors[segIndex % candyColors.length],
+            emissiveIntensity: 0.2
+          })
+        );
+        arch.rotation.z = Math.PI;
+        arch.position.set(0, 0.2, z0 - SEG_LEN * 0.5);
+        g.add(arch);
+      }
+      scene.add(g);
+      segments.push({ group: g, z0: z0, end: z0 - SEG_LEN });
+
+      // speed pads (1вЂ“2 per segment after first)
+      if (segIndex > 0) {
+        const padCount = 1 + (segIndex % 3 === 0 ? 1 : 0);
+        for (let p = 0; p < padCount; p++) {
+          const px = (Math.random() * 2 - 1) * (LANE_HALF - 1.4);
+          const pz = z0 - SEG_LEN * (0.2 + Math.random() * 0.55 + p * 0.12);
+          const pad = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.9, 0.9, 0.18, 16),
+            new THREE.MeshLambertMaterial({ color: 0x4ade80, emissive: 0x166534, emissiveIntensity: 0.5 })
+          );
+          pad.position.set(px, 0.12, pz);
+          scene.add(pad);
+          const label = new THREE.Mesh(
+            new THREE.BoxGeometry(0.55, 0.08, 0.55),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+          );
+          label.position.set(px, 0.24, pz);
+          scene.add(label);
+          pads.push({ mesh: pad, label, x: px, z: pz, taken: false });
+        }
+      }
+
+      // more obstacles
+      if (segIndex > 0) {
+        const count = 2 + (segIndex % 4 === 0 ? 1 : 0);
+        for (let i = 0; i < count; i++) {
+          const ox = (Math.random() * 2 - 1) * (LANE_HALF - 1.0);
+          const oz = z0 - SEG_LEN * (0.15 + Math.random() * 0.65);
+          const kind = Math.random();
+          let mesh;
+          let r = 0.95;
+          if (kind < 0.3) {
+            mesh = new THREE.Mesh(
+              new THREE.BoxGeometry(1.5, 1.4, 1.2),
+              new THREE.MeshLambertMaterial({ color: 0xef4444 })
+            );
+            mesh.position.set(ox, 0.7, oz);
+          } else if (kind < 0.55) {
+            mesh = new THREE.Mesh(
+              new THREE.ConeGeometry(0.75, 1.6, 8),
+              new THREE.MeshLambertMaterial({ color: 0xf97316 })
+            );
+            mesh.position.set(ox, 0.8, oz);
+          } else if (kind < 0.75) {
+            mesh = new THREE.Mesh(
+              new THREE.BoxGeometry(LANE_HALF * 1.15, 1.15, 0.75),
+              new THREE.MeshLambertMaterial({ color: 0xdc2626 })
+            );
+            mesh.position.set(ox * 0.25, 0.58, oz);
+            r = 1.35;
+          } else {
+            // candy spike cluster
+            mesh = new THREE.Group();
+            for (let k = 0; k < 3; k++) {
+              const sp = new THREE.Mesh(
+                new THREE.ConeGeometry(0.35, 1.1, 6),
+                new THREE.MeshLambertMaterial({ color: 0xe11d48 })
+              );
+              sp.position.set((k - 1) * 0.55, 0.55, 0);
+              mesh.add(sp);
+            }
+            mesh.position.set(ox, 0, oz);
+            r = 1.1;
+          }
+          scene.add(mesh);
+          obstacles.push({ mesh, r, ignore: false });
+        }
+      }
+
+      segIndex++;
+      nextSegZ = z0 - SEG_LEN;
+    }
+
+    for (let i = 0; i < 8; i++) makeSegment(START_Z - i * SEG_LEN);
+
+    const player = AmalWalkPlayer.create(scene, THREE, {
+      humanoid: true,
+      height: 1.7,
+      speed: 0.01,
+      x: 0,
+      z: START_Z - 2,
+    });
+    player.state.speed = 0.01;
+    AmalDraftOwner.attachPlayer(player);
+    AmalDraftOwner.badge();
+
+    let speedLevel = 1;
+    let distance = 0;
+    let best = 0;
+    try {
+      best = Number(localStorage.getItem(BEST_KEY) || 0) || 0;
+    } catch (_) {}
+    let dead = false;
+    let respawnT = 0;
+    let toastT = 0;
+    let invuln = 0;
+    const startPos = { x: 0, z: START_Z - 2 };
+
+    function toast(msg, sec) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      toastT = sec != null ? sec : 1.5;
+    }
+
+    function syncHud() {
+      document.getElementById("dist").textContent = Math.floor(distance);
+      document.getElementById("spd").textContent = speedLevel;
+      document.getElementById("best").textContent = Math.floor(best);
+    }
+
+    function saveBest() {
+      if (distance > best) {
+        best = Math.floor(distance);
+        try {
+          localStorage.setItem(BEST_KEY, String(best));
+        } catch (_) {}
+      }
+      syncHud();
+    }
+
+    function clearWorld() {
+      while (pads.length) {
+        const p = pads.pop();
+        scene.remove(p.mesh);
+        if (p.label) scene.remove(p.label);
+      }
+      while (obstacles.length) {
+        const o = obstacles.pop();
+        scene.remove(o.mesh);
+      }
+      while (segments.length) {
+        const s = segments.pop();
+        scene.remove(s.group);
+      }
+      segIndex = 0;
+      nextSegZ = -8;
+      for (let i = 0; i < 8; i++) makeSegment(START_Z - i * SEG_LEN);
+    }
+
+    function resetRun() {
+      dead = false;
+      player.state.locked = false;
+      speedLevel = 1;
+      distance = 0;
+      invuln = 0.8;
+      player.mesh.position.set(startPos.x, 0, startPos.z);
+      player.state.vx = 0;
+      player.state.vy = 0;
+      player.state.vz = 0;
+      clearWorld();
+      document.getElementById("status").textContent = "РЎРЅРѕРІР° РІРїРµСЂС‘Рґ! РЎРѕР±РёСЂР°Р№ Р·РµР»С‘РЅС‹Рµ РїР°РґС‹ +1";
+      toast("РЎС‚Р°СЂС‚", 1.0);
+      syncHud();
+    }
+
+    function killPlayer() {
+      if (dead) return;
+      if (!AmalDraftOwner.canDie()) return;
+      dead = true;
+      player.state.locked = true;
+      saveBest();
+      toast("РўС‹ РїРѕРіРёР±", 1.5);
+      document.getElementById("status").textContent = "РЎР±СЂРѕСЃ РґРёСЃС‚Р°РЅС†РёРё Рё СЃРєРѕСЂРѕСЃС‚РёвЂ¦";
+      respawnT = 1.5;
+    }
+
+    syncHud();
+
+    let last = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (toastT > 0) {
+        toastT -= dt;
+        if (toastT <= 0) document.getElementById("toast").style.display = "none";
+      }
+      if (invuln > 0) invuln -= dt;
+
+      if (dead) {
+        respawnT -= dt;
+        if (respawnT <= 0) resetRun();
+        orbit.follow(player.mesh.position);
+        renderer.render(scene, camera);
+        return;
+      }
+
+      const keys = player.keys;
+      let assistX = 0;
+      let boost = 1;
+      if (keys.a || keys.arrowleft) assistX -= 1;
+      if (keys.d || keys.arrowright) assistX += 1;
+      if (keys.w || keys.arrowup) boost = 1.15;
+      if (keys.s || keys.arrowdown) boost = 0.75;
+
+      const baseSpeed = 6.5 + speedLevel * 1.4;
+      const forward = baseSpeed * boost;
+
+      player.state.locked = true;
+      if (AmalDraftOwner.isOwner() && player.state.fly) {
+        player.state.locked = false;
+        player.state.speed = baseSpeed * 1.4;
+        player.update(dt, orbit.state.yaw, null);
+        player.mesh.position.z -= forward * dt * 0.35;
+      } else {
+        player.mesh.position.z -= forward * dt;
+        player.mesh.position.x += assistX * (baseSpeed * 0.9) * dt;
+        // humanoid ground Y = 0
+        const gy = 0;
+        if (!player.state.fly) {
+          if (keys[" "] && player.state.onGround) {
+            player.state.vy = player.state.jump;
+            player.state.onGround = false;
+          }
+          player.state.vy -= 22 * dt;
+          player.mesh.position.y += player.state.vy * dt;
+          if (player.mesh.position.y <= gy) {
+            player.mesh.position.y = gy;
+            player.state.vy = 0;
+            player.state.onGround = true;
+          }
+        }
+        if (assistX || boost !== 1) {
+          player.mesh.rotation.y = Math.PI + assistX * 0.35;
+        } else {
+          player.mesh.rotation.y = Math.PI;
+        }
+      }
+
+      player.mesh.position.x = Math.max(-LANE_HALF + 0.45, Math.min(LANE_HALF - 0.45, player.mesh.position.x));
+
+      const traveled = START_Z - 2 - player.mesh.position.z;
+      if (traveled > distance) distance = traveled;
+      saveBest();
+
+      while (player.mesh.position.z < nextSegZ + SEG_LEN * 4) {
+        makeSegment(nextSegZ);
+      }
+      while (segments.length > 12) {
+        const s = segments.shift();
+        scene.remove(s.group);
+      }
+      for (let i = pads.length - 1; i >= 0; i--) {
+        if (pads[i].z > player.mesh.position.z + 40) {
+          scene.remove(pads[i].mesh);
+          if (pads[i].label) scene.remove(pads[i].label);
+          pads.splice(i, 1);
+        }
+      }
+      for (let i = obstacles.length - 1; i >= 0; i--) {
+        if (obstacles[i].mesh.position.z > player.mesh.position.z + 40) {
+          scene.remove(obstacles[i].mesh);
+          obstacles.splice(i, 1);
+        }
+      }
+
+      for (let i = 0; i < pads.length; i++) {
+        const p = pads[i];
+        if (p.taken) continue;
+        if (Math.hypot(player.mesh.position.x - p.x, player.mesh.position.z - p.z) < 1.2) {
+          p.taken = true;
+          p.mesh.visible = false;
+          if (p.label) p.label.visible = false;
+          speedLevel += 1;
+          toast("+1 СЃРєРѕСЂРѕСЃС‚СЊ! Г—" + speedLevel, 1.0);
+          document.getElementById("status").textContent = "РЎРєРѕСЂРѕСЃС‚СЊ РІС‹СЂРѕСЃР»Р° вЂ” РѕСЃС‚РѕСЂРѕР¶РЅРµРµ СЃ РїСЂРµРїСЏС‚СЃС‚РІРёСЏРјРё";
+          syncHud();
+        }
+      }
+
+      if (invuln <= 0) {
+        for (let i = 0; i < obstacles.length; i++) {
+          const o = obstacles[i];
+          if (o.ignore) continue;
+          const ox = o.mesh.position.x;
+          const oz = o.mesh.position.z;
+          const d = Math.hypot(player.mesh.position.x - ox, player.mesh.position.z - oz);
+          if (d < o.r) {
+            if (!AmalDraftOwner.canDie()) {
+              o.ignore = true;
+              if (o.mesh.material) {
+                o.mesh.material.transparent = true;
+                o.mesh.material.opacity = 0.35;
+              } else if (o.mesh.traverse) {
+                o.mesh.traverse((c) => {
+                  if (c.material) {
+                    c.material.transparent = true;
+                    c.material.opacity = 0.35;
+                  }
+                });
+              }
+              const side = player.mesh.position.x >= ox ? 1 : -1;
+              player.mesh.position.x += side * 0.9;
+              toast("РџСЂРѕС…РѕРґ В· С…РѕР·СЏРёРЅ", 0.8);
+            } else {
+              killPlayer();
+              break;
+            }
+          }
+        }
+      }
+
+      orbit.follow(player.mesh.position);
+      renderer.render(scene, camera);
+    }
+    animate(performance.now());
+  })();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Hikinoliki — Игры Эрихоки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="erihoka.css" />
+</head>
+<body class="erihoka">
+  <div class="eh-noise" aria-hidden="true"></div>
+  <header class="eh-top">
+    <a class="eh-brand" href="erihoka.html">Игры <span>Эрихоки</span></a>
+    <a class="eh-back" href="erihoka.html">← К играм</a>
+  </header>
+  <main class="eh-main">
+    <section class="eh-hero">
+      <p class="eyebrow">Ловля</p>
+      <h1>Hikinoliki</h1>
+      <p>Нажимай на <strong style="color:var(--eh-brand)">зелёных</strong> хикиноликов. Бот ловит <strong style="color:var(--eh-eri)">фиолетовых</strong>. Кто первый наберёт 10 — победил!</p>
+    </section>
+    <div class="eh-panel">
+      <div class="eh-row" id="opp-row">
+        <label>Противник:</label>
+        <button type="button" class="eh-btn" data-bot="eri">Эри Хока</button>
+        <button type="button" class="eh-btn" data-bot="easy">Лёгкий бот</button>
+        <button type="button" class="eh-btn" data-bot="hard">Сильный бот</button>
+      </div>
+      <div class="eh-score">
+        <span class="you">Ты: <b id="score-you">0</b> / 10</span>
+        <span class="bot"><span id="bot-name">Эри Хока</span>: <b id="score-bot">0</b> / 10</span>
+      </div>
+      <div class="eh-row">
+        <button type="button" class="eh-btn primary" id="btn-start">Играть</button>
+      </div>
+      <p class="eh-hint">Жми только на своих (зелёных). Чужих ловить нельзя.</p>
+    </div>
+    <div class="eh-stage-box eh-stage-wrap">
+      <canvas id="game" width="800" height="420"></canvas>
+      <div class="eh-overlay" id="overlay">
+        <div>
+          <h2 id="overlay-title">Hikinoliki</h2>
+          <p id="overlay-msg">Выбери противника и нажми «Играть»</p>
+          <button type="button" class="eh-btn accent" id="btn-again">Играть</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="erihoka-bots.js"></script>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width;
+    const H = canvas.height;
+    const GOAL = 10;
+
+    let bot = ErihokaBots.eri;
+    const getBot = ErihokaUI.bindOpponent(document.getElementById("opp-row"), (b) => {
+      bot = b;
+      document.getElementById("bot-name").textContent = b.name;
+    });
+
+    let running = false;
+    let youScore = 0;
+    let botScore = 0;
+    let critters = [];
+    let last = 0;
+    let spawnAcc = 0;
+    let botAcc = 0;
+
+    function updateHud() {
+      document.getElementById("score-you").textContent = youScore;
+      document.getElementById("score-bot").textContent = botScore;
+      document.getElementById("bot-name").textContent = bot.name;
+    }
+
+    function reset() {
+      youScore = 0;
+      botScore = 0;
+      critters = [];
+      spawnAcc = 0;
+      botAcc = 0;
+      updateHud();
+    }
+
+    function spawn() {
+      const forYou = Math.random() < 0.5;
+      critters.push({
+        x: 50 + Math.random() * (W - 100),
+        y: 50 + Math.random() * (H - 100),
+        r: 26 + Math.random() * 8,
+        forYou,
+        life: 2.2 + Math.random() * 1.4,
+        wobble: Math.random() * Math.PI * 2,
+      });
+    }
+
+    function endGame(win) {
+      running = false;
+      document.getElementById("overlay-title").textContent = win === "you" ? "Ты победил!" : bot.name + " победил!";
+      document.getElementById("overlay-msg").textContent = "Ты: " + youScore + " · " + bot.name + ": " + botScore;
+      document.getElementById("overlay").classList.remove("hidden");
+    }
+
+    function start() {
+      bot = getBot();
+      reset();
+      document.getElementById("overlay").classList.add("hidden");
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(loop);
+    }
+
+    function loop(now) {
+      if (!running) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      spawnAcc += dt;
+      const spawnEvery = 0.7;
+      while (spawnAcc >= spawnEvery) {
+        spawnAcc -= spawnEvery;
+        if (critters.length < 8) spawn();
+      }
+
+      for (const c of critters) {
+        c.life -= dt;
+        c.wobble += dt * 3;
+        c.x += Math.sin(c.wobble) * 18 * dt;
+        c.y += Math.cos(c.wobble * 0.8) * 14 * dt;
+      }
+      critters = critters.filter((c) => c.life > 0);
+
+      botAcc += dt;
+      const botEvery = 0.55 - bot.react * 0.28;
+      if (botAcc >= botEvery) {
+        botAcc = 0;
+        if (Math.random() < 0.4 + bot.react * 0.55) {
+          const mine = critters.filter((c) => !c.forYou);
+          if (mine.length) {
+            const pick = mine[Math.floor(Math.random() * mine.length)];
+            const idx = critters.indexOf(pick);
+            if (idx >= 0) {
+              critters.splice(idx, 1);
+              botScore += 1;
+              updateHud();
+              if (botScore >= GOAL) {
+                endGame("bot");
+                draw();
+                return;
+              }
+            }
+          }
+        }
+      }
+
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function drawCritter(c) {
+      const color = c.forYou ? "#3dd6c6" : bot.color;
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(Math.sin(c.wobble) * 0.15);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.beginPath();
+      ctx.ellipse(-c.r * 0.25, -c.r * 0.25, c.r * 0.35, c.r * 0.22, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(-7, -4, 5, 0, Math.PI * 2);
+      ctx.arc(7, -4, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1a1a2e";
+      ctx.beginPath();
+      ctx.arc(-6, -4, 2.2, 0, Math.PI * 2);
+      ctx.arc(8, -4, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#1a1a2e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 6, 7, 0.15, Math.PI - 0.15);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function draw() {
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, "#1a2740");
+      g.addColorStop(1, "#2a1848");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 30; i++) {
+        ctx.fillStyle = "rgba(255,255,255,0.05)";
+        ctx.fillRect((i * 71) % W, (i * 97) % H, 3, 3);
+      }
+      for (const c of critters) drawCritter(c);
+    }
+
+    function hit(e) {
+      if (!running) return;
+      const r = canvas.getBoundingClientRect();
+      const t = e.changedTouches ? e.changedTouches[0] : e;
+      const x = ((t.clientX - r.left) / r.width) * W;
+      const y = ((t.clientY - r.top) / r.height) * H;
+      for (let i = critters.length - 1; i >= 0; i--) {
+        const c = critters[i];
+        if (Math.hypot(c.x - x, c.y - y) <= c.r + 6) {
+          if (c.forYou) {
+            critters.splice(i, 1);
+            youScore += 1;
+            updateHud();
+            if (youScore >= GOAL) endGame("you");
+          }
+          break;
+        }
+      }
+    }
+
+    canvas.addEventListener("pointerdown", hit);
+    document.getElementById("btn-start").onclick = start;
+    document.getElementById("btn-again").onclick = start;
+    draw();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+  <script src="../shared/amal-site-faq.js?v=1"></script>
+</body>
+</html>

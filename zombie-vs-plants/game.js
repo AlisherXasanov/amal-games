@@ -858,6 +858,93 @@
       peaColor: "#5ee7ff",
       hybridTier: 5,
     },
+    popcorncannon: {
+      id: "popcorncannon",
+      name: "Попкорн-карета",
+      icon: "🍿🌽",
+      cost: 9999,
+      hp: 1100,
+      unlock: 99,
+      damage: 55,
+      splash: 40,
+      shootEvery: 28,
+      melonCannon: true,
+      popcornCannon: true,
+      butterChance: 0.35,
+      projectileKind: "kernel",
+      hybridTier: 4,
+    },
+    shadowcannon: {
+      id: "shadowcannon",
+      name: "Теневая пушка",
+      icon: "🌑💥",
+      cost: 9999,
+      hp: 1050,
+      unlock: 99,
+      damage: 150,
+      splash: 110,
+      shootEvery: 32,
+      melonCannon: true,
+      shadowCannon: true,
+      slow: 0.5,
+      slowTime: 3.5,
+      peaColor: "#d94f9a",
+      hybridTier: 4,
+    },
+    magmacannon: {
+      id: "magmacannon",
+      name: "Магма-пушка",
+      icon: "🌋💥",
+      cost: 9999,
+      hp: 1150,
+      unlock: 99,
+      damage: 175,
+      splash: 160,
+      shootEvery: 34,
+      melonCannon: true,
+      magmaCannon: true,
+      burnDamage: 40,
+      burnTime: 4,
+      peaColor: "#ff7a2a",
+      hybridTier: 4,
+    },
+    crimsoncannon: {
+      id: "crimsoncannon",
+      name: "Алая пушка",
+      icon: "👁️💥",
+      cost: 9999,
+      hp: 1250,
+      unlock: 99,
+      damage: 220,
+      splash: 180,
+      shootEvery: 38,
+      melonCannon: true,
+      crimsonCannon: true,
+      percentDamage: 0.08,
+      peaColor: "#ff2a3a",
+      hybridTier: 5,
+    },
+    umbratank: {
+      id: "umbratank",
+      name: "Теневой танк",
+      icon: "🌑🛡️",
+      cost: 9999,
+      hp: 1800,
+      unlock: 99,
+      damage: 140,
+      splash: 100,
+      shootEvery: 30,
+      gatlingEvery: 0.4,
+      gatlingDamage: 28,
+      shotCount: 3,
+      melonCannon: true,
+      shadowCannon: true,
+      umbraTank: true,
+      slow: 0.55,
+      slowTime: 2.5,
+      peaColor: "#9b4dff",
+      hybridTier: 5,
+    },
     wallnut: {
       id: "wallnut",
       name: "Орех",
@@ -1621,6 +1708,11 @@
     "snapdragon+laserbean": "voltsnapdragon",
     "meloncannon+snowpea": "icecannon",
     "icecannon+doomsdayshroom": "nullifier",
+    "kernelpult+meloncannon": "popcorncannon",
+    "meloncannon+shadowpea": "shadowcannon",
+    "jalapeno+meloncannon": "magmacannon",
+    "doomshroom+shadowcannon": "crimsoncannon",
+    "footballgatling+shadowcannon": "umbratank",
     "sunflower+wallnut": "sunnut",
     "sunnut+wallnut": "doublesunnut",
     "peashooter+potatomine": "peamine",
@@ -1674,6 +1766,11 @@
     voltsnapdragon: ["snapdragon", "laserbean"],
     icecannon: ["meloncannon", "snowpea"],
     nullifier: ["icecannon", "doomsdayshroom"],
+    popcorncannon: ["meloncannon", "kernelpult"],
+    shadowcannon: ["meloncannon", "shadowpea"],
+    magmacannon: ["meloncannon", "jalapeno"],
+    crimsoncannon: ["shadowcannon", "doomshroom"],
+    umbratank: ["shadowcannon", "footballgatling"],
     sunnut: ["sunflower", "wallnut"],
     doublesunnut: ["sunnut", "wallnut"],
     peamine: ["peashooter", "potatomine"],
@@ -1925,6 +2022,31 @@
       "Собери ☠️🍄 Гриб Конца Света и перчаткой перенеси на Ледяную пушку до взрыва",
       "💠☠️ Обнулитель при появлении: взрыв 1800 в 3×3 и 1800+30% макс. HP по всему полю",
       "Потом стреляет двумя ледяными залпами 360×2 / 1.5 сек с замедлением",
+    ],
+    popcorncannon: [
+      "Собери 🍉💥 Арбузную пушку (Арбузомёт — Кукурузомёт — Арбузомёт + Хикамовый скрещиватель)",
+      "Наложи 🌽 Кукурузомёт",
+      "🍿🌽 Попкорн-карета сыпет попкорном и маслом — часто оглушает зомби",
+    ],
+    shadowcannon: [
+      "Собери 🍉💥 Арбузную пушку",
+      "Наложи 🌑 Теневой горохострел",
+      "🌑💥 Теневая пушка швыряет тёмные ядра и замедляет врагов",
+    ],
+    magmacannon: [
+      "Собери 🍉💥 Арбузную пушку",
+      "Наложи 🌶️ Халапеньо до взрыва",
+      "🌋💥 Магма-пушка бьёт огненными ядрами и поджигает зомби",
+    ],
+    crimsoncannon: [
+      "Собери 🌑💥 Теневую пушку: Арбузная пушка + Теневой горохострел",
+      "Наложи 💣🍄 Гриб судьбы до взрыва",
+      "👁️💥 Алая пушка: тяжёлый залп + урон в % от макс. HP зомби",
+    ],
+    umbratank: [
+      "Собери 🌑💥 Теневую пушку",
+      "Собери 🏈🔫 Футбольный гатлинг и наложи на Теневую пушку",
+      "🌑🛡️ Теневой танк: гатлинг по ряду + периодический залп тёмных ядер",
     ],
     sunnut: [
       "Посади 🌻 Подсолнух",
@@ -2837,8 +2959,19 @@
     if (type.id === "hurricanepea")
       abilities.push("быстрые двойные пробивающие залпы");
     if (type.titanArmor) abilities.push("титаническая броня");
-    if (type.melonCannon) abilities.push("40 арбузов каждые 36 секунд");
+    if (type.melonCannon && !type.popcornCannon && !type.shadowCannon && !type.magmaCannon && !type.crimsonCannon && !type.umbraTank)
+      abilities.push("40 арбузов каждые 36 секунд");
     if (type.iceCannon) abilities.push("ледяные арбузы · замедление");
+    if (type.popcornCannon)
+      abilities.push("залп попкорна · шанс масла и оглушения");
+    if (type.shadowCannon && !type.umbraTank)
+      abilities.push("тёмные ядра · замедление");
+    if (type.magmaCannon)
+      abilities.push("огненные ядра · поджигание");
+    if (type.crimsonCannon)
+      abilities.push("алый залп · урон в % HP");
+    if (type.umbraTank)
+      abilities.push("гатлинг + залп тёмных ядер");
     if (type.nullifier)
       abilities.push(
         `при появлении: 1800 в 3×3 и 1800+${Math.round((type.nullifierPercent || 0.3) * 100)}% HP по всему полю · затем ${type.damage}×2 / ${type.shootEvery} сек с замедлением`
@@ -4247,13 +4380,13 @@
       ["nullifier", 5, 2],
       ["chomper", 0, 3],
       ["shadowchomper", 1, 3],
-      ["peamine", 2, 3],
-      ["sunpuff", 3, 3],
-      ["meloncart", 4, 3],
-      ["obsidiantallnut", 5, 3],
+      ["popcorncannon", 2, 3],
+      ["shadowcannon", 3, 3],
+      ["magmacannon", 4, 3],
+      ["umbratank", 5, 3],
       ["hypnolia", 0, 4],
       ["obsidiannut", 1, 4],
-      ["flametallnut", 2, 4],
+      ["crimsoncannon", 2, 4],
       ["obsidianmine", 3, 4],
       ["calamityturret", 4, 4],
       ["icecannon", 5, 4],
@@ -5376,9 +5509,12 @@
       speed: options.speed || 0.75,
       damage: isButter ? 40 : type.damage,
       splash: options.splash ?? type.splash ?? 0,
-      stunTime: isButter ? 4 : 0,
+      stunTime: isButter ? 4 : options.stunTime || 0,
       slow: options.slow ?? type.slow ?? 0,
       slowTime: options.slowTime ?? type.slowTime ?? 0,
+      burnDamage: options.burnDamage || 0,
+      burnTime: options.burnTime || 0,
+      percentDamage: options.percentDamage || 0,
       color: isButter
         ? "#ffd84d"
         : type.iceCannon
@@ -5401,9 +5537,45 @@
     const focus = targets.sort((a, b) => a.x - b.x)[0];
     const minRow = rowOffset();
     const maxRow = minRow + activeRows() - 1;
-    const ice = !!type.iceCannon;
+    const mode = type.popcornCannon
+      ? "popcorn"
+      : type.crimsonCannon
+        ? "crimson"
+        : type.magmaCannon
+          ? "magma"
+          : type.shadowCannon
+            ? "shadow"
+            : type.iceCannon
+              ? "ice"
+              : "melon";
+    const shotCount =
+      mode === "popcorn" ? 48 : mode === "umbra" || type.umbraTank ? 28 : 40;
+    const kindByMode = {
+      popcorn: "popcorn",
+      crimson: "crimsoncore",
+      magma: "magmacore",
+      shadow: "shadowcore",
+      ice: "icemelon",
+      melon: "melon",
+    };
+    const colorByMode = {
+      popcorn: "#fff4d0",
+      crimson: "#ff2a3a",
+      magma: "#ff7a2a",
+      shadow: "#d94f9a",
+      ice: "#8de4ff",
+      melon: "#55a832",
+    };
+    const splashByMode = {
+      popcorn: 40,
+      crimson: 180,
+      magma: 160,
+      shadow: 110,
+      ice: 120,
+      melon: 200,
+    };
 
-    for (let shot = 0; shot < 40; shot++) {
+    for (let shot = 0; shot < shotCount; shot++) {
       setTimeout(() => {
         if (!state.running || plant.dead) return;
         const targetRow = Math.max(
@@ -5417,23 +5589,37 @@
             focus.x + (Math.random() * 4 - 2) * CELL_W
           )
         );
+        const butter =
+          mode === "popcorn" &&
+          type.butterChance &&
+          Math.random() < type.butterChance;
         fireLobbedPlantShot(plant, type, focus, {
           targetRow,
           endX,
           speed: 1.15 + Math.random() * 0.35,
-          splash: ice ? 120 : 200,
-          projectileKind: ice ? "icemelon" : "melon",
+          splash: splashByMode[mode],
+          projectileKind: butter ? "butter" : kindByMode[mode],
           areaImpact: true,
-          color: ice ? "#8de4ff" : undefined,
+          color: butter ? "#ffd84d" : colorByMode[mode],
+          stunTime: butter ? 4 : 0,
+          burnDamage: mode === "magma" ? type.burnDamage || 40 : 0,
+          burnTime: mode === "magma" ? type.burnTime || 4 : 0,
+          percentDamage: mode === "crimson" ? type.percentDamage || 0.08 : 0,
         });
-      }, shot * 45);
+      }, shot * (mode === "popcorn" ? 38 : 45));
     }
     AudioFX.wave();
-    toast(
-      ice
-        ? "Ледяная пушка: залп из 40 ледяных арбузов!"
-        : "Арбузная пушка: залп из 40 арбузов!"
-    );
+    const toasts = {
+      popcorn: "Попкорн-карета: шквал попкорна!",
+      crimson: "Алая пушка: залп пустотных ядер!",
+      magma: "Магма-пушка: огненный залп!",
+      shadow: type.umbraTank
+        ? "Теневой танк: залп тёмных ядер!"
+        : "Теневая пушка: залп теневых ядер!",
+      ice: "Ледяная пушка: залп из 40 ледяных арбузов!",
+      melon: "Арбузная пушка: залп из 40 арбузов!",
+    };
+    toast(toasts[mode]);
   }
 
   function spawnDragonBabies(parent) {
@@ -5950,6 +6136,30 @@
           }
         }
         if (!type.pumpkinArmor) return;
+      }
+
+      if (type.umbraTank) {
+        plant.shootTimer -= dt;
+        plant.gatlingTimer = (plant.gatlingTimer ?? 0) - dt;
+        const hasTarget = state.zombies.some(
+          (z) => !z.charmed && z.hp > 0 && z.x > plant.x - 20
+        );
+        if (hasTarget && plant.gatlingTimer <= 0) {
+          plant.gatlingTimer = type.gatlingEvery || 0.4;
+          for (let i = 0; i < (type.shotCount || 3); i++) {
+            firePea(plant, type, i * 0.04, plant.row, (i - 1) * 4, {
+              damage: type.gatlingDamage || 28,
+              color: type.peaColor || "#9b4dff",
+              slow: type.slow || 0,
+              slowTime: type.slowTime || 0,
+            });
+          }
+        }
+        if (hasTarget && plant.shootTimer <= 0) {
+          plant.shootTimer = type.shootEvery;
+          fireMelonCannonBarrage(plant, type);
+        }
+        return;
       }
 
       if (type.melonCannon) {
@@ -7063,9 +7273,19 @@
             );
             victims.forEach((z) => {
               z.hp -= p.damage;
+              if (p.percentDamage) {
+                z.hp -= (z.maxHp || z.hp) * p.percentDamage;
+              }
               if (p.slow) {
                 z.slowFactor = p.slow;
                 z.slowTimer = Math.max(z.slowTimer || 0, p.slowTime || 3);
+              }
+              if (p.stunTime) {
+                z.stunTimer = Math.max(z.stunTimer || 0, p.stunTime);
+              }
+              if (p.burnDamage && p.burnTime) {
+                z.poisonDps = Math.max(z.poisonDps || 0, p.burnDamage);
+                z.poisonTimer = Math.max(z.poisonTimer || 0, p.burnTime);
               }
             });
             addExplosion(p.x, p.y, p.color, 0.32);
@@ -10333,6 +10553,251 @@
       ctx.font = "20px sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(ice ? "🧊" : "🍉", -13, -21);
+    } else if (id === "popcorncannon") {
+      ctx.fillStyle = "#6b4423";
+      ctx.strokeStyle = "#3a2412";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-34, -6, 68, 28, 6);
+      ctx.fill();
+      ctx.stroke();
+      [-22, -6, 12, 26].forEach((x) => {
+        ctx.fillStyle = "#f0c840";
+        ctx.beginPath();
+        ctx.arc(x, 22, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#8a6418";
+        ctx.stroke();
+        ctx.fillStyle = "#ffe9a0";
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2;
+          ctx.beginPath();
+          ctx.arc(x + Math.cos(a) * 4, 22 + Math.sin(a) * 4, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      ctx.fillStyle = "#c4a574";
+      ctx.beginPath();
+      ctx.ellipse(-4, -4, 18, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#fff8e8";
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.arc(-10 + (i % 4) * 6, -10 - Math.floor(i / 4) * 6, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#5ee7ff";
+      ctx.shadowColor = "#5ee7ff";
+      ctx.shadowBlur = 8;
+      ctx.fillRect(10, -22, 10, 16);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "#8a5a2a";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(-28, -2, 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("🌽", 22, -14);
+    } else if (id === "shadowcannon") {
+      const pulse = 0.55 + Math.sin(state.time * 6) * 0.2;
+      ctx.fillStyle = "#2a1a18";
+      ctx.beginPath();
+      ctx.ellipse(-10, 20, 14, 8, 0, 0, Math.PI * 2);
+      ctx.ellipse(14, 20, 14, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      [-16, -2, 12, 26].forEach((x) => {
+        ctx.fillStyle = "#c8c4b8";
+        ctx.beginPath();
+        ctx.arc(x, 22, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#6a6558";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      });
+      const body = ctx.createLinearGradient(-30, -20, 40, 10);
+      body.addColorStop(0, "#2a1038");
+      body.addColorStop(1, "#0a0612");
+      ctx.fillStyle = body;
+      ctx.strokeStyle = `rgba(255, 80, 200, ${pulse})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-28, 8);
+      ctx.quadraticCurveTo(-20, -28, 8, -22);
+      ctx.quadraticCurveTo(36, -10, 38, 2);
+      ctx.quadraticCurveTo(34, 14, -24, 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255, 90, 210, ${pulse})`;
+      ctx.beginPath();
+      ctx.ellipse(28, -8, 10, 8, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffb0ef";
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.arc(24 + (i % 3) * 5, -12 - Math.floor(i / 3) * 5, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "#ff4ec8";
+      ctx.beginPath();
+      ctx.ellipse(-8, -6, 3, 7, -0.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (id === "magmacannon") {
+      const glow = 0.5 + Math.sin(state.time * 7) * 0.25;
+      [-18, -2, 14, 28].forEach((x) => {
+        ctx.fillStyle = "#2a1810";
+        ctx.beginPath();
+        ctx.arc(x, 22, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255, 100, 30, ${glow})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 5, 22);
+        ctx.lineTo(x + 2, 18);
+        ctx.lineTo(x + 5, 24);
+        ctx.stroke();
+      });
+      ctx.fillStyle = "#3a2218";
+      ctx.strokeStyle = "#1a0e08";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-28, -14, 56, 30, 10);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(255, 120, 40, ${0.5 + glow * 0.4})`;
+      ctx.lineWidth = 2;
+      [-12, 0, 12].forEach((x) => {
+        ctx.beginPath();
+        ctx.moveTo(x, -10);
+        ctx.lineTo(x + 6, 12);
+        ctx.stroke();
+      });
+      [8, 18, 28, 36].forEach((x, i) => {
+        ctx.fillStyle = "#1a100c";
+        ctx.beginPath();
+        ctx.ellipse(x, -4 - (i % 2), 7, 9, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = `rgba(255, 140, 40, ${glow})`;
+        ctx.beginPath();
+        ctx.ellipse(x + 2, -4, 3, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.fillStyle = "#ff8a20";
+      ctx.beginPath();
+      ctx.moveTo(34, -18);
+      ctx.quadraticCurveTo(48, -8, 40, 6);
+      ctx.quadraticCurveTo(36, 0, 30, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#ffd060";
+      ctx.beginPath();
+      ctx.moveTo(36, -14);
+      ctx.quadraticCurveTo(44, -6, 38, 0);
+      ctx.closePath();
+      ctx.fill();
+    } else if (id === "crimsoncannon") {
+      const pulse = 0.5 + Math.sin(state.time * 5.5) * 0.25;
+      ctx.fillStyle = "#12080c";
+      [-16, -2, 12, 26].forEach((x) => {
+        ctx.beginPath();
+        ctx.ellipse(x, 20, 10, 7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.fillStyle = "#1a0a10";
+      ctx.strokeStyle = `rgba(255, 40, 60, ${pulse})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-30, 6);
+      ctx.quadraticCurveTo(-10, -26, 20, -18);
+      ctx.quadraticCurveTo(42, -6, 36, 8);
+      ctx.quadraticCurveTo(10, 16, -28, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      [
+        [-8, -28],
+        [6, -32],
+        [18, -26],
+        [28, -20],
+      ].forEach(([x, y], i) => {
+        ctx.fillStyle = `rgba(255, 50, 70, ${0.55 + pulse * 0.35})`;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 18);
+        ctx.lineTo(x - 4 - i, y);
+        ctx.lineTo(x + 5, y + 10);
+        ctx.closePath();
+        ctx.fill();
+      });
+      ctx.fillStyle = `rgba(255, 30, 50, ${pulse})`;
+      ctx.shadowColor = "#ff2030";
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 10, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = `rgba(180, 20, 40, ${pulse})`;
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 3; i++) {
+        const a = state.time * 2 + i * 2;
+        ctx.beginPath();
+        ctx.moveTo(-20, -8);
+        ctx.quadraticCurveTo(-30 + Math.sin(a) * 8, -20 - i * 4, -18, -28 - i * 3);
+        ctx.stroke();
+      }
+    } else if (id === "umbratank") {
+      const pulse = 0.5 + Math.sin(state.time * 6) * 0.2;
+      [-20, -4, 12, 26].forEach((x) => {
+        ctx.fillStyle = "#1a1220";
+        ctx.beginPath();
+        ctx.arc(x, 22, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = `rgba(160, 80, 255, ${pulse})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, 22, 4, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.fillStyle = "#22182e";
+      ctx.strokeStyle = "#0a0610";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-30, -8, 58, 26, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#3a2850";
+      ctx.beginPath();
+      ctx.moveTo(-8, -8);
+      ctx.lineTo(4, -26);
+      ctx.lineTo(22, -22);
+      ctx.lineTo(28, -6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#4a3070";
+      ctx.beginPath();
+      ctx.ellipse(-6, 0, 8, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = `rgba(180, 90, 255, ${pulse})`;
+      ctx.beginPath();
+      ctx.arc(-6, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#2a2038";
+      ctx.beginPath();
+      ctx.roundRect(18, -18, 28, 10, 4);
+      ctx.fill();
+      ctx.fillStyle = `rgba(150, 70, 255, ${pulse})`;
+      ctx.fillRect(42, -15, 6, 4);
+      ctx.fillStyle = "#1a1428";
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.ellipse(8 + i * 3, 6, 3, 5, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "#8a5acc";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(-6, 0, 7, 0, Math.PI * 2);
+      ctx.stroke();
     } else if (id === "nullifier") {
       const pulse = 0.5 + Math.sin(state.time * 5) * 0.2;
       ctx.fillStyle = "#0a1020";
@@ -11275,6 +11740,59 @@
           ctx.beginPath();
           ctx.arc(p.x, p.y, 7, -1.2, 1.2);
           ctx.stroke();
+          return;
+        }
+        if (p.projectileKind === "popcorn") {
+          ctx.fillStyle = "#fff6e0";
+          ctx.strokeStyle = "#c8a060";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(p.x - 2, p.y, 6, 0, Math.PI * 2);
+          ctx.arc(p.x + 3, p.y - 2, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          return;
+        }
+        if (p.projectileKind === "shadowcore") {
+          ctx.fillStyle = "#4a1858";
+          ctx.strokeStyle = "#ff4ec8";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#ff90e0";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+        if (p.projectileKind === "magmacore") {
+          ctx.fillStyle = "#3a1810";
+          ctx.strokeStyle = "#ff7a2a";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#ffb040";
+          ctx.beginPath();
+          ctx.arc(p.x - 2, p.y - 1, 4, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+        if (p.projectileKind === "crimsoncore") {
+          ctx.fillStyle = "#2a0810";
+          ctx.strokeStyle = "#ff2030";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 11, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#ff4050";
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, 5, 3, 0, 0, Math.PI * 2);
+          ctx.fill();
           return;
         }
         if (p.projectileKind === "butter") {

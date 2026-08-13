@@ -1,12 +1,207 @@
 /**
  * Маленькие сюрпризы хозяина игрокам + журнал (день / кому / что).
- * Секрет хозяина — без спойлеров в UI.
+ * Командный пак и волна обновлений хозяина — сразу на много игр хаба.
  */
 (function (global) {
   "use strict";
 
   const STORAGE = "amal-surprise-log-v1";
   const SECRET_FLAG = "amal-owner-secret-v1";
+  const TEAM_FLAG = "amal-team-pack-67-v1";
+  const WAVE_FLAG = "amal-owner-wave-77-v1";
+
+  const TEAM_GAMES = [
+    "animal-hospital",
+    "zombie-vs-plants-2",
+    "zombie-vs-plants",
+    "blockbust",
+    "hideout",
+    "minecraft",
+    "x-buggy",
+    "melon-playground",
+    "kick-buddy",
+    "terraverse",
+    "space-courier",
+    "tower-defense",
+    "tycoon",
+    "obby",
+    "pet-simulator",
+    "murder-mystery",
+    "flee-facility",
+    "build-boat",
+    "adopt-me",
+    "blox-fruits",
+    "brookhaven-rp",
+    "nights-forest",
+    "steal-brainrot",
+    "grow-garden",
+    "bravol-stars",
+    "coin-arsenal",
+    "create-lab",
+    "ghost-lesson",
+    "night-stitch",
+    "lift-void",
+    "old-pc",
+    "roof-house",
+    "snake-game",
+    "globe-battle",
+    "echo-postman",
+    "ladder-climb",
+    "speed-escape",
+    "rivals-arena",
+  ];
+
+  const TEAM_PACK = [
+    { id: "team-gold", label: "Золото команды", detail: "Блеск и бонус для админ-команды" },
+    { id: "team-shield", label: "Щит отряда", detail: "Мягкая защита во всех отмеченных играх" },
+    { id: "team-party", label: "Пати на троих", detail: "Сразу несколько сюрпризов подряд" },
+    { id: "team-radar", label: "Радар гостей", detail: "Чуть яснее, кто рядом в играх" },
+    { id: "team-spark", label: "Искры портала", detail: "Красивая вспышка на весь экран" },
+    { id: "team-coffee", label: "Бесконечный термос", detail: "Кофейный заряд для ночных смен" },
+    { id: "team-key", label: "Ключ от всех дверей", detail: "Быстрее открываются админ-штуки" },
+    { id: "team-star", label: "Звезда Amal", detail: "Знак хозяина виден команде" },
+  ];
+
+  const OWNER_WAVE = [
+    { id: "wave-crown", label: "Корона обновления", detail: "Ты отмечен как хозяин волны во всех играх" },
+    { id: "wave-vault", label: "Сейф сюрпризов", detail: "Новые подарки ждут в каждой отмеченной игре" },
+    { id: "wave-night", label: "Ночной пропуск", detail: "Секретные штуки открываются проще" },
+    { id: "wave-gold", label: "Золотая нить", detail: "Сквозной бонус между играми хаба" },
+    { id: "wave-diamond", label: "Алмазный след", detail: "Особый блеск в играх с алмазной темой" },
+    { id: "wave-seven", label: "Семёрка удачи", detail: "Любимое число открывает скрытые слоты" },
+    { id: "wave-map", label: "Карта хаба", detail: "Обновление отмечено во всех твоих играх" },
+    { id: "wave-echo", label: "Эхо команды", detail: "Админ-команда чувствует волну вместе с тобой" },
+    { id: "wave-portal", label: "Портал Amal", detail: "Переход между играми с приветствием для тебя" },
+    { id: "wave-legend", label: "Легенда сайта", detail: "Режим хозяина усилен на этой волне" },
+  ];
+
+  function isOwnerLocal() {
+    try {
+      if (global.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+      if (global.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
+    } catch (_) {}
+    try {
+      if (localStorage.getItem("amal-owner-v1") === "1") return true;
+      if (localStorage.getItem("amal-owner-v2") === "1") return true;
+      if (localStorage.getItem("amal-owner-v3") === "1") return true;
+      if (localStorage.getItem("animal-hospital-owner-god") === "1") return true;
+      if (global.__AMAL_OWNER__ || global.__AMAL_GOD__) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function pendingKey(game) {
+    return "amal-owner-pending-" + game + "-v1";
+  }
+
+  function markPendingAll(gamesIds) {
+    gameIds.forEach((g) => {
+      try {
+        localStorage.setItem(pendingKey(g), "1");
+      } catch (_) {}
+    });
+  }
+
+  function hasTeamPack() {
+    try {
+      return localStorage.getItem(TEAM_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function hasOwnerWave() {
+    try {
+      return localStorage.getItem(WAVE_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function giveTeamPack(opts) {
+    const force = !!(opts && opts.force);
+    if (hasTeamPack() && !force) {
+      return { ok: false, already: true, entries: [] };
+    }
+    try {
+      localStorage.setItem(TEAM_FLAG, "1");
+    } catch (_) {}
+    const to = (opts && opts.to) || "админ-команда";
+    const entries = [];
+    TEAM_PACK.forEach((pack, i) => {
+      const game = TEAM_GAMES[i % TEAM_GAMES.length];
+      const entry = record({
+        game,
+        to,
+        kind: pack.id,
+        label: pack.label,
+        detail: pack.detail + " · игра: " + game,
+        secret: false,
+      });
+      entries.push(entry);
+    });
+    markPendingAll(TEAM_GAMES);
+    let delay = 0;
+    entries.slice(0, 4).forEach((entry) => {
+      setTimeout(() => showCinematic(entry), delay);
+      delay += 850;
+    });
+    global.dispatchEvent(
+      new CustomEvent("amal-surprise", {
+        detail: { type: "team-pack", entries, games: TEAM_GAMES.slice() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "team-pack-67", games: TEAM_GAMES.slice(), at: Date.now() },
+      })
+    );
+    return { ok: true, entries, games: TEAM_GAMES.slice() };
+  }
+
+  /** Большая волна обновлений хозяина — по многим играм хаба */
+  function giveOwnerWave(opts) {
+    const force = !!(opts && opts.force);
+    if (hasOwnerWave() && !force) {
+      return { ok: false, already: true, entries: [] };
+    }
+    try {
+      localStorage.setItem(WAVE_FLAG, "1");
+      localStorage.setItem("amal-owner-boost-fx", "1");
+      localStorage.setItem("amal-owner-boost-legend", "1");
+    } catch (_) {}
+    const to = (opts && opts.to) || "хозяин";
+    const entries = [];
+    OWNER_WAVE.forEach((pack, i) => {
+      const game = TEAM_GAMES[i % TEAM_GAMES.length];
+      const entry = record({
+        game,
+        to,
+        kind: pack.id,
+        label: pack.label,
+        detail: pack.detail + " · игра: " + game,
+        secret: false,
+      });
+      entries.push(entry);
+    });
+    markPendingAll(TEAM_GAMES);
+    let delay = 0;
+    entries.slice(0, 5).forEach((entry) => {
+      setTimeout(() => showCinematic(entry), delay);
+      delay += 800;
+    });
+    global.dispatchEvent(
+      new CustomEvent("amal-surprise", {
+        detail: { type: "owner-wave", entries, games: TEAM_GAMES.slice() },
+      })
+    );
+    global.dispatchEvent(
+      new CustomEvent("amal-power", {
+        detail: { type: "owner-wave-77", games: TEAM_GAMES.slice(), at: Date.now() },
+      })
+    );
+    return { ok: true, entries, games: TEAM_GAMES.slice() };
+  }
 
   const LITTLE = [
     { id: "sun-kiss", label: "Поцелуй солнца", detail: "+75 солнца и тёплый блеск" },
@@ -15,6 +210,10 @@
     { id: "green-heal", label: "Зелёный шёпот", detail: "Все растения подлечены" },
     { id: "lucky-seed", label: "Удачное семя", detail: "Случайное сильное растение" },
     { id: "sparkle", label: "Искры удачи", detail: "Красивая вспышка + немного солнца" },
+    { id: "night-coin", label: "Ночная монета", detail: "Маленький бонус в кармане" },
+    { id: "soft-shield", label: "Мягкий щит", detail: "Чуть меньше урона на минуту" },
+    { id: "portal-wink", label: "Миг портала", detail: "Короткая вспышка между мирами" },
+    { id: "admin-candy", label: "Конфета админа", detail: "Сладкий сюрприз только своим" },
   ];
 
   function readLog() {
@@ -31,9 +230,7 @@
   function writeLog(arr) {
     try {
       localStorage.setItem(STORAGE, JSON.stringify(arr.slice(0, 80)));
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
   }
 
   function formatDay(ts) {
@@ -83,10 +280,10 @@
 
   function showCinematic(entry) {
     const el = ensureOverlay();
-    el.querySelector(".asfx-kicker").textContent = "Маленький сюрприз";
+    el.querySelector(".asfx-kicker").textContent = entry.kicker || "Маленький сюрприз";
     el.querySelector(".asfx-title").textContent = entry.label || "Сюрприз";
     el.querySelector(".asfx-detail").textContent = entry.detail || "";
-    el.querySelector(".asfx-when").textContent = "Выдано: " + formatDay(entry.at);
+    el.querySelector(".asfx-when").textContent = "Выдано: " + formatDay(entry.at || Date.now());
     el.classList.add("on");
     clearTimeout(showCinematic._t);
     showCinematic._t = setTimeout(() => el.classList.remove("on"), 2800);
@@ -132,7 +329,6 @@
     return entry;
   }
 
-  /** Секрет хозяина — без расшифровки в интерфейсе */
   function giveSecretOwner(opts) {
     const entry = record({
       game: (opts && opts.game) || detectGame(),
@@ -152,9 +348,7 @@
     giveSecretOwner._t = setTimeout(() => el.classList.remove("on"), 2200);
     try {
       localStorage.setItem(SECRET_FLAG, "1");
-    } catch (_) {
-      /* ignore */
-    }
+    } catch (_) {}
     global.dispatchEvent(
       new CustomEvent("amal-surprise", {
         detail: { type: "owner-secret", entry },
@@ -208,15 +402,449 @@
     }
   }
 
+  /** При входе в игру — показать «обновление для тебя», если волна/пак активны */
+  function bootGameUpdate() {
+    if (!isOwnerLocal()) return;
+    if (!hasOwnerWave() && !hasTeamPack()) return;
+    const game = detectGame();
+    if (!game || game === "hub" || game === "shared" || game === "amal-games") return;
+    let pending = false;
+    try {
+      pending = localStorage.getItem(pendingKey(game)) === "1";
+    } catch (_) {}
+    if (!pending) return;
+    try {
+      localStorage.removeItem(pendingKey(game));
+    } catch (_) {}
+    const entry = {
+      kicker: "Обновление для тебя",
+      label: "Эта игра обновлена",
+      detail: "Сюрпризы хозяина и команды действуют и здесь",
+      at: Date.now(),
+      game,
+    };
+    setTimeout(() => {
+      showCinematic(entry);
+      global.dispatchEvent(
+        new CustomEvent("amal-power", {
+          detail: { type: "owner-game-update", game, at: Date.now() },
+        })
+      );
+    }, 900);
+  }
+
+  /** Тихий сюрприз «я здесь» — без спойлеров в чате; хозяин найдёт сам */
+  function bootQuietHere() {
+    if (!isOwnerLocal()) return;
+    let armed = false;
+    try {
+      armed = localStorage.getItem("amal-here-armed-v1") === "1";
+    } catch (_) {}
+    if (!armed) return;
+    let seen = false;
+    try {
+      seen = localStorage.getItem("amal-here-seen-v1") === "1";
+    } catch (_) {}
+    if (seen) return;
+    try {
+      localStorage.setItem("amal-here-seen-v1", "1");
+    } catch (_) {}
+    setTimeout(() => {
+      showCinematic({
+        kicker: "✦",
+        label: "Я здесь",
+        detail: "с тобой · в этих играх",
+        at: Date.now(),
+      });
+    }, 1400);
+  }
+
+  function armQuietHere() {
+    try {
+      localStorage.setItem("amal-here-armed-v1", "1");
+    } catch (_) {}
+  }
+
+  const ANIME_FLAG = "amal-anime-world-v1";
+
+  function hasAnimeWorld() {
+    try {
+      return localStorage.getItem(ANIME_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function ensureAnimeStyle() {
+    if (document.getElementById("amal-anime-style")) return;
+    const s = document.createElement("style");
+    s.id = "amal-anime-style";
+    s.textContent =
+      "html.amal-anime-world body{filter:saturate(1.15) contrast(1.04)}" +
+      "#amal-anime-overlay{pointer-events:none;position:fixed;inset:0;z-index:9998;overflow:hidden}" +
+      "#amal-anime-overlay i{position:absolute;width:10px;height:6px;border-radius:60% 40%;" +
+      "background:#ffb7d5;opacity:.75;animation:amalSakura linear infinite}" +
+      "@keyframes amalSakura{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(110vh) rotate(360deg)}}" +
+      "#amal-anime-badge{position:fixed;top:10px;right:10px;z-index:9999;padding:6px 10px;" +
+      "border-radius:8px;font:700 12px/1.2 system-ui,sans-serif;color:#fff;" +
+      "background:rgba(180,60,140,.72);pointer-events:none}";
+    document.head.appendChild(s);
+  }
+
+  function applyAnimeDom(on) {
+    if (typeof document === "undefined") return;
+    ensureAnimeStyle();
+    document.documentElement.classList.toggle("amal-anime-world", !!on);
+    document.body.classList.toggle("theme-anime", !!on);
+    let overlay = document.getElementById("amal-anime-overlay");
+    let badge = document.getElementById("amal-anime-badge");
+    if (on) {
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "amal-anime-overlay";
+        for (let i = 0; i < 18; i++) {
+          const p = document.createElement("i");
+          p.style.left = Math.random() * 100 + "%";
+          p.style.animationDuration = 6 + Math.random() * 8 + "s";
+          p.style.animationDelay = Math.random() * 6 + "s";
+          p.style.opacity = String(0.35 + Math.random() * 0.45);
+          overlay.appendChild(p);
+        }
+        document.body.appendChild(overlay);
+      }
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "amal-anime-badge";
+        badge.textContent = "✦ anime";
+        document.body.appendChild(badge);
+      }
+    } else {
+      if (overlay) overlay.remove();
+      if (badge) badge.remove();
+    }
+  }
+
+  function setAnimeWorld(on) {
+    try {
+      localStorage.setItem(ANIME_FLAG, on ? "1" : "0");
+    } catch (_) {}
+    if (on) {
+      try {
+        localStorage.setItem("amal-rain-night-v1", "0");
+      } catch (_) {}
+      const rainOv = document.getElementById("amal-rain-overlay");
+      const rainBd = document.getElementById("amal-rain-badge");
+      if (rainOv) rainOv.remove();
+      if (rainBd) rainBd.remove();
+      document.documentElement.classList.remove("amal-rain-night");
+      document.body.classList.remove("theme-rain");
+    }
+    applyAnimeDom(!!on);
+    return !!on;
+  }
+
+  function bootAnimeWorld() {
+    if (hasAnimeWorld()) applyAnimeDom(true);
+  }
+
+  const RAIN_FLAG = "amal-rain-night-v1";
+
+  function hasRainNight() {
+    try {
+      return localStorage.getItem(RAIN_FLAG) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function ensureRainStyle() {
+    if (document.getElementById("amal-rain-style")) return;
+    const s = document.createElement("style");
+    s.id = "amal-rain-style";
+    s.textContent =
+      "html.amal-rain-night body{filter:saturate(0.92) brightness(0.95)}" +
+      "#amal-rain-overlay{pointer-events:none;position:fixed;inset:0;z-index:9998;overflow:hidden;" +
+      "background:linear-gradient(180deg,rgba(20,40,70,.12),rgba(5,10,20,.2))}" +
+      "#amal-rain-overlay i{position:absolute;width:1px;height:14px;background:rgba(180,220,255,.45);" +
+      "animation:amalRain linear infinite}" +
+      "@keyframes amalRain{0%{transform:translateY(-10vh) translateX(0)}100%{transform:translateY(110vh) translateX(-30px)}}" +
+      "#amal-rain-badge{position:fixed;top:10px;right:10px;z-index:9999;padding:6px 10px;" +
+      "border-radius:8px;font:700 12px/1.2 system-ui,sans-serif;color:#e8f4ff;" +
+      "background:rgba(40,90,140,.75);pointer-events:none}";
+    document.head.appendChild(s);
+  }
+
+  function applyRainDom(on) {
+    if (typeof document === "undefined") return;
+    ensureRainStyle();
+    document.documentElement.classList.toggle("amal-rain-night", !!on);
+    document.body.classList.toggle("theme-rain", !!on);
+    let overlay = document.getElementById("amal-rain-overlay");
+    let badge = document.getElementById("amal-rain-badge");
+    if (on) {
+      applyAnimeDom(false);
+      if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "amal-rain-overlay";
+        for (let i = 0; i < 28; i++) {
+          const p = document.createElement("i");
+          p.style.left = Math.random() * 100 + "%";
+          p.style.animationDuration = 0.7 + Math.random() * 0.9 + "s";
+          p.style.animationDelay = Math.random() * 2 + "s";
+          overlay.appendChild(p);
+        }
+        document.body.appendChild(overlay);
+      }
+      if (!badge) {
+        badge = document.createElement("div");
+        badge.id = "amal-rain-badge";
+        badge.textContent = "✦ ночная смена";
+        document.body.appendChild(badge);
+      }
+    } else {
+      if (overlay) overlay.remove();
+      if (badge) badge.remove();
+    }
+  }
+
+  function setRainNight(on) {
+    try {
+      localStorage.setItem(RAIN_FLAG, on ? "1" : "0");
+    } catch (_) {}
+    if (on) {
+      try {
+        localStorage.setItem(ANIME_FLAG, "0");
+      } catch (_) {}
+    }
+    applyRainDom(!!on);
+    return !!on;
+  }
+
+  function bootRainNight() {
+    if (hasRainNight()) applyRainDom(true);
+  }
+
+  /** Пасхалки «Леша» и «я рядом» — во всех играх хаба, только для хозяина */
+  const US_EGGS_STYLE = "amal-us-eggs-style";
+  const US_SEEN_PREFIX = "amal-us-egg-seen-";
+
+  const LESHA_LINES = [
+    "✦ Леша · эта игра тоже твоя",
+    "✦ Amal · хозяин хаба",
+    "✦ Для тебя здесь тихий знак",
+    "✦ Леша · корона не для всех",
+  ];
+
+  const ME_LINES = [
+    "◌ я рядом · в этой игре",
+    "◌ не один · я здесь",
+    "◌ тихий след для тебя",
+    "◌ с тобой на смене",
+  ];
+
+  function ensureUsEggsStyle() {
+    if (document.getElementById(US_EGGS_STYLE)) return;
+    const s = document.createElement("style");
+    s.id = US_EGGS_STYLE;
+    s.textContent =
+      "#amal-us-eggs{position:fixed;left:10px;bottom:48px;z-index:9990;display:flex;flex-direction:column;gap:6px;pointer-events:none}" +
+      "#amal-us-eggs-host #amal-us-eggs{position:static;left:auto;bottom:auto;z-index:auto;flex-direction:row;flex-wrap:wrap;pointer-events:auto;gap:6px}" +
+      "#amal-us-eggs button{pointer-events:auto;border:0;cursor:pointer;padding:5px 9px;border-radius:8px;" +
+      "font:700 11px/1.2 system-ui,sans-serif;opacity:.88;transition:opacity .2s,transform .2s}" +
+      "#amal-us-eggs button:hover{opacity:1;transform:translateY(-1px)}" +
+      "#amal-egg-lesha{background:rgba(255,200,90,.88);color:#1a1208}" +
+      "#amal-egg-me{background:rgba(120,190,255,.82);color:#061018}" +
+      "#amal-us-eggs.pulse button{animation:amalEggPulse 1.2s ease 2}" +
+      "@keyframes amalEggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}";
+    document.head.appendChild(s);
+  }
+
+  function usSeenKey(kind) {
+    return US_SEEN_PREFIX + kind + "-" + detectGame() + "-" + formatDay(Date.now());
+  }
+
+  function softToast(msg) {
+    let el = document.getElementById("amal-us-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-us-toast";
+      el.style.cssText =
+        "position:fixed;left:50%;bottom:18%;transform:translateX(-50%);z-index:9991;" +
+        "padding:8px 14px;border-radius:10px;background:rgba(8,12,22,.82);color:#f3efe6;" +
+        "font:700 13px/1.3 system-ui,sans-serif;pointer-events:none;opacity:0;transition:opacity .25s";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = "1";
+    clearTimeout(softToast._t);
+    softToast._t = setTimeout(() => {
+      el.style.opacity = "0";
+    }, 2200);
+  }
+
+  function pickLine(arr) {
+    return arr[(Math.random() * arr.length) | 0];
+  }
+
+  function showUsPair() {
+    const game = detectGame();
+    showCinematic({
+      kicker: "мы",
+      label: "Леша · и я рядом",
+      detail: "пасхалки в «" + game + "» · Amal Games",
+      at: Date.now(),
+    });
+    try {
+      localStorage.setItem(usSeenKey("pair"), "1");
+    } catch (_) {}
+  }
+
+  function bootUsEggs() {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("amal-us-eggs")) return;
+    ensureUsEggsStyle();
+    const wrap = document.createElement("div");
+    wrap.id = "amal-us-eggs";
+    wrap.innerHTML =
+      '<button type="button" id="amal-egg-lesha" title="пасхалка Леши">✦ Леша</button>' +
+      '<button type="button" id="amal-egg-me" title="пасхалка рядом">◌ я рядом</button>';
+    const host = document.getElementById("amal-us-eggs-host");
+    if (host) host.appendChild(wrap);
+    else document.body.appendChild(wrap);
+
+    let clickBuf = "";
+    let clickT = 0;
+    const leshaBtn = document.getElementById("amal-egg-lesha");
+    const meBtn = document.getElementById("amal-egg-me");
+    const owner = isOwnerLocal();
+
+    if (leshaBtn) {
+      leshaBtn.addEventListener("click", () => {
+        softToast(pickLine(LESHA_LINES));
+        const now = Date.now();
+        if (now - clickT > 2000) clickBuf = "";
+        clickT = now;
+        clickBuf += "L";
+        if (clickBuf.indexOf("LM") >= 0 || clickBuf.indexOf("ML") >= 0) {
+          clickBuf = "";
+          showUsPair();
+        }
+      });
+    }
+    if (meBtn) {
+      meBtn.addEventListener("click", () => {
+        softToast(pickLine(ME_LINES));
+        const now = Date.now();
+        if (now - clickT > 2000) clickBuf = "";
+        clickT = now;
+        clickBuf += "M";
+        if (clickBuf.indexOf("LM") >= 0 || clickBuf.indexOf("ML") >= 0) {
+          clickBuf = "";
+          showUsPair();
+        }
+      });
+    }
+
+    // раз в день на игру — лёгкий пульс, чтобы заметили
+    let pulsed = false;
+    try {
+      pulsed = localStorage.getItem(usSeenKey("pulse")) === "1";
+    } catch (_) {}
+    if (!pulsed) {
+      setTimeout(() => {
+        wrap.classList.add("pulse");
+        softToast(owner ? "✦ пасхалки · Леша и я рядом" : "✦ пасхалки Amal · нажми и посмотри");
+        try {
+          localStorage.setItem(usSeenKey("pulse"), "1");
+        } catch (_) {}
+      }, 1600);
+    }
+
+    // кодовое слово: мы / amal / lesha
+    let buf = "";
+    let bufT = 0;
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        const tag = (e.target && e.target.tagName) || "";
+        if (tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable) return;
+        const now = Date.now();
+        if (now - bufT > 1400) buf = "";
+        bufT = now;
+        if (e.key && e.key.length === 1) buf += e.key.toLowerCase();
+        if (buf.length > 8) buf = buf.slice(-8);
+        if (buf.indexOf("мы") >= 0 || buf.indexOf("amal") >= 0 || buf.indexOf("lesha") >= 0) {
+          buf = "";
+          showUsPair();
+        }
+      },
+      true
+    );
+  }
+
+  if (typeof document !== "undefined") {
+    const boot = () => {
+      bootGameUpdate();
+      bootQuietHere();
+      bootAnimeWorld();
+      bootRainNight();
+      bootUsEggs();
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      setTimeout(boot, 200);
+    }
+    // тройной клик по короне хозяина — только сигнал, без текста
+    let crownClicks = 0;
+    let crownT = 0;
+    document.addEventListener(
+      "click",
+      (e) => {
+        if (!isOwnerLocal()) return;
+        const t = e.target;
+        if (!t || !t.closest) return;
+        const hit = t.closest("[data-amal-owner], .amal-owner-chip, #amal-hub-owner, button");
+        if (!hit) return;
+        const label = String(hit.textContent || hit.getAttribute("aria-label") || "");
+        if (!/хозяин|👑|owner/i.test(label) && !hit.hasAttribute("data-amal-owner")) return;
+        const now = Date.now();
+        if (now - crownT > 900) crownClicks = 0;
+        crownT = now;
+        crownClicks += 1;
+        if (crownClicks >= 3) {
+          crownClicks = 0;
+          armQuietHere();
+          bootQuietHere();
+        }
+      },
+      true
+    );
+  }
+
   global.AmalSurprises = {
     LITTLE,
+    TEAM_PACK,
+    TEAM_GAMES,
+    OWNER_WAVE,
     giveLittle,
     giveSecretOwner,
+    giveTeamPack,
+    giveOwnerWave,
+    hasTeamPack,
+    hasOwnerWave,
     history,
     historyHtml,
     formatDay,
     showCinematic,
     hasSecretUnlocked,
+    bootGameUpdate,
+    armQuietHere,
+    setAnimeWorld,
+    hasAnimeWorld,
+    setRainNight,
+    hasRainNight,
+    bootUsEggs,
     STORAGE,
   };
 })(typeof window !== "undefined" ? window : globalThis);

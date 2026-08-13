@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Лаборатория · изучаем всё</title>
+  <meta name="description" content="Лаборатория: изучай образцы, смешивай, открывай. Без голода — только открытия." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./lab-skin.css?v=1" />
+  <link rel="stylesheet" href="./lab.css?v=2" />
+</head>
+<body class="lab-skin">
+  <a class="back" href="./lab-group.html">&larr; Группа · Лаборатория</a>
+
+  <div id="menu" class="screen">
+    <p class="eyebrow">LAB · GROUP</p>
+    <p class="brand">Лаборатория</p>
+    <p class="sub">Изучаем всё подряд: образцы, смеси, странные открытия.<br />Без шкал голода — только наука и веселье.</p>
+    <button type="button" class="btn" id="btnStart">Надеть халат</button>
+    <a class="linkish" href="./lab-group.html">Все игры группы →</a>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+      <span>🧪 Лаборатория</span>
+      <span id="score">открытий 0</span>
+    </div>
+    <canvas id="c" width="960" height="500"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <div class="panel">
+      <div class="col">
+        <h3>Образцы</h3>
+        <div class="chips" id="samples"></div>
+      </div>
+      <div class="col">
+        <h3>Действия</h3>
+        <div class="actions">
+          <button type="button" class="act" id="btnStudy">🔬 Изучить</button>
+          <button type="button" class="act" id="btnMix">⚗️ Смешать</button>
+          <button type="button" class="act" id="btnNote">📓 В журнал</button>
+          <button type="button" class="act" id="btnNew">🎲 Новый образец</button>
+        </div>
+      </div>
+      <div class="col wide">
+        <h3>Журнал открытий</h3>
+        <ul class="log" id="log"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="result" class="result-overlay" hidden>
+    <div class="result-card">
+      <p class="result-kicker" id="resultKicker">Результат изучения</p>
+      <div class="result-icon" id="resultIcon">🔬</div>
+      <p class="result-title" id="resultTitle">—</p>
+      <p class="result-got" id="resultGot">Ты получил:</p>
+      <p class="result-body" id="resultBody">—</p>
+      <p class="result-pts" id="resultPts">+0</p>
+      <button type="button" class="btn" id="btnResultOk">Понятно</button>
+    </div>
+  </div>
+
+  <script src="./lab-skin.js?v=1"></script>
+  <script src="./lab.js?v=2"></script>
+</body>
+</html>

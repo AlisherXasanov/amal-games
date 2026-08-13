@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Пельмени · обычные и редкие</title>
+  <meta name="description" content="Обычные и редкие пельмени: купи, вари, продавай, таскай." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./dumplings.css?v=4" />
+  <link rel="stylesheet" href="./lab-skin.css?v=1" />
+</head>
+<body class="lab-skin">
+  <a class="back" href="./index.html">&larr; Больница</a>
+
+  <div id="menu" class="screen">
+    <p class="brand">Пельмени</p>
+    <p class="sub">Обычные и <span style="color:#c08020">редкие</span>. Купи · свари · продай · таскай.<br />Редкие дороже и дают больше денег.</p>
+    <button type="button" class="btn" id="btnStart">Начать</button>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="play-layout">
+      <div class="topbar">
+        <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+        <span id="money">💰 100</span>
+        <span id="choco">🍫 ∞</span>
+        <span id="score">❤ 0</span>
+      </div>
+
+      <!-- buttons ALWAYS visible first -->
+      <div class="actions sticky-actions" id="actions">
+        <button type="button" class="act" data-act="buy">🛒 Обычный (25)</button>
+        <button type="button" class="act rare-btn" data-act="buyRare">✨ Редкий (60)</button>
+        <button type="button" class="act" data-act="make">🥟 Слепить (20)</button>
+        <button type="button" class="act" data-act="boil">🍲 Варить</button>
+        <button type="button" class="act" data-act="care">♨ Ухаживать</button>
+        <button type="button" class="act" data-act="choco">🍫 Шоколад ∞</button>
+        <button type="button" class="act" data-act="sell">💰 Продать</button>
+        <button type="button" class="act danger" data-act="eat">🍽 Съесть</button>
+      </div>
+
+      <p class="hint-line">Тяни пельмень → зона ПРОДАЖА справа · кнопки сверху всегда видны</p>
+      <canvas id="c" width="960" height="420"></canvas>
+      <div class="bubble" id="bubble" hidden></div>
+
+      <div class="mood-wrap">
+        <button type="button" class="mood-toggle" id="moodToggle">Настроение ▾</button>
+        <div class="panel" id="panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="outro" class="screen overlay" hidden>
+    <div class="outro-card">
+      <p class="brand">Спасибо за просмотр!</p>
+      <p class="sub" id="outroText">Не забудь поставить лайк, поделиться с друзьями и подписаться!</p>
+      <p class="code" id="outroCode"></p>
+      <div class="outro-btns">
+        <button type="button" class="btn like" id="btnLike">👍 Лайк</button>
+        <button type="button" class="btn share" id="btnShare">↗ Поделиться</button>
+        <button type="button" class="btn sub" id="btnSub">🔔 Подписка</button>
+      </div>
+      <p class="tiny" id="outroHint"></p>
+      <button type="button" class="btn ghost" id="btnOutroMenu">В меню</button>
+    </div>
+  </div>
+
+  <script src="./dumplings.js?v=4"></script>
+  <script src="./lab-skin.js?v=1"></script>
+</body>
+</html>

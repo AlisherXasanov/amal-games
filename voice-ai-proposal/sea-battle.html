@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Морской бой — Игры Эрихоки</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="erihoka.css" />
+  <style>
+    .sb-boards {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) {
+      .sb-boards { grid-template-columns: 1fr 1fr; }
+    }
+    .sb-board {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--eh-line);
+      border-radius: 16px;
+      padding: 0.75rem;
+    }
+    .sb-board h3 {
+      font-family: var(--eh-display);
+      font-size: 1rem;
+      margin-bottom: 0.55rem;
+      text-align: center;
+    }
+    .sb-board.blind h3::after {
+      content: " · вслепую";
+      color: var(--eh-accent);
+      font-size: 0.8rem;
+    }
+    .sb-grid {
+      display: grid;
+      gap: 3px;
+      margin: 0 auto;
+      width: fit-content;
+      max-width: 100%;
+    }
+    .sb-cell {
+      width: clamp(22px, 5.5vw, 32px);
+      height: clamp(22px, 5.5vw, 32px);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #0d3a52;
+      cursor: default;
+      padding: 0;
+      appearance: none;
+    }
+    .sb-cell.ship {
+      background: #5b8a72;
+    }
+    .sb-cell.miss {
+      background: #1e293b;
+      box-shadow: inset 0 0 0 2px rgba(148, 163, 184, 0.5);
+    }
+    .sb-cell.hit {
+      background: #ef4444;
+      box-shadow: inset 0 0 0 2px #fca5a5;
+    }
+    .sb-cell.sunk {
+      background: #7f1d1d;
+    }
+    .sb-enemy .sb-cell:not(.miss):not(.hit):not(.sunk) {
+      cursor: pointer;
+      background: #0ea5e9;
+      opacity: 0.85;
+    }
+    .sb-enemy .sb-cell:not(.miss):not(.hit):not(.sunk):hover {
+      opacity: 1;
+      filter: brightness(1.15);
+    }
+    .sb-enemy.blind .sb-cell:not(.miss):not(.hit):not(.sunk) {
+      background: #334155;
+    }
+    .sb-floor {
+      font-weight: 800;
+      color: var(--eh-brand);
+    }
+    .sb-msg {
+      min-height: 1.4em;
+      font-weight: 700;
+      color: var(--eh-muted);
+      text-align: center;
+    }
+    .sb-cell.preview-ok {
+      background: #22c55e !important;
+      opacity: 0.85;
+      cursor: pointer;
+    }
+    .sb-cell.preview-bad {
+      background: #ef4444 !important;
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .sb-cell.placeable {
+      cursor: pointer;
+    }
+    .sb-place-panel[hidden] {
+      display: none !important;
+    }
+    #board-enemy-wrap.placing {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="erihoka">
+  <div class="eh-noise" aria-hidden="true"></div>
+  <header class="eh-top">
+    <a class="eh-brand" href="erihoka.html">Игры <span>Эрихоки</span></a>
+    <a class="eh-back" href="erihoka.html">← К играм</a>
+  </header>
+  <main class="eh-main">
+    <section class="eh-hero">
+      <p class="eyebrow">Корабли и пули</p>
+      <h1>Морской бой</h1>
+      <p>
+        Нужно потопить <strong>все корабли</strong> противника.
+        Корабли можно <strong>поставить самому</strong> или расставить случайно.
+        У тебя много <strong>пуль</strong>: за ход несколько выстрелов. Победа — на <strong>следующий этаж</strong>.
+      </p>
+    </section>
+
+    <div class="eh-panel">
+      <div class="eh-row" id="opp-row">
+        <label>Противник:</label>
+        <button type="button" class="eh-btn" data-bot="eri">Эри Хока</button>
+        <button type="button" class="eh-btn" data-bot="easy">Лёгкий бот</button>
+        <button type="button" class="eh-btn" data-bot="hard">Сильный бот</button>
+      </div>
+      <div class="eh-row" id="mode-row">
+        <label>Режим:</label>
+        <button type="button" class="eh-btn active" data-mode="normal">Обычный</button>
+        <button type="button" class="eh-btn" data-mode="blind">Вслепую</button>
+      </div>
+      <div class="eh-row" id="place-mode-row">
+        <label>Расстановка:</label>
+        <button type="button" class="eh-btn active" data-place="manual">Сам ставлю</button>
+        <button type="button" class="eh-btn" data-place="random">Случайно</button>
+      </div>
+      <div class="eh-score">
+        <span class="sb-floor">Этаж: <b id="floor">1</b></span>
+        <span class="you">Твои корабли: <b id="left-you">0</b></span>
+        <span class="bot">Корабли <span id="bot-name">Эри Хоки</span>: <b id="left-bot">0</b></span>
+        <span>Твои пули: <b id="bullets-you">0</b></span>
+        <span>Пули бота: <b id="bullets-bot">0</b></span>
+        <span>Выстрелов в ход: <b id="shots-left">0</b></span>
+      </div>
+      <div class="eh-row">
+        <button type="button" class="eh-btn primary" id="btn-start">Играть</button>
+        <button type="button" class="eh-btn" id="btn-next" hidden>Следующий этаж →</button>
+      </div>
+      <div class="eh-row sb-place-panel" id="place-panel" hidden>
+        <span id="place-info">Корабль: —</span>
+        <button type="button" class="eh-btn" id="btn-rotate">Повернуть ↻</button>
+        <button type="button" class="eh-btn" id="btn-random-rest">Остальные случайно</button>
+        <button type="button" class="eh-btn" id="btn-clear">Сбросить</button>
+        <button type="button" class="eh-btn accent" id="btn-ready" hidden>Готово — бой!</button>
+      </div>
+      <p class="sb-msg" id="msg">Выбери противника и нажми «Играть»</p>
+      <p class="eh-hint">Сначала расставь корабли (или случайно), потом стреляй по правому морю.</p>
+    </div>
+
+    <div class="sb-boards" id="boards" hidden>
+      <div class="sb-board" id="board-you-wrap">
+        <h3 id="you-title">Твои корабли</h3>
+        <div class="sb-grid" id="grid-you"></div>
+      </div>
+      <div class="sb-board sb-enemy" id="board-enemy-wrap">
+        <h3 id="enemy-title">Море противника</h3>
+        <div class="sb-grid" id="grid-enemy"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="erihoka-bots.js"></script>
+  <script>
+    const SHIPS_BY_FLOOR = {
+      1: [4, 3, 3, 2, 2, 2, 1, 1],
+      2: [5, 4, 3, 3, 2, 2, 2, 1, 1, 1],
+      3: [5, 4, 4, 3, 3, 2, 2, 2, 2, 1, 1, 1],
+    };
+    const SIZE_BY_FLOOR = { 1: 8, 2: 9, 3: 10 };
+    const BULLETS_BY_FLOOR = { 1: 60, 2: 75, 3: 90 };
+    const SHOTS_PER_TURN = 3;
+
+    let bot = ErihokaBots.eri;
+    function botNameGenitive(b) {
+      if (b.id === "eri") return "Эри Хоки";
+      if (b.id === "easy") return "лёгкого бота";
+      return "сильного бота";
+    }
+    const getBot = ErihokaUI.bindOpponent(document.getElementById("opp-row"), (b) => {
+      bot = b;
+      document.getElementById("bot-name").textContent = botNameGenitive(b);
+    });
+
+    let mode = "normal";
+    document.querySelectorAll("#mode-row [data-mode]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        mode = btn.dataset.mode;
+        document.querySelectorAll("#mode-row [data-mode]").forEach((b) =>
+          b.classList.toggle("active", b.dataset.mode === mode)
+        );
+      });
+    });
+
+    let placeMode = "manual";
+    document.querySelectorAll("#place-mode-row [data-place]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        placeMode = btn.dataset.place;
+        document.querySelectorAll("#place-mode-row [data-place]").forEach((b) =>
+          b.classList.toggle("active", b.dataset.place === placeMode)
+        );
+      });
+    });
+
+    let floor = 1;
+    let size = 8;
+    let shipLens = [];
+    let yourGrid;
+    let enemyGrid;
+    let yourFleet;
+    let enemyFleet;
+    let yourTurn = true;
+    let playing = false;
+    let placing = false;
+    let placeIndex = 0;
+    let placeHoriz = true;
+    let hoverCell = null;
+    let botHunt = [];
+    let yourBullets = 0;
+    let botBullets = 0;
+    let shotsLeft = 0;
+    let botShotsLeft = 0;
+
+    const el = {
+      floor: document.getElementById("floor"),
+      leftYou: document.getElementById("left-you"),
+      leftBot: document.getElementById("left-bot"),
+      bulletsYou: document.getElementById("bullets-you"),
+      bulletsBot: document.getElementById("bullets-bot"),
+      shotsLeft: document.getElementById("shots-left"),
+      msg: document.getElementById("msg"),
+      boards: document.getElementById("boards"),
+      gridYou: document.getElementById("grid-you"),
+      gridEnemy: document.getElementById("grid-enemy"),
+      enemyWrap: document.getElementById("board-enemy-wrap"),
+      youTitle: document.getElementById("you-title"),
+      btnStart: document.getElementById("btn-start"),
+      btnNext: document.getElementById("btn-next"),
+      enemyTitle: document.getElementById("enemy-title"),
+      placePanel: document.getElementById("place-panel"),
+      placeInfo: document.getElementById("place-info"),
+      btnRotate: document.getElementById("btn-rotate"),
+      btnRandomRest: document.getElementById("btn-random-rest"),
+      btnClear: document.getElementById("btn-clear"),
+      btnReady: document.getElementById("btn-ready"),
+    };
+
+    function emptyGrid(n) {
+      return Array.from({ length: n }, () =>
+        Array.from({ length: n }, () => ({ state: 0, shipId: null }))
+      );
+    }
+
+    function canPlace(grid, x, y, len, horiz) {
+      const n = grid.length;
+      for (let i = 0; i < len; i++) {
+        const cx = horiz ? x + i : x;
+        const cy = horiz ? y : y + i;
+        if (cx < 0 || cy < 0 || cx >= n || cy >= n) return false;
+        if (grid[cy][cx].state !== 0) return false;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx >= 0 && ny >= 0 && nx < n && ny < n && grid[ny][nx].state === 1) {
+              if (!(nx === cx && ny === cy)) return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    function cellsFor(x, y, len, horiz) {
+      const cells = [];
+      for (let i = 0; i < len; i++) {
+        cells.push([horiz ? x + i : x, horiz ? y : y + i]);
+      }
+      return cells;
+    }
+
+    function placeShipAt(grid, fleet, x, y, len, horiz, id) {
+      if (!canPlace(grid, x, y, len, horiz)) return false;
+      const cells = cellsFor(x, y, len, horiz);
+      for (const [cx, cy] of cells) {
+        grid[cy][cx] = { state: 1, shipId: id };
+      }
+      fleet.push({ id, cells, sunk: false });
+      return true;
+    }
+
+    function placeShipRandom(grid, fleet, len, id) {
+      for (let tries = 0; tries < 300; tries++) {
+        const horiz = Math.random() < 0.5;
+        const x = Math.floor(Math.random() * size);
+        const y = Math.floor(Math.random() * size);
+        if (placeShipAt(grid, fleet, x, y, len, horiz, id)) return true;
+      }
+      return false;
+    }
+
+    function placeFleet(n, lens) {
+      for (let attempt = 0; attempt < 40; attempt++) {
+        const grid = emptyGrid(n);
+        const fleet = [];
+        let ok = true;
+        lens.forEach((len, i) => {
+          if (!placeShipRandom(grid, fleet, len, i + 1)) ok = false;
+        });
+        if (ok) return { grid, fleet };
+      }
+      return placeFleet(n, lens.slice(0, Math.max(3, lens.length - 2)));
+    }
+
+    function shipsAlive(fleet) {
+      return fleet.filter((s) => !s.sunk).length;
+    }
+
+    function markShipSunk(grid, fleet, shipId) {
+      const ship = fleet.find((s) => s.id === shipId);
+      if (!ship || ship.sunk) return false;
+      const alive = ship.cells.some(([x, y]) => grid[y][x].state === 1);
+      if (alive) return false;
+      ship.sunk = true;
+      for (const [x, y] of ship.cells) grid[y][x].state = 4;
+      return true;
+    }
+
+    function shoot(grid, fleet, x, y) {
+      const cell = grid[y][x];
+      if (cell.state === 2 || cell.state === 3 || cell.state === 4) return "already";
+      if (cell.state === 1) {
+        cell.state = 3;
+        return markShipSunk(grid, fleet, cell.shipId) ? "sunk" : "hit";
+      }
+      cell.state = 2;
+      cell.shipId = null;
+      return "miss";
+    }
+
+    function currentLen() {
+      return shipLens[placeIndex] || 0;
+    }
+
+    function allPlaced() {
+      return placeIndex >= shipLens.length;
+    }
+
+    function updatePlaceInfo() {
+      if (!placing) {
+        el.placeInfo.textContent = "";
+        el.btnReady.hidden = true;
+        return;
+      }
+      if (allPlaced()) {
+        el.placeInfo.textContent = "Все корабли на месте!";
+        el.btnReady.hidden = false;
+        setMsg("Нажми «Готово — бой!», чтобы начать стрельбу.");
+      } else {
+        const left = shipLens.length - placeIndex;
+        el.placeInfo.textContent =
+          "Корабль " +
+          (placeIndex + 1) +
+          "/" +
+          shipLens.length +
+          " · длина " +
+          currentLen() +
+          " · " +
+          (placeHoriz ? "горизонтально" : "вертикально") +
+          " · осталось " +
+          left;
+        el.btnReady.hidden = true;
+      }
+    }
+
+    function updateHud() {
+      el.leftYou.textContent = yourFleet ? shipsAlive(yourFleet) : 0;
+      el.leftBot.textContent = enemyFleet ? shipsAlive(enemyFleet) : 0;
+      el.bulletsYou.textContent = yourBullets;
+      el.bulletsBot.textContent = botBullets;
+      el.shotsLeft.textContent = placing ? "—" : yourTurn ? shotsLeft : botShotsLeft;
+      el.floor.textContent = floor;
+      updatePlaceInfo();
+    }
+
+    function previewSet() {
+      const set = new Set();
+      if (!placing || allPlaced() || !hoverCell) return set;
+      const len = currentLen();
+      const [hx, hy] = hoverCell;
+      for (const [cx, cy] of cellsFor(hx, hy, len, placeHoriz)) {
+        set.add(cx + "," + cy);
+      }
+      return set;
+    }
+
+    function render() {
+      el.gridYou.style.gridTemplateColumns = `repeat(${size}, auto)`;
+      el.gridEnemy.style.gridTemplateColumns = `repeat(${size}, auto)`;
+      el.gridYou.innerHTML = "";
+      el.gridEnemy.innerHTML = "";
+      const preview = previewSet();
+      const previewOk =
+        placing &&
+        !allPlaced() &&
+        hoverCell &&
+        canPlace(yourGrid, hoverCell[0], hoverCell[1], currentLen(), placeHoriz);
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const youBtn = document.createElement("button");
+          youBtn.type = "button";
+          youBtn.className = "sb-cell";
+          const yv = yourGrid[y][x].state;
+          if (yv === 1) youBtn.classList.add("ship");
+          if (yv === 2) youBtn.classList.add("miss");
+          if (yv === 3) youBtn.classList.add("hit");
+          if (yv === 4) youBtn.classList.add("sunk");
+
+          const key = x + "," + y;
+          if (placing && !allPlaced() && preview.has(key)) {
+            youBtn.classList.add(previewOk ? "preview-ok" : "preview-bad");
+          }
+          if (placing && !allPlaced()) {
+            youBtn.classList.add("placeable");
+            youBtn.addEventListener("pointerenter", () => {
+              hoverCell = [x, y];
+              render();
+            });
+            youBtn.addEventListener("click", () => tryPlace(x, y));
+          }
+          el.gridYou.appendChild(youBtn);
+
+          const enBtn = document.createElement("button");
+          enBtn.type = "button";
+          enBtn.className = "sb-cell";
+          if (!placing) {
+            const ev = enemyGrid[y][x].state;
+            if (ev === 2) enBtn.classList.add("miss");
+            if (ev === 3) enBtn.classList.add("hit");
+            if (ev === 4) enBtn.classList.add("sunk");
+            if (playing && yourTurn && shotsLeft > 0 && yourBullets > 0) {
+              enBtn.addEventListener("click", () => playerShot(x, y));
+            }
+          }
+          el.gridEnemy.appendChild(enBtn);
+        }
+      }
+
+      el.enemyWrap.classList.toggle("blind", mode === "blind" && !placing);
+      el.enemyWrap.classList.toggle("placing", placing);
+      el.enemyTitle.textContent = placing
+        ? "Море противника (потом)"
+        : mode === "blind"
+          ? "Море вслепую"
+          : "Море противника";
+      el.youTitle.textContent = placing ? "Поставь свои корабли сюда" : "Твои корабли";
+      updateHud();
+    }
+
+    function setMsg(t) {
+      el.msg.textContent = t;
+    }
+
+    function tryPlace(x, y) {
+      if (!placing || allPlaced()) return;
+      const len = currentLen();
+      const id = placeIndex + 1;
+      if (!placeShipAt(yourGrid, yourFleet, x, y, len, placeHoriz, id)) {
+        setMsg("Сюда нельзя — слишком близко к другому кораблю или край поля.");
+        return;
+      }
+      placeIndex += 1;
+      hoverCell = null;
+      if (allPlaced()) {
+        setMsg("Все корабли расставлены! Нажми «Готово — бой!»");
+      } else {
+        setMsg("Стоит! Теперь корабль длиной " + currentLen() + ".");
+      }
+      render();
+    }
+
+    function clearYourFleet() {
+      yourGrid = emptyGrid(size);
+      yourFleet = [];
+      placeIndex = 0;
+      hoverCell = null;
+    }
+
+    function randomRest() {
+      while (placeIndex < shipLens.length) {
+        const len = currentLen();
+        const id = placeIndex + 1;
+        if (!placeShipRandom(yourGrid, yourFleet, len, id)) {
+          setMsg("Не хватило места. Нажми «Сбросить» и расставь заново.");
+          break;
+        }
+        placeIndex += 1;
+      }
+      hoverCell = null;
+      render();
+    }
+
+    function beginBattle() {
+      placing = false;
+      el.placePanel.hidden = true;
+      const enemy = placeFleet(size, shipLens);
+      enemyGrid = enemy.grid;
+      enemyFleet = enemy.fleet;
+      botHunt = [];
+      yourBullets = BULLETS_BY_FLOOR[floor] || 60;
+      botBullets = BULLETS_BY_FLOOR[floor] || 60;
+      shotsLeft = SHOTS_PER_TURN;
+      botShotsLeft = 0;
+      playing = true;
+      yourTurn = true;
+      setMsg(
+        "Бой! Потопи все корабли. Пули: " +
+          yourBullets +
+          ", за ход " +
+          SHOTS_PER_TURN +
+          ". У врага кораблей: " +
+          shipsAlive(enemyFleet)
+      );
+      render();
+    }
+
+    function checkWin() {
+      if (shipsAlive(enemyFleet) === 0) {
+        win("you");
+        return true;
+      }
+      if (shipsAlive(yourFleet) === 0) {
+        win("bot");
+        return true;
+      }
+      if (yourBullets <= 0 && botBullets <= 0) {
+        const ys = shipsAlive(yourFleet);
+        const bs = shipsAlive(enemyFleet);
+        if (bs < ys) win("you");
+        else if (ys < bs) win("bot");
+        else {
+          playing = false;
+          setMsg("Пули закончились! Ничья: " + ys + " : " + bs);
+          render();
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function endYourVolley() {
+      yourTurn = false;
+      botShotsLeft = Math.min(SHOTS_PER_TURN, botBullets);
+      render();
+      setMsg("Ход " + bot.name + "…");
+      setTimeout(botTurn, 400);
+    }
+
+    function playerShot(x, y) {
+      if (!playing || !yourTurn || shotsLeft <= 0 || yourBullets <= 0) return;
+      const r = shoot(enemyGrid, enemyFleet, x, y);
+      if (r === "already") return;
+      yourBullets -= 1;
+      shotsLeft -= 1;
+      if (r === "miss") setMsg("Мимо! Осталось выстрелов в ход: " + shotsLeft);
+      if (r === "hit") setMsg("Попал в корабль! Можно стрелять ещё.");
+      if (r === "sunk") setMsg("Корабль потоплен! Осталось: " + shipsAlive(enemyFleet));
+      render();
+      if (checkWin()) return;
+      if (yourBullets <= 0 || shotsLeft <= 0) {
+        endYourVolley();
+        return;
+      }
+      setMsg("Стреляй ещё! Выстрелов в ход: " + shotsLeft);
+    }
+
+    function botPick() {
+      if (botHunt.length) {
+        while (botHunt.length) {
+          const [x, y] = botHunt.pop();
+          const st = yourGrid[y][x].state;
+          if (st === 0 || st === 1) return [x, y];
+        }
+      }
+      const candidates = [];
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const st = yourGrid[y][x].state;
+          if (st === 0 || st === 1) {
+            if (bot.id === "hard" && (x + y) % 2 !== 0 && Math.random() < 0.55) continue;
+            candidates.push([x, y]);
+          }
+        }
+      }
+      if (!candidates.length) {
+        for (let y = 0; y < size; y++)
+          for (let x = 0; x < size; x++) {
+            const st = yourGrid[y][x].state;
+            if (st === 0 || st === 1) candidates.push([x, y]);
+          }
+      }
+      if (bot.id === "easy" && Math.random() < 0.35) {
+        const empties = candidates.filter(([x, y]) => yourGrid[y][x].state === 0);
+        if (empties.length) return empties[Math.floor(Math.random() * empties.length)];
+      }
+      return candidates.length ? candidates[Math.floor(Math.random() * candidates.length)] : null;
+    }
+
+    function botTurn() {
+      if (!playing) return;
+      if (botBullets <= 0 || botShotsLeft <= 0) {
+        yourTurn = true;
+        shotsLeft = Math.min(SHOTS_PER_TURN, yourBullets);
+        setMsg(yourBullets > 0 ? "Твой ход!" : "Пули кончились…");
+        render();
+        checkWin();
+        return;
+      }
+      const pick = botPick();
+      if (!pick) {
+        yourTurn = true;
+        shotsLeft = Math.min(SHOTS_PER_TURN, yourBullets);
+        render();
+        return;
+      }
+      const [x, y] = pick;
+      const r = shoot(yourGrid, yourFleet, x, y);
+      botBullets -= 1;
+      botShotsLeft -= 1;
+      if (r === "hit" || r === "sunk") {
+        [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]].forEach(([nx, ny]) => {
+          if (nx >= 0 && ny >= 0 && nx < size && ny < size) botHunt.push([nx, ny]);
+        });
+      }
+      if (r === "sunk") setMsg(bot.name + " потопил корабль! Осталось: " + shipsAlive(yourFleet));
+      else if (r === "hit") setMsg(bot.name + " попал!");
+      else setMsg(bot.name + " промахнулся.");
+      render();
+      if (checkWin()) return;
+      if (botShotsLeft > 0 && botBullets > 0) setTimeout(botTurn, 320);
+      else {
+        yourTurn = true;
+        shotsLeft = Math.min(SHOTS_PER_TURN, yourBullets);
+        setMsg("Твой ход! Выстрелов: " + shotsLeft);
+        render();
+      }
+    }
+
+    function win(who) {
+      playing = false;
+      yourTurn = false;
+      render();
+      if (who === "you") {
+        setMsg("Ты потопил все корабли! Можно на следующий этаж.");
+        if (floor < 3) el.btnNext.hidden = false;
+        else setMsg("Все этажи пройдены! Чемпион!");
+      } else {
+        setMsg(bot.name + " потопил все твои корабли. Ещё раз!");
+        el.btnNext.hidden = true;
+      }
+    }
+
+    function startFloor() {
+      bot = getBot();
+      size = SIZE_BY_FLOOR[floor] || 8;
+      shipLens = (SHIPS_BY_FLOOR[floor] || SHIPS_BY_FLOOR[1]).slice();
+      playing = false;
+      yourTurn = false;
+      enemyGrid = emptyGrid(size);
+      enemyFleet = [];
+      yourBullets = 0;
+      botBullets = 0;
+      shotsLeft = 0;
+      el.boards.hidden = false;
+      el.btnNext.hidden = true;
+
+      if (placeMode === "random") {
+        const yours = placeFleet(size, shipLens);
+        yourGrid = yours.grid;
+        yourFleet = yours.fleet;
+        placeIndex = shipLens.length;
+        placing = false;
+        el.placePanel.hidden = true;
+        beginBattle();
+        return;
+      }
+
+      clearYourFleet();
+      placing = true;
+      placeHoriz = true;
+      el.placePanel.hidden = false;
+      setMsg("Жми по левому полю и ставь корабли. «Повернуть» меняет направление.");
+      render();
+    }
+
+    el.btnStart.addEventListener("click", () => {
+      floor = 1;
+      startFloor();
+    });
+    el.btnNext.addEventListener("click", () => {
+      floor = Math.min(3, floor + 1);
+      startFloor();
+    });
+    el.btnRotate.addEventListener("click", () => {
+      placeHoriz = !placeHoriz;
+      render();
+    });
+    el.btnClear.addEventListener("click", () => {
+      if (!placing) return;
+      clearYourFleet();
+      setMsg("Поле чистое. Ставь корабли снова.");
+      render();
+    });
+    el.btnRandomRest.addEventListener("click", () => {
+      if (!placing) return;
+      randomRest();
+      if (allPlaced()) setMsg("Остальные корабли расставлены случайно. Жми «Готово — бой!»");
+    });
+    el.btnReady.addEventListener("click", () => {
+      if (placing && allPlaced()) beginBattle();
+    });
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+  <script src="../shared/amal-site-faq.js?v=1"></script>
+</body>
+</html>

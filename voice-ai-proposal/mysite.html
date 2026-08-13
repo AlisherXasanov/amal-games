@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мой сайт — СкажиИгру</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="studio.css" />
+  <style>
+    .site-hero {
+      padding: 2rem 0 1rem;
+    }
+    .site-hero h1 {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+    }
+    .back-row {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="top">
+    <a class="brand" href="studio.html">СкажиИгру</a>
+    <nav>
+      <a href="studio.html">Студия</a>
+      <a href="../">Amal's Games</a>
+    </nav>
+  </header>
+  <main class="studio">
+    <section class="site-hero">
+      <p class="eyebrow">Твой сайт</p>
+      <h1 id="title">Мой сайт</h1>
+      <p class="lede" id="about">Здесь будут твои игры.</p>
+      <div class="back-row">
+        <a class="btn primary" href="studio.html">Изменить в студии</a>
+        <a class="btn ghost" href="../">Каталог игр</a>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Игры на сайте</h2>
+        <p>Всё, что создано в студии.</p>
+      </div>
+      <div id="game-list" class="game-list"></div>
+    </section>
+  </main>
+  <script>
+    (() => {
+      const site = JSON.parse(localStorage.getItem("skazhigru-site-v1") || "{}");
+      const games = JSON.parse(localStorage.getItem("skazhigru-games-v1") || "[]");
+      document.getElementById("title").textContent = site.name || "Мой сайт";
+      document.title = (site.name || "Мой сайт") + " — СкажиИгру";
+      document.getElementById("about").textContent = site.about || "Здесь будут твои игры.";
+      const list = document.getElementById("game-list");
+      if (!Array.isArray(games) || !games.length) {
+        list.innerHTML = '<p class="empty">Пока нет игр. Вернись в студию и создай первую.</p>';
+        return;
+      }
+      list.innerHTML = games.map((g) => `
+        <article class="game-card">
+          <div>
+            <h3>${String(g.name).replace(/</g, "&lt;")}</h3>
+            <p>${String(g.prompt || "").replace(/</g, "&lt;")}</p>
+          </div>
+          <a class="btn primary" href="play.html?id=${encodeURIComponent(g.id)}">Играть</a>
+        </article>
+      `).join("");
+    })();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+  <script src="../shared/amal-site-faq.js?v=1"></script>
+</body>
+</html>

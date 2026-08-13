@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Игра — СкажиИгру</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@600;700&family=Unbounded:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #142028;
+      --brand: #0b6e4f;
+      --bg: #0f1a20;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      font-family: Onest, system-ui, sans-serif;
+      background: radial-gradient(800px 500px at 50% -10%, #1d4d3d, var(--bg));
+      color: #e8eef2;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+    }
+    .wrap {
+      width: min(520px, 100%);
+      display: grid;
+      gap: 0.85rem;
+    }
+    h1 {
+      font-family: Unbounded, system-ui, sans-serif;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+    }
+    .meta { color: #9db0bc; font-size: 0.9rem; }
+    canvas {
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      background: #081218;
+      display: block;
+      touch-action: none;
+    }
+    .bar {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.65rem 1rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .btn.main { background: var(--brand); color: #fff; }
+    #score { margin-left: auto; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="title">Игра</h1>
+    <p class="meta" id="desc"></p>
+    <div class="bar">
+      <button class="btn main" id="restart" type="button">Заново</button>
+      <a class="btn" href="studio.html">В студию</a>
+      <a class="btn" href="mysite.html">Мой сайт</a>
+      <span id="score">Очки: 0</span>
+    </div>
+    <canvas id="c" width="480" height="480" aria-label="Игровое поле"></canvas>
+    <p class="meta" id="help">Управление: стрелки или WASD. На телефоне — кнопки ниже / свайп.</p>
+  </div>
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const id = params.get("id");
+      const games = JSON.parse(localStorage.getItem("skazhigru-games-v1") || "[]");
+      const game = games.find((g) => g.id === id) || games[0];
+      if (!game) {
+        document.getElementById("title").textContent = "Игра не найдена";
+        document.getElementById("desc").textContent = "Сначала создай игру в студии.";
+        return;
+      }
+
+      document.getElementById("title").textContent = game.name;
+      document.title = game.name + " — СкажиИгру";
+      document.getElementById("desc").textContent = game.prompt || "";
+
+      const canvas = document.getElementById("c");
+      const ctx = canvas.getContext("2d");
+      const scoreEl = document.getElementById("score");
+      const color = game.color || "#12a374";
+      const kind = game.kind || "catch";
+
+      let score = 0;
+      let alive = true;
+      let keys = {};
+      let player, target, vel, trail, timer;
+
+      function reset() {
+        score = 0;
+        alive = true;
+        scoreEl.textContent = "Очки: 0";
+        if (kind === "snake") {
+          trail = [{ x: 10, y: 10 }];
+          vel = { x: 1, y: 0 };
+          target = { x: 15, y: 10 };
+          document.getElementById("help").textContent = "Змейка: стрелки / WASD. Ешь яблоки.";
+        } else if (kind === "race") {
+          player = { x: 240, y: 400, w: 36, h: 56 };
+          target = [];
+          for (let i = 0; i < 5; i++) target.push({ x: 40 + Math.random() * 400, y: -i * 120, w: 40, h: 70 });
+          document.getElementById("help").textContent = "Гонка: A/D или стрелки — объезжай препятствия.";
+        } else if (kind === "jump") {
+          player = { x: 80, y: 360, vy: 0, on: true };
+          target = [{ x: 0, y: 420, w: 480, h: 60 }, { x: 220, y: 300, w: 120, h: 18 }, { x: 60, y: 200, w: 100, h: 18 }];
+          document.getElementById("help").textContent = "Прыжки: стрелки + пробел.";
+        } else {
+          player = { x: 220, y: 220, r: 18 };
+          target = { x: 100, y: 100, r: 14 };
+          document.getElementById("help").textContent = "Лови круги: двигайся стрелками / WASD.";
+        }
+      }
+
+      function bumpScore() {
+        score += 1;
+        scoreEl.textContent = "Очки: " + score;
+      }
+
+      function loop() {
+        ctx.clearRect(0, 0, 480, 480);
+        ctx.fillStyle = "#081218";
+        ctx.fillRect(0, 0, 480, 480);
+
+        if (!alive) {
+          ctx.fillStyle = "#fff";
+          ctx.font = "700 28px Unbounded, sans-serif";
+          ctx.fillText("Конец", 180, 230);
+          ctx.font = "600 16px Onest, sans-serif";
+          ctx.fillText("Очки: " + score, 195, 265);
+          return;
+        }
+
+        if (kind === "snake") {
+          if (keys.ArrowLeft || keys.a) { if (vel.x !== 1) vel = { x: -1, y: 0 }; }
+          if (keys.ArrowRight || keys.d) { if (vel.x !== -1) vel = { x: 1, y: 0 }; }
+          if (keys.ArrowUp || keys.w) { if (vel.y !== 1) vel = { x: 0, y: -1 }; }
+          if (keys.ArrowDown || keys.s) { if (vel.y !== -1) vel = { x: 0, y: 1 }; }
+          if (!timer) timer = 0;
+          timer++;
+          if (timer % 7 === 0) {
+            const head = { x: trail[0].x + vel.x, y: trail[0].y + vel.y };
+            if (head.x < 0 || head.y < 0 || head.x >= 24 || head.y >= 24 || trail.some((p) => p.x === head.x && p.y === head.y)) {
+              alive = false;
+            } else {
+              trail.unshift(head);
+              if (head.x === target.x && head.y === target.y) {
+                bumpScore();
+                target = { x: (Math.random() * 24) | 0, y: (Math.random() * 24) | 0 };
+              } else trail.pop();
+            }
+          }
+          ctx.fillStyle = "#ef4444";
+          ctx.fillRect(target.x * 20, target.y * 20, 20, 20);
+          trail.forEach((p, i) => {
+            ctx.fillStyle = i === 0 ? color : color + "cc";
+            ctx.fillRect(p.x * 20, p.y * 20, 20, 20);
+          });
+        } else if (kind === "race") {
+          if (keys.ArrowLeft || keys.a) player.x -= 6;
+          if (keys.ArrowRight || keys.d) player.x += 6;
+          player.x = Math.max(10, Math.min(434, player.x));
+          ctx.fillStyle = color;
+          ctx.fillRect(player.x, player.y, player.w, player.h);
+          target.forEach((o) => {
+            o.y += 4 + score * 0.15;
+            if (o.y > 500) {
+              o.y = -80;
+              o.x = 40 + Math.random() * 400;
+              bumpScore();
+            }
+            ctx.fillStyle = "#94a3b8";
+            ctx.fillRect(o.x, o.y, o.w, o.h);
+            if (player.x < o.x + o.w && player.x + player.w > o.x && player.y < o.y + o.h && player.y + player.h > o.y) {
+              alive = false;
+            }
+          });
+        } else if (kind === "jump") {
+          if (keys.ArrowLeft || keys.a) player.x -= 5;
+          if (keys.ArrowRight || keys.d) player.x += 5;
+          if ((keys[" "] || keys.ArrowUp || keys.w) && player.on) {
+            player.vy = -11;
+            player.on = false;
+          }
+          player.vy += 0.45;
+          player.y += player.vy;
+          player.on = false;
+          target.forEach((p, i) => {
+            ctx.fillStyle = i === 0 ? "#334155" : "#64748b";
+            ctx.fillRect(p.x, p.y, p.w, p.h);
+            if (player.vy >= 0 && player.x + 24 > p.x && player.x < p.x + p.w && player.y + 28 > p.y && player.y + 28 < p.y + p.h + 12) {
+              player.y = p.y - 28;
+              player.vy = 0;
+              player.on = true;
+              if (i > 0) bumpScore();
+            }
+          });
+          if (player.y > 500) alive = false;
+          ctx.fillStyle = color;
+          ctx.fillRect(player.x, player.y, 24, 28);
+        } else {
+          if (keys.ArrowLeft || keys.a) player.x -= 5;
+          if (keys.ArrowRight || keys.d) player.x += 5;
+          if (keys.ArrowUp || keys.w) player.y -= 5;
+          if (keys.ArrowDown || keys.s) player.y += 5;
+          player.x = Math.max(player.r, Math.min(480 - player.r, player.x));
+          player.y = Math.max(player.r, Math.min(480 - player.r, player.y));
+          const dx = player.x - target.x;
+          const dy = player.y - target.y;
+          if (dx * dx + dy * dy < (player.r + target.r) ** 2) {
+            bumpScore();
+            target.x = 30 + Math.random() * 420;
+            target.y = 30 + Math.random() * 420;
+          }
+          ctx.beginPath();
+          ctx.fillStyle = "#f59e0b";
+          ctx.arc(target.x, target.y, target.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.fillStyle = color;
+          ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      window.addEventListener("keydown", (e) => {
+        keys[e.key] = true;
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(e.key)) e.preventDefault();
+      });
+      window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+      document.getElementById("restart").onclick = () => {
+        reset();
+        requestAnimationFrame(loop);
+      };
+
+      reset();
+      requestAnimationFrame(loop);
+
+      if ("speechSynthesis" in window) {
+        const u = new SpeechSynthesisUtterance("Игра «" + game.name + "» запущена. Удачи!");
+        u.lang = "ru-RU";
+        speechSynthesis.speak(u);
+      }
+    })();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+  <script src="../shared/amal-site-faq.js?v=1"></script>
+</body>
+</html>

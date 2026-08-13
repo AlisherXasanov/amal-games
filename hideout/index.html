@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Укрытие — Hideout</title>
-  <meta name="description" content="Прятки: 10 карт, 5 этажей в доме, 10 прячущихся и 2 искателя." />
+  <title>Р Р€Р С”РЎР‚РЎвЂ№РЎвЂљР С‘Р Вµ РІР‚вЂќ Hideout</title>
+  <meta name="description" content="Р СџРЎР‚РЎРЏРЎвЂљР С”Р С‘: 10 Р С”Р В°РЎР‚РЎвЂљ, 5 РЎРЊРЎвЂљР В°Р В¶Р ВµР в„– Р Р† Р Т‘Р С•Р СР Вµ, 10 Р С—РЎР‚РЎРЏРЎвЂЎРЎС“РЎвЂ°Р С‘РЎвЂ¦РЎРѓРЎРЏ Р С‘ 2 Р С‘РЎРѓР С”Р В°РЎвЂљР ВµР В»РЎРЏ." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css?v=11" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Все игры</a>
+  <a class="portal-back" href="../">&larr; Р вЂ™РЎРѓР Вµ Р С‘Р С–РЎР‚РЎвЂ№</a>
 
   <div id="app">
     <div class="screen" id="screen">
@@ -19,43 +19,46 @@
 
       <div class="hud" id="hud" hidden>
         <div class="hud-row" id="hudInfo"></div>
-        <button type="button" class="btn-menu" id="btnMenu">В меню</button>
+        <button type="button" class="btn-menu" id="btnMenu">Р вЂ™ Р СР ВµР Р…РЎР‹</button>
       </div>
       <div class="toast" id="toast"></div>
 
       <div class="touch" id="touch" hidden>
         <div class="pad left" id="stick"></div>
-        <div class="pad right" id="actBtn">E<br>действие</div>
+        <div class="pad right" id="actBtn">E<br>Р Т‘Р ВµР в„–РЎРѓРЎвЂљР Р†Р С‘Р Вµ</div>
       </div>
 
       <div class="panel menu" id="menu">
-        <h1>Укрытие</h1>
-        <p class="sub">Выбери роль. Потом выберешь карту.</p>
+        <h1>Р Р€Р С”РЎР‚РЎвЂ№РЎвЂљР С‘Р Вµ</h1>
+        <p class="sub">Р вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘ РЎР‚Р С•Р В»РЎРЉ. Р СџР С•РЎвЂљР С•Р С Р Р†РЎвЂ№Р В±Р ВµРЎР‚Р ВµРЎв‚¬РЎРЉ Р С”Р В°РЎР‚РЎвЂљРЎС“.</p>
         <div class="roles">
-          <button type="button" class="btn seeker" data-role="seeker">Искатель</button>
-          <button type="button" class="btn hider" data-role="hider">Прячущийся</button>
+          <button type="button" class="btn seeker" data-role="seeker">Р ВРЎРѓР С”Р В°РЎвЂљР ВµР В»РЎРЉ</button>
+          <button type="button" class="btn hider" data-role="hider">Р СџРЎР‚РЎРЏРЎвЂЎРЎС“РЎвЂ°Р С‘Р в„–РЎРѓРЎРЏ</button>
         </div>
         <p class="hints">
-          10 прячущихся · 2 искателя · 10 карт<br>
-          Пойманный становится искателем.<br>
-          Во время пряток искатели ничего не видят.<br>
-          Искатель может пропустить ожидание (E / Пробел / кнопка).
+          10 Р С—РЎР‚РЎРЏРЎвЂЎРЎС“РЎвЂ°Р С‘РЎвЂ¦РЎРѓРЎРЏ Р’В· 2 Р С‘РЎРѓР С”Р В°РЎвЂљР ВµР В»РЎРЏ Р’В· 10 Р С”Р В°РЎР‚РЎвЂљ<br>
+          Р СџР С•Р в„–Р СР В°Р Р…Р Р…РЎвЂ№Р в„– РЎРѓРЎвЂљР В°Р Р…Р С•Р Р†Р С‘РЎвЂљРЎРѓРЎРЏ Р С‘РЎРѓР С”Р В°РЎвЂљР ВµР В»Р ВµР С.<br>
+          Р вЂ™Р С• Р Р†РЎР‚Р ВµР СРЎРЏ Р С—РЎР‚РЎРЏРЎвЂљР С•Р С” Р С‘РЎРѓР С”Р В°РЎвЂљР ВµР В»Р С‘ Р Р…Р С‘РЎвЂЎР ВµР С–Р С• Р Р…Р Вµ Р Р†Р С‘Р Т‘РЎРЏРЎвЂљ.<br>
+          Р ВРЎРѓР С”Р В°РЎвЂљР ВµР В»РЎРЉ Р СР С•Р В¶Р ВµРЎвЂљ Р С—РЎР‚Р С•Р С—РЎС“РЎРѓРЎвЂљР С‘РЎвЂљРЎРЉ Р С•Р В¶Р С‘Р Т‘Р В°Р Р…Р С‘Р Вµ (E / Р СџРЎР‚Р С•Р В±Р ВµР В» / Р С”Р Р…Р С•Р С—Р С”Р В°).
         </p>
       </div>
 
       <div class="panel maps" id="mapSelect" hidden>
-        <h1>Карты</h1>
-        <p class="sub">Выбери место для пряток</p>
+        <h1>Р С™Р В°РЎР‚РЎвЂљРЎвЂ№</h1>
+        <p class="sub">Р вЂ™РЎвЂ№Р В±Р ВµРЎР‚Р С‘ Р СР ВµРЎРѓРЎвЂљР С• Р Т‘Р В»РЎРЏ Р С—РЎР‚РЎРЏРЎвЂљР С•Р С”</p>
         <div class="map-grid" id="mapGrid"></div>
-        <button type="button" class="btn ghost" id="btnBackRole">← Назад</button>
+        <button type="button" class="btn ghost" id="btnBackRole">РІвЂ С’ Р СњР В°Р В·Р В°Р Т‘</button>
       </div>
 
       <div id="endPanel" class="panel" hidden style="display:none" aria-hidden="true"></div>
     </div>
   </div>
 
-  <script src="../shared/amal-owner-powers.js?v=16"></script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
   <script src="./game.js?v=15"></script>
-  <script src="../shared/amal-hub.js?v=23"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

@@ -1,0 +1,534 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>RIVALS РђСЂРµРЅР° вЂ” С‡РµСЂРЅРѕРІРёРє</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{overflow:hidden;background:#070b14;font-family:Segoe UI,system-ui,sans-serif;color:#fff;user-select:none}
+    #draft{position:fixed;top:10px;right:10px;z-index:40;font-size:11px;opacity:.8;background:rgba(0,0,0,.5);padding:6px 10px;border-radius:8px}
+    #titleCard{
+      position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:35;
+      text-align:center;padding:12px 22px;border-radius:16px;
+      background:linear-gradient(135deg,rgba(8,47,73,.92),rgba(15,23,42,.95));
+      border:2px solid #38bdf8;box-shadow:0 8px 32px rgba(14,165,233,.35);
+      max-width:min(520px,94vw);pointer-events:none;
+    }
+    #titleCard h1{font-size:clamp(16px,3.5vw,22px);letter-spacing:.02em;margin-bottom:4px}
+    #titleCard p{font-size:13px;color:#bae6fd;font-weight:700}
+    #hud{
+      position:fixed;top:88px;left:12px;z-index:30;min-width:200px;
+      background:rgba(15,23,42,.78);border:1px solid rgba(56,189,248,.35);
+      border-radius:14px;padding:12px 14px;text-shadow:0 1px 3px #000;
+    }
+    #hud .row{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:13px}
+    #hud .score{font-size:18px;font-weight:900}
+    .hp-label{font-size:12px;margin-top:8px;display:flex;justify-content:space-between}
+    .bar{height:14px;background:#1e293b;border-radius:8px;overflow:hidden;border:1px solid #334155;margin-top:3px}
+    .fill{height:100%;width:100%;transition:width .12s linear}
+    .fill.you{background:linear-gradient(90deg,#22d3ee,#4ade80)}
+    .fill.bot{background:linear-gradient(90deg,#fb7185,#f97316)}
+    #tip{
+      position:fixed;bottom:88px;left:50%;transform:translateX(-50%);z-index:30;
+      font-size:13px;font-weight:800;text-align:center;max-width:94vw;
+      background:rgba(0,0,0,.65);padding:8px 14px;border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);pointer-events:none;
+    }
+    #abilities{
+      position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:35;
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:96vw;
+    }
+    #abilities button{
+      min-width:110px;border:0;border-radius:14px;padding:12px 14px;cursor:pointer;
+      font:800 13px/1.15 system-ui,sans-serif;color:#fff;
+      box-shadow:0 4px 16px rgba(0,0,0,.35);transition:transform .08s,filter .1s;
+    }
+    #abilities button:active{transform:scale(.96)}
+    #abilities button:disabled{filter:grayscale(.7) brightness(.7);cursor:default}
+    #abilities .shot{background:linear-gradient(135deg,#38bdf8,#0284c7)}
+    #abilities .dash{background:linear-gradient(135deg,#a78bfa,#7c3aed)}
+    #abilities .ult{background:linear-gradient(135deg,#fbbf24,#ea580c)}
+    #abilities small{display:block;font-weight:700;opacity:.85;font-size:11px;margin-top:4px}
+    #toast{
+      position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);z-index:50;
+      padding:16px 28px;border-radius:16px;background:rgba(15,23,42,.94);
+      border:2px solid #38bdf8;font-size:22px;font-weight:900;display:none;
+      text-align:center;pointer-events:none;max-width:90vw;
+    }
+    #roundBanner{
+      position:fixed;top:78px;right:12px;z-index:30;font-size:13px;font-weight:800;
+      background:rgba(15,23,42,.8);padding:8px 12px;border-radius:10px;
+      border:1px solid rgba(251,191,36,.4);color:#fde68a;
+    }
+  </style>
+</head>
+<body>
+  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="titleCard">
+    <h1>RIVALS В· 1 РЅР° 1 РґСѓСЌР»СЊ</h1>
+    <p>С†РµР»СЊ: СЃР±РёС‚СЊ HP Р±РѕС‚Р°</p>
+  </div>
+  <div id="hud">
+    <div class="row"><span>РЎС‡С‘С‚</span><span class="score"><span id="ps">0</span> : <span id="bs">0</span></span></div>
+    <div class="row"><span style="color:#67e8f9">РўС‹</span><span style="color:#fdba74">Р‘РѕС‚</span></div>
+    <div class="hp-label"><span>РўРІРѕС‘ HP</span><span id="php">100</span></div>
+    <div class="bar"><div class="fill you" id="pbar"></div></div>
+    <div class="hp-label"><span>HP Р±РѕС‚Р°</span><span id="bhp">100</span></div>
+    <div class="bar"><div class="fill bot" id="bbar"></div></div>
+  </div>
+  <div id="roundBanner">Р Р°СѓРЅРґ <span id="round">1</span></div>
+  <div id="tip">WASD вЂ” Р±РµРі В· РџРљРњ вЂ” РєР°РјРµСЂР° В· СѓРєСЂРѕР№СЃСЏ Р·Р° СЃС‚РµРЅР°РјРё В· СЃР±РµР№ HP Р±РѕС‚Р° РґРѕ 0</div>
+  <div id="abilities">
+    <button type="button" class="shot" id="btnShot">Р’С‹СЃС‚СЂРµР»<small>Р›РљРњ</small></button>
+    <button type="button" class="dash" id="btnDash">Р С‹РІРѕРє<small>Shift</small></button>
+    <button type="button" class="ult" id="btnUlt">РЈР»СЊС‚Р°<small>F</small></button>
+  </div>
+  <div id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="../shared/amal-orbit-cam.js?v=1"></script>
+  <script src="../shared/amal-walk-player.js?v=3"></script>
+  <script src="../shared/amal-draft-owner.js?v=2"></script>
+  <script>
+  (function () {
+    if (!THREE.CapsuleGeometry) {
+      THREE.CapsuleGeometry = function (r, len) {
+        return new THREE.CylinderGeometry(r, r, (len || 1) + r * 2, 8);
+      };
+    }
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a1628);
+    scene.fog = new THREE.Fog(0x0a1628, 35, 95);
+    const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 200);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+    const orbit = AmalOrbitCam.attach(camera, renderer.domElement, {
+      distance: 13,
+      pitch: 0.42,
+      lookOffsetY: 1.35,
+      minDist: 5,
+      maxDist: 28,
+    });
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    scene.add(new THREE.AmbientLight(0x94a3b8, 0.55));
+    const sun = new THREE.DirectionalLight(0xffffff, 1);
+    sun.position.set(16, 30, 10);
+    sun.castShadow = true;
+    scene.add(sun);
+    const rim = new THREE.PointLight(0x38bdf8, 0.5, 55);
+    rim.position.set(0, 8, 0);
+    scene.add(rim);
+
+    const ARENA = 26;
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(ARENA * 2, 0.5, ARENA * 2),
+      new THREE.MeshLambertMaterial({ color: 0x1e3a5f })
+    );
+    floor.position.y = -0.25;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const court = new THREE.Mesh(
+      new THREE.CircleGeometry(7, 48),
+      new THREE.MeshLambertMaterial({ color: 0x274060 })
+    );
+    court.rotation.x = -Math.PI / 2;
+    court.position.y = 0.02;
+    scene.add(court);
+
+    function box(w, h, d, color, x, y, z, rotY) {
+      const m = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshLambertMaterial({ color: color })
+      );
+      m.position.set(x, y, z);
+      if (rotY) m.rotation.y = rotY;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      scene.add(m);
+      return m;
+    }
+
+    const wallH = 3.4;
+    const wallC = 0x334155;
+    box(ARENA * 2 + 1, wallH, 0.7, wallC, 0, wallH / 2, -ARENA);
+    box(ARENA * 2 + 1, wallH, 0.7, wallC, 0, wallH / 2, ARENA);
+    box(0.7, wallH, ARENA * 2 + 1, wallC, -ARENA, wallH / 2, 0);
+    box(0.7, wallH, ARENA * 2 + 1, wallC, ARENA, wallH / 2, 0);
+
+    [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([sx, sz]) => {
+      box(2.2, 5.2, 2.2, 0x475569, sx * (ARENA - 1.2), 2.6, sz * (ARENA - 1.2));
+    });
+
+    // Cover blocks
+    [[-10, -8], [10, -8], [-10, 8], [10, 8], [0, -14], [0, 14], [-16, 0], [16, 0],
+     [-6, 0], [6, 0], [-14, -14], [14, 14]].forEach(([x, z], i) => {
+      const h = 2.2 + (i % 3) * 0.5;
+      box(2.4, h, 2.4, i % 2 ? 0x475569 : 0x3f4f63, x, h / 2, z);
+    });
+    box(5, 1.2, 5, 0x1e293b, -8, 0.6, -8);
+    box(5, 1.2, 5, 0x1e293b, 8, 0.6, 8);
+    box(3.5, 0.9, 3.5, 0x0f172a, 0, 0.45, 0);
+
+    const midLine = new THREE.Mesh(
+      new THREE.BoxGeometry(ARENA * 1.85, 0.04, 0.3),
+      new THREE.MeshLambertMaterial({ color: 0x67e8f9 })
+    );
+    midLine.position.y = 0.03;
+    scene.add(midLine);
+
+    const bounds = { minX: -ARENA + 1.2, maxX: ARENA - 1.2, minZ: -ARENA + 1.2, maxZ: ARENA - 1.2 };
+
+    const player = AmalWalkPlayer.create(scene, THREE, {
+      humanoid: true,
+      height: 1.7,
+      speed: 9,
+      x: 0,
+      z: 14,
+      skinColor: 0xffcc99,
+    });
+    AmalDraftOwner.attachPlayer(player);
+    AmalDraftOwner.badge();
+
+    function makeHumanoid(skin, shirt, pants) {
+      const g = new THREE.Group();
+      const hipsY = 0.55;
+      const torso = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.65, 0.32),
+        new THREE.MeshLambertMaterial({ color: shirt })
+      );
+      torso.position.y = hipsY + 0.45;
+      torso.castShadow = true;
+      g.add(torso);
+      const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 12, 12),
+        new THREE.MeshLambertMaterial({ color: skin })
+      );
+      head.position.y = hipsY + 0.95;
+      head.castShadow = true;
+      g.add(head);
+      const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(0.23, 10, 10, 0, Math.PI * 2, 0, Math.PI * 0.55),
+        new THREE.MeshLambertMaterial({ color: 0x1c1917 })
+      );
+      hair.position.y = hipsY + 1.05;
+      g.add(hair);
+      [[-0.38], [0.38]].forEach(([x]) => {
+        const arm = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.08, 0.35, 3, 6),
+          new THREE.MeshLambertMaterial({ color: skin })
+        );
+        arm.position.set(x, hipsY + 0.5, 0);
+        g.add(arm);
+      });
+      [[-0.16], [0.16]].forEach(([x]) => {
+        const leg = new THREE.Mesh(
+          new THREE.CapsuleGeometry(0.1, 0.4, 3, 6),
+          new THREE.MeshLambertMaterial({ color: pants })
+        );
+        leg.position.set(x, hipsY - 0.15, 0);
+        g.add(leg);
+        const shoe = new THREE.Mesh(
+          new THREE.BoxGeometry(0.18, 0.1, 0.28),
+          new THREE.MeshLambertMaterial({ color: 0x111827 })
+        );
+        shoe.position.set(x, 0.06, 0.04);
+        g.add(shoe);
+      });
+      return g;
+    }
+
+    const bot = makeHumanoid(0xffcc99, 0xf97316, 0x7c2d12);
+    bot.position.set(0, 0, -14);
+    scene.add(bot);
+
+    let pHP = 100, bHP = 100, pScore = 0, bScore = 0, round = 1;
+    let toastT = 0, roundLock = 1.5;
+    let dashCd = 0, ultCd = 0, dashBoost = 0, ultActive = 0;
+    let botCd = 0, botDashCd = 0;
+    const shots = [];
+    const tipEl = document.getElementById("tip");
+    const TIPS = [
+      "РЎС‚СЂРµР»СЏР№ РІ Р±РѕС‚Р° (Р›РљРњ / РєРЅРѕРїРєР° Р’С‹СЃС‚СЂРµР»)",
+      "Р С‹РІРѕРє (Shift) вЂ” СѓР№С‚Рё РѕС‚ СЃРЅР°СЂСЏРґРѕРІ",
+      "РЈР»СЊС‚Р° (F) вЂ” РјРѕС‰РЅС‹Р№ Р·Р°Р»Рї, РєСѓР»РґР°СѓРЅ!",
+      "РџСЂСЏС‡СЊСЃСЏ Р·Р° СѓРєСЂС‹С‚РёСЏРјРё РЅР° Р°СЂРµРЅРµ",
+      "РЎР±РµР№ HP Р±РѕС‚Р° РґРѕ 0 вЂ” СЂР°СѓРЅРґ С‚РІРѕР№",
+    ];
+    let tipI = 0, tipTimer = 4;
+
+    function toast(msg, sec) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.style.display = "block";
+      toastT = sec || 1.8;
+    }
+
+    function syncHud() {
+      document.getElementById("php").textContent = Math.round(pHP);
+      document.getElementById("bhp").textContent = Math.round(bHP);
+      document.getElementById("pbar").style.width = Math.max(0, pHP) + "%";
+      document.getElementById("bbar").style.width = Math.max(0, bHP) + "%";
+      document.getElementById("ps").textContent = pScore;
+      document.getElementById("bs").textContent = bScore;
+      document.getElementById("round").textContent = round;
+      document.getElementById("btnDash").disabled = dashCd > 0 || roundLock > 0;
+      document.getElementById("btnUlt").disabled = ultCd > 0 || roundLock > 0;
+      document.getElementById("btnShot").disabled = roundLock > 0;
+      if (dashCd > 0) {
+        document.getElementById("btnDash").querySelector("small").textContent =
+          dashCd.toFixed(1) + "СЃ";
+      } else {
+        document.getElementById("btnDash").querySelector("small").textContent = "Shift";
+      }
+      if (ultCd > 0) {
+        document.getElementById("btnUlt").querySelector("small").textContent =
+          ultCd.toFixed(1) + "СЃ";
+      } else {
+        document.getElementById("btnUlt").querySelector("small").textContent = "F";
+      }
+    }
+
+    function resetRound(winner) {
+      if (winner === "bot") {
+        bScore++;
+        if (AmalDraftOwner.canDie()) toast("РўС‹ РїСЂРѕРёРіСЂР°Р» СЂР°СѓРЅРґ В· СЂРµРІР°РЅС€", 2.2);
+        else toast("Р Р°СѓРЅРґ РїСЂРѕРёРіСЂР°РЅ В· С…РѕР·СЏРёРЅ РЅРµ РіРёР±РЅРµС‚ В· СЂРµРІР°РЅС€", 2.2);
+      } else {
+        pScore++;
+        toast("Р Р°СѓРЅРґ Р·Р° С‚РѕР±РѕР№!", 1.8);
+      }
+      round++;
+      pHP = 100;
+      bHP = 100;
+      player.mesh.position.set(0, 0, 14);
+      player.state.vx = player.state.vz = player.state.vy = 0;
+      bot.position.set(0, 0, -14);
+      bot.rotation.y = 0;
+      while (shots.length) {
+        const s = shots.pop();
+        scene.remove(s.mesh);
+      }
+      dashBoost = 0;
+      ultActive = 0;
+      roundLock = 1.4;
+      tipEl.textContent = "РќРѕРІС‹Р№ СЂР°СѓРЅРґ! РЎР±РµР№ HP Р±РѕС‚Р°";
+      syncHud();
+    }
+
+    function lookDir() {
+      const yaw = orbit.state.yaw;
+      return new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
+    }
+
+    function fire(from, dir, owner, dmg, speed, color, emissive) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(owner === "ult" || owner === "pult" ? 0.28 : 0.18, 8, 8),
+        new THREE.MeshLambertMaterial({ color: color, emissive: emissive })
+      );
+      mesh.position.copy(from);
+      mesh.position.y = 1.25;
+      scene.add(mesh);
+      const d = dir.clone().normalize();
+      const sp = speed || 26;
+      shots.push({
+        mesh,
+        vx: d.x * sp,
+        vz: d.z * sp,
+        owner: owner === "pult" ? "p" : owner,
+        dmg: dmg || 12,
+        life: 2.2,
+      });
+    }
+
+    function doShot() {
+      if (roundLock > 0) return;
+      const dir = lookDir();
+      if (ultActive > 0) {
+        fire(player.mesh.position, dir, "pult", 28, 32, 0xfbbf24, 0xea580c);
+        fire(player.mesh.position, dir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.18), "pult", 22, 30, 0xfde68a, 0xf59e0b);
+        fire(player.mesh.position, dir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -0.18), "pult", 22, 30, 0xfde68a, 0xf59e0b);
+      } else {
+        fire(player.mesh.position, dir, "p", 14, 26, 0x67e8f9, 0x0891b2);
+      }
+    }
+
+    function doDash() {
+      if (roundLock > 0 || dashCd > 0) return;
+      const dir = lookDir();
+      // Owner fly uses Shift for descend вЂ” still allow button / forced dash
+      player.mesh.position.x += dir.x * 7;
+      player.mesh.position.z += dir.z * 7;
+      player.mesh.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, player.mesh.position.x));
+      player.mesh.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, player.mesh.position.z));
+      dashBoost = 0.35;
+      dashCd = 2.2;
+      tipEl.textContent = "Р С‹РІРѕРє!";
+      syncHud();
+    }
+
+    function doUlt() {
+      if (roundLock > 0 || ultCd > 0) return;
+      ultActive = 2.5;
+      ultCd = 10;
+      toast("РЈР›Р¬РўРђ!", 1.2);
+      tipEl.textContent = "РЈР»СЊС‚Р° Р°РєС‚РёРІРЅР° вЂ” СЃС‚СЂРµР»СЏР№ РјРѕС‰РЅРµРµ!";
+      doShot();
+      syncHud();
+    }
+
+    document.getElementById("btnShot").onclick = (e) => { e.preventDefault(); doShot(); };
+    document.getElementById("btnDash").onclick = (e) => { e.preventDefault(); doDash(); };
+    document.getElementById("btnUlt").onclick = (e) => { e.preventDefault(); doUlt(); };
+
+    addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      if (e.target.closest && e.target.closest("#abilities")) return;
+      doShot();
+    });
+
+    let shiftWas = false;
+    addEventListener("keydown", (e) => {
+      if (e.code === "KeyF" && !e.repeat) {
+        e.preventDefault();
+        doUlt();
+      }
+      if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && !shiftWas) {
+        // dash even for owner (button also works); skip if currently flying-descend intent
+        if (!player.state.fly || AmalDraftOwner.isOwner()) {
+          // For owner in fly: still allow dash via Shift unless holding for descend only вЂ”
+          // use dash when Shift tapped (keyup soon). Here: always dash on keydown once.
+          if (!player.state.fly) doDash();
+          else doDash();
+        }
+        shiftWas = true;
+      }
+    });
+    addEventListener("keyup", (e) => {
+      if (e.code === "ShiftLeft" || e.code === "ShiftRight") shiftWas = false;
+    });
+
+    toast("1 РЅР° 1 В· СЃР±РµР№ HP Р±РѕС‚Р°!", 2.2);
+
+    let last = performance.now();
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      if (toastT > 0) {
+        toastT -= dt;
+        if (toastT <= 0) document.getElementById("toast").style.display = "none";
+      }
+      if (roundLock > 0) roundLock -= dt;
+      if (dashCd > 0) dashCd -= dt;
+      if (ultCd > 0) ultCd -= dt;
+      if (dashBoost > 0) dashBoost -= dt;
+      if (ultActive > 0) ultActive -= dt;
+
+      tipTimer -= dt;
+      if (tipTimer <= 0) {
+        tipI = (tipI + 1) % TIPS.length;
+        tipEl.textContent = TIPS[tipI];
+        tipTimer = 5;
+      }
+
+      player.state.locked = roundLock > 0;
+      if (dashBoost > 0) player.state.speed = 16;
+      else player.state.speed = AmalDraftOwner.isOwner() ? Math.max(12, 9) : 9;
+
+      player.update(dt, orbit.state.yaw, bounds);
+      orbit.follow(player.mesh.position);
+
+      // Bot AI
+      const toP = new THREE.Vector3().subVectors(player.mesh.position, bot.position);
+      toP.y = 0;
+      const dist = toP.length();
+      if (roundLock <= 0 && dist > 0.01) {
+        toP.normalize();
+        let spd = 5.6;
+        // strafe / approach
+        if (dist < 8) {
+          bot.position.x += -toP.z * spd * 0.7 * dt;
+          bot.position.z += toP.x * spd * 0.7 * dt;
+        } else {
+          bot.position.x += toP.x * spd * dt;
+          bot.position.z += toP.z * spd * dt;
+        }
+        botDashCd -= dt;
+        if (botDashCd <= 0 && dist < 12 && Math.random() < 0.02) {
+          bot.position.x += toP.x * 5;
+          bot.position.z += toP.z * 5;
+          botDashCd = 3;
+        }
+        bot.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, bot.position.x));
+        bot.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, bot.position.z));
+        bot.position.y = 0;
+        bot.rotation.y = Math.atan2(toP.x, toP.z);
+        botCd -= dt;
+        if (botCd <= 0 && dist < 28) {
+          fire(bot.position, toP, "b", 11, 22, 0xfdba74, 0xea580c);
+          botCd = 0.75 + Math.random() * 0.45;
+        }
+      }
+
+      for (let i = shots.length - 1; i >= 0; i--) {
+        const s = shots[i];
+        s.mesh.position.x += s.vx * dt;
+        s.mesh.position.z += s.vz * dt;
+        s.life -= dt;
+        const hitP = s.owner === "b" && s.mesh.position.distanceTo(player.mesh.position) < 1.0;
+        const hitB = s.owner === "p" && s.mesh.position.distanceTo(bot.position) < 1.0;
+        if (hitP) {
+          if (!AmalDraftOwner.canDie()) {
+            // Owner: never dies, HP visual floor at 1, no round loss from HP
+            pHP = Math.max(1, pHP - s.dmg * 0.35);
+            scene.remove(s.mesh);
+            shots.splice(i, 1);
+            syncHud();
+            continue;
+          }
+          pHP = Math.max(0, pHP - s.dmg);
+          scene.remove(s.mesh);
+          shots.splice(i, 1);
+          syncHud();
+          if (pHP <= 0) resetRound("bot");
+          continue;
+        }
+        if (hitB) {
+          bHP = Math.max(0, bHP - s.dmg);
+          scene.remove(s.mesh);
+          shots.splice(i, 1);
+          syncHud();
+          if (bHP <= 0) resetRound("player");
+          continue;
+        }
+        if (s.life <= 0 || Math.hypot(s.mesh.position.x, s.mesh.position.z) > ARENA + 8) {
+          scene.remove(s.mesh);
+          shots.splice(i, 1);
+        }
+      }
+
+      syncHud();
+      renderer.render(scene, camera);
+    }
+    syncHud();
+    animate(performance.now());
+  })();
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=19"></script>
+  <script src="../shared/amal-hub.js?v=28"></script>
+  <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
+</body>
+</html>

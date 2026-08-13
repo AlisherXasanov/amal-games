@@ -1,95 +1,161 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Amal's Games</title>
-  <meta name="description" content="Браузерные игры Amal: Kick Buddy, Coin Arsenal, X-Buggy, Melon Playground и другие — играй бесплатно." />
+  <title>Amal's Lab · игры</title>
+  <meta name="description" content="Лаборатория Amal: все браузерные игры в одном месте. Изучай, играй, открывай." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: #0a0a0f;
-      color: #e4e4e7;
-      min-height: 100dvh;
+    :root {
+      --teal: #0d6e5f;
+      --mint: #7ed9b8;
+      --amber: #f0b429;
+      --coral: #e25a3c;
+      --ink: #102018;
+      --muted: #5a6a62;
+      --paper: #f3efe6;
     }
+    body {
+      font-family: Nunito, system-ui, sans-serif;
+      color: var(--ink);
+      min-height: 100dvh;
+      background:
+        radial-gradient(ellipse 70% 40% at 15% 0%, rgba(126,217,184,.45), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 5%, rgba(240,180,41,.28), transparent 50%),
+        repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(13,110,95,.045) 28px),
+        repeating-linear-gradient(90deg, transparent, transparent 27px, rgba(13,110,95,.045) 28px),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc 55%, #c8dcd2);
+    }
+    .lab-top {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      padding: 0.45rem 1rem;
+      background: linear-gradient(90deg, #0d6e5f, #146b5c 45%, #0a5248);
+      color: #f3efe6;
+      font: 800 12px/1.2 Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.06em;
+      box-shadow: 0 6px 20px rgba(13,110,95,.28);
+    }
+    .lab-top .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 10px var(--amber);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .55; transform: scale(.85); }
+    }
+    .lab-top a { color: var(--mint); text-decoration: none; font-weight: 800; }
     header {
       text-align: center;
-      padding: 3rem 1rem 1rem;
+      padding: 2.2rem 1rem 1.2rem;
+      max-width: 44rem;
+      margin: 0 auto;
+    }
+    .eyebrow {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.2em;
+      color: var(--teal);
     }
     header h1 {
-      font-size: clamp(1.8rem, 5vw, 3rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, #6ee7b7, #3b82f6, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: clamp(2rem, 5.5vw, 3.1rem);
+      font-weight: 700;
+      color: var(--teal);
+      margin: 0.35rem 0 0.5rem;
     }
-    header p {
-      margin-top: .5rem;
-      color: #71717a;
-      font-size: .95rem;
+    header .sub {
+      color: var(--muted);
+      font: 600 15px/1.5 Nunito, sans-serif;
     }
     .games-count {
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
       margin-top: 1rem;
-      padding: 0.4rem 0.9rem;
+      padding: 0.4rem 0.95rem;
       border-radius: 999px;
-      border: 1px solid #3f3f46;
-      background: #18181b;
-      color: #e4e4e7;
-      font-size: 0.9rem;
-      font-weight: 700;
+      background: var(--ink);
+      color: var(--mint);
+      font: 800 0.9rem Space Grotesk, Nunito, sans-serif;
     }
-    .games-count strong {
-      color: #6ee7b7;
-      font-size: 1.05rem;
+    .games-count strong { color: var(--amber); font-size: 1.05rem; }
+    .lab-links {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
     }
+    .lab-links a {
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(13,110,95,.2);
+      color: var(--teal);
+      font: 800 13px Nunito, sans-serif;
+      text-decoration: none;
+    }
+    .lab-links a.primary {
+      background: linear-gradient(135deg, #0d6e5f, #0a5248);
+      color: #f3efe6;
+      border-color: transparent;
+    }
+    .hint {
+      margin-top: 0.85rem;
+      color: var(--muted);
+      font: 600 13px/1.45 Nunito, sans-serif;
+    }
+    .hint strong { color: var(--ink); }
     .section-title {
       max-width: 1100px;
-      margin: 0.5rem auto 0;
+      margin: 1.1rem auto 0;
       padding: 0 1rem;
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      font: 800 0.75rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #a1a1aa;
+      color: var(--teal);
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.1rem;
       max-width: 1100px;
-      margin: 1rem auto 2rem;
+      margin: 0.85rem auto 1.75rem;
       padding: 0 1rem;
     }
-    .grid.all {
-      margin-bottom: 3rem;
-    }
+    .grid.all { margin-bottom: 2.5rem; }
     .card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 1rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.14);
+      border-radius: 16px;
       overflow: hidden;
-      transition: transform .2s, box-shadow .2s;
+      transition: transform .18s, box-shadow .18s;
       text-decoration: none;
       color: inherit;
       display: flex;
       flex-direction: column;
+      box-shadow: 0 8px 22px rgba(16,40,32,.06);
     }
     .card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 30px rgba(99,102,241,.25);
+      box-shadow: 0 16px 36px rgba(13,110,95,.16);
+      border-color: rgba(13,110,95,.35);
     }
     .card.featured {
-      border-color: #52525b;
-      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+      border-color: rgba(13,110,95,.35);
+      box-shadow: 0 0 0 2px rgba(13,110,95,.1), 0 10px 26px rgba(16,40,32,.08);
     }
     .card-img {
       width: 100%;
@@ -97,114 +163,222 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.5rem;
+      font-size: 3.2rem;
+      position: relative;
     }
-    .card-img.snake  { background: linear-gradient(135deg, #1e1b4b, #312e81); }
-    .card-img.terra   { background: linear-gradient(135deg, #78350f, #451a03); }
-    .card-img.ladder  { background: linear-gradient(135deg, #1e3a5f, #0f2744); }
-    .card-img.blockbust { background: linear-gradient(135deg, #5b4305, #4c1d95); }
-    .card-img.brawl { background: linear-gradient(135deg, #0b1c28, #c47a00); }
-    .card-img.courier { background: linear-gradient(135deg, #0a1a3a, #1a0a3a); }
-    .card-img.melon { background: linear-gradient(135deg, #145a32, #96281b); }
-    .card-img.xbuggy { background: linear-gradient(135deg, #7a4010, #c45a18); }
-    .card-img.arsenal { background: linear-gradient(135deg, #0a2a28, #3a0a4a); }
-    .card-img.buddy { background: linear-gradient(135deg, #e8d9a8, #c48a40); }
-    .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #4a1a08); }
-    .card-img.zvp2 { background: linear-gradient(135deg, #244818, #6a2e0c 55%, #1a2430); }
-    .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #5a9e3a 55%, #8b5a2b); }
-    .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #3d2a18 60%, #0c1612); }
-    .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #143a3f 55%, #3a8f88); }
-    .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #e25a3c 55%, #f0b429); }
-    .card-img.echo { background: linear-gradient(135deg, #152238, #2a1830 55%, #0b1020); }
-    .card-img.night { background: linear-gradient(135deg, #1a1230, #3a2060 55%, #0c0814); }
-    .card-img.ghost { background: linear-gradient(135deg, #2a1a3a, #1e3a32 55%, #120e18); }
-    .card-img.roof { background: linear-gradient(135deg, #5a4030, #7ed9b8 45%, #2a2438); }
-    .card-img.oldpc { background: linear-gradient(135deg, #008080, #c0c0c0 45%, #000080); }
+    .card-img::after {
+      content: "";
+      position: absolute;
+      inset: auto 12px 10px auto;
+      width: 14px; height: 22px;
+      border-radius: 4px 4px 2px 2px;
+      background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(126,217,184,.55));
+      border: 1px solid rgba(255,255,255,.35);
+      opacity: .7;
+    }
+    .card-img.snake  { background: linear-gradient(135deg, #0d6e5f, #312e81); }
+    .card-img.terra   { background: linear-gradient(135deg, #0d6e5f, #78350f); }
+    .card-img.ladder  { background: linear-gradient(135deg, #146b5c, #1e3a5f); }
+    .card-img.blockbust { background: linear-gradient(135deg, #0d6e5f, #f0b429); }
+    .card-img.brawl { background: linear-gradient(135deg, #0d6e5f, #c47a00); }
+    .card-img.courier { background: linear-gradient(135deg, #0a5248, #1a0a3a); }
+    .card-img.melon { background: linear-gradient(135deg, #0d6e5f, #145a32); }
+    .card-img.xbuggy { background: linear-gradient(135deg, #0d6e5f, #c45a18); }
+    .card-img.arsenal { background: linear-gradient(135deg, #0a2a28, #0d6e5f); }
+    .card-img.buddy { background: linear-gradient(135deg, #7ed9b8, #c48a40); }
+    .card-img.zvp { background: linear-gradient(135deg, #1a3a12, #0d6e5f); }
+    .card-img.zvp2 { background: linear-gradient(135deg, #244818, #0d6e5f); }
+    .card-img.craft { background: linear-gradient(135deg, #3d6ea8, #0d6e5f); }
+    .card-img.hideout { background: linear-gradient(135deg, #1a2e24, #0d6e5f); }
+    .card-img.hospital { background: linear-gradient(135deg, #2a6f6a, #0d6e5f); }
+    .card-img.createlab { background: linear-gradient(135deg, #0d6e5f, #f0b429); }
+    .card-img.echo { background: linear-gradient(135deg, #0d6e5f, #2a1830); }
+    .card-img.night { background: linear-gradient(135deg, #0d6e5f, #3a2060); }
+    .card-img.ghost { background: linear-gradient(135deg, #0d6e5f, #1e3a32); }
+    .card-img.roof { background: linear-gradient(135deg, #5a4030, #7ed9b8); }
+    .card-img.oldpc { background: linear-gradient(135deg, #0d6e5f, #008080); }
     .card-body {
-      padding: 1.25rem;
+      padding: 1.05rem 1.15rem 1.2rem;
       flex: 1;
       display: flex;
       flex-direction: column;
+      background: linear-gradient(180deg, #fffef8, #f3faf6);
     }
     .card-body h2 {
-      font-size: 1.15rem;
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: 1.12rem;
       font-weight: 700;
+      color: var(--ink);
     }
     .card-body p {
-      margin-top: .4rem;
+      margin-top: .35rem;
       font-size: .85rem;
-      color: #a1a1aa;
+      color: var(--muted);
       flex: 1;
+      font-weight: 600;
+      line-height: 1.4;
     }
     .badge {
       display: inline-block;
-      margin-bottom: 0.45rem;
-      padding: 0.2rem 0.5rem;
+      margin-bottom: 0.4rem;
+      padding: 0.2rem 0.55rem;
       border-radius: 999px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      background: #27272a;
-      color: #fafafa;
+      background: rgba(13,110,95,.12);
+      color: var(--teal);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    .badge.new { background: #eab308; color: #111; }
-    .badge.update { background: #22c55e; color: #052e16; }
+    .badge.new { background: var(--amber); color: #1a1400; }
+    .badge.update { background: var(--mint); color: #052e16; }
     .play-btn {
       display: inline-block;
-      margin-top: 1rem;
-      padding: .55rem 1.2rem;
-      border-radius: .5rem;
-      font-weight: 600;
-      font-size: .9rem;
+      margin-top: 0.9rem;
+      padding: .5rem 1.05rem;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: .85rem;
       text-align: center;
-      color: #fff;
-      transition: opacity .15s;
+      color: #f3efe6 !important;
+      background: linear-gradient(135deg, #0d6e5f, #0a5248) !important;
+      transition: filter .15s, transform .15s;
+      width: fit-content;
     }
-    .play-btn:hover { opacity: .85; }
-    .play-btn.snake  { background: #6366f1; }
-    .play-btn.terra   { background: #d97706; }
-    .play-btn.ladder  { background: #3b82f6; }
-    .play-btn.blockbust { background: #eab308; color: #111; }
-    .play-btn.brawl { background: #ffd23f; color: #102018; }
-    .play-btn.courier { background: #3de7ff; color: #041018; }
-    .play-btn.melon { background: #2ed573; color: #06210c; }
-    .play-btn.xbuggy { background: #ff6b2c; color: #2a1200; }
-    .play-btn.arsenal { background: #00f5d4; color: #041816; }
-    .play-btn.buddy { background: #e05030; color: #fff8f0; }
-    .play-btn.zvp { background: #6aaa3a; color: #0a1808; }
-    .play-btn.zvp2 { background: #9ac84a; color: #0a1808; }
-    .play-btn.craft { background: #5a9e3a; color: #0a1808; }
-    .play-btn.hideout { background: #e8c547; color: #0c1612; }
-    .play-btn.hospital { background: #7ed9b8; color: #0c2a28; }
-    .play-btn.createlab { background: #0d6e5f; color: #f3efe6; }
-    .play-btn.echo { background: #7ec8ff; color: #081018; }
-    .play-btn.night { background: #c9a0ff; color: #140c22; }
-    .play-btn.ghost { background: #f0c36a; color: #1a1008; }
-    .play-btn.roof { background: #7ed9b8; color: #0c2a28; }
-    .play-btn.oldpc { background: #c0c0c0; color: #000080; }
+    .play-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
     footer {
       text-align: center;
-      padding: 1rem;
-      color: #52525b;
+      padding: 1.25rem 1rem 2rem;
+      color: var(--muted);
       font-size: .8rem;
+      font-weight: 700;
+    }
+    .vials {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 1rem;
+      opacity: .9;
+    }
+    .vials span {
+      width: 12px; height: 28px;
+      border-radius: 4px 4px 3px 3px;
+      border: 1px solid rgba(13,110,95,.25);
+      background: linear-gradient(180deg, rgba(255,255,255,.5), var(--c, var(--mint)));
+      box-shadow: 0 4px 10px rgba(13,110,95,.12);
     }
   </style>
 </head>
 <body>
+  <div class="lab-top">
+    <span class="dot" aria-hidden="true"></span>
+    <span>🧪 AMAL LAB · все игры как в лаборатории</span>
+    <a href="animal-hospital/lab-group.html">группа Lab</a> · <a href="portal-3d/">3D</a> · <a href="apps/">Приложения</a>
+    <span class="dot" aria-hidden="true"></span>
+  </div>
+
   <header>
-    <h1>Amal's Games</h1>
-    <p>Все игры открыты для всех — выбирай и играй в браузере</p>
-    <p class="games-count" id="games-count">Игр в каталоге: <strong>—</strong></p>
-    <p style="margin-top:0.85rem;max-width:36rem;margin-left:auto;margin-right:auto;color:#a1a1aa;font-size:0.9rem">
-      Сначала напиши <strong style="color:#e4e4e7">ник</strong> (кнопка 📝). Можно отправить <strong style="color:#e4e4e7">заметку Амалю</strong> из любой игры.
-    </p>
-    <p style="margin-top:0.75rem">
-      <a href="create-lab/" style="color:#6ee7b7;font-weight:600;text-decoration:none">Create Lab</a>
-      ·
-      <a href="voice-ai-proposal/menu.html" style="color:#6ee7b7;font-weight:600;text-decoration:none">СкажиИгру</a>
-    </p>
+    <p class="eyebrow">LAB CATALOG</p>
+    <h1>Amal's Laboratory</h1>
+    <p class="sub">Не просто список игр — лаборатория. Здесь всё, что ты разработал: изучай, запускай, открывай.</p>
+    <p class="games-count" id="games-count">образцов в каталоге: <strong>—</strong></p>
+    <div class="lab-links">
+      <a class="primary" href="animal-hospital/lab.html">🧪 Лаборатория</a>
+      <a href="animal-hospital/lab-group.html">Группа · все мини</a>
+      <a href="animal-hospital/">Animal Hospital</a>
+      <a href="apps/#faq">Приложения 🔒</a>
+    </div>
+    <p class="hint">Сначала напиши <strong>ник</strong> (кнопка 📝). Можно отправить <strong>заметку Амалю</strong> из любой игры.</p>
+    <div class="vials" aria-hidden="true">
+      <span style="--c:#e25a3c"></span>
+      <span style="--c:#70c8f0"></span>
+      <span style="--c:#f0b429"></span>
+      <span style="--c:#7ed9b8"></span>
+      <span style="--c:#c8b8e8"></span>
+    </div>
   </header>
 
-  <p class="section-title">Roblox-стиль (3D) — новое</p>
+  <p class="section-title">Работал больше всего · первые игры</p>
+  <div class="grid" style="margin-bottom:0.4rem">
+    <a class="card featured" href="zombie-vs-plants/">
+      <div class="card-img zvp">🧟</div>
+      <div class="card-body">
+        <span class="badge new">Первая</span>
+        <h2>Зомби против растений</h2>
+        <p>Твои первые серьёзные грядки: сажай, держи зомби. Много труда, когда ты ещё только учился.</p>
+        <span class="play-btn zvp">Играть</span>
+      </div>
+    </a>
+    <a class="card featured" href="zombie-vs-plants-2/">
+      <div class="card-img zvp2">🌻</div>
+      <div class="card-body">
+        <span class="badge new">Первая · 2</span>
+        <h2>Зомби против растений 2</h2>
+        <p>Продолжение той же линии — типы, кооп, аллергии. Тоже из большой работы.</p>
+        <span class="play-btn zvp2">Играть</span>
+      </div>
+    </a>
+    <a class="card featured" href="snake-game/">
+      <div class="card-img snake">🐍</div>
+      <div class="card-body">
+        <span class="badge new">Первая</span>
+        <h2>Snake — Arcade</h2>
+        <p>Классика: уровни, скины, щиты. Одна из игр, на которой ты вырос как разработчик.</p>
+        <span class="play-btn snake">Играть</span>
+      </div>
+    </a>
+    <a class="card featured" href="terraverse/">
+      <div class="card-img terra">⛏️</div>
+      <div class="card-body">
+        <span class="badge new">Первая</span>
+        <h2>Terraverse · Terraria</h2>
+        <p>Копай, строй, исследуй — твоя 2D-песочница в духе Terraria. Много часов в коде.</p>
+        <span class="play-btn terra">Играть</span>
+      </div>
+    </a>
+    <a class="card featured" href="animal-hospital/">
+      <div class="card-img" style="background:linear-gradient(135deg,#2a6f6a,#143a3f)">🐾</div>
+      <div class="card-body">
+        <span class="badge new">Каждый день</span>
+        <h2>Animal Hospital</h2>
+        <p>Больница, смены, аномалии — самый большой след сейчас. Мини: Lab, Buttersquish, пельмени.</p>
+        <span class="play-btn" style="background:#0d6e5f">Открыть</span>
+      </div>
+    </a>
+    <a class="card featured" href="animal-hospital/lab-group.html">
+      <div class="card-img createlab">🧪</div>
+      <div class="card-body">
+        <span class="badge update">Группа</span>
+        <h2>Lab · все мини</h2>
+        <p>Лаборатория и остальные мини Animal Hospital в одном месте.</p>
+        <span class="play-btn createlab">Группа</span>
+      </div>
+    </a>
+  </div>
+
+  <p class="section-title">Другие полки</p>
+  <div class="grid" style="margin-bottom:0.4rem">
+    <a class="card featured" href="obby/">
+      <div class="card-img" style="background:linear-gradient(135deg,#7ed9b8,#0d6e5f)">✨</div>
+      <div class="card-body">
+        <span class="badge update">Лёгкие</span>
+        <h2>Простые · быстро зайти</h2>
+        <p>Короткие 3D: <b>Obby</b>, Tower Defense, Pizza Tycoon, Murder Mystery, Pet Simulator, Flee, Build a Boat.</p>
+        <span class="play-btn" style="background:#0d6e5f">К Obby</span>
+      </div>
+    </a>
+    <a class="card featured" href="adopt-me/">
+      <div class="card-img" style="background:linear-gradient(135deg,#94a3b8,#64748b)">💤</div>
+      <div class="card-body">
+        <span class="badge">Почти не трогал</span>
+        <h2>Черновики · мало работы</h2>
+        <p>Adopt Me, Blox Fruits, Брукхейвен, 99 ночей, RIVALS и другие — почти не возвращался.</p>
+        <span class="play-btn" style="background:#64748b">Смотреть</span>
+      </div>
+    </a>
+  </div>
+
+  <p class="section-title">Пробирки · Roblox-стиль (3D)</p>
   <div class="grid all" style="margin-bottom:0.5rem">
     <a class="card featured" href="obby/">
       <div class="card-img" style="background:linear-gradient(135deg,#4ade80,#3b82f6)">🏃</div>
@@ -271,7 +445,14 @@
     </a>
   </div>
 
-  <p class="section-title">Все игры</p>
+  
+  <p class="section-title">Приложения · под замком (тебе открыто)</p>
+  <div class="grid" id="lockedApps" style="margin-bottom:1.2rem"></div>
+
+  <p class="section-title">3D · под замком (ещё дорабатываются)</p>
+  <div class="grid" id="locked3d" style="margin-bottom:1.5rem"></div>
+
+  <p class="section-title">Стеллаж · все образцы</p>
   <div class="grid all">
     <a class="card featured" href="old-pc/">
       <div class="card-img oldpc">🖥️</div>
@@ -332,14 +513,23 @@
         <span class="play-btn echo">Играть</span>
       </div>
     </a>
-
-    <a class="card featured" href="create-lab/">
-      <div class="card-img createlab">👂</div>
+    <div class="card featured" data-amal-3d-lock data-href="apps/" role="button" tabindex="0" style="position:relative;cursor:pointer">
+      <div class="card-img createlab">🔒</div>
+      <div style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,23,42,.35);font-size:1.4rem;letter-spacing:.25em;pointer-events:none">⛓ 🔒 ⛓</div>
+      <div class="card-body">
+        <span class="badge">LOCKED</span>
+        <h2>Приложения</h2>
+        <p>СкажиИгру и Create Lab на сайте, но под замком для гостей. Хозяин / админ входит свободно.</p>
+        <span class="play-btn createlab">Полка приложений</span>
+      </div>
+    </div>
+    <a class="card featured" href="animal-hospital/lab-group.html">
+      <div class="card-img createlab">🧪</div>
       <div class="card-body">
         <span class="badge new">Новое</span>
-        <h2>Create Lab</h2>
-        <p>Свои анимации и игры. Ушастик слышит микрофоном и говорит по-русски.</p>
-        <span class="play-btn createlab">Открыть</span>
+        <h2>Лаборатория · группа</h2>
+        <p>Все мини-игры Animal Hospital в одном списке + новая игра «Лаборатория»: изучай и смешивай образцы.</p>
+        <span class="play-btn createlab">Открыть группу</span>
       </div>
     </a>
 
@@ -386,9 +576,9 @@
     <a class="card featured" href="zombie-vs-plants-2/">
       <div class="card-img zvp2">🌻</div>
       <div class="card-body">
-        <span class="badge new">Новое</span>
+        <span class="badge new">Первая · много работы</span>
         <h2>Зомби против растений 2</h2>
-        <p>Играй: типы растений, кооп вдвоём, зомби с аллергией на орехи (10%). Есть альманах.</p>
+        <p>Типы растений, кооп, аллергии — продолжение линии, в которую ты вложил много сил.</p>
         <span class="play-btn zvp2">Играть</span>
       </div>
     </a>
@@ -396,9 +586,9 @@
     <a class="card featured" href="zombie-vs-plants/">
       <div class="card-img zvp">🧟</div>
       <div class="card-body">
-        <span class="badge">В каталоге</span>
+        <span class="badge new">Первая · много работы</span>
         <h2>Зомби против растений</h2>
-        <p>Классическая защита грядок: сажай растения, останавливай зомби мышкой.</p>
+        <p>Классическая защита грядок: сажай растения, останавливай зомби мышкой. Одна из твоих первых.</p>
         <span class="play-btn zvp">Играть</span>
       </div>
     </a>
@@ -453,12 +643,112 @@
       </div>
     </a>
 
-    <a class="card" href="snake-game/">
+    <a class="card featured" href="adopt-me/">
+      <div class="card-img" style="background:linear-gradient(135deg,#f9a8d4,#7dd3fc)">🐣</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Adopt Me Lite</h2>
+        <p>Питомцы, яйца и уютный мир в браузере.</p>
+        <span class="play-btn" style="background:#f472b6">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="blox-fruits/">
+      <div class="card-img" style="background:linear-gradient(135deg,#22c55e,#0ea5e9)">🍉</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Blox Fruits</h2>
+        <p>Фрукты, бои и приключения на островах.</p>
+        <span class="play-btn" style="background:#16a34a">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="brookhaven-rp/">
+      <div class="card-img" style="background:linear-gradient(135deg,#94a3b8,#38bdf8)">🏘️</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Брукхейвен RP</h2>
+        <p>Городская ролевая: гуляй, общайся, живи.</p>
+        <span class="play-btn" style="background:#0ea5e9">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="globe-battle/">
+      <div class="card-img" style="background:linear-gradient(135deg,#2563eb,#f59e0b)">🌍</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Бой на глобусе</h2>
+        <p>Арена на глобусе: персонажи, предметы, спецкарты.</p>
+        <span class="play-btn" style="background:#2563eb">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="grow-garden/">
+      <div class="card-img" style="background:linear-gradient(135deg,#86efac,#65a30d)">🌱</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Вырасти сад</h2>
+        <p>Сажай, поливай, расти свой сад.</p>
+        <span class="play-btn" style="background:#65a30d">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="nights-forest/">
+      <div class="card-img" style="background:linear-gradient(135deg,#0f172a,#166534)">🌲</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>99 ночей в лесу</h2>
+        <p>Выживание в тёмном лесу ночь за ночью.</p>
+        <span class="play-btn" style="background:#166534">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="rivals-arena/">
+      <div class="card-img" style="background:linear-gradient(135deg,#ef4444,#7c3aed)">⚔️</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>RIVALS Арена</h2>
+        <p>Быстрые дуэли на арене.</p>
+        <span class="play-btn" style="background:#7c3aed">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="space-courier/">
+      <div class="card-img" style="background:linear-gradient(135deg,#1e3a8a,#67e8f9)">🚀</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Космический курьер</h2>
+        <p>Доставки по космосу: лети, бомби бесконечные заказы.</p>
+        <span class="play-btn" style="background:#0284c7">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="speed-escape/">
+      <div class="card-img" style="background:linear-gradient(135deg,#f97316,#eab308)">💨</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>+1 Speed Escape</h2>
+        <p>Беги всё быстрее и спасайся.</p>
+        <span class="play-btn" style="background:#ea580c">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="steal-brainrot/">
+      <div class="card-img" style="background:linear-gradient(135deg,#a855f7,#ec4899)">🧠</div>
+      <div class="card-body">
+        <span class="badge new">В каталоге</span>
+        <h2>Steal a Brainrot</h2>
+        <p>Хватай brainrot и не дай украсть свой.</p>
+        <span class="play-btn" style="background:#a855f7">Играть</span>
+      </div>
+    </a>
+
+    <a class="card featured" href="snake-game/">
       <div class="card-img snake">🐍</div>
       <div class="card-body">
-        <span class="badge">Открыто</span>
+        <span class="badge new">Первая · много работы</span>
         <h2>Snake — Arcade Edition</h2>
-        <p>Классическая змейка с 20 уровнями, скинами и щитами. Собирай очки!</p>
+        <p>Классическая змейка с 20 уровнями, скинами и щитами. Одна из твоих первых игр.</p>
         <span class="play-btn snake">Играть</span>
       </div>
     </a>
@@ -473,10 +763,10 @@
       </div>
     </a>
 
-    <a class="card" href="terraverse/">
+    <a class="card featured" href="terraverse/">
       <div class="card-img terra">⛏️</div>
       <div class="card-body">
-        <span class="badge">Открыто</span>
+        <span class="badge new">Первая · много работы</span>
         <h2>Пиксель-Террариум</h2>
         <p>2D песочница: биомы, пещеры, адский портал, эндермены и боссы пустыни и лавы.</p>
         <span class="play-btn terra">Играть</span>
@@ -484,7 +774,7 @@
     </a>
   </div>
 
-  <p class="section-title">Обновления</p>
+  <p class="section-title">Журнал лаборатории</p>
   <div class="grid" style="margin-bottom:2rem">
     <div class="card" style="cursor:default">
       <div class="card-body">
@@ -502,16 +792,96 @@
     </div>
   </div>
 
-  <footer>&copy; 2026 Amal's Games · все игры доступны всем</footer>
+  <footer>&copy; 2026 Amal's Laboratory · изучай · играй · открывай</footer>
   <script>
     (() => {
-      const n = document.querySelectorAll("a.card[href$='/']").length;
+      const n = document.querySelectorAll("a.card[href]").length;
       const el = document.getElementById("games-count");
-      if (el) el.innerHTML = "Игр в каталоге: <strong>" + n + "</strong>";
+      if (el) el.innerHTML = "образцов в каталоге: <strong>" + n + "</strong>";
     })();
   </script>
+  
+  <script src="./shared/amal-owner-powers.js?v=19"></script>
+  <script src="./shared/amal-3d-wip-lock.js?v=1"></script>
+  <script>
+    (() => {
+      const games = [
+        { href: "portal-3d/", icon: "⬡", title: "Вся полка 3D", desc: "Obby, Tycoon, Murder Mystery, CraftWorld и черновики — клик: замок или вход для админа.", thumb: "linear-gradient(135deg,#334155,#0d6e5f)" },
+        { href: "obby/", icon: "🏃", title: "Obby", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
+        { href: "tycoon/", icon: "🍕", title: "Pizza Tycoon", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
+        { href: "minecraft/", icon: "⛏️", title: "CraftWorld", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
+        { href: "murder-mystery/", icon: "🔪", title: "Murder Mystery", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
+      ];
+      const admin = window.Amal3dLock && Amal3dLock.canEnter();
+      const host = document.getElementById("locked3d");
+      if (!host || !window.Amal3dLock) return;
+      host.innerHTML = games.map((g) => {
+        const go = admin ? "👑 Админ вход" : "🔒 Закрыто";
+        const filt = admin ? "none" : "grayscale(.5) brightness(.85)";
+        const chains = admin ? "none" : "grid";
+        const badge = admin ? "ADMIN" : "LOCKED";
+        return (
+          '<div class="card featured" data-amal-3d-lock data-href="' +
+          g.href +
+          '" role="button" tabindex="0" style="position:relative;cursor:pointer">' +
+          '<div class="card-img" style="background:' +
+          g.thumb +
+          ";filter:" +
+          filt +
+          '">' +
+          g.icon +
+          "</div>" +
+          '<div style="position:absolute;inset:0;display:' +
+          chains +
+          ';place-items:center;background:rgba(15,23,42,.4);font-size:1.5rem;letter-spacing:.3em;pointer-events:none">⛓ 🔒 ⛓</div>' +
+          '<div class="card-body"><span class="badge">' +
+          badge +
+          "</span><h2>" +
+          g.title +
+          "</h2><p>" +
+          g.desc +
+          '</p><span class="play-btn">' +
+          go +
+          "</span></div></div>"
+        );
+      }).join("");
+      Amal3dLock.wire(host);
+    })();
+  </script>
+
+  
+  <script src="./shared/amal-site-faq.js?v=1"></script>
+  <script>
+    (() => {
+      const admin = window.Amal3dLock && Amal3dLock.canEnter();
+      const host = document.getElementById("lockedApps");
+      if (host && window.Amal3dLock) {
+        const apps = [
+          { href: "apps/", icon: "🧰", title: "Вся полка приложений", desc: "СкажиИгру + Create Lab. Гостям замок, админу вход.", thumb: "linear-gradient(135deg,#0d6e5f,#f0b429)" },
+          { href: "voice-ai-proposal/", icon: "🎤", title: "СкажиИгру", desc: "Голосовое приложение.", thumb: "linear-gradient(135deg,#0d6e5f,#146b5c)" },
+          { href: "create-lab/", icon: "👂", title: "Create Lab", desc: "Создание игр и анимаций.", thumb: "linear-gradient(135deg,#0d6e5f,#e25a3c)" },
+        ];
+        host.innerHTML = apps.map((g) => {
+          const go = admin ? "👑 Админ вход" : "🔒 Закрыто";
+          const filt = admin ? "none" : "grayscale(.5) brightness(.85)";
+          const chains = admin ? "none" : "grid";
+          return (
+            '<div class="card featured" data-amal-3d-lock data-href="' + g.href + '" role="button" tabindex="0" style="position:relative;cursor:pointer">' +
+            '<div class="card-img" style="background:' + g.thumb + ";filter:" + filt + '">' + g.icon + "</div>" +
+            '<div style="position:absolute;inset:0;display:' + chains + ';place-items:center;background:rgba(15,23,42,.4);font-size:1.4rem;letter-spacing:.25em;pointer-events:none">⛓ 🔒 ⛓</div>' +
+            '<div class="card-body"><span class="badge">' + (admin ? "ADMIN" : "LOCKED") + "</span><h2>" + g.title +
+            "</h2><p>" + g.desc + '</p><span class="play-btn">' + go + "</span></div></div>"
+          );
+        }).join("");
+        Amal3dLock.wire(host);
+      }
+      // wire any other locked cards on page
+      if (window.Amal3dLock) Amal3dLock.wire(document);
+    })();
+  </script>
+
   <script src="./owner-cheats.js"></script>
-  <script src="./shared/amal-owner-powers.js?v=16"></script>
-  <script src="./shared/amal-hub.js?v=23"></script>
+  <script src="./shared/amal-owner-powers.js?v=19"></script>
+  <script src="./shared/amal-hub.js?v=28"></script>
 </body>
 </html>
