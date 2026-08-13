@@ -9,18 +9,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./lesha-quest.css?v=3" />
+  <link rel="stylesheet" href="./lesha-quest.css?v=4" />
 </head>
-<body>
+<body class="mood-intro">
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"></div>
   <a class="portal-back" href="./index.html">&larr; Больница</a>
   <div class="sparkles" id="sparkles"></div>
+  <div class="burst" id="burst"></div>
   <div class="wrap">
     <div class="card" id="card">
-      <div class="progress" id="progress"></div>
-      <div id="stage"></div>
+      <div class="card-inner">
+        <div class="progress" id="progress"></div>
+        <div id="stage"></div>
+      </div>
     </div>
     <div class="msg" id="msg"></div>
   </div>
-  <script src="./lesha-quest.js?v=2"></script>
+  <script src="./lesha-quest.js?v=4"></script>
 </body>
 </html>

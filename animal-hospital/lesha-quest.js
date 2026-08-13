@@ -108,6 +108,8 @@
   const TOTAL = STAGES.length;
   const ICONS = ["🐾", "☕", "✦", "💡", "🧃", "⚠"];
 
+  const ROOM_EMOJI = ["✦", "🐾", "🪙", "🧠", "☠", "💊", "🌙", "🧃", "⚔", "🔥", "📸"];
+
   const card = document.getElementById("card");
   const stageEl = document.getElementById("stage");
   const progress = document.getElementById("progress");
@@ -145,6 +147,47 @@
     return "L" + n.toString().padStart(4, "0");
   }
 
+  function setMood() {
+    if (state.done) document.body.className = "mood-win";
+    else if (state.stage === 0) document.body.className = "mood-intro";
+    else document.body.className = "mood-room-" + Math.min(state.stage, 10);
+  }
+
+  function roomBadge() {
+    const n = state.done ? TOTAL : state.stage;
+    const em = ROOM_EMOJI[n] || "✦";
+    const label = state.done ? "финал" : "комната " + n + " · " + TOTAL;
+    return `<div class="room-badge">${em} ${label}</div>`;
+  }
+
+  function burstWin() {
+    const box = document.getElementById("burst");
+    if (!box) return;
+    box.innerHTML = "";
+    const colors = ["#ffd76a", "#e8b4ff", "#7ed9b8", "#ff80c0", "#7af0ff"];
+    for (let i = 0; i < 28; i++) {
+      const d = document.createElement("div");
+      d.className = "burst-dot";
+      d.style.left = "50%";
+      d.style.top = "42%";
+      d.style.background = colors[i % colors.length];
+      const a = Math.random() * Math.PI * 2;
+      const r = 50 + Math.random() * 130;
+      d.style.setProperty("--bx", Math.cos(a) * r + "px");
+      d.style.setProperty("--by", Math.sin(a) * r + "px");
+      box.appendChild(d);
+    }
+    setTimeout(() => {
+      box.innerHTML = "";
+    }, 750);
+  }
+
+  function stageSuccess(text) {
+    showMsg(text, true);
+    burstWin();
+    setTimeout(nextStage, 750);
+  }
+
   function renderProgress() {
     progress.innerHTML = "";
     for (let i = 0; i < TOTAL; i++) {
@@ -177,6 +220,7 @@
 
   function renderIntro() {
     stageEl.innerHTML =
+      roomBadge() +
       `<p class="brand">✦ Сюрприз-квест</p>` +
       `<p class="sub">Только для тебя. <strong>${TOTAL} комнат</strong> — сложнее, чем было. Таймеры, память, порядок. Застрянешь — спроси, помогу.</p>` +
       `<p class="riddle">В конце — код на экране. Сфоткай и пришли мне.</p>` +
@@ -189,7 +233,9 @@
 
   function renderFinal() {
     renderProgress();
+    setMood();
     stageEl.innerHTML =
+      roomBadge() +
       `<p class="brand">✦ Прошёл!</p>` +
       `<p class="sub">Все ${TOTAL} комнат. Серьёзно молодец.</p>` +
       `<div class="final-code">` +
@@ -224,6 +270,7 @@
     let phase = "watch";
 
     stageEl.innerHTML =
+      roomBadge() +
       `<h2>${stage.title}</h2>` +
       `<p class="riddle">${stage.riddle}</p>` +
       `<button type="button" class="hint-btn" id="hintBtn">Подсказка</button>` +
@@ -292,8 +339,7 @@
         return;
       }
       if (input.length >= showSeq.length) {
-        showMsg(stage.ok || "✓", true);
-        setTimeout(nextStage, 700);
+        stageSuccess(stage.ok || "✓");
       }
     }
 
@@ -309,6 +355,7 @@
     let step = 0;
 
     stageEl.innerHTML =
+      roomBadge() +
       `<h2>${stage.title}</h2>` +
       `<p class="riddle">${stage.riddle}</p>` +
       `<button type="button" class="hint-btn" id="hintBtn">Подсказка</button>` +
@@ -332,8 +379,7 @@
           step += 1;
           status.textContent = step >= correct.length ? "Готово!" : `Шаг ${step + 1} из ${correct.length}`;
           if (step >= correct.length) {
-            showMsg(stage.ok, true);
-            setTimeout(nextStage, 700);
+            stageSuccess(stage.ok);
           }
         } else {
           showMsg("Не тот шаг. Сначала другое.", false);
@@ -346,6 +392,7 @@
   function renderTimer(stage) {
     let left = stage.sec || 15;
     stageEl.innerHTML =
+      roomBadge() +
       `<h2>${stage.title}</h2>` +
       `<p class="riddle">${stage.riddle}</p>` +
       `<button type="button" class="hint-btn" id="hintBtn">Подсказка</button>` +
@@ -377,8 +424,7 @@
       if (dead) return;
       if (stage.check(input.value)) {
         clearInterval(tick);
-        showMsg(stage.ok, true);
-        setTimeout(nextStage, 650);
+        stageSuccess(stage.ok);
       } else {
         showMsg("Не то. Быстрее!", false);
       }
@@ -392,6 +438,7 @@
 
   function renderPick(stage) {
     stageEl.innerHTML =
+      roomBadge() +
       `<h2>${stage.title}</h2>` +
       `<p class="riddle">${stage.riddle}</p>` +
       `<button type="button" class="hint-btn" id="hintBtn">Подсказка</button>` +
@@ -409,8 +456,7 @@
           showMsg("Неа.", false);
           return;
         }
-        showMsg(stage.ok, true);
-        setTimeout(nextStage, 700);
+        stageSuccess(stage.ok);
       });
       grid.appendChild(b);
     });
@@ -418,6 +464,7 @@
 
   function renderText(stage) {
     stageEl.innerHTML =
+      roomBadge() +
       `<h2>${stage.title}</h2>` +
       `<p class="riddle">${stage.riddle}</p>` +
       `<button type="button" class="hint-btn" id="hintBtn">Подсказка</button>` +
@@ -430,8 +477,7 @@
     const input = document.getElementById("answer");
     const submit = () => {
       if (stage.check(input.value)) {
-        showMsg(stage.ok, true);
-        setTimeout(nextStage, 650);
+        stageSuccess(stage.ok);
       } else {
         showMsg("Почти — ещё раз.", false);
       }
@@ -443,23 +489,35 @@
     input.focus();
   }
 
-  function spawnSparkles(n) {
+  function addAmbientSpark() {
     const box = document.getElementById("sparkles");
-    if (!box) return;
-    box.innerHTML = "";
-    for (let i = 0; i < n; i++) {
-      const s = document.createElement("div");
-      s.className = "spark";
-      s.style.left = Math.random() * 100 + "%";
-      s.style.top = 60 + Math.random() * 40 + "%";
-      s.style.animationDelay = Math.random() * 2 + "s";
-      s.style.background = i % 2 ? "#ffd76a" : "#e8b4ff";
-      box.appendChild(s);
-    }
+    if (!box || box.children.length > 48) return;
+    const s = document.createElement("div");
+    s.className = "spark";
+    const size = 2 + Math.random() * 4;
+    s.style.width = size + "px";
+    s.style.height = size + "px";
+    s.style.left = Math.random() * 100 + "%";
+    s.style.top = 55 + Math.random() * 45 + "%";
+    s.style.animationDuration = 2.2 + Math.random() * 2.5 + "s";
+    s.style.animationDelay = Math.random() * 1.5 + "s";
+    s.style.background = Math.random() < 0.5 ? "#ffd76a" : "#e8b4ff";
+    box.appendChild(s);
+    setTimeout(() => s.remove(), 5500);
+  }
+
+  function startAmbient() {
+    for (let i = 0; i < 16; i++) addAmbientSpark();
+    setInterval(addAmbientSpark, 1800);
+  }
+
+  function spawnSparkles(n) {
+    for (let i = 0; i < n; i++) addAmbientSpark();
   }
 
   function render() {
     showMsg("");
+    setMood();
     renderProgress();
     if (state.done) {
       renderFinal();
@@ -484,5 +542,6 @@
     else renderText(stage);
   }
 
+  startAmbient();
   render();
 })();
