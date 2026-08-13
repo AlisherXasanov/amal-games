@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sammy &amp; Jen — как выглядят</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Nunito, Segoe UI, system-ui, sans-serif;
+      background:
+        radial-gradient(900px 420px at 20% 0%, #4a1820 0%, transparent 55%),
+        radial-gradient(800px 400px at 80% 10%, #4a2040 0%, transparent 50%),
+        #10141c;
+      color: #f2f4f8;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+    .wrap { width: min(720px, 100%); text-align: center; }
+    h1 { margin: 0 0 0.35rem; font-size: 1.6rem; }
+    p { margin: 0 0 1.2rem; opacity: 0.8; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+    .card {
+      background: rgba(8, 12, 20, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 1rem 0.75rem 1.1rem;
+    }
+    .card.sammy { border-color: rgba(226, 59, 59, 0.45); }
+    .card.jen { border-color: rgba(242, 160, 216, 0.45); }
+    canvas {
+      width: 180px;
+      height: 180px;
+      image-rendering: pixelated;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+    }
+    .nm { margin-top: 0.55rem; font-weight: 800; font-size: 1.15rem; }
+    .tag { opacity: 0.75; font-size: 0.9rem; margin-top: 0.2rem; }
+    a.back {
+      display: inline-block;
+      margin-top: 1.25rem;
+      color: #ffd76a;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Sammy &amp; Jen</h1>
+    <p>Как они выглядят в Animal Hospital (та же отрисовка, что в игре)</p>
+    <div class="row">
+      <div class="card sammy">
+        <canvas id="cSammy" width="180" height="180"></canvas>
+        <div class="nm">Sammy</div>
+        <div class="tag">красный халат · белая лента · кепка</div>
+      </div>
+      <div class="card jen">
+        <canvas id="cJen" width="180" height="180"></canvas>
+        <div class="nm">Jen</div>
+        <div class="tag">розовый халат · тёмные волосы · улыбка</div>
+      </div>
+    </div>
+    <a class="back" href="./">← назад в игру</a>
+  </div>
+  <script>
+    function drawSammy(c) {
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, 180, 180);
+      ctx.save();
+      ctx.translate(90, 95);
+      ctx.scale(2.2, 2.2);
+      ctx.fillStyle = "rgba(226,59,59,0.2)";
+      ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#e23b3b";
+      ctx.beginPath(); ctx.ellipse(0, 12, 16, 17, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#c41e2a";
+      ctx.fillRect(-16, 4, 32, 8);
+      ctx.fillStyle = "#f5d76a";
+      ctx.beginPath(); ctx.arc(0, -10, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#c41e2a";
+      ctx.fillRect(-12, -26, 24, 9);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(-5, -23, 10, 3);
+      ctx.strokeStyle = "#f0f0f0";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(0, -10, 15, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke();
+      ctx.fillStyle = "#222";
+      ctx.beginPath();
+      ctx.arc(-4.5, -11, 2.2, 0, Math.PI * 2);
+      ctx.arc(4.5, -11, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    function drawJen(c) {
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, 180, 180);
+      ctx.save();
+      ctx.translate(90, 95);
+      ctx.scale(2.2, 2.2);
+      ctx.fillStyle = "rgba(242,160,216,0.22)";
+      ctx.beginPath(); ctx.arc(0, 0, 32, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#f2a0d8";
+      ctx.beginPath(); ctx.ellipse(0, 12, 15, 16, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#ffe0f2";
+      ctx.fillRect(-15, 4, 30, 6);
+      ctx.fillStyle = "#ffe8f5";
+      ctx.beginPath(); ctx.arc(0, -10, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#c45a9a";
+      ctx.beginPath();
+      ctx.moveTo(-13, -6);
+      ctx.quadraticCurveTo(-18, -30, 0, -28);
+      ctx.quadraticCurveTo(18, -30, 13, -6);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(-4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
+      ctx.ellipse(4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#5a2048";
+      ctx.beginPath();
+      ctx.arc(-4.5, -10, 1.7, 0, Math.PI * 2);
+      ctx.arc(4.5, -10, 1.7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#c45a9a";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, 4, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+      ctx.restore();
+    }
+    drawSammy(document.getElementById("cSammy"));
+    drawJen(document.getElementById("cJen"));
+  </script>
+</body>
+</html>

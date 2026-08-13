@@ -108,7 +108,7 @@
     xray: { id: "xray", name: "Рентген-плёнка", icon: "📷", machine: "m_xray" },
     splint: { id: "splint", name: "Шина", icon: "🦴", machine: "m_bandage" },
     coffee_cup: { id: "coffee_cup", name: "Стакан кофе", icon: "☕", machine: null },
-    juice_cup: { id: "juice_cup", name: "Сок", icon: "🧃", machine: null },
+    juice_cup: { id: "juice_cup", name: "Сок", icon: "🧃", machine: null, exclusive: true, anomalyOnly: true },
   };
 
   const CONDITIONS = [
@@ -727,7 +727,7 @@
 
   function giveVipKit(player, shift) {
     if (!player) return;
-    const meds = Object.keys(ITEMS).filter((id) => id !== "coffee_cup");
+    const meds = Object.keys(ITEMS).filter((id) => id !== "coffee_cup" && id !== "juice_cup");
     player.inv = meds.slice();
     player.coffeeLeft = (shift && shift.coffeeGift) || player.coffeeLeft || 99;
     player.infiniteItems = true;
@@ -855,6 +855,7 @@
     if (e.code === "Enter") act2 = true;
     if (e.code === "KeyQ" && g) dropItem(g.players[0]);
     if (e.code === "KeyC" && g) drinkCoffeeCup(g.players[0]);
+    if (e.code === "KeyJ" && g) tryGiveJuice(g.players[0]);
     if (e.code === "KeyF") shoot1 = true;
     if (e.code === "KeyR") reload1 = true;
     if (e.code === "ShiftRight") shoot2 = true;
@@ -1041,6 +1042,7 @@
     deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
     renderInspectViews(deskPatient);
     showEl(deskPanel);
+    syncJuiceDeskBtn();
   }
 
   function spawnQueueGuest(opts) {
@@ -1117,6 +1119,94 @@
     } else {
       toast("Режим отдыха выкл");
     }
+  }
+
+  function syncQuietFab() {
+    const btn = document.getElementById("btnQuietShift");
+    if (!btn) return;
+    const show = !!(g && (state === "play" || state === "desk") && canUseSecretShifts());
+    btn.hidden = !show;
+    if (!show) return;
+    const on = !!(g.ownerQuiet || g.noAnomalies);
+    btn.classList.toggle("off", !on);
+    btn.textContent = on ? "⚠ ВКЛ" : "⚠ ВЫКЛ";
+    btn.title = on
+      ? "Без аномалий · нажми, чтобы снова получать"
+      : "Аномалии включены · нажми, чтобы выключить";
+  }
+
+  function setOwnerQuiet(on, silent) {
+    if (!g) return;
+    g.ownerQuiet = !!on;
+    const shiftForced = !!(g.shift && (g.shift.noAnomalies || g.shift.anomaly <= 0));
+    g.noAnomalies = g.ownerQuiet || shiftForced;
+    syncQuietFab();
+    if (silent) return;
+    if (g.ownerQuiet) {
+      toast("⚠ Без аномалий · обычные звери");
+      showEvent("Без аномалий · можно выключить кнопкой слева", 2.4);
+    } else if (shiftForced) {
+      toast("На этой смене аномалий нет");
+    } else {
+      toast("⚠ Аномалии снова могут прийти");
+    }
+  }
+
+  function pickJuiceTarget() {
+    if (!g) return null;
+    if (state === "desk" && deskPatient) return deskPatient;
+    if (g.queue && g.queue[0]) return g.queue[0];
+    return null;
+  }
+
+  function tryGiveJuice(player) {
+    if (!player || !g) return false;
+    const target = pickJuiceTarget();
+    if (!target) {
+      toast("🧃 Сок · подойди к окну / открой клиента");
+      return false;
+    }
+    const hasJuice = player.inv.includes("juice_cup") || player.infiniteItems;
+    if (!hasJuice) {
+      toast("🧃 Нет сока · возьми в ✦ Вещи");
+      return false;
+    }
+    if (!target.isAnomaly) {
+      toast("🧃 Обычный клиент · сок не нужен");
+      return false;
+    }
+    // аномалия принимает сок — уходит спокойно (как шторка)
+    const idx = player.inv.indexOf("juice_cup");
+    if (idx >= 0 && !player.infiniteItems) player.inv.splice(idx, 1);
+    renderInv();
+    const qIdx = g.queue.indexOf(target);
+    if (qIdx >= 0) g.queue.splice(qIdx, 1);
+    if (deskPatient === target) {
+      deskPatient = null;
+      hideEl(deskPanel);
+      state = "play";
+    }
+    layoutQueue();
+    g.blocked += 1;
+    g.coins += 18;
+    healSanity(10 + (player.cls.checkSanity || 0));
+    toast("🧃 Аномалия выпила сок и ушла");
+    showEvent("🧃 Сок · аномалия ушла · обычные остались обычными", 2.6);
+    syncQuietFab();
+    return true;
+  }
+
+  function syncJuiceDeskBtn() {
+    const btn = document.getElementById("btnGiveJuice");
+    if (!btn) return;
+    const show =
+      state === "desk" &&
+      deskPatient &&
+      deskPatient.isAnomaly &&
+      g &&
+      g.players[0] &&
+      (g.players[0].inv.includes("juice_cup") || g.players[0].infiniteItems || canUseSecretShifts());
+    btn.hidden = !show;
   }
 
   function applyTrayCharacter(charId) {
@@ -1203,9 +1293,8 @@
     }
     if (itemId === "juice") {
       if (!p.inv.includes("juice_cup") && p.inv.length < invMax(p)) p.inv.push("juice_cup");
-      healSanity(30);
       renderInv();
-      toast("🧃 Сок");
+      toast("🧃 Сок · только аномалиям (J / кнопка у окна)");
       return;
     }
     const def = ITEMS[itemId];
@@ -1256,7 +1345,7 @@
       items.dataset.ready = "1";
       const pack = [
         { id: "coffee", label: "☕ Кофе" },
-        { id: "juice", label: "🧃 Сок" },
+        { id: "juice", label: "🧃 Сок · ⚠" },
         { id: "medkit", label: "🧰 Аптечка" },
         { id: "bandage", label: "🩹 Бинт" },
         { id: "syringe", label: "💉 Шприц" },
@@ -1968,15 +2057,22 @@
       requests: [], // бесконечная лента заявок (имена в очереди)
       theme: shift.theme || null,
       noAnomalies: !!(shift.noAnomalies || shift.anomaly <= 0),
+      ownerQuiet: false,
       patientDeath: shiftAllowsDeath(shift),
       selfServe: !!shift.selfServe,
     };
 
     coffeeCd = { coffee: 0, coffee2: 0 };
 
+    // хозяин: сразу «без аномалий» — можно выключить кнопкой слева
+    if (canUseSecretShifts()) {
+      g.ownerQuiet = true;
+      g.noAnomalies = true;
+    }
+
     // бесконечная очередь: стартовая пачка + постоянный спавн дальше
     const group = 5 + (shift.id >= 2 ? 2 : 0) + (shift.special === "mass" ? 4 : 0);
-    const forceWeird = shift.noAnomalies || shift.anomaly <= 0 ? false : null;
+    const forceWeird = g.noAnomalies ? false : null;
     for (let i = 0; i < group; i++) {
       g.queue.push(makeVisitor(forceWeird === false ? false : i === 1 ? true : null));
     }
@@ -1997,6 +2093,10 @@
     shiftTag.style.borderColor = shift.color;
     showEl(shiftTag);
     if (matchMedia("(pointer: coarse)").matches || "ontouchstart" in window) showEl(touch);
+    syncQuietFab();
+    if (canUseSecretShifts() && g.ownerQuiet) {
+      toast("⚠ Без аномалий · кнопка слева выключит");
+    }
     toast(
       (shift.selfServe ? "Самообслуживание · " : "Ресепшен · ") +
         "∞ вещи · ∞ патроны · " +
@@ -2220,6 +2320,8 @@
     hideEl(shopPanel);
     hideEl(exchangePanel);
     hideEl(document.getElementById("secretShiftsPanel"));
+    const quiet = document.getElementById("btnQuietShift");
+    if (quiet) quiet.hidden = true;
     refreshLobbyUI();
     showEl(menu);
     showEl(secretDeathWrap);
@@ -2757,11 +2859,13 @@
     deskName.textContent = `${guestLabel(deskPatient)}${guestKindTag(deskPatient) ? " · " + guestKindTag(deskPatient) : ""} у окна`;
     deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
     deskClue.textContent = g.players[0].weapon
-      ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить."
-      : "Сравни клиента, удостоверение и камеру. Подозрительно — шторка.";
+      ? "Аномалия? F — сразу убрать (принимать не нужно). Или шторка / впустить. Сок (J) — только аномалии."
+      : "Сравни клиента, удостоверение и камеру. Подозрительно — шторка. 🧃 Сок — только аномалии.";
     renderInspectViews(deskPatient);
     state = "desk";
     showEl(deskPanel);
+    syncJuiceDeskBtn();
+    syncQuietFab();
   }
 
   function admit() {
@@ -2856,7 +2960,11 @@
 
     // не те вещи → рана / смерть (только если нечем лечить правильно)
     if (g.patientDeath && !player.infiniteItems) {
-      const wrong = player.inv.filter((id) => !patient.needs.includes(id));
+      const wrong = player.inv.filter((id) => {
+        if (patient.needs.includes(id)) return false;
+        const def = ITEMS[id];
+        return !(def && def.anomalyOnly);
+      });
       const canApply = still.some((id) => player.inv.includes(id));
       if (wrong.length && still.length && !canApply) {
         const bad = wrong[0];
@@ -3573,7 +3681,9 @@
 
     g.eventCd -= dt;
     if (g.eventCd <= 0 && g.shift.eventRate > 0) {
-      if (Math.random() < Math.min(0.55, g.shift.eventRate + 0.08)) spawnEvent();
+      if (!(g.ownerQuiet || g.noAnomalies) && Math.random() < Math.min(0.55, g.shift.eventRate + 0.08)) {
+        spawnEvent();
+      }
       // было: 14 - shift.id → на смене 33 eventCd=-19 → монстры каждый кадр
       const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
       g.eventCd = Math.max(11, 18 - pace * 0.55);
@@ -4431,6 +4541,15 @@
   document.getElementById("btnMenu").addEventListener("click", goMenu);
   document.getElementById("btnAdmit").addEventListener("click", admit);
   document.getElementById("btnReject").addEventListener("click", reject);
+  const btnGiveJuice = document.getElementById("btnGiveJuice");
+  if (btnGiveJuice) btnGiveJuice.addEventListener("click", () => tryGiveJuice(g && g.players[0]));
+  const btnQuietShift = document.getElementById("btnQuietShift");
+  if (btnQuietShift) {
+    btnQuietShift.addEventListener("click", () => {
+      if (!g || !canUseSecretShifts()) return;
+      setOwnerQuiet(!g.ownerQuiet);
+    });
+  }
   document.getElementById("btnAgain").addEventListener("click", startShift);
   document.getElementById("btnToMenu").addEventListener("click", goMenu);
   document.getElementById("btnOpenShop").addEventListener("click", openShop);
