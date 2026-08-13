@@ -105,6 +105,8 @@
       tag,
       bob: 0,
       icon: skin.icon,
+      moving: false,
+      trail: [],
     };
   }
 
@@ -215,11 +217,120 @@
 
   function moveEntity(p, mx, my, dt, speed) {
     const len = Math.hypot(mx, my) || 1;
+    const ox = p.x;
+    const oy = p.y;
     p.x += (mx / len) * speed * dt;
     p.y += (my / len) * speed * dt;
     p.x = Math.max(60, Math.min(VW - 60, p.x));
     p.y = Math.max(80, Math.min(VH - 50, p.y));
+    p.moving = Math.hypot(p.x - ox, p.y - oy) > 0.4;
     if (mx || my) p.bob += dt * 10;
+  }
+
+  function emitAura(p, dt) {
+    if (!g || !p || !p.skin) return;
+    const id = p.skin.id;
+    const rate =
+      id === "bird" || id === "cloud" || id === "spark" || id === "ghost"
+        ? 0.55
+        : id === "shark" || id === "dragon"
+          ? 0.35
+          : 0.28;
+    if (Math.random() > rate * (p.moving ? 1.6 : 1)) return;
+    const col = p.skin.accent || p.skin.color;
+    if (id === "bird") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 18,
+        y: p.y - 8 + (Math.random() - 0.5) * 10,
+        vx: -40 - Math.random() * 50,
+        vy: -20 - Math.random() * 40,
+        life: 0.55 + Math.random() * 0.45,
+        color: Math.random() < 0.5 ? "#7ed9b8" : "#c8ffe8",
+        feather: true,
+        rot: Math.random() * Math.PI,
+        spin: -2 + Math.random() * 4,
+      });
+    } else if (id === "rabbit") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 16,
+        y: p.y + 8,
+        vx: (Math.random() - 0.5) * 20,
+        vy: -10 - Math.random() * 20,
+        life: 0.4,
+        color: "#ffe8f0",
+        soft: true,
+      });
+    } else if (id === "shark") {
+      g.particles.push({
+        x: p.x - 10 + Math.random() * 8,
+        y: p.y + (Math.random() - 0.5) * 12,
+        vx: -30 - Math.random() * 40,
+        vy: (Math.random() - 0.5) * 20,
+        life: 0.45,
+        color: "rgba(160, 220, 255, 0.7)",
+        bubble: true,
+      });
+    } else if (id === "robot") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 20,
+        y: p.y - 6,
+        vx: (Math.random() - 0.5) * 30,
+        vy: -40 - Math.random() * 30,
+        life: 0.35,
+        color: "#80ffff",
+        spark: true,
+      });
+    } else if (id === "ghost") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 14,
+        y: p.y + 10,
+        vx: (Math.random() - 0.5) * 15,
+        vy: -25 - Math.random() * 25,
+        life: 0.7,
+        color: "rgba(200, 210, 255, 0.5)",
+        soft: true,
+      });
+    } else if (id === "spark" || id === "star" || id === "gold") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 22,
+        y: p.y - 10 + (Math.random() - 0.5) * 16,
+        vx: (Math.random() - 0.5) * 40,
+        vy: -30 - Math.random() * 50,
+        life: 0.4,
+        color: col,
+        spark: true,
+      });
+    } else if (id === "dragon") {
+      g.particles.push({
+        x: p.x + 8,
+        y: p.y - 4,
+        vx: 20 + Math.random() * 30,
+        vy: -10 - Math.random() * 20,
+        life: 0.35,
+        color: Math.random() < 0.5 ? "#ff8040" : "#ffe080",
+        spark: true,
+      });
+    } else if (id === "cloud" || id === "moon") {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 20,
+        y: p.y - 16,
+        vx: (Math.random() - 0.5) * 12,
+        vy: -8 - Math.random() * 12,
+        life: 0.8,
+        color: col,
+        soft: true,
+      });
+    } else {
+      g.particles.push({
+        x: p.x + (Math.random() - 0.5) * 12,
+        y: p.y + 6,
+        vx: (Math.random() - 0.5) * 25,
+        vy: -15 - Math.random() * 25,
+        life: 0.35,
+        color: col,
+        soft: true,
+      });
+    }
   }
 
   function cycleSkin(who, dir) {
@@ -316,6 +427,7 @@
       my += stick.y;
     }
     moveEntity(g.you, mx, my, dt, 210);
+    emitAura(g.you, dt);
 
     if (mode === "duo" && g.other) {
       const tx = g.you.x - 48;
@@ -324,7 +436,9 @@
       const dy = ty - g.other.y;
       const dist = Math.hypot(dx, dy);
       if (dist > 8) moveEntity(g.other, dx, dy, dt, Math.min(200, 40 + dist * 1.2));
+      else g.other.moving = false;
       g.other.bob += dt * 8;
+      emitAura(g.other, dt);
       g.sayCd -= dt;
       if (g.sayCd <= 0 && Math.random() < 0.01) {
         say(SAY.duo[(Math.random() * SAY.duo.length) | 0], 2.4);
@@ -336,6 +450,8 @@
       g.other.x += (tx - g.other.x) * Math.min(1, dt * 8);
       g.other.y += (ty - g.other.y) * Math.min(1, dt * 8);
       g.other.bob = g.you.bob;
+      g.other.moving = g.you.moving;
+      emitAura(g.other, dt);
     }
 
     if (wantAct) {
@@ -348,6 +464,7 @@
       p.life -= dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
+      if (p.spin) p.rot = (p.rot || 0) + p.spin * dt;
     }
     g.particles = g.particles.filter((p) => p.life > 0);
   }
@@ -362,6 +479,623 @@
     ctx.closePath();
   }
 
+  function drawAuraRing(p, bounce, rgba, radius) {
+    ctx.strokeStyle = rgba;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, radius + Math.sin(g.t * 2.4) * 3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  function drawBodyBird(p, bounce) {
+    const flap = Math.sin(g.t * 10 + p.bob) * 10;
+    // aura
+    ctx.fillStyle = "rgba(126, 217, 184, 0.18)";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 6 + bounce, 34, 26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(126, 217, 184, 0.55)", 32);
+    // wings
+    ctx.fillStyle = "#5ec89a";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 20, p.y - 4 + bounce, 16, 7, -0.5 - flap * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(p.x + 20, p.y - 4 + bounce, 16, 7, 0.5 + flap * 0.04, 0, Math.PI * 2);
+    ctx.fill();
+    // body oval
+    ctx.fillStyle = "#7ed9b8";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 2 + bounce, 14, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // belly
+    ctx.fillStyle = "#c8ffe8";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + 4 + bounce, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // head
+    ctx.fillStyle = "#9aecc8";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+    // beak
+    ctx.fillStyle = "#ffb040";
+    ctx.beginPath();
+    ctx.moveTo(p.x + 8, p.y - 22 + bounce);
+    ctx.lineTo(p.x + 18, p.y - 20 + bounce);
+    ctx.lineTo(p.x + 8, p.y - 18 + bounce);
+    ctx.fill();
+    // eye
+    ctx.fillStyle = "#1a2030";
+    ctx.beginPath();
+    ctx.arc(p.x + 3, p.y - 24 + bounce, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyRabbit(p, bounce) {
+    ctx.fillStyle = "rgba(255, 180, 210, 0.2)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 6 + bounce, 30, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(255, 160, 200, 0.5)", 30);
+    // ears
+    ctx.fillStyle = "#ffe8f0";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 7, p.y - 38 + bounce, 4, 14, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(p.x + 7, p.y - 38 + bounce, 4, 14, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ff90b8";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 7, p.y - 38 + bounce, 2, 8, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(p.x + 7, p.y - 38 + bounce, 2, 8, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    // body
+    ctx.fillStyle = "#ffe8f0";
+    roundRect(p.x - 12, p.y - 14 + bounce, 24, 30, 10);
+    ctx.fill();
+    ctx.fillStyle = "#fff5fa";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + 2 + bounce, 8, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // head
+    ctx.fillStyle = "#ffe8f0";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a2030";
+    ctx.beginPath();
+    ctx.arc(p.x - 4, p.y - 24 + bounce, 1.8, 0, Math.PI * 2);
+    ctx.arc(p.x + 4, p.y - 24 + bounce, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ff90b8";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 19 + bounce, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyShark(p, bounce) {
+    ctx.fillStyle = "rgba(80, 160, 220, 0.2)";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 4 + bounce, 36, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(120, 200, 255, 0.55)", 34);
+    // body
+    ctx.fillStyle = "#5a90c8";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 2 + bounce, 22, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // fin top
+    ctx.beginPath();
+    ctx.moveTo(p.x - 2, p.y - 12 + bounce);
+    ctx.lineTo(p.x + 4, p.y - 30 + bounce);
+    ctx.lineTo(p.x + 10, p.y - 10 + bounce);
+    ctx.fill();
+    // tail
+    ctx.beginPath();
+    ctx.moveTo(p.x - 20, p.y - 2 + bounce);
+    ctx.lineTo(p.x - 34, p.y - 14 + bounce);
+    ctx.lineTo(p.x - 28, p.y - 2 + bounce);
+    ctx.lineTo(p.x - 34, p.y + 10 + bounce);
+    ctx.closePath();
+    ctx.fill();
+    // belly
+    ctx.fillStyle = "#c8e8ff";
+    ctx.beginPath();
+    ctx.ellipse(p.x + 2, p.y + 2 + bounce, 14, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // eye
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(p.x + 12, p.y - 4 + bounce, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#102030";
+    ctx.beginPath();
+    ctx.arc(p.x + 13, p.y - 4 + bounce, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyRobot(p, bounce) {
+    ctx.fillStyle = "rgba(100, 220, 255, 0.15)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, 32, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(100, 255, 255, 0.55)", 30);
+    // antenna
+    ctx.strokeStyle = "#a0e8f0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - 34 + bounce);
+    ctx.lineTo(p.x, p.y - 44 + bounce);
+    ctx.stroke();
+    ctx.fillStyle = "#ff6060";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 46 + bounce, 3, 0, Math.PI * 2);
+    ctx.fill();
+    // head box
+    ctx.fillStyle = "#80c0d0";
+    roundRect(p.x - 14, p.y - 32 + bounce, 28, 22, 4);
+    ctx.fill();
+    // eyes
+    ctx.fillStyle = "#40ffc0";
+    roundRect(p.x - 9, p.y - 26 + bounce, 7, 5, 2);
+    ctx.fill();
+    roundRect(p.x + 2, p.y - 26 + bounce, 7, 5, 2);
+    ctx.fill();
+    // body box
+    ctx.fillStyle = "#70a8b8";
+    roundRect(p.x - 12, p.y - 8 + bounce, 24, 26, 3);
+    ctx.fill();
+    ctx.fillStyle = "#e0ffff";
+    roundRect(p.x - 6, p.y - 2 + bounce, 12, 8, 2);
+    ctx.fill();
+    // arms
+    ctx.fillStyle = "#80c0d0";
+    roundRect(p.x - 20, p.y - 4 + bounce, 7, 16, 2);
+    ctx.fill();
+    roundRect(p.x + 13, p.y - 4 + bounce, 7, 16, 2);
+    ctx.fill();
+  }
+
+  function drawBodyFox(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(255, 150, 60, 0.45)", 28);
+    // tail
+    ctx.fillStyle = "#ff9a4a";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 20, p.y + 2 + bounce, 14, 7, -0.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffe0a0";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 28, p.y + bounce, 5, 4, -0.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ff9a4a";
+    roundRect(p.x - 11, p.y - 14 + bounce, 22, 28, 8);
+    ctx.fill();
+    // ears
+    ctx.beginPath();
+    ctx.moveTo(p.x - 10, p.y - 24 + bounce);
+    ctx.lineTo(p.x - 4, p.y - 40 + bounce);
+    ctx.lineTo(p.x + 2, p.y - 24 + bounce);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x + 10, p.y - 24 + bounce);
+    ctx.lineTo(p.x + 4, p.y - 40 + bounce);
+    ctx.lineTo(p.x - 2, p.y - 24 + bounce);
+    ctx.fill();
+    ctx.fillStyle = "#ffe0a0";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a2030";
+    ctx.beginPath();
+    ctx.arc(p.x - 3, p.y - 24 + bounce, 1.6, 0, Math.PI * 2);
+    ctx.arc(p.x + 4, p.y - 24 + bounce, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyCat(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(255, 215, 106, 0.45)", 28);
+    ctx.fillStyle = "#ffd76a";
+    roundRect(p.x - 11, p.y - 14 + bounce, 22, 28, 9);
+    ctx.fill();
+    // ears
+    ctx.beginPath();
+    ctx.moveTo(p.x - 10, p.y - 22 + bounce);
+    ctx.lineTo(p.x - 6, p.y - 38 + bounce);
+    ctx.lineTo(p.x, p.y - 22 + bounce);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x + 10, p.y - 22 + bounce);
+    ctx.lineTo(p.x + 6, p.y - 38 + bounce);
+    ctx.lineTo(p.x, p.y - 22 + bounce);
+    ctx.fill();
+    // tail curl
+    ctx.strokeStyle = "#ffd76a";
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(p.x + 16, p.y + 2 + bounce, 10, -0.4, 1.8);
+    ctx.stroke();
+    ctx.fillStyle = "#fff0c0";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1a2030";
+    ctx.beginPath();
+    ctx.arc(p.x - 3, p.y - 24 + bounce, 1.7, 0, Math.PI * 2);
+    ctx.arc(p.x + 4, p.y - 24 + bounce, 1.7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyBear(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(200, 140, 80, 0.4)", 30);
+    ctx.fillStyle = "#c88850";
+    roundRect(p.x - 14, p.y - 14 + bounce, 28, 32, 10);
+    ctx.fill();
+    // ears circles
+    ctx.beginPath();
+    ctx.arc(p.x - 12, p.y - 28 + bounce, 6, 0, Math.PI * 2);
+    ctx.arc(p.x + 12, p.y - 28 + bounce, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffe0c0";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 20 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#c88850";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 16 + bounce, 5, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyPanda(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(240, 240, 255, 0.4)", 28);
+    ctx.fillStyle = "#f0f0f0";
+    roundRect(p.x - 12, p.y - 14 + bounce, 24, 30, 9);
+    ctx.fill();
+    ctx.fillStyle = "#303038";
+    ctx.beginPath();
+    ctx.arc(p.x - 11, p.y - 28 + bounce, 6, 0, Math.PI * 2);
+    ctx.arc(p.x + 11, p.y - 28 + bounce, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f8f8f8";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#303038";
+    ctx.beginPath();
+    ctx.ellipse(p.x - 5, p.y - 24 + bounce, 4, 5, -0.2, 0, Math.PI * 2);
+    ctx.ellipse(p.x + 5, p.y - 24 + bounce, 4, 5, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyWolf(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(160, 180, 220, 0.45)", 28);
+    ctx.fillStyle = "#9aa8c0";
+    roundRect(p.x - 12, p.y - 14 + bounce, 24, 30, 8);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x - 10, p.y - 24 + bounce);
+    ctx.lineTo(p.x - 4, p.y - 40 + bounce);
+    ctx.lineTo(p.x + 2, p.y - 24 + bounce);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x + 10, p.y - 24 + bounce);
+    ctx.lineTo(p.x + 4, p.y - 40 + bounce);
+    ctx.lineTo(p.x - 2, p.y - 24 + bounce);
+    ctx.fill();
+    ctx.fillStyle = "#e8eef8";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+    // snout
+    ctx.fillStyle = "#c8d0e0";
+    ctx.beginPath();
+    ctx.ellipse(p.x + 6, p.y - 18 + bounce, 6, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyDeer(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(210, 170, 110, 0.4)", 28);
+    // antlers
+    ctx.strokeStyle = "#a07040";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 4, p.y - 28 + bounce);
+    ctx.lineTo(p.x - 14, p.y - 44 + bounce);
+    ctx.moveTo(p.x - 10, p.y - 38 + bounce);
+    ctx.lineTo(p.x - 18, p.y - 36 + bounce);
+    ctx.moveTo(p.x + 4, p.y - 28 + bounce);
+    ctx.lineTo(p.x + 14, p.y - 44 + bounce);
+    ctx.moveTo(p.x + 10, p.y - 38 + bounce);
+    ctx.lineTo(p.x + 18, p.y - 36 + bounce);
+    ctx.stroke();
+    ctx.fillStyle = "#d0a070";
+    roundRect(p.x - 11, p.y - 14 + bounce, 22, 28, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffe8c8";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyFrog(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(80, 220, 120, 0.4)", 28);
+    ctx.fillStyle = "#5ecf7a";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y + bounce, 16, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // eyes bumps
+    ctx.beginPath();
+    ctx.arc(p.x - 8, p.y - 14 + bounce, 7, 0, Math.PI * 2);
+    ctx.arc(p.x + 8, p.y - 14 + bounce, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.arc(p.x - 8, p.y - 14 + bounce, 3.5, 0, Math.PI * 2);
+    ctx.arc(p.x + 8, p.y - 14 + bounce, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#102010";
+    ctx.beginPath();
+    ctx.arc(p.x - 7, p.y - 14 + bounce, 1.8, 0, Math.PI * 2);
+    ctx.arc(p.x + 9, p.y - 14 + bounce, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyMouse(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(200, 180, 210, 0.4)", 26);
+    // ears
+    ctx.fillStyle = "#c8c0d0";
+    ctx.beginPath();
+    ctx.arc(p.x - 12, p.y - 24 + bounce, 8, 0, Math.PI * 2);
+    ctx.arc(p.x + 12, p.y - 24 + bounce, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff0f8";
+    ctx.beginPath();
+    ctx.arc(p.x - 12, p.y - 24 + bounce, 4, 0, Math.PI * 2);
+    ctx.arc(p.x + 12, p.y - 24 + bounce, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#c8c0d0";
+    roundRect(p.x - 10, p.y - 12 + bounce, 20, 24, 8);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 20 + bounce, 9, 0, Math.PI * 2);
+    ctx.fill();
+    // tail
+    ctx.strokeStyle = "#c8c0d0";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(p.x - 8, p.y + 10 + bounce);
+    ctx.quadraticCurveTo(p.x - 24, p.y + 4 + bounce, p.x - 28, p.y - 6 + bounce);
+    ctx.stroke();
+  }
+
+  function drawBodyGold(p, bounce) {
+    ctx.fillStyle = "rgba(255, 215, 106, 0.22)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, 34 + Math.sin(g.t * 3) * 2, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(255, 215, 106, 0.7)", 32);
+    ctx.fillStyle = "#ffd76a";
+    roundRect(p.x - 12, p.y - 18 + bounce, 24, 34, 8);
+    ctx.fill();
+    ctx.fillStyle = "#fff3b0";
+    ctx.fillRect(p.x - 12, p.y - 2 + bounce, 24, 6);
+    ctx.fillStyle = "#e8b890";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 26 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyGhost(p, bounce) {
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = "rgba(200, 210, 255, 0.2)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, 32, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(180, 200, 255, 0.5)", 30);
+    ctx.fillStyle = "#d8e0ff";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 14 + bounce, 14, Math.PI, 0);
+    ctx.lineTo(p.x + 14, p.y + 12 + bounce);
+    ctx.lineTo(p.x + 7, p.y + 6 + bounce);
+    ctx.lineTo(p.x, p.y + 14 + bounce);
+    ctx.lineTo(p.x - 7, p.y + 6 + bounce);
+    ctx.lineTo(p.x - 14, p.y + 12 + bounce);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = "#405080";
+    ctx.beginPath();
+    ctx.arc(p.x - 5, p.y - 16 + bounce, 2.5, 0, Math.PI * 2);
+    ctx.arc(p.x + 5, p.y - 16 + bounce, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawBodyStar(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(255, 230, 120, 0.65)", 34);
+    ctx.fillStyle = "#ffe08a";
+    const r = 18 + Math.sin(g.t * 4) * 2;
+    ctx.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+      const a2 = a + Math.PI / 5;
+      const ox = p.x;
+      const oy = p.y - 6 + bounce;
+      if (i === 0) ctx.moveTo(ox + Math.cos(a) * r, oy + Math.sin(a) * r);
+      else ctx.lineTo(ox + Math.cos(a) * r, oy + Math.sin(a) * r);
+      ctx.lineTo(ox + Math.cos(a2) * r * 0.45, oy + Math.sin(a2) * r * 0.45);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawBodyCloud(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(200, 220, 255, 0.45)", 32);
+    ctx.fillStyle = "#e8f0ff";
+    ctx.beginPath();
+    ctx.arc(p.x - 10, p.y - 4 + bounce, 12, 0, Math.PI * 2);
+    ctx.arc(p.x + 10, p.y - 2 + bounce, 13, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y - 12 + bounce, 14, 0, Math.PI * 2);
+    ctx.arc(p.x + 2, p.y + 4 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyDragon(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(80, 220, 120, 0.45)", 32);
+    // wings
+    ctx.fillStyle = "#50a060";
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - 6 + bounce);
+    ctx.lineTo(p.x - 28, p.y - 20 + bounce);
+    ctx.lineTo(p.x - 10, p.y + 2 + bounce);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - 6 + bounce);
+    ctx.lineTo(p.x + 28, p.y - 20 + bounce);
+    ctx.lineTo(p.x + 10, p.y + 2 + bounce);
+    ctx.fill();
+    ctx.fillStyle = "#70c080";
+    roundRect(p.x - 12, p.y - 14 + bounce, 24, 28, 8);
+    ctx.fill();
+    // horns
+    ctx.fillStyle = "#ffe080";
+    ctx.beginPath();
+    ctx.moveTo(p.x - 6, p.y - 24 + bounce);
+    ctx.lineTo(p.x - 10, p.y - 40 + bounce);
+    ctx.lineTo(p.x - 2, p.y - 26 + bounce);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(p.x + 6, p.y - 24 + bounce);
+    ctx.lineTo(p.x + 10, p.y - 40 + bounce);
+    ctx.lineTo(p.x + 2, p.y - 26 + bounce);
+    ctx.fill();
+    ctx.fillStyle = "#c0ffd0";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 22 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyOwl(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(180, 140, 60, 0.4)", 28);
+    ctx.fillStyle = "#8a7040";
+    ctx.beginPath();
+    ctx.ellipse(p.x, p.y - 2 + bounce, 14, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // wings
+    ctx.beginPath();
+    ctx.ellipse(p.x - 16, p.y + bounce, 8, 14, 0.3, 0, Math.PI * 2);
+    ctx.ellipse(p.x + 16, p.y + bounce, 8, 14, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffe8b0";
+    ctx.beginPath();
+    ctx.arc(p.x - 5, p.y - 18 + bounce, 6, 0, Math.PI * 2);
+    ctx.arc(p.x + 5, p.y - 18 + bounce, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#102010";
+    ctx.beginPath();
+    ctx.arc(p.x - 5, p.y - 18 + bounce, 2.5, 0, Math.PI * 2);
+    ctx.arc(p.x + 5, p.y - 18 + bounce, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffb040";
+    ctx.beginPath();
+    ctx.moveTo(p.x - 3, p.y - 10 + bounce);
+    ctx.lineTo(p.x, p.y - 4 + bounce);
+    ctx.lineTo(p.x + 3, p.y - 10 + bounce);
+    ctx.fill();
+  }
+
+  function drawBodySpark(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(255, 160, 40, 0.7)", 34);
+    ctx.fillStyle = "rgba(255, 180, 60, 0.25)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, 28 + Math.sin(g.t * 6) * 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#ffb040";
+    roundRect(p.x - 11, p.y - 16 + bounce, 22, 30, 8);
+    ctx.fill();
+    ctx.fillStyle = "#ffe080";
+    ctx.fillRect(p.x - 11, p.y - 2 + bounce, 22, 5);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 24 + bounce, 10, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyMoon(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(160, 180, 255, 0.55)", 32);
+    ctx.fillStyle = "#c8d0ff";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 6 + bounce, 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0c101c";
+    ctx.beginPath();
+    ctx.arc(p.x + 8, p.y - 10 + bounce, 14, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyAuto(p, bounce) {
+    ctx.fillStyle = "rgba(126, 200, 255, 0.22)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 8 + bounce, 32 + Math.sin(g.t * 2) * 2, 0, Math.PI * 2);
+    ctx.fill();
+    drawAuraRing(p, bounce, "rgba(126, 200, 255, 0.7)", 30);
+    ctx.fillStyle = "#7ec8ff";
+    roundRect(p.x - 12, p.y - 18 + bounce, 24, 34, 8);
+    ctx.fill();
+    ctx.fillStyle = "#d0f0ff";
+    ctx.fillRect(p.x - 12, p.y - 2 + bounce, 24, 6);
+    ctx.fillStyle = "#e8b890";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 26 + bounce, 11, 0, Math.PI * 2);
+    ctx.fill();
+    // heart accent
+    ctx.fillStyle = "#ff90b8";
+    ctx.beginPath();
+    ctx.arc(p.x - 3, p.y - 2 + bounce, 3, 0, Math.PI * 2);
+    ctx.arc(p.x + 3, p.y - 2 + bounce, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawBodyHeart(p, bounce) {
+    drawAuraRing(p, bounce, "rgba(255, 120, 180, 0.55)", 30);
+    ctx.fillStyle = "#ff90b8";
+    const ox = p.x;
+    const oy = p.y - 4 + bounce;
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + 12);
+    ctx.bezierCurveTo(ox, oy + 4, ox - 18, oy - 2, ox - 18, oy - 10);
+    ctx.bezierCurveTo(ox - 18, oy - 20, ox, oy - 18, ox, oy - 8);
+    ctx.bezierCurveTo(ox, oy - 18, ox + 18, oy - 20, ox + 18, oy - 10);
+    ctx.bezierCurveTo(ox + 18, oy - 2, ox, oy + 4, ox, oy + 12);
+    ctx.fill();
+  }
+
+  const BODY_DRAW = {
+    bird: drawBodyBird,
+    rabbit: drawBodyRabbit,
+    shark: drawBodyShark,
+    robot: drawBodyRobot,
+    fox: drawBodyFox,
+    cat: drawBodyCat,
+    bear: drawBodyBear,
+    panda: drawBodyPanda,
+    wolf: drawBodyWolf,
+    deer: drawBodyDeer,
+    frog: drawBodyFrog,
+    mouse: drawBodyMouse,
+    gold: drawBodyGold,
+    ghost: drawBodyGhost,
+    star: drawBodyStar,
+    cloud: drawBodyCloud,
+    dragon: drawBodyDragon,
+    owl: drawBodyOwl,
+    spark: drawBodySpark,
+    moon: drawBodyMoon,
+    auto: drawBodyAuto,
+    heart: drawBodyHeart,
+  };
+
   function drawActor(p) {
     const bounce = Math.sin(p.bob) * 2;
     const skin = p.skin;
@@ -370,41 +1104,16 @@
     ctx.ellipse(p.x, p.y + 18, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // glow ring by role
-    if (p.tag === "me") {
-      ctx.strokeStyle = "rgba(126, 200, 255, 0.55)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y - 8 + bounce, 30 + Math.sin(g.t * 2) * 2, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (p.tag === "you") {
-      ctx.strokeStyle = "rgba(255, 215, 106, 0.35)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y - 8 + bounce, 28, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-
     if (p.tag === "mirror") ctx.globalAlpha = 0.82;
 
-    ctx.fillStyle = skin.color;
-    roundRect(p.x - 13, p.y - 20 + bounce, 26, 36, 9);
-    ctx.fill();
-    ctx.fillStyle = skin.accent || "#e8b890";
-    ctx.fillRect(p.x - 13, p.y - 2 + bounce, 26, 6);
-    ctx.fillStyle = "#e8b890";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y - 26 + bounce, 11, 0, Math.PI * 2);
-    ctx.fill();
-
-    // face icon
-    ctx.font = "18px Nunito";
-    ctx.textAlign = "center";
-    ctx.fillText(skin.icon || "✦", p.x, p.y - 20 + bounce);
+    const drawer = BODY_DRAW[skin.id];
+    if (drawer) drawer(p, bounce);
+    else drawBodyGold(p, bounce);
 
     ctx.fillStyle = "#fff";
-    ctx.font = "800 12px Nunito, sans-serif";
-    ctx.fillText(p.name + " · " + skin.name, p.x, p.y - 48 + bounce);
+    ctx.font = "800 11px Nunito, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(p.name + " · " + skin.name, p.x, p.y - 52 + bounce);
     ctx.textAlign = "left";
     ctx.globalAlpha = 1;
   }
@@ -456,10 +1165,35 @@
 
     for (const p of g.particles) {
       ctx.globalAlpha = Math.max(0, p.life * 2);
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      ctx.fill();
+      if (p.feather) {
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot || 0);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 5, 2.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else if (p.bubble) {
+        ctx.strokeStyle = p.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3 + (1 - p.life) * 2, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (p.soft) {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.spark) {
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+      } else {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
       ctx.globalAlpha = 1;
     }
 
