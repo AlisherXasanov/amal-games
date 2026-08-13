@@ -162,6 +162,7 @@
     { id: "secret-void", name: "⭐ Секретный войд", color: "#c080ff", secret: true },
     { id: "secret-agent", name: "⭐ Скин агента", color: "#304050", secret: true },
     { id: "secret-neon", name: "⭐ Неон-аномалия", color: "#40ffc0", secret: true },
+    { id: "secret-iskra", name: "⭐ Халат Искры", color: "#ffb020", secret: true, tex: "iskra" },
     { id: "secret-cool", name: "⭐ Халат Куул", color: "#7af0ff", secret: true, tex: "cool" },
     { id: "secret-parrot", name: "⭐ Халат попугая", color: "#ff6a4a", secret: true },
     { id: "secret-lesha", name: "⭐ Халат Леши", color: "#ffc857", secret: true, tex: "lesha" },
@@ -357,6 +358,24 @@
       vipKit: true,
       coffeeGift: 52,
       theme: "gold",
+    });
+    list.push({
+      id: 77,
+      name: "✦ Смена · Искра",
+      time: 777,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Секрет · фейерверк · искры · ∞ вещи",
+      color: "#ffb020",
+      special: "iskra77",
+      secret: true,
+      iskraNight: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 77,
+      bonusCoins: 77,
+      theme: "iskra",
+      pace: 3,
     });
     list.push({
       id: 88,
@@ -614,17 +633,93 @@
   }
 
   function unlockIskraWord() {
-    const first = !meta.secretIskra;
     meta.secretIskra = true;
     meta.secretShifts67 = true;
+    if (!meta.skins) meta.skins = [];
+    if (!meta.skins.includes("secret-iskra")) meta.skins.push("secret-iskra");
+    const skin = SKINS.find((s) => s.id === "secret-iskra");
+    if (skin) {
+      selectedSkin = skin;
+      meta.skinId = skin.id;
+    }
+    const pick = SHIFTS.find((s) => s.id === 77);
+    if (pick) selectedShift = pick;
     storeSet(SAVE, meta);
-    if (first) {
-      toast("✦ искра · слово принято · сюрприз позже");
-      showEvent("✦ Искра · секретное слово записано", 2.6);
+    refreshLobbyUI();
+    persistLobby();
+    applyThemeClass("iskra");
+    if (g && (state === "play" || state === "desk")) {
+      fireIskraBurst();
     } else {
-      toast("✦ искра · уже знаю");
+      toast("✦ Искра · смена 77");
+      showEvent("✦ ИСКРА · открой смену", 2.8);
     }
     return true;
+  }
+
+  function fireIskraBurst() {
+    if (!g) return;
+    g.theme = "iskra";
+    g.iskraBurst = 5.2;
+    g.iskraSparks = 12;
+    g.noAnomalies = true;
+    g.ownerQuiet = true;
+    g.coins = (g.coins || 0) + 77;
+    g.sanity = g.maxSanity;
+    g.immortal = true;
+    applyThemeClass("iskra");
+    if (g.players[0]) {
+      const skin = SKINS.find((s) => s.id === "secret-iskra");
+      g.players[0].tex = "iskra";
+      g.players[0].color = (skin && skin.color) || "#ffb020";
+      g.players[0].coffeeLeft = Math.max(g.players[0].coffeeLeft || 0, 77);
+      g.players[0].infiniteItems = true;
+      grantInfiniteAmmo(g.players[0]);
+    }
+    if (g.monsters && g.monsters.length) {
+      for (const m of g.monsters.slice()) {
+        for (let i = 0; i < 18; i++) {
+          g.particles.push({
+            x: m.x,
+            y: m.y,
+            vx: (Math.random() - 0.5) * 280,
+            vy: (Math.random() - 0.5) * 280 - 40,
+            life: 0.55 + Math.random() * 0.55,
+            color: i % 3 === 0 ? "#ffe566" : i % 3 === 1 ? "#ff6a20" : "#ff40a0",
+          });
+        }
+      }
+      g.monsters = [];
+    }
+    const px = g.players[0] ? g.players[0].x : 600;
+    const py = g.players[0] ? g.players[0].y : 400;
+    for (let wave = 0; wave < 3; wave++) {
+      for (let i = 0; i < 36; i++) {
+        const a = (i / 36) * Math.PI * 2 + wave * 0.4;
+        const sp = 70 + wave * 55 + Math.random() * 90;
+        g.particles.push({
+          x: px,
+          y: py - 10,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp - 30,
+          life: 0.8 + Math.random() * 0.9,
+          color: wave === 0 ? "#fff0a0" : wave === 1 ? "#ff8040" : "#ff4ec8",
+        });
+      }
+    }
+    // лёгкий импульс гостей
+    const was = !!g.noAnimals;
+    g.noAnimals = false;
+    spawnQueueGuest({ rareKind: "rainbow", name: "Rainbow" });
+    spawnQueueGuest({ rareKind: "sammy", name: "Sammy" });
+    spawnQueueGuest({ normal: true });
+    if (was) g.noAnimals = true;
+    layoutQueue();
+    refreshDeskIfOpen();
+    syncQuietFab();
+    renderInv();
+    showEvent("✦✦✦ ИСКРА · фейерверк · аномалии в пыль", 4.4);
+    toast("✦ +77 · халат Искры · бум");
   }
 
   function unlockCoolSurprise(fromCode) {
@@ -719,7 +814,8 @@
       shift.lucky7 ||
       shift.rainNight ||
       shift.hereWithYou ||
-      shift.coolNight
+      shift.coolNight ||
+      shift.iskraNight
     );
   }
 
@@ -804,7 +900,8 @@
       "theme-anime",
       "theme-rain",
       "theme-parrot",
-      "theme-cool"
+      "theme-cool",
+      "theme-iskra"
     );
     const screen = document.getElementById("screen");
     if (screen) {
@@ -816,7 +913,8 @@
         "theme-anime",
         "theme-rain",
         "theme-parrot",
-        "theme-cool"
+        "theme-cool",
+        "theme-iskra"
       );
     }
     if (!theme) return;
@@ -2538,6 +2636,15 @@
       giveOwnerLoadoutAll(shift);
       fireCoolBurst();
     }
+    if (shift.iskraNight || shift.id === 77 || shift.theme === "iskra") {
+      g.theme = "iskra";
+      g.immortal = true;
+      if (!meta.skins.includes("secret-iskra")) meta.skins.push("secret-iskra");
+      meta.secretIskra = true;
+      storeSet(SAVE, meta);
+      giveOwnerLoadoutAll(shift);
+      fireIskraBurst();
+    }
     applySpawnPerksToGame();
     // аниме/дождь из лобби больше НЕ перекрашивают каждую смену
     updateNeedUI();
@@ -3939,6 +4046,21 @@
     tickCreatorRivalry(dt);
     if (g.rivalryFlash > 0) g.rivalryFlash -= dt;
     if (g.coolBurst > 0) g.coolBurst -= dt;
+    if (g.iskraBurst > 0) g.iskraBurst -= dt;
+    if (g.iskraSparks > 0) {
+      g.iskraSparks -= dt;
+      if (g.players[0] && Math.random() < 0.55) {
+        const p = g.players[0];
+        g.particles.push({
+          x: p.x + (Math.random() - 0.5) * 20,
+          y: p.y - 10 + (Math.random() - 0.5) * 16,
+          vx: (Math.random() - 0.5) * 80,
+          vy: -40 - Math.random() * 90,
+          life: 0.35 + Math.random() * 0.35,
+          color: Math.random() < 0.5 ? "#ffe080" : "#ff6040",
+        });
+      }
+    }
     if (g.coolFreeze > 0) {
       g.coolFreeze -= dt;
       if (g.monsters && g.monsters.length) g.monsters = [];
@@ -4312,6 +4434,7 @@
     const isJendel = tex === "jendel" || tex === "jen";
     const isWoodstock = tex === "woodstock";
     const isCool = tex === "cool";
+    const isIskra = tex === "iskra";
     const isBuilder = tex === "builder";
     const isRainbow = tex === "rainbow";
     const isLilamint = tex === "lilamint";
@@ -4350,6 +4473,11 @@
       sash = "#e8ffff";
       head = "#d8f8ff";
     }
+    if (isIskra) {
+      body = "#ffb020";
+      sash = "#ffe566";
+      head = "#fff0c8";
+    }
     if (isBuilder) {
       body = "#3dcf7a";
       sash = "#ffd76a";
@@ -4386,6 +4514,17 @@
       ctx.beginPath();
       ctx.arc(pl.x, pl.y - 8, 26 + Math.sin((g && g.t) || 0) * 2, 0, Math.PI * 2);
       ctx.fill();
+    }
+    if (isIskra) {
+      ctx.fillStyle = "rgba(255, 160, 40, 0.3)";
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 8, 27 + Math.sin(((g && g.t) || 0) * 3) * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255, 240, 120, 0.7)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(pl.x, pl.y - 8, 30, 0, Math.PI * 2);
+      ctx.stroke();
     }
     ctx.fillStyle = body;
     roundRect(pl.x - 12, pl.y - 20, 24, 34, 8);
@@ -4480,13 +4619,15 @@
               ? "Woodstock"
               : isCool
                 ? "Куул"
-                : isBuilder
-                  ? "Builderman"
-                  : isRainbow
-                    ? "Rainbow"
-                    : isLilamint
-                      ? "Lilamint"
-                      : label || pl.name;
+                : isIskra
+                  ? "Искра"
+                  : isBuilder
+                    ? "Builderman"
+                    : isRainbow
+                      ? "Rainbow"
+                      : isLilamint
+                        ? "Lilamint"
+                        : label || pl.name;
     const tagColor = isHere
       ? "#a8e0ff"
       : isSammy
@@ -4497,9 +4638,11 @@
             ? "#ffe566"
             : isCool
               ? "#7af0ff"
-              : isBuilder
-                ? "#b8ffd0"
-                : "#fff";
+              : isIskra
+                ? "#ffd76a"
+                : isBuilder
+                  ? "#b8ffd0"
+                  : "#fff";
     drawNamePlate(pl.x, pl.y - 48, tag, tagColor);
     if (pl.inv.length) {
       ctx.font = "16px Nunito";
@@ -4517,6 +4660,7 @@
     if (theme === "rain") return "#1a3048";
     if (theme === "parrot") return "#4a3020";
     if (theme === "cool") return "#143848";
+    if (theme === "iskra") return "#4a2810";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
     return base;
@@ -5066,6 +5210,54 @@
         ctx.fillText("КУ", VW / 2, VH / 2);
         ctx.font = "800 28px Fredoka, Nunito, sans-serif";
         ctx.fillText("❄ ледяной сюрприз ❄", VW / 2, VH / 2 + 42);
+        ctx.textAlign = "left";
+      }
+    } else if (theme === "iskra") {
+      ctx.fillStyle = "rgba(255, 90, 20, 0.12)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createRadialGradient(VW * 0.5, VH * 0.35, 20, VW * 0.5, VH * 0.5, VW * 0.7);
+      grd.addColorStop(0, "rgba(255, 200, 60, 0.28)");
+      grd.addColorStop(0.45, "rgba(255, 80, 40, 0.12)");
+      grd.addColorStop(1, "rgba(40, 0, 20, 0)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      for (let i = 0; i < 28; i++) {
+        const cx = ((Math.sin(i * 7.3) * 0.5 + 0.5) * VW + Math.sin(g.t * 1.1 + i) * 40) % VW;
+        const cy = 60 + ((i * 47 + g.t * (40 + (i % 5) * 12)) % (VH - 80));
+        const pulse = 0.45 + Math.sin(g.t * 6 + i) * 0.35;
+        ctx.fillStyle =
+          i % 3 === 0
+            ? `rgba(255, 240, 120, ${pulse})`
+            : i % 3 === 1
+              ? `rgba(255, 100, 40, ${pulse})`
+              : `rgba(255, 60, 160, ${pulse})`;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 1.5 + (i % 3), 0, Math.PI * 2);
+        ctx.fill();
+        if (i % 4 === 0) {
+          ctx.strokeStyle = `rgba(255, 220, 100, ${pulse * 0.7})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(cx - 6, cy);
+          ctx.lineTo(cx + 6, cy);
+          ctx.moveTo(cx, cy - 6);
+          ctx.lineTo(cx, cy + 6);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = "rgba(255, 220, 120, 0.95)";
+      ctx.font = "900 18px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ ИСКРА", 12, 26);
+      if (g.iskraBurst > 0) {
+        const a = Math.min(1, g.iskraBurst / 2) * 0.4;
+        ctx.fillStyle = `rgba(255, 140, 40, ${a})`;
+        ctx.fillRect(0, 0, VW, VH);
+        ctx.fillStyle = `rgba(255, 250, 200, ${Math.min(1, a * 1.5)})`;
+        ctx.font = "900 64px Fredoka, Nunito, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ИСКРА", VW / 2, VH / 2);
+        ctx.font = "800 26px Fredoka, Nunito, sans-serif";
+        ctx.fillText("✦ фейерверк · халат огня ✦", VW / 2, VH / 2 + 42);
         ctx.textAlign = "left";
       }
     }
