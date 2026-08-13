@@ -95,6 +95,16 @@ body.theme-rain #app {
   border-color: rgba(140, 200, 255, 0.65);
   background: linear-gradient(135deg, rgba(60, 120, 180, 0.4), rgba(20, 40, 70, 0.45));
 }
+body.theme-parrot,
+body.theme-parrot #app {
+  background:
+    radial-gradient(ellipse 80% 55% at 25% 0%, #ff8a40 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, #2a8040 0%, transparent 50%),
+    linear-gradient(165deg, #3a2010, #140a08) !important;
+}
+#screen.theme-parrot {
+  box-shadow: 0 18px 50px rgba(255, 120, 60, 0.35), 0 0 0 2px rgba(255, 200, 100, 0.45);
+}
 
 .portal-back {
   position: fixed;

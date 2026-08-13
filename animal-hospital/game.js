@@ -161,6 +161,7 @@
     { id: "secret-void", name: "⭐ Секретный войд", color: "#c080ff", secret: true },
     { id: "secret-agent", name: "⭐ Скин агента", color: "#304050", secret: true },
     { id: "secret-neon", name: "⭐ Неон-аномалия", color: "#40ffc0", secret: true },
+    { id: "secret-parrot", name: "⭐ Халат попугая", color: "#ff6a4a", secret: true },
   ];
 
   const WEAPONS = {
@@ -178,6 +179,7 @@
     { id: "doc", name: "Док", classId: "doctor", desc: "Лечит у столов" },
     { id: "sec", name: "Секретарь Боб", classId: "secretary", desc: "Помогает у окна" },
     { id: "fire", name: "Огонёк", classId: "firefighter", desc: "Тушит пожары" },
+    { id: "parrot", name: "Попугай Кеша", classId: "secretary", desc: "Кричит подсказки у окна · секрет", secret: true },
   ];
 
   const SHIFT_TEMPLATES = [
@@ -218,6 +220,22 @@
         special: t.special || null,
         secret: false,
       });
+    });
+    list.push({
+      id: 33,
+      name: "✦ Смена · Попугай",
+      time: 200,
+      anomaly: 0,
+      eventRate: 0,
+      tag: "Тропики · Кеша рядом · без аномалий",
+      color: "#ff6a4a",
+      special: "parrot33",
+      secret: true,
+      parrotShift: true,
+      noAnomalies: true,
+      vipKit: true,
+      coffeeGift: 3,
+      theme: "parrot",
     });
     list.push({
       id: 19,
@@ -451,8 +469,38 @@
 
   function applySecretDeathCode(raw) {
     if (!canUseSecretShifts()) return false;
-    const code = String(raw || "").trim();
-    if (code !== "67" && code !== "52" && code !== "7" && code !== "12" && code !== "19") return false;
+    const code = String(raw || "")
+      .trim()
+      .toLowerCase();
+    if (code === "parrot" || code === "попугай") {
+      meta.secretParrot = true;
+      meta.secretShifts67 = true;
+      meta.secretShift7 = true;
+      if (!meta.skins) meta.skins = [];
+      if (!meta.skins.includes("secret-parrot")) meta.skins.push("secret-parrot");
+      const parrotSkin = SKINS.find((s) => s.id === "secret-parrot");
+      if (parrotSkin) {
+        selectedSkin = parrotSkin;
+        meta.skinId = parrotSkin.id;
+      }
+      const parrotBuddy = BUDDIES.find((b) => b.id === "parrot");
+      if (parrotBuddy) {
+        selectedBuddy = parrotBuddy;
+        meta.buddyId = parrotBuddy.id;
+      }
+      const pick = SHIFTS.find((s) => s.id === 33);
+      if (pick) selectedShift = pick;
+      storeSet(SAVE, meta);
+      refreshLobbyUI();
+      persistLobby();
+      applyThemeClass("parrot");
+      toast("✦ попугай");
+      showEvent("✦ Попугай · первый секретный код", 2.8);
+      return true;
+    }
+    if (code !== "67" && code !== "52" && code !== "7" && code !== "12" && code !== "19" && code !== "33") {
+      return false;
+    }
     meta.secretShifts67 = true;
     meta.secretShift7 = true;
     storeSet(SAVE, meta);
@@ -468,7 +516,16 @@
   }
 
   function isVipShift(shift) {
-    return !!(shift && (shift.vipKit || shift.noAnomalies || shift.lesha || shift.diamondNight || shift.lucky7));
+    return !!(
+      shift &&
+      (shift.vipKit ||
+        shift.noAnomalies ||
+        shift.lesha ||
+        shift.diamondNight ||
+        shift.lucky7 ||
+        shift.rainNight ||
+        shift.parrotShift)
+    );
   }
 
   function applyThemeClass(theme) {
@@ -478,7 +535,8 @@
       "theme-lucky7",
       "theme-here",
       "theme-anime",
-      "theme-rain"
+      "theme-rain",
+      "theme-parrot"
     );
     const screen = document.getElementById("screen");
     if (screen) {
@@ -488,7 +546,8 @@
         "theme-lucky7",
         "theme-here",
         "theme-anime",
-        "theme-rain"
+        "theme-rain",
+        "theme-parrot"
       );
     }
     if (!theme) return;
@@ -1331,6 +1390,27 @@
       applyThemeClass("rain");
       showEvent("✦ Ночная смена · дождь", 3.2);
       toast("Я тоже на смене.");
+    }
+    if (shift.parrotShift || shift.id === 33 || shift.theme === "parrot") {
+      g.sanity = g.maxSanity;
+      g.immortal = true;
+      meta.secretParrot = true;
+      const parrotSkin = SKINS.find((s) => s.id === "secret-parrot");
+      if (parrotSkin) {
+        selectedSkin = parrotSkin;
+        meta.skinId = parrotSkin.id;
+        if (g.players[0]) g.players[0].color = parrotSkin.color;
+      }
+      const parrotBuddy = BUDDIES.find((b) => b.id === "parrot");
+      if (parrotBuddy) {
+        selectedBuddy = parrotBuddy;
+        meta.buddyId = parrotBuddy.id;
+      }
+      storeSet(SAVE, meta);
+      g.theme = "parrot";
+      applyThemeClass("parrot");
+      showEvent("✦ Кеша на смене · тропики", 3.2);
+      toast("Попугай с тобой.");
     }
     if (meta.rainNight) {
       g.theme = "rain";
@@ -2443,6 +2523,23 @@
         });
       }
     }
+    if (g.theme === "parrot") {
+      for (let i = 0; i < 2; i++) {
+        if (Math.random() > 0.5) continue;
+        const colors = ["#ff6a4a", "#ffd76a", "#40c070", "#4a9fff"];
+        g.particles.push({
+          x: cam.x + Math.random() * VW,
+          y: cam.y - 8 - Math.random() * 20,
+          vx: -20 + Math.random() * 40,
+          vy: 25 + Math.random() * 40,
+          life: 1.8 + Math.random() * 1.5,
+          color: colors[(Math.random() * colors.length) | 0],
+          petal: true,
+          spin: -2 + Math.random() * 4,
+          rot: Math.random() * Math.PI,
+        });
+      }
+    }
 
     cam.x = Math.max(0, Math.min(MW - VW, g.players[0].x - VW / 2));
     cam.y = Math.max(0, Math.min(MH - VH, g.players[0].y - VH / 2));
@@ -2533,6 +2630,7 @@
     if (theme === "diamond") return "#1a4060";
     if (theme === "anime" || animeWorldOn()) return "#3a2850";
     if (theme === "rain" || rainNightOn()) return "#1a3048";
+    if (theme === "parrot") return "#4a3020";
     if (theme === "here") return "#1a3550";
     if (theme === "lucky7") return "#4a1840";
     return base;
@@ -2567,11 +2665,13 @@
             ? "#1a1028"
             : theme === "rain"
               ? "#081420"
-              : theme === "lucky7"
-                ? "#2a0820"
-                : theme === "here"
-                  ? "#0a1824"
-                  : "#101624";
+              : theme === "parrot"
+                ? "#281810"
+                : theme === "lucky7"
+                  ? "#2a0820"
+                  : theme === "here"
+                    ? "#0a1824"
+                    : "#101624";
     ctx.fillRect(0, 0, MW, MH);
 
     for (const room of ROOMS) {
@@ -2587,7 +2687,9 @@
               ? "rgba(255, 160, 220, 0.45)"
               : theme === "rain"
                 ? "rgba(120, 200, 255, 0.4)"
-                : "rgba(255,255,255,0.1)";
+                : theme === "parrot"
+                  ? "rgba(255, 140, 60, 0.45)"
+                  : "rgba(255,255,255,0.1)";
       ctx.lineWidth = theme ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle =
@@ -2599,7 +2701,9 @@
               ? "#ffd0f0"
               : theme === "rain"
                 ? "#c8e8ff"
-                : "rgba(255,255,255,0.7)";
+                : theme === "parrot"
+                  ? "#ffd0a0"
+                  : "rgba(255,255,255,0.7)";
       ctx.font = "800 15px Fredoka, Nunito, sans-serif";
       ctx.fillText(roomLabel(room), room.x + 12, room.y + 24);
     }
@@ -2947,6 +3051,17 @@
       ctx.fillStyle = "rgba(180, 220, 255, 0.75)";
       ctx.font = "800 13px Fredoka, Nunito, sans-serif";
       ctx.fillText("✦ ночная смена", 12, 22);
+    } else if (theme === "parrot") {
+      ctx.fillStyle = "rgba(255, 120, 60, 0.12)";
+      ctx.fillRect(0, 0, VW, VH);
+      const grd = ctx.createRadialGradient(VW * 0.5, VH * 0.2, 30, VW * 0.5, VH * 0.5, VW * 0.75);
+      grd.addColorStop(0, "rgba(255, 200, 80, 0.22)");
+      grd.addColorStop(1, "rgba(40, 120, 60, 0)");
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = "rgba(255, 210, 140, 0.85)";
+      ctx.font = "800 13px Fredoka, Nunito, sans-serif";
+      ctx.fillText("✦ попугай", 12, 22);
     }
 
     if (g.sanity < 35) {
