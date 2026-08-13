@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Portal · внутри Lab</title>
+  <meta name="description" content="Внутренний портал 3D-игр Amal Lab. С главной убраны — живут здесь." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      color: #102018;
+      font-family: Nunito, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 70% 40% at 20% 0%, rgba(59,130,246,.25), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 90% 10%, rgba(126,217,184,.35), transparent 50%),
+        repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(13,110,95,.04) 28px),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc);
+      padding: 1rem 1rem 3rem;
+    }
+    .top {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      margin-bottom: 1rem;
+    }
+    .back, .chip {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.18);
+      color: #0d6e5f;
+      font: 800 13px Nunito, sans-serif;
+      text-decoration: none;
+    }
+    .hero { text-align: center; max-width: 40rem; margin: 0.5rem auto 1.4rem; }
+    .eyebrow {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.18em; color: #0d6e5f;
+    }
+    h1 {
+      font: 700 clamp(1.8rem, 5vw, 2.5rem) Fredoka, sans-serif;
+      color: #0d6e5f; margin: 0.35rem 0;
+    }
+    .sub { color: #5a6a62; font: 600 14px/1.45 Nunito, sans-serif; }
+    .gate {
+      width: min(420px, 92vw);
+      margin: 0 auto 1.4rem;
+      padding: 1.1rem 1.2rem;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #0d6e5f, #1e3a5f);
+      color: #f3efe6;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(13,110,95,.28);
+      animation: portalPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes portalPulse {
+      0%, 100% { box-shadow: 0 16px 40px rgba(13,110,95,.28); }
+      50% { box-shadow: 0 16px 48px rgba(59,130,246,.4); }
+    }
+    .gate strong { display: block; font: 700 1.2rem Fredoka, sans-serif; margin-bottom: 0.3rem; }
+    .sec {
+      max-width: 1000px; margin: 1.2rem auto 0.5rem;
+      font: 800 0.75rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.12em; text-transform: uppercase; color: #0d6e5f;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    a.card {
+      text-decoration: none; color: inherit;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.12);
+      border-radius: 16px; overflow: hidden;
+      display: flex; flex-direction: column; min-height: 150px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    a.card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(16,40,32,.12); }
+    .thumb { height: 72px; display: grid; place-items: center; font-size: 2rem; }
+    .body { padding: 0.85rem 1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
+    .body h2 { font: 700 1.05rem Fredoka, Nunito, sans-serif; }
+    .body p { margin-top: 0.3rem; color: #5a6a62; font: 600 12px/1.4 Nunito, sans-serif; flex: 1; }
+    .go {
+      margin-top: 0.7rem; display: inline-block;
+      padding: 0.4rem 0.8rem; border-radius: 8px;
+      background: #0d6e5f; color: #f3efe6; font: 800 12px Nunito, sans-serif; width: fit-content;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <a class="back" href="../">&larr; Lab главная</a>
+    <a class="chip" href="../animal-hospital/lab-group.html">Группа Lab</a>
+    <a class="chip" href="../animal-hospital/lab.html">Лаборатория</a>
+  </div>
+
+  <header class="hero">
+    <p class="eyebrow">INTERNAL PORTAL</p>
+    <h1>3D Portal</h1>
+    <p class="sub">Все 3D / Roblox-стиль игры убраны с общей главной. Они живут <b>внутри</b> этого портала.</p>
+  </header>
+
+  <div class="gate">
+    <strong>⬡ PORTAL ONLINE</strong>
+    Войди в любую 3D-игру ниже — снаружи каталога их больше нет.
+  </div>
+
+  <p class="sec">Основные 3D</p>
+  <div class="grid" id="main"></div>
+
+  <p class="sec">Черновики 3D</p>
+  <div class="grid" id="drafts"></div>
+
+  <script>
+    const MAIN = [
+      { href: "../obby/", icon: "🏃", title: "Obby", desc: "3D полоса препятствий.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
+      { href: "../tower-defense/", icon: "🏰", title: "Tower Defense", desc: "Башни против волн.", thumb: "linear-gradient(135deg,#16a34a,#1e3a5f)" },
+      { href: "../tycoon/", icon: "🍕", title: "Pizza Tycoon", desc: "Строй пиццерию.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
+      { href: "../murder-mystery/", icon: "🔪", title: "Murder Mystery", desc: "Убийца / шериф / невинный.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
+      { href: "../pet-simulator/", icon: "🥚", title: "Pet Simulator", desc: "Яйца и питомцы.", thumb: "linear-gradient(135deg,#d8b4fe,#7dd3fc)" },
+      { href: "../flee-facility/", icon: "🏃‍♂️", title: "Flee the Facility", desc: "Взлом и побег.", thumb: "linear-gradient(135deg,#111118,#e11d48)" },
+      { href: "../build-boat/", icon: "🚢", title: "Build a Boat", desc: "Строй лодку и плыви.", thumb: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
+      { href: "../minecraft/", icon: "⛏️", title: "CraftWorld", desc: "3D мир, крафт, мобы.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
+      { href: "../hideout/", icon: "🔦", title: "Укрытие", desc: "Прятки в доме хозяина.", thumb: "linear-gradient(135deg,#1a2e24,#3d2a18)" },
+    ];
+    const DRAFTS = [
+      { href: "../adopt-me/", icon: "🐣", title: "Adopt Me Lite", desc: "Черновик.", thumb: "linear-gradient(135deg,#f9a8d4,#7dd3fc)" },
+      { href: "../blox-fruits/", icon: "🍉", title: "Blox Fruits", desc: "Черновик.", thumb: "linear-gradient(135deg,#22c55e,#0ea5e9)" },
+      { href: "../brookhaven-rp/", icon: "🏘️", title: "Брукхейвен RP", desc: "Черновик.", thumb: "linear-gradient(135deg,#94a3b8,#38bdf8)" },
+      { href: "../grow-garden/", icon: "🌱", title: "Вырасти сад", desc: "Черновик.", thumb: "linear-gradient(135deg,#86efac,#65a30d)" },
+      { href: "../nights-forest/", icon: "🌲", title: "99 ночей в лесу", desc: "Черновик.", thumb: "linear-gradient(135deg,#0f172a,#166534)" },
+      { href: "../rivals-arena/", icon: "⚔️", title: "RIVALS Арена", desc: "Черновик.", thumb: "linear-gradient(135deg,#ef4444,#7c3aed)" },
+      { href: "../speed-escape/", icon: "💨", title: "+1 Speed Escape", desc: "Черновик.", thumb: "linear-gradient(135deg,#f97316,#eab308)" },
+      { href: "../steal-brainrot/", icon: "🧠", title: "Steal a Brainrot", desc: "Черновик.", thumb: "linear-gradient(135deg,#a855f7,#ec4899)" },
+    ];
+    function card(g) {
+      return `<a class="card" href="${g.href}"><div class="thumb" style="background:${g.thumb}">${g.icon}</div><div class="body"><h2>${g.title}</h2><p>${g.desc}</p><span class="go">Войти</span></div></a>`;
+    }
+    document.getElementById("main").innerHTML = MAIN.map(card).join("");
+    document.getElementById("drafts").innerHTML = DRAFTS.map(card).join("");
+  </script>
+</body>
+</html>
