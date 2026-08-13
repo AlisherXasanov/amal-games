@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Пельмени · купи · слепи · ухаживай</title>
-  <meta name="description" content="Игра про пельмени: покупай, лепи новых, ухаживай и ешь." />
+  <title>Пельмени · неси · продавай · шоколад</title>
+  <meta name="description" content="Большие пельмени: таскай, продавай, бесконечный шоколад." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./dumplings.css?v=1" />
+  <link rel="stylesheet" href="./dumplings.css?v=2" />
 </head>
 <body>
   <a class="back" href="./index.html">&larr; Больница</a>
 
   <div id="menu" class="screen">
     <p class="brand">Пельмени</p>
-    <p class="sub">Покупай · лепи новых · ухаживай · ешь.<br />Маленькая кухня только для тебя.</p>
+    <p class="sub">Таскай мышкой · продавай в зону 💰 · бесконечный шоколад ∞<br />Купи · слепи · ухаживай · ешь.</p>
     <button type="button" class="btn" id="btnStart">Начать</button>
   </div>
 
@@ -24,8 +24,10 @@
     <div class="topbar">
       <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
       <span id="money">💰 100</span>
+      <span id="choco">🍫 ∞</span>
       <span id="score">❤ 0</span>
     </div>
+    <p class="hint-line">Тяни пельмень · отпусти в «ПРОДАЖА» справа</p>
     <canvas id="c" width="960" height="480"></canvas>
     <div class="bubble" id="bubble" hidden></div>
     <div class="panel" id="panel"></div>
@@ -34,6 +36,8 @@
       <button type="button" class="act" data-act="make">🥟 Слепить (20)</button>
       <button type="button" class="act" data-act="care">♨ Ухаживать</button>
       <button type="button" class="act" data-act="boil">🍲 Варить</button>
+      <button type="button" class="act" data-act="choco">🍫 Шоколад ∞</button>
+      <button type="button" class="act" data-act="sell">💰 Продать</button>
       <button type="button" class="act danger" data-act="eat">🍽 Съесть</button>
     </div>
   </div>
@@ -53,6 +57,6 @@
     </div>
   </div>
 
-  <script src="./dumplings.js?v=1"></script>
+  <script src="./dumplings.js?v=2"></script>
 </body>
 </html>

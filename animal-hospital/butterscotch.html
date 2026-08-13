@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Butterscotch · Ириска</title>
+  <meta name="description" content="Игра про ириску Butterscotch: тяни, собирай, ешь." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./butterscotch.css?v=1" />
+</head>
+<body>
+  <a class="back" href="./index.html">&larr; Больница</a>
+
+  <div id="menu" class="screen">
+    <p class="brand">Butterscotch</p>
+    <p class="sub">Ириска · тяни карамель · собирай кусочки · не дай ей остыть</p>
+    <button type="button" class="btn" id="btnStart">Играть</button>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <div class="topbar">
+      <button type="button" class="btn ghost" id="btnMenu">← Меню</button>
+      <span id="heat">🔥 тепло 100</span>
+      <span id="bits">🍬 0 / 12</span>
+    </div>
+    <canvas id="c" width="960" height="540"></canvas>
+    <div class="bubble" id="bubble" hidden></div>
+    <p class="hint">Тяни большую ириску · лови золотые кусочки · E — откусить</p>
+  </div>
+
+  <div id="win" class="screen overlay" hidden>
+    <div class="card">
+      <p class="brand">✦ Сладкий конец</p>
+      <p class="sub" id="winText"></p>
+      <p class="code" id="winCode"></p>
+      <button type="button" class="btn" id="btnAgain">Ещё раз</button>
+      <button type="button" class="btn ghost" id="btnWinMenu">В меню</button>
+    </div>
+  </div>
+
+  <script src="./butterscotch.js?v=1"></script>
+</body>
+</html>

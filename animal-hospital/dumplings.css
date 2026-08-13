@@ -101,7 +101,14 @@ html, body {
   font: 700 14px Nunito, sans-serif;
 }
 #money, #score { color: #504860; }
-#score { margin-left: auto; color: #c05040; }
+.hint-line {
+  width: min(960px, 100%);
+  text-align: center;
+  color: #8a8098;
+  font: 600 12px Nunito, sans-serif;
+  margin: -2px 0 0;
+}
+#choco { color: #8a5030; }
 
 canvas {
   display: block;
