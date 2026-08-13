@@ -1029,9 +1029,18 @@
   }
 
   function ensureShiftPlaying() {
-    if (g && state === "play") return true;
+    if (g && (state === "play" || state === "desk")) return true;
     toast("Сначала открой смену");
     return false;
+  }
+
+  function refreshDeskIfOpen() {
+    if (state !== "desk" || !g || !g.queue.length) return;
+    deskPatient = g.queue[0];
+    deskName.textContent = `${guestLabel(deskPatient)}${guestKindTag(deskPatient) ? " · " + guestKindTag(deskPatient) : ""} у окна`;
+    deskQueueNote.textContent = `В группе / очереди ещё: ${Math.max(0, g.queue.length - 1)}`;
+    renderInspectViews(deskPatient);
+    showEl(deskPanel);
   }
 
   function spawnQueueGuest(opts) {
@@ -1044,7 +1053,7 @@
       const ch = spawnCharacterDef(opts.rareKind);
       const id = (ch && ch.id) || opts.rareKind;
       if (ch && ch.tex === "here") v.rareKind = "auto";
-      else if (ch && ch.tex) v.rareKind = ch.tex === "builder" ? "builder" : ch.tex;
+      else if (ch && ch.tex) v.rareKind = ch.tex;
       else v.rareKind = id;
       v.guestName = opts.name || (ch && ch.name) || String(id);
       v.isAnomaly = false;
@@ -1054,6 +1063,16 @@
       v.hollow = false;
       v.distort = false;
       v.twitch = false;
+      v.teeth = false;
+      v.noShadow = false;
+      v.wrongPose = false;
+      v.voice = false;
+      v.photoSpecies = v.species;
+      v.cctvSpecies = v.species;
+      // секретного — сразу первым к окну, чтобы увидеть картинку
+      g.queue.unshift(v);
+    } else {
+      g.queue.push(v);
     }
     if (opts && opts.anomaly) {
       v.isAnomaly = true;
@@ -1064,8 +1083,8 @@
         v.twitch = true;
       }
     }
-    g.queue.push(v);
     layoutQueue();
+    refreshDeskIfOpen();
     return v;
   }
 
@@ -2373,56 +2392,83 @@
       return;
     }
     if (rareKind === "sammy") {
+      c.fillStyle = "rgba(226,59,59,0.2)";
+      c.beginPath();
+      c.arc(0, 0, 32, 0, Math.PI * 2);
+      c.fill();
       c.fillStyle = "#e23b3b";
       c.beginPath();
-      c.ellipse(0, 10, 15, 16, 0, 0, Math.PI * 2);
-      c.fill();
-      c.fillStyle = "#f5d76a";
-      c.beginPath();
-      c.arc(0, -10, 12, 0, Math.PI * 2);
+      c.ellipse(0, 12, 16, 17, 0, 0, Math.PI * 2);
       c.fill();
       c.fillStyle = "#c41e2a";
-      c.fillRect(-11, -24, 22, 7);
-      c.fillStyle = "#fff";
-      c.fillRect(-4, -21, 8, 2);
-      c.strokeStyle = "#eee";
-      c.lineWidth = 2;
+      c.fillRect(-16, 4, 32, 8);
+      c.fillStyle = "#f5d76a";
       c.beginPath();
-      c.arc(0, -10, 14, Math.PI * 1.15, Math.PI * 1.85);
+      c.arc(0, -10, 13, 0, Math.PI * 2);
+      c.fill();
+      c.fillStyle = "#c41e2a";
+      c.fillRect(-12, -26, 24, 9);
+      c.fillStyle = "#fff";
+      c.fillRect(-5, -23, 10, 3);
+      c.strokeStyle = "#f0f0f0";
+      c.lineWidth = 3;
+      c.beginPath();
+      c.arc(0, -10, 15, Math.PI * 1.12, Math.PI * 1.88);
       c.stroke();
       c.fillStyle = "#222";
       c.beginPath();
-      c.arc(-4, -11, 2, 0, Math.PI * 2);
-      c.arc(4, -11, 2, 0, Math.PI * 2);
+      c.arc(-4.5, -11, 2.2, 0, Math.PI * 2);
+      c.arc(4.5, -11, 2.2, 0, Math.PI * 2);
       c.fill();
+      c.fillStyle = "#111";
+      c.font = "900 9px Nunito";
+      c.textAlign = "center";
+      c.fillText("Sammy", 0, 28);
+      c.textAlign = "left";
       c.restore();
       return;
     }
     if (rareKind === "jen") {
+      c.fillStyle = "rgba(242,160,216,0.22)";
+      c.beginPath();
+      c.arc(0, 0, 32, 0, Math.PI * 2);
+      c.fill();
       c.fillStyle = "#f2a0d8";
       c.beginPath();
-      c.ellipse(0, 10, 14, 15, 0, 0, Math.PI * 2);
+      c.ellipse(0, 12, 15, 16, 0, 0, Math.PI * 2);
       c.fill();
       c.fillStyle = "#ffe0f2";
+      c.fillRect(-15, 4, 30, 6);
+      c.fillStyle = "#ffe8f5";
       c.beginPath();
-      c.arc(0, -10, 11, 0, Math.PI * 2);
+      c.arc(0, -10, 12, 0, Math.PI * 2);
       c.fill();
       c.fillStyle = "#c45a9a";
       c.beginPath();
-      c.moveTo(-12, -8);
-      c.quadraticCurveTo(-16, -28, 0, -26);
-      c.quadraticCurveTo(16, -28, 12, -8);
+      c.moveTo(-13, -6);
+      c.quadraticCurveTo(-18, -30, 0, -28);
+      c.quadraticCurveTo(18, -30, 13, -6);
       c.fill();
       c.fillStyle = "#fff";
       c.beginPath();
-      c.ellipse(-4, -11, 3, 3.5, 0, 0, Math.PI * 2);
-      c.ellipse(4, -11, 3, 3.5, 0, 0, Math.PI * 2);
+      c.ellipse(-4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
+      c.ellipse(4.5, -11, 3.2, 3.8, 0, 0, Math.PI * 2);
       c.fill();
       c.fillStyle = "#5a2048";
       c.beginPath();
-      c.arc(-4, -10, 1.6, 0, Math.PI * 2);
-      c.arc(4, -10, 1.6, 0, Math.PI * 2);
+      c.arc(-4.5, -10, 1.7, 0, Math.PI * 2);
+      c.arc(4.5, -10, 1.7, 0, Math.PI * 2);
       c.fill();
+      c.strokeStyle = "#c45a9a";
+      c.lineWidth = 2;
+      c.beginPath();
+      c.arc(0, 0, 4, 0.15 * Math.PI, 0.85 * Math.PI);
+      c.stroke();
+      c.fillStyle = "#5a2048";
+      c.font = "900 9px Nunito";
+      c.textAlign = "center";
+      c.fillText("Jen", 0, 28);
+      c.textAlign = "left";
       c.restore();
       return;
     }
@@ -2627,34 +2673,41 @@
       c.fillStyle = bg || "#1a2238";
       c.fillRect(0, 0, 160, 140);
     };
+    const secretPic = !!(v.rareKind && v.rareKind !== "gift");
     clear(ctxP);
     drawCritter(ctxP, 80, 78, {
       species: v.species,
       hollow: v.hollow,
       noShadow: v.noShadow,
       bob: performance.now() / 200,
-      scale: 1.1,
+      scale: secretPic ? 1.35 : 1.1,
       companion: !!v.isCompanion,
       rareKind: v.rareKind || null,
     });
     if (v.rareKind || v.guestName) {
-      ctxP.fillStyle = "#e8f6ff";
-      ctxP.font = "bold 11px Nunito";
+      ctxP.fillStyle = "#ffe08a";
+      ctxP.font = "800 12px Nunito";
       ctxP.textAlign = "center";
-      ctxP.fillText(guestLabel(v), 80, 18);
+      ctxP.fillText(guestLabel(v), 80, 16);
+      const tag = guestKindTag(v);
+      if (tag) {
+        ctxP.fillStyle = "#a8e0ff";
+        ctxP.font = "700 10px Nunito";
+        ctxP.fillText(tag, 80, 130);
+      }
       ctxP.textAlign = "left";
     }
-    if (v.twitch) {
+    if (v.twitch && !secretPic) {
       ctxP.fillStyle = "#ffd36a";
       ctxP.font = "bold 11px Nunito";
       ctxP.fillText("дёргается…", 42, 130);
     }
-    if (v.voice) {
+    if (v.voice && !secretPic) {
       ctxP.fillStyle = "#ef4d5a";
       ctxP.font = "bold 11px Nunito";
       ctxP.fillText("«хррр…»", 55, 18);
     }
-    if (v.noShadow) {
+    if (v.noShadow && !secretPic) {
       ctxP.fillStyle = "#ffd36a";
       ctxP.font = "bold 10px Nunito";
       ctxP.fillText("нет тени", 50, 130);
@@ -2663,21 +2716,25 @@
     clear(ctxPh);
     drawCritter(ctxPh, 80, 78, {
       species: v.photoSpecies,
-      distort: v.distort,
-      wrongPose: v.wrongPose,
+      distort: secretPic ? false : v.distort,
+      wrongPose: secretPic ? false : v.wrongPose,
       bob: 0,
-      scale: 1.05,
+      scale: secretPic ? 1.3 : 1.05,
+      companion: !!v.isCompanion,
+      rareKind: secretPic ? v.rareKind : null,
     });
     ctxPh.fillStyle = "#9aa8c0";
     ctxPh.font = "bold 10px Nunito";
-    ctxPh.fillText("УДОСТОВЕРЕНИЕ", 8, 14);
+    ctxPh.fillText(secretPic ? "ФОТО · " + guestKindTag(v) : "УДОСТОВЕРЕНИЕ", 8, 14);
 
     clear(ctxC, "#0a2818");
     drawCritter(ctxC, 80, 78, {
       species: v.cctvSpecies,
-      teeth: v.teeth,
+      teeth: secretPic ? false : v.teeth,
       bob: performance.now() / 350,
-      scale: 1.0,
+      scale: secretPic ? 1.25 : 1.0,
+      companion: !!v.isCompanion,
+      rareKind: secretPic ? v.rareKind : null,
     });
     ctxC.strokeStyle = "rgba(80,255,120,0.3)";
     for (let y = 0; y < 140; y += 4) {
@@ -2688,7 +2745,7 @@
     }
     ctxC.fillStyle = "#6dff9a";
     ctxC.font = "bold 10px Nunito";
-    ctxC.fillText("КАМЕРА", 10, 14);
+    ctxC.fillText(secretPic ? "КАМЕРА · " + guestKindTag(v) : "КАМЕРА", 10, 14);
   }
 
   function openDesk() {
