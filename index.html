@@ -295,6 +295,41 @@
       place-items: center;
       /* тень здесь, а не на самом кубе — иначе filter «сплющивает» 3D */
       filter: drop-shadow(0 12px 22px rgba(0,0,0,.32));
+      /* нестабильность: изредка куб дёргает и сдвигает цвет, будто он «живой» */
+      animation: menuCubeUnstable 8s ease-in-out infinite;
+    }
+    /* глитч: почти всегда куб спокойный, но раз в 8 сек — короткий разрыв цвета и дрожь */
+    @keyframes menuCubeUnstable {
+      0%, 70% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(0deg) saturate(1); transform: translateX(0); }
+      72% { filter: drop-shadow(0 0 14px rgba(0,229,255,.7)) hue-rotate(140deg) saturate(1.7); transform: translateX(-4px); }
+      74% { filter: drop-shadow(0 0 14px rgba(255,0,80,.7)) hue-rotate(300deg) saturate(1.7); transform: translateX(5px); }
+      76% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(60deg) saturate(1.3); transform: translateX(-3px); }
+      78%, 100% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(0deg) saturate(1); transform: translateX(0); }
+    }
+    /* «разрыв» — узкая RGB-полоса сбоку изредка съезжает вбок */
+    .menu-cube-stage::after {
+      content: "";
+      position: absolute;
+      left: -10px; right: -10px;
+      top: 42%;
+      height: 10px;
+      z-index: 6;
+      pointer-events: none;
+      border-radius: 3px;
+      background: linear-gradient(90deg, rgba(255,0,80,.85), rgba(255,255,255,.6), rgba(0,229,255,.85));
+      mix-blend-mode: screen;
+      opacity: 0;
+      animation: menuCubeTear 8s ease-in-out infinite;
+    }
+    @keyframes menuCubeTear {
+      0%, 69% { opacity: 0; transform: translateX(0); top: 42%; }
+      71% { opacity: .9; transform: translateX(-10px); top: 34%; }
+      73% { opacity: .7; transform: translateX(9px); top: 56%; }
+      75% { opacity: .85; transform: translateX(-6px); top: 46%; }
+      77%, 100% { opacity: 0; transform: translateX(0); top: 42%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .menu-cube-stage, .menu-cube-stage::after { animation: none; }
     }
     .menu-cube-rainbow {
       position: absolute;
