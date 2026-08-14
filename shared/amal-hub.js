@@ -4071,25 +4071,39 @@
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif}" +
       "#amal-cube-btn:hover,#amal-cube-btn:active{transform:scale(1.08)}" +
       "@media(max-width:480px){#amal-cube-pickup,#amal-cube-btn{right:12px;top:38dvh}}" +
-      /* боковые панели — не перекрывают центр, можно играть */
+      /* боковые панели — не перекрывают центр, можно играть и таскать их */
       "#amal-cube-dash{position:fixed;inset:0;z-index:2147483002;pointer-events:none;font-family:system-ui,sans-serif}" +
-      "#amal-cube-dash .acd-col{position:absolute;top:58px;bottom:12px;display:flex;flex-direction:column;gap:8px;width:172px;max-width:44vw;overflow:auto;pointer-events:none}" +
-      "#amal-cube-dash .acd-col.left{left:8px}#amal-cube-dash .acd-col.right{right:8px}" +
-      "#amal-cube-dash .acd-panel{pointer-events:auto;background:linear-gradient(165deg,rgba(24,16,4,.96),rgba(10,14,26,.96));border:1px solid #fbbf24;border-radius:14px;padding:8px;box-shadow:0 10px 26px rgba(0,0,0,.5);color:#fff7ed}" +
-      "#amal-cube-dash .acd-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}" +
-      "#amal-cube-dash .acd-h b{font-size:11px;letter-spacing:.03em;color:#fde68a}" +
-      "#amal-cube-dash .acd-h button{width:20px;height:20px;border:0;border-radius:6px;background:rgba(255,255,255,.14);color:#fff;font-size:11px;cursor:pointer;line-height:1}" +
-      "#amal-cube-dash .acd-btn{display:block;width:100%;margin:4px 0 0;min-height:38px;border:0;border-radius:10px;cursor:pointer;background:rgba(52,211,153,.2);color:#d1fae5;font:800 12px system-ui,sans-serif;touch-action:manipulation}" +
-      "#amal-cube-dash .acd-btn.amber{background:rgba(251,191,36,.22);color:#fde68a}" +
-      "#amal-cube-dash .acd-btn.max{background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font-weight:950}" +
-      "#amal-cube-dash .acd-stats{display:flex;gap:5px;margin-bottom:5px}" +
-      "#amal-cube-dash .acd-stat{flex:1;text-align:center;background:rgba(255,255,255,.06);border-radius:8px;padding:5px 2px}" +
-      "#amal-cube-dash .acd-stat .n{font:900 15px system-ui,sans-serif;color:#fde68a}#amal-cube-dash .acd-stat .l{font-size:8px;opacity:.7;text-transform:uppercase}" +
-      "#amal-cube-dash .acd-list{font-size:10px;line-height:1.4;max-height:120px;overflow:auto;color:#e2e8f0}" +
-      "#amal-cube-dash input.acd-amt{width:100%;box-sizing:border-box;border:0;border-radius:8px;padding:8px;font:800 13px system-ui,sans-serif;background:#0b1220;color:#fff7ed;margin-bottom:4px}" +
-      "#amal-cube-dash .acd-presets{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px}" +
-      "#amal-cube-dash .acd-presets button{flex:1 0 auto;padding:5px 6px;border:0;border-radius:999px;background:rgba(251,191,36,.16);color:#fde68a;font:800 10px system-ui,sans-serif;cursor:pointer}" +
-      "@media(max-width:480px){#amal-cube-dash .acd-col{width:132px;top:52px}#amal-cube-dash .acd-btn{min-height:34px;font-size:11px}}";
+      "#amal-cube-dash .acd-col{position:absolute;top:56px;bottom:10px;display:flex;flex-direction:column;gap:10px;width:196px;max-width:46vw;overflow:visible;pointer-events:none}" +
+      "#amal-cube-dash .acd-col.left{left:10px}#amal-cube-dash .acd-col.right{right:10px}" +
+      "#amal-cube-dash .acd-panel{pointer-events:auto;position:relative;background:linear-gradient(168deg,rgba(31,18,3,.97),rgba(8,11,22,.97));" +
+      "border:1.5px solid rgba(251,191,36,.75);border-radius:16px;padding:0 0 9px;color:#fff7ed;" +
+      "box-shadow:0 0 0 1px rgba(255,255,255,.05) inset,0 0 22px rgba(251,191,36,.16),0 14px 34px rgba(0,0,0,.6);overflow:hidden}" +
+      "#amal-cube-dash .acd-panel.acd-free{position:fixed;width:196px;max-width:46vw;z-index:5}" +
+      "#amal-cube-dash .acd-panel.acd-dragging{opacity:.92;box-shadow:0 0 0 2px #fbbf24,0 20px 44px rgba(0,0,0,.7)}" +
+      "#amal-cube-dash .acd-h{display:flex;align-items:center;gap:5px;padding:8px 9px;margin-bottom:7px;cursor:grab;touch-action:none;" +
+      "background:linear-gradient(100deg,rgba(251,191,36,.32),rgba(249,115,22,.12));border-bottom:1px solid rgba(251,191,36,.32)}" +
+      "#amal-cube-dash .acd-h:active{cursor:grabbing}" +
+      "#amal-cube-dash .acd-h .grip{color:rgba(253,230,138,.8);font-size:12px;letter-spacing:-1px}" +
+      "#amal-cube-dash .acd-h b{flex:1;font:900 11.5px system-ui,sans-serif;letter-spacing:.05em;color:#fde68a;text-shadow:0 0 10px rgba(251,191,36,.5)}" +
+      "#amal-cube-dash .acd-h button{width:24px;height:24px;flex:0 0 auto;border:0;border-radius:8px;background:rgba(0,0,0,.4);color:#fde68a;font-size:12px;cursor:pointer;line-height:1;touch-action:manipulation}" +
+      "#amal-cube-dash .acd-body{padding:0 9px}" +
+      "#amal-cube-dash .acd-panel.acd-min{padding-bottom:0}#amal-cube-dash .acd-panel.acd-min .acd-h{margin-bottom:0}" +
+      "#amal-cube-dash .acd-panel.acd-min .acd-body{display:none}" +
+      "#amal-cube-dash .acd-btn{display:block;width:100%;margin:5px 0 0;min-height:42px;border:1px solid rgba(255,255,255,.09);border-radius:11px;cursor:pointer;" +
+      "background:linear-gradient(150deg,rgba(52,211,153,.24),rgba(16,185,129,.1));color:#d1fae5;font:800 12.5px system-ui,sans-serif;touch-action:manipulation}" +
+      "#amal-cube-dash .acd-btn:active{transform:scale(.97)}" +
+      "#amal-cube-dash .acd-btn.amber{background:linear-gradient(150deg,rgba(251,191,36,.26),rgba(217,119,6,.12));color:#fde68a}" +
+      "#amal-cube-dash .acd-btn.max{background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font-weight:950;letter-spacing:.04em;box-shadow:0 0 16px rgba(251,191,36,.45)}" +
+      "#amal-cube-dash .acd-btn.done{background:rgba(255,255,255,.07);color:#94a3b8;cursor:default}" +
+      "#amal-cube-dash .acd-stats{display:flex;gap:6px;margin-bottom:6px}" +
+      "#amal-cube-dash .acd-stat{flex:1;text-align:center;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 2px}" +
+      "#amal-cube-dash .acd-stat .n{font:900 18px system-ui,sans-serif;color:#fde68a}#amal-cube-dash .acd-stat .l{font-size:8px;opacity:.7;text-transform:uppercase;letter-spacing:.05em}" +
+      "#amal-cube-dash .acd-list{font-size:11px;line-height:1.5;max-height:118px;overflow:auto;color:#e2e8f0;background:rgba(0,0,0,.28);border-radius:9px;padding:6px 8px}" +
+      "#amal-cube-dash input.acd-amt{width:100%;box-sizing:border-box;border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:9px;font:900 14px system-ui,sans-serif;background:#080c17;color:#fde68a;margin-bottom:5px;text-align:center}" +
+      "#amal-cube-dash .acd-presets{display:flex;flex-wrap:wrap;gap:5px}" +
+      "#amal-cube-dash .acd-presets button{flex:1 0 auto;min-height:28px;padding:5px 7px;border:0;border-radius:999px;background:rgba(251,191,36,.18);color:#fde68a;font:800 10.5px system-ui,sans-serif;cursor:pointer;touch-action:manipulation}" +
+      "@media(max-width:480px){#amal-cube-dash .acd-col{width:154px;top:52px}#amal-cube-dash .acd-panel.acd-free{width:154px}" +
+      "#amal-cube-dash .acd-btn{min-height:38px;font-size:11.5px}#amal-cube-dash .acd-stat .n{font-size:16px}}";
     document.head.appendChild(s);
   }
 
@@ -4148,47 +4162,270 @@
   }
 
   function refreshCubeDashPlayers() {
+    const dash = document.getElementById("amal-cube-dash");
+    if (!dash || dash.style.display === "none") return;
+    setLegacyThingsBarHidden(true);
     const box = document.getElementById("amal-cube-players-body");
     if (box) box.innerHTML = cubeDashPlayersHtml();
   }
 
+  /** Эксклюзивные вещи админа переезжают в панель куба, чтобы нижний бар не закрывал игру. */
+  function cubeDashThingsHtml() {
+    let loot = [];
+    try {
+      loot = (global.AmalAdminThings && AmalAdminThings.lootFor()) || [];
+    } catch (_) {
+      loot = [];
+    }
+    if (!loot.length) return "";
+    return loot
+      .map((it) => {
+        let has = false;
+        try {
+          has = !!(global.AmalAdminThings && AmalAdminThings.owned(it.id));
+        } catch (_) {
+          has = false;
+        }
+        return (
+          '<button type="button" class="acd-btn' +
+          (has ? " done" : " amber") +
+          '" data-thing="' +
+          escapeHtml(it.id) +
+          '">' +
+          (has ? "✓ " : "") +
+          (it.emoji || "✨") +
+          " " +
+          escapeHtml(it.label || it.id) +
+          "</button>"
+        );
+      })
+      .join("");
+  }
+
+  function refreshCubeDashThings() {
+    const box = document.getElementById("amal-cube-things-body");
+    if (!box) return;
+    const html = cubeDashThingsHtml();
+    box.innerHTML = html;
+    const panel = box.closest(".acd-panel");
+    if (panel) panel.style.display = html ? "" : "none";
+  }
+
+  /** Нижний бар вещей закрывает игру — пока панели открыты, он не нужен. */
+  function setLegacyThingsBarHidden(hidden) {
+    const bar = document.getElementById("amal-admin-things");
+    if (bar) bar.style.display = hidden ? "none" : "";
+  }
+
+  function cubeFlagStore() {
+    try {
+      return JSON.parse(localStorage.getItem("amal-cube-flags-v1") || "{}") || {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function saveCubePanelFlag(kind, id, value) {
+    try {
+      const all = cubeFlagStore();
+      if (!all[kind] || typeof all[kind] !== "object") all[kind] = {};
+      if (value) all[kind][id] = true;
+      else delete all[kind][id];
+      localStorage.setItem("amal-cube-flags-v1", JSON.stringify(all));
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function cubePosStore() {
+    try {
+      return JSON.parse(localStorage.getItem("amal-cube-pos-v1") || "{}") || {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function saveCubePos(id, x, y) {
+    try {
+      const all = cubePosStore();
+      all[id] = { x: Math.round(x), y: Math.round(y) };
+      localStorage.setItem("amal-cube-pos-v1", JSON.stringify(all));
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function placeCubePanel(panel, x, y) {
+    const w = panel.offsetWidth || 180;
+    const h = panel.offsetHeight || 120;
+    const maxX = Math.max(2, window.innerWidth - w - 4);
+    const maxY = Math.max(2, window.innerHeight - Math.min(h, 120) - 4);
+    const nx = Math.min(Math.max(2, x), maxX);
+    const ny = Math.min(Math.max(2, y), maxY);
+    panel.classList.add("acd-free");
+    panel.style.left = nx + "px";
+    panel.style.top = ny + "px";
+    return { x: nx, y: ny };
+  }
+
+  /** Панели можно перетащить за шапку — пальцем или мышью. */
+  function makeCubePanelDraggable(panel, dash) {
+    const head = panel.querySelector(".acd-h");
+    if (!head) return;
+    let dx = 0;
+    let dy = 0;
+    let moved = false;
+    const onMove = (ev) => {
+      moved = true;
+      placeCubePanel(panel, ev.clientX - dx, ev.clientY - dy);
+    };
+    const onUp = (ev) => {
+      head.removeEventListener("pointermove", onMove);
+      head.removeEventListener("pointerup", onUp);
+      head.removeEventListener("pointercancel", onUp);
+      panel.classList.remove("acd-dragging");
+      try {
+        head.releasePointerCapture(ev.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+      if (moved) {
+        const r = panel.getBoundingClientRect();
+        saveCubePos(panel.getAttribute("data-panel"), r.left, r.top);
+      }
+    };
+    head.addEventListener("pointerdown", (ev) => {
+      if (ev.target.closest("button")) return;
+      const r = panel.getBoundingClientRect();
+      dx = ev.clientX - r.left;
+      dy = ev.clientY - r.top;
+      moved = false;
+      if (panel.parentElement !== dash) dash.appendChild(panel);
+      placeCubePanel(panel, r.left, r.top);
+      panel.classList.add("acd-dragging");
+      try {
+        head.setPointerCapture(ev.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+      head.addEventListener("pointermove", onMove);
+      head.addEventListener("pointerup", onUp);
+      head.addEventListener("pointercancel", onUp);
+      ev.preventDefault();
+    });
+  }
+
+  function cubePanelHtml(id, title, body, extraBtn, attrs) {
+    return (
+      '<div class="acd-panel" data-panel="' +
+      id +
+      '"' +
+      (attrs || "") +
+      '><div class="acd-h"><span class="grip">⠿</span><b>' +
+      title +
+      "</b>" +
+      (extraBtn || "") +
+      '<button type="button" data-cube="min" title="Свернуть">▾</button>' +
+      '<button type="button" data-cube="hide" title="Убрать эту панель">✕</button></div>' +
+      '<div class="acd-body">' +
+      body +
+      "</div></div>"
+    );
+  }
+
   function showCubeDashboard() {
     ensureCubeStyles();
-    if (document.getElementById("amal-cube-dash")) {
-      document.getElementById("amal-cube-dash").style.display = "block";
+    const existing = document.getElementById("amal-cube-dash");
+    if (existing) {
+      existing.style.display = "block";
+      try {
+        localStorage.setItem("amal-cube-dash-open-v1", "1");
+      } catch (_) {
+        /* ignore */
+      }
+      setLegacyThingsBarHidden(true);
       refreshCubeDashPlayers();
+      refreshCubeDashThings();
       return;
     }
     const dash = document.createElement("div");
     dash.id = "amal-cube-dash";
+    const things = cubeDashThingsHtml();
+    const thingsStyle = things ? "" : ' style="display:none"';
     dash.innerHTML =
       '<div class="acd-col left">' +
-      '<div class="acd-panel"><div class="acd-h"><b>👥 ИГРОКИ</b><button type="button" data-cube="close" title="Скрыть">✕</button></div>' +
-      '<div id="amal-cube-players-body">' + cubeDashPlayersHtml() + "</div></div>" +
+      cubePanelHtml(
+        "players",
+        "👥 ИГРОКИ",
+        '<div id="amal-cube-players-body">' + cubeDashPlayersHtml() + "</div>",
+        '<button type="button" data-cube="reset" title="Вернуть панели по бокам">↺</button>',
+      ) +
+      cubePanelHtml("things", "👑 ТВОИ ВЕЩИ", '<div id="amal-cube-things-body">' + things + "</div>", "", thingsStyle) +
       "</div>" +
       '<div class="acd-col right">' +
-      '<div class="acd-panel"><div class="acd-h"><b>⚡ СПОСОБНОСТИ</b></div>' +
-      '<button type="button" class="acd-btn max" data-cube="ab-max">⚡ ВСЁ НА МАКС</button>' +
-      '<button type="button" class="acd-btn" data-cube="ab-coins">💰 ∞ монеты</button>' +
-      '<button type="button" class="acd-btn" data-cube="ab-heal">💚 Полный хилл</button>' +
-      '<button type="button" class="acd-btn" data-cube="ab-god">🛡️ Бессмертие</button>' +
-      '<button type="button" class="acd-btn" data-cube="ab-speed">⚡ Скорость</button>' +
-      '<button type="button" class="acd-btn" data-cube="ab-unlock">🔓 Всё открыть</button>' +
-      "</div>" +
-      '<div class="acd-panel"><div class="acd-h"><b>🎁 ВЫДАТЬ СЕБЕ</b></div>' +
-      '<input class="acd-amt" id="amal-cube-amount" type="text" inputmode="numeric" value="100000" placeholder="Напиши число" />' +
-      '<div class="acd-presets"><button type="button" data-amt="1000">1К</button><button type="button" data-amt="100000">100К</button><button type="button" data-amt="1000000">1М</button><button type="button" data-amt="999999999">∞</button></div>' +
-      '<button type="button" class="acd-btn amber" data-cube="give-coins">💰 Монеты</button>' +
-      '<button type="button" class="acd-btn amber" data-cube="give-score">🏆 Очки</button>' +
-      '<button type="button" class="acd-btn amber" data-cube="give-cups">🏅 Кубки</button>' +
-      "</div>" +
+      cubePanelHtml(
+        "abilities",
+        "⚡ СПОСОБНОСТИ",
+        '<button type="button" class="acd-btn max" data-cube="ab-max">⚡ ВСЁ НА МАКС</button>' +
+          '<button type="button" class="acd-btn" data-cube="ab-coins">💰 ∞ монеты</button>' +
+          '<button type="button" class="acd-btn" data-cube="ab-heal">💚 Полный хилл</button>' +
+          '<button type="button" class="acd-btn" data-cube="ab-god">🛡️ Бессмертие</button>' +
+          '<button type="button" class="acd-btn" data-cube="ab-speed">⚡ Скорость</button>' +
+          '<button type="button" class="acd-btn" data-cube="ab-unlock">🔓 Всё открыть</button>',
+      ) +
+      cubePanelHtml(
+        "give",
+        "🎁 ВЫДАТЬ СЕБЕ",
+        '<input class="acd-amt" id="amal-cube-amount" type="text" inputmode="numeric" value="100000" placeholder="Напиши число" />' +
+          '<div class="acd-presets"><button type="button" data-amt="1000">1К</button><button type="button" data-amt="100000">100К</button><button type="button" data-amt="1000000">1М</button><button type="button" data-amt="999999999">∞</button></div>' +
+          '<button type="button" class="acd-btn amber" data-cube="give-coins">💰 Монеты</button>' +
+          '<button type="button" class="acd-btn amber" data-cube="give-score">🏆 Очки</button>' +
+          '<button type="button" class="acd-btn amber" data-cube="give-cups">🏅 Кубки</button>',
+      ) +
       "</div>";
     dash.addEventListener("click", (e) => {
+      const thing = e.target.closest("[data-thing]");
+      if (thing) {
+        try {
+          if (global.AmalAdminThings && AmalAdminThings.claim) AmalAdminThings.claim(thing.getAttribute("data-thing"));
+        } catch (_) {
+          /* ignore */
+        }
+        setLegacyThingsBarHidden(true);
+        refreshCubeDashThings();
+        return;
+      }
       const b = e.target.closest("[data-cube]");
       if (b) {
         const act = b.getAttribute("data-cube");
-        if (act === "close") {
-          dash.style.display = "none";
+        if (act === "min") {
+          const panel = b.closest(".acd-panel");
+          if (panel) {
+            const min = panel.classList.toggle("acd-min");
+            b.textContent = min ? "▸" : "▾";
+            saveCubePanelFlag("min", panel.getAttribute("data-panel"), min);
+          }
+          return;
+        }
+        if (act === "hide") {
+          const panel = b.closest(".acd-panel");
+          if (panel) {
+            panel.style.display = "none";
+            setLegacyThingsBarHidden(true);
+            saveCubePanelFlag("hidden", panel.getAttribute("data-panel"), true);
+            showHubToast("Панель убрана · кубик 🎲 вернёт");
+          }
+          return;
+        }
+        if (act === "reset") {
+          try {
+            localStorage.removeItem("amal-cube-pos-v1");
+            localStorage.removeItem("amal-cube-flags-v1");
+          } catch (_) {
+            /* ignore */
+          }
+          dash.remove();
+          showCubeDashboard();
           return;
         }
         if (act === "admin-full") {
@@ -4212,6 +4449,55 @@
       }
     });
     document.body.appendChild(dash);
+    try {
+      localStorage.setItem("amal-cube-dash-open-v1", "1");
+    } catch (_) {
+      /* ignore */
+    }
+    // вещи подключаются своим скриптом чуть позже хаба
+    setTimeout(refreshCubeDashThings, 900);
+    const saved = cubePosStore();
+    const flags = cubeFlagStore();
+    dash.querySelectorAll(".acd-panel").forEach((panel) => {
+      makeCubePanelDraggable(panel, dash);
+      const id = panel.getAttribute("data-panel");
+      const pos = saved[id];
+      if (pos) {
+        dash.appendChild(panel);
+        placeCubePanel(panel, pos.x, pos.y);
+      }
+      if (flags.min && flags.min[id]) {
+        panel.classList.add("acd-min");
+        const mb = panel.querySelector('[data-cube="min"]');
+        if (mb) mb.textContent = "▸";
+      }
+      if (flags.hidden && flags.hidden[id]) panel.style.display = "none";
+    });
+    setLegacyThingsBarHidden(true);
+  }
+
+  /** Кубик — выключатель: одним нажатием убрать все панели с экрана и вернуть обратно. */
+  function toggleCubeDashboard() {
+    const dash = document.getElementById("amal-cube-dash");
+    if (dash && dash.style.display !== "none") {
+      dash.style.display = "none";
+      try {
+        localStorage.setItem("amal-cube-dash-open-v1", "0");
+      } catch (_) {
+        /* ignore */
+      }
+      return;
+    }
+    if (dash) {
+      // вернуть и те панели, что были убраны крестиком
+      dash.querySelectorAll(".acd-panel").forEach((p) => {
+        const id = p.getAttribute("data-panel");
+        if (id === "things" && !document.querySelector("#amal-cube-things-body .acd-btn")) return;
+        p.style.display = "";
+        saveCubePanelFlag("hidden", id, false);
+      });
+    }
+    showCubeDashboard();
   }
 
   function showCubeButton() {
@@ -4223,9 +4509,9 @@
     btn.id = "amal-cube-btn";
     btn.type = "button";
     btn.textContent = "🎲";
-    btn.title = "Админ-куб: панели способностей и игроков";
-    btn.setAttribute("aria-label", "Открыть боковые панели админ-куба");
-    btn.addEventListener("click", showCubeDashboard);
+    btn.title = "Админ-куб: показать или спрятать панели";
+    btn.setAttribute("aria-label", "Показать или спрятать боковые панели админ-куба");
+    btn.addEventListener("click", toggleCubeDashboard);
     document.body.appendChild(btn);
   }
 
@@ -4268,7 +4554,20 @@
   function mountSecretCube() {
     if (!isOwner()) return;
     const state = cubeState();
-    if (state === "active") showCubeButton();
+    if (state === "active") {
+      showCubeButton();
+      // вещи живут в панели куба — нижний бар больше не закрывает игру
+      setLegacyThingsBarHidden(true);
+      setTimeout(() => setLegacyThingsBarHidden(true), 700);
+      setTimeout(() => setLegacyThingsBarHidden(true), 1500);
+      let open = "1";
+      try {
+        open = localStorage.getItem("amal-cube-dash-open-v1") || "1";
+      } catch (_) {
+        open = "1";
+      }
+      if (open !== "0") showCubeDashboard();
+    }
     else if (state === "taken") showCubeActivate();
     else showCubePickup();
   }
@@ -4302,7 +4601,10 @@
       bumpPresence();
       updateSameGameStrip();
       maybeRepaintPlayers();
-      if (isOwner()) refreshCubeDashPlayers();
+      if (isOwner() && cubeState() === "active") {
+        setLegacyThingsBarHidden(true);
+        refreshCubeDashPlayers();
+      }
       if (!isOwner() && myBanStatus()) enforceBanGate();
     }, 8000);
     const abuse = activeAbuse();
