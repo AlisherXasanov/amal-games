@@ -828,8 +828,7 @@
     if (isGuestMode()) storeSet(KEYS.nickGuest, nick);
     else storeSet(KEYS.nick, nick);
     const reg = registerEverywhere(nick, gameIdFromPath());
-    if (!isOwner()) bumpPresence();
-    else removeSelfFromPresence();
+    bumpPresence();
     if (reg.isNew && !isOwner()) {
       broadcastRegistration(reg.entry);
     } else if (!reg.isNew && prev.toLowerCase() === nick.toLowerCase()) {
@@ -889,10 +888,11 @@
 
   function upsertLivePlayer(data) {
     if (!data || !data.nick) return;
-    // Хозяин сам себя в список не пишет; чужих с тем же ником — пишет
+    // Хозяин сам себя в список не пишет как «гостя»; роль owner — можно
     if (
       isOwner() &&
       data.role !== "guest" &&
+      data.role !== "owner" &&
       !data.liveGuest &&
       String(data.nick).toLowerCase() === (getNick() || "").toLowerCase()
     ) {
@@ -907,6 +907,7 @@
       at: data.at || Date.now(),
       live: true,
       role: data.role || "guest",
+      liveGuest: !!data.liveGuest,
     };
     // Дублируем в localStorage хозяина, чтобы список не пустел сразу
     if (isOwner()) {
@@ -914,6 +915,52 @@
       map[nick] = { ...livePlayers[nick], live: true };
       storeSet(KEYS.presence, map);
     }
+    maybeRepaintPlayers();
+    if (isOwner()) broadcastRoster();
+  }
+
+  function broadcastRoster() {
+    if (!isOwner()) return;
+    const players = recentPlayers(1000 * 60 * 5).map((p) => ({
+      nick: p.nick,
+      game: p.game,
+      gameTitle: p.gameTitle,
+      at: p.at,
+      live: true,
+      role: p.role || "guest",
+      liveGuest: !!p.liveGuest,
+    }));
+    const payload = { type: "roster", players, at: Date.now() };
+    hostConnections.forEach((conn) => {
+      try {
+        if (conn && conn.open) conn.send(payload);
+      } catch {
+        /* ignore */
+      }
+    });
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function applyRoster(data) {
+    if (!data || !Array.isArray(data.players)) return;
+    data.players.forEach((p) => {
+      if (!p || !p.nick) return;
+      const nick = String(p.nick).trim();
+      livePlayers[nick] = {
+        nick,
+        game: p.game || "portal",
+        gameTitle: gameTitle(p.game || "portal"),
+        at: p.at || Date.now(),
+        live: true,
+        role: p.role || "guest",
+        liveGuest: !!p.liveGuest,
+      };
+    });
+    updateSameGameStrip();
     maybeRepaintPlayers();
   }
 
@@ -928,6 +975,17 @@
   }
 
   function playersInThisGame(maxAgeMs) {
+    const gid = gameIdFromPath();
+    const myNick = (getNick() || "").toLowerCase();
+    return recentPlayers(maxAgeMs)
+      .filter((p) => p && p.game === gid)
+      .filter((p) => {
+        // в полоске «с тобой» показываем других; себя добавим отдельно
+        return String(p.nick || "").toLowerCase() !== myNick;
+      });
+  }
+
+  function playersInThisGameAll(maxAgeMs) {
     const gid = gameIdFromPath();
     return recentPlayers(maxAgeMs).filter((p) => p && p.game === gid);
   }
@@ -1456,9 +1514,11 @@
       if (old) old.remove();
       return;
     }
-    const peers = playersInThisGame();
-    // Сверху не шумим, если ты один — полоска только когда есть другие
-    if (!peers.length) {
+    const all = playersInThisGameAll();
+    const myNick = (getNick() || "").toLowerCase();
+    const others = all.filter((p) => String(p.nick || "").toLowerCase() !== myNick);
+    // Полоска если есть кто-то ещё ИЛИ ты хозяин и уже в игре (чтобы видеть очередь входа)
+    if (!others.length && !(isOwner() && all.length)) {
       if (old) old.remove();
       return;
     }
@@ -1468,18 +1528,39 @@
       el.id = "amal-same-game";
       document.body.appendChild(el);
     }
-    const faces = peers
-      .slice(0, 6)
-      .map((p) => '<img src="' + faceUrl(p.nick) + '" title="' + escapeHtml(p.nick) + '" alt="" />')
+    const ordered = all.slice().sort((a, b) => (a.at || 0) - (b.at || 0));
+    const faces = ordered
+      .slice(0, 8)
+      .map((p) => {
+        const mine = String(p.nick || "").toLowerCase() === myNick;
+        const title = mine ? "Ты · " + p.nick : p.nick + (p.role === "owner" ? " · хозяин" : "");
+        return (
+          '<img src="' +
+          faceUrl(p.nick) +
+          '" title="' +
+          escapeHtml(title) +
+          '" alt="" style="' +
+          (mine ? "box-shadow:0 0 0 2px #fbbf24;" : "") +
+          '" />'
+        );
+      })
       .join("");
+    const names = ordered
+      .map((p, i) => {
+        const mine = String(p.nick || "").toLowerCase() === myNick;
+        const first = i === 0 ? " · первый" : "";
+        if (mine) return "<b>Ты</b>" + first;
+        return escapeHtml(p.nick) + (p.role === "owner" ? " (хозяин)" : "") + first;
+      })
+      .join(", ");
     el.innerHTML =
       '<span class="sg-faces">' +
       faces +
-      "</span><span>С тобой в игре: <b>" +
-      peers.map((p) => escapeHtml(p.nick)).join(", ") +
-      "</b> · " +
-      peers.length +
-      "</span>";
+      "</span><span>В этой игре: " +
+      names +
+      " · <b>" +
+      ordered.length +
+      "</b></span>";
   }
 
   function clearIncomingNotes() {
@@ -1510,18 +1591,44 @@
   }
 
   function bumpPresence() {
-    // Главного админа в список игроков НЕ пишем
+    const nick = getNick();
+    const gid = gameIdFromPath();
+    if (!nick) return;
+    // Хозяин тоже светится в игре, чтобы гости видели обоих (и кто зашёл первым)
     if (isOwner()) {
-      removeSelfFromPresence();
+      if (!gid || gid === "portal") {
+        removeSelfFromPresence();
+        broadcastRoster();
+        return;
+      }
+      const ownerPayload = {
+        type: "presence",
+        nick,
+        game: gid,
+        gameTitle: gameTitle(gid),
+        at: Date.now(),
+        live: true,
+        role: "owner",
+        liveGuest: false,
+      };
+      livePlayers[nick] = ownerPayload;
+      const map = loadPresence();
+      map[nick] = ownerPayload;
+      storeSet(KEYS.presence, map);
+      try {
+        if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(ownerPayload);
+      } catch {
+        /* ignore */
+      }
+      broadcastRoster();
+      updateSameGameStrip();
       return;
     }
-    const nick = getNick();
-    if (!nick) return;
     const payload = {
       type: "presence",
       nick,
-      game: gameIdFromPath(),
-      gameTitle: gameTitle(gameIdFromPath()),
+      game: gid,
+      gameTitle: gameTitle(gid),
       at: Date.now(),
       live: true,
       role: "guest",
@@ -1530,12 +1637,14 @@
     const map = loadPresence();
     map[nick] = payload;
     storeSet(KEYS.presence, map);
+    livePlayers[nick] = payload;
     try {
       if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
     } catch {
       /* ignore */
     }
     sendPresenceToHost(payload);
+    updateSameGameStrip();
   }
 
   function removeSelfFromPresence() {
@@ -1566,13 +1675,18 @@
     return Object.values(merged)
       .filter((p) => p && p.at && now - p.at < age)
       .filter((p) => {
-        // хозяин не скрывает гостей даже с похожим ником, если это помечено как guest
-        if (p.role === "guest" || p.liveGuest) return true;
-        if (isOwner() && String(p.nick || "").toLowerCase() === myNick) return false;
-        if (!isOwner() && String(p.nick || "").toLowerCase() === myNick) return false;
+        const pn = String(p.nick || "").toLowerCase();
+        // хозяина в игре показываем всем
+        if (p.role === "owner") return true;
+        if (p.role === "guest" || p.liveGuest) {
+          // себя в общем списке админки можно скрыть, но не выкидываем из «той же игры»
+          return true;
+        }
+        if (isOwner() && pn === myNick) return false;
+        if (!isOwner() && pn === myNick) return true;
         return true;
       })
-      .sort((a, b) => b.at - a.at);
+      .sort((a, b) => (a.at || 0) - (b.at || 0));
   }
 
   function loadPeerScript(cb) {
@@ -1623,6 +1737,10 @@
             receiveAdminMessage(data);
             return;
           }
+          if (data.type === "roster") {
+            applyRoster(data);
+            return;
+          }
           if (isOwner()) {
             upsertLivePlayer(data);
             if (data.nick) deliverQueuedGiftsForNick(data.nick);
@@ -1630,6 +1748,7 @@
               const reg = registerEverywhere(data.nick, data.game);
               if (reg.isNew) notifyOwnerAboutRegistration(reg.entry);
             }
+            broadcastRoster();
           } else if (data.nick) {
             upsertLivePlayer(data);
           }
@@ -1749,12 +1868,17 @@
         } else if (wasNew && data.nick) {
           showHubToast("Вошёл: " + data.nick + " · " + gameTitle(data.game || "portal"));
         }
+        broadcastRoster();
       }
     });
-    conn.on("close", () => hostConnections.delete(conn));
+    conn.on("close", () => {
+      hostConnections.delete(conn);
+      broadcastRoster();
+    });
     conn.on("open", () => {
       try {
         conn.send({ type: "hello", role: "host" });
+        broadcastRoster();
       } catch {
         /* ignore */
       }
@@ -1806,6 +1930,15 @@
       });
       presenceConn.on("data", (data) => {
         if (!data) return;
+        if (data.type === "roster") {
+          applyRoster(data);
+          return;
+        }
+        if (data.type === "presence" || (data.nick && data.game)) {
+          upsertLivePlayer(data);
+          updateSameGameStrip();
+          return;
+        }
         if (data.type === "owner-gift") {
           receiveOwnerGift(data);
           return;
