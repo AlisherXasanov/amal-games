@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Моя подпись · Amal's Lab</title>
-  <meta name="description" content="Нарисуй свою подпись пальцем или мышкой и сохрани картинкой." />
+  <meta name="description" content="Распишись — и подпись сразу встанет на сайт." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -33,6 +33,7 @@
         radial-gradient(ellipse 50% 35% at 95% 5%, rgba(240,180,41,.28), transparent 50%),
         linear-gradient(165deg, #e8f4ef, #d5e4dc 55%, #c8dcd2);
     }
+    [hidden] { display: none !important; }
     header { text-align: center; max-width: 34rem; }
     h1 {
       font-family: Fredoka, Nunito, sans-serif;
@@ -99,59 +100,168 @@
     .btn-clear { background: #fff; color: var(--coral); border: 1px solid rgba(226,90,60,.4); }
     .btn-save { background: linear-gradient(135deg, var(--teal), #0a5248); color: #f3efe6; }
     .btn-back { background: rgba(255,255,255,.85); color: var(--teal); border: 1px solid rgba(13,110,95,.25); }
+    .btn-off { background: #fff; color: var(--muted); border: 1px solid rgba(13,110,95,.2); }
     .note { color: var(--muted); font-size: .85rem; font-weight: 700; text-align: center; max-width: 34rem; }
-    .preview { font-family: Caveat, cursive; }
+
+    .current {
+      width: min(680px, 100%);
+      background: rgba(255,255,255,.75);
+      border: 1px dashed rgba(13,110,95,.3);
+      border-radius: 14px;
+      padding: .6rem .8rem;
+      display: flex; align-items: center; gap: .7rem; justify-content: center;
+    }
+    .current span {
+      font: 800 .7rem Nunito, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    }
+    .current img { height: 46px; width: auto; max-width: 60%; object-fit: contain; }
+
+    /* Замок: страница только для хозяина */
+    .lock { display: grid; place-items: center; flex: 1; width: min(420px, 100%); }
+    .lock-card {
+      background: #fffef8;
+      border: 1px solid rgba(13,110,95,.2);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(16,40,32,.12);
+      padding: 1.6rem 1.2rem;
+      text-align: center;
+      display: flex; flex-direction: column; gap: .7rem; align-items: center;
+    }
+    .lock-emoji { font-size: 3rem; }
+    .lock-card h2 { font-family: Fredoka, Nunito, sans-serif; color: var(--teal); font-size: 1.4rem; }
+    .lock-card p { color: var(--muted); font-weight: 700; font-size: .9rem; }
+    .lock-card input {
+      width: 100%; min-height: 46px; padding: 0 .8rem;
+      border: 1px solid rgba(13,110,95,.3); border-radius: 12px;
+      font: 700 15px Nunito, sans-serif; text-align: center;
+    }
+    .lock-card button {
+      width: 100%; min-height: 46px; border: 0; border-radius: 12px; cursor: pointer;
+      background: linear-gradient(135deg, var(--teal), #0a5248); color: #f3efe6;
+      font: 800 15px Nunito, sans-serif;
+    }
+    .lock-card a { color: var(--teal); font-weight: 800; font-size: .9rem; text-decoration: none; }
+    .lock-err { color: var(--coral); font-weight: 800; font-size: .85rem; min-height: 1em; }
+
+    .saved-flash {
+      position: fixed; inset: 0; display: grid; place-items: center;
+      background: rgba(13,110,95,.92); color: #f3efe6; z-index: 50;
+      font-family: Fredoka, Nunito, sans-serif; font-size: 1.5rem; text-align: center; padding: 2rem;
+      animation: pop .25s ease;
+    }
+    @keyframes pop { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>✍️ Моя подпись</h1>
-    <p class="sub">Нарисуй свою подпись пальцем или мышкой. Потом сохрани картинкой и пришли её в чат.</p>
-  </header>
-
-  <div class="pad-wrap">
-    <div class="pad" id="pad">
-      <canvas id="cv"></canvas>
-      <div class="baseline"></div>
-      <div class="hint">распишись здесь</div>
-    </div>
-    <div class="tools">
-      <div class="colors" id="colors">
-        <button data-color="#102018" style="background:#102018" class="active" title="Чёрный"></button>
-        <button data-color="#0d6e5f" style="background:#0d6e5f" title="Зелёный"></button>
-        <button data-color="#e25a3c" style="background:#e25a3c" title="Красный"></button>
-        <button data-color="#2563eb" style="background:#2563eb" title="Синий"></button>
-        <button data-color="#f0b429" style="background:#f0b429" title="Жёлтый"></button>
-      </div>
-      <div class="sizes" id="sizes">
-        <button data-size="3" title="Тонко">•</button>
-        <button data-size="6" class="active" title="Средне">●</button>
-        <button data-size="11" title="Толсто">⬤</button>
-      </div>
+  <div class="lock" id="lock" hidden>
+    <div class="lock-card">
+      <div class="lock-emoji">🔒</div>
+      <h2>Только для Амаля</h2>
+      <p>Подпись на сайте ставит только хозяин лаборатории.</p>
+      <input id="lockCode" type="password" placeholder="код хозяина" autocomplete="off" />
+      <div class="lock-err" id="lockErr"></div>
+      <button type="button" id="lockGo">Войти</button>
+      <a href="./index.html">← На сайт</a>
     </div>
   </div>
 
-  <div class="actions">
-    <button type="button" class="btn-clear" id="btnClear">🧹 Стереть</button>
-    <button type="button" class="btn-save" id="btnSave">💾 Сохранить картинкой</button>
-    <a class="btn-back" href="./index.html">← На сайт</a>
+  <div id="app" hidden style="display:contents">
+    <header>
+      <h1>✍️ Моя подпись</h1>
+      <p class="sub">Распишись пальцем или мышкой — и подпись сразу встанет на сайт. Ничего скачивать не надо.</p>
+    </header>
+
+    <div class="current" id="current" hidden>
+      <span>сейчас на сайте</span>
+      <img id="currentImg" alt="Твоя подпись" />
+    </div>
+
+    <div class="pad-wrap">
+      <div class="pad" id="pad">
+        <canvas id="cv"></canvas>
+        <div class="baseline"></div>
+        <div class="hint">распишись здесь</div>
+      </div>
+      <div class="tools">
+        <div class="colors" id="colors">
+          <button data-color="#102018" style="background:#102018" class="active" title="Чёрный"></button>
+          <button data-color="#0d6e5f" style="background:#0d6e5f" title="Зелёный"></button>
+          <button data-color="#e25a3c" style="background:#e25a3c" title="Красный"></button>
+          <button data-color="#2563eb" style="background:#2563eb" title="Синий"></button>
+          <button data-color="#f0b429" style="background:#f0b429" title="Жёлтый"></button>
+        </div>
+        <div class="sizes" id="sizes">
+          <button data-size="3" title="Тонко">•</button>
+          <button data-size="6" class="active" title="Средне">●</button>
+          <button data-size="11" title="Толсто">⬤</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-clear" id="btnClear">🧹 Стереть</button>
+      <button type="button" class="btn-save" id="btnSave">✅ Поставить на сайт</button>
+      <a class="btn-back" href="./index.html">← На сайт</a>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn-off" id="btnOff" hidden>🚫 Убрать подпись с сайта</button>
+    </div>
+    <p class="note">Распишись покрупнее. Как нажмёшь «Поставить на сайт» — подпись появится в шапке главной страницы и на виджете с кубом.</p>
   </div>
-  <p class="note">Совет: распишись покрупнее. Файл сохранится как <b>amal-signature.png</b> (с прозрачным фоном). После сохранения пришли его в чат — я поставлю подпись на сайт.</p>
 
   <script>
     (() => {
+      const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
+      const OWNER_CODE = "AmalOwner2026";
+      const SIGN_KEY = "amal-signature-v1";
+
+      function isOwner() {
+        try {
+          if (new URLSearchParams(location.search).get("owner") === OWNER_CODE) {
+            localStorage.setItem("amal-owner-v1", "1");
+            return true;
+          }
+          if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
+          return OWNER_KEYS.some((k) => localStorage.getItem(k) === "1");
+        } catch (_) {
+          return false;
+        }
+      }
+
+      const lock = document.getElementById("lock");
+      const app = document.getElementById("app");
+
+      if (!isOwner()) {
+        lock.hidden = false;
+        const code = document.getElementById("lockCode");
+        const err = document.getElementById("lockErr");
+        const go = () => {
+          if (code.value.trim() === OWNER_CODE) {
+            try { localStorage.setItem("amal-owner-v1", "1"); } catch (_) { /* ignore */ }
+            location.reload();
+          } else {
+            err.textContent = "Не тот код";
+            code.value = "";
+          }
+        };
+        document.getElementById("lockGo").addEventListener("click", go);
+        code.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+        return;
+      }
+
+      app.hidden = false;
+
       const pad = document.getElementById("pad");
       const cv = document.getElementById("cv");
-      const ctx = cv.getContext("2d");
+      const ctx = cv.getContext("2d", { willReadFrequently: true });
       let color = "#102018";
       let size = 6;
       let drawing = false;
       let last = null;
       let dirty = false;
-      let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+      const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 
       function resize() {
-        // сохранить рисунок при ресайзе
         const prev = dirty ? cv.toDataURL() : null;
         const rect = pad.getBoundingClientRect();
         cv.width = Math.round(rect.width * dpr);
@@ -169,8 +279,13 @@
 
       function pos(e) {
         const rect = cv.getBoundingClientRect();
-        const p = (e.touches && e.touches[0]) || e;
-        return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }
+      function dot(p) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
+        ctx.fill();
       }
       function start(e) {
         drawing = true;
@@ -190,12 +305,6 @@
         ctx.stroke();
         last = p;
         e.preventDefault();
-      }
-      function dot(p) {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
-        ctx.fill();
       }
       function end() { drawing = false; last = null; }
 
@@ -225,22 +334,79 @@
         pad.classList.remove("drawn");
       });
 
-      document.getElementById("btnSave").addEventListener("click", () => {
-        if (!dirty) { alert("Сначала нарисуй подпись 🙂"); return; }
-        try {
-          const url = cv.toDataURL("image/png");
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "amal-signature.png";
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-        } catch (_) {
-          alert("Не получилось сохранить. Попробуй ещё раз.");
+      // Обрезаем пустые поля, чтобы подпись села в шапку плотно
+      function trimmedPng() {
+        const w = cv.width;
+        const h = cv.height;
+        if (!w || !h) return null;
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let minX = w, minY = h, maxX = -1, maxY = -1;
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            if (data[(y * w + x) * 4 + 3] > 8) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
         }
+        if (maxX < 0) return null;
+        const padPx = Math.round(8 * dpr);
+        minX = Math.max(0, minX - padPx);
+        minY = Math.max(0, minY - padPx);
+        maxX = Math.min(w - 1, maxX + padPx);
+        maxY = Math.min(h - 1, maxY + padPx);
+        const ow = maxX - minX + 1;
+        const oh = maxY - minY + 1;
+        const out = document.createElement("canvas");
+        out.width = ow;
+        out.height = oh;
+        out.getContext("2d").drawImage(cv, minX, minY, ow, oh, 0, 0, ow, oh);
+        return out.toDataURL("image/png");
+      }
+
+      const current = document.getElementById("current");
+      const currentImg = document.getElementById("currentImg");
+      const btnOff = document.getElementById("btnOff");
+
+      function showCurrent() {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(SIGN_KEY) || "null"); } catch (_) { /* ignore */ }
+        if (saved && saved.png) {
+          currentImg.src = saved.png;
+          current.hidden = false;
+          btnOff.hidden = false;
+        } else {
+          current.hidden = true;
+          btnOff.hidden = true;
+        }
+      }
+
+      document.getElementById("btnSave").addEventListener("click", () => {
+        if (!dirty) { alert("Сначала распишись 🙂"); return; }
+        const png = trimmedPng();
+        if (!png) { alert("Подпись пустая — попробуй ещё раз."); return; }
+        try {
+          localStorage.setItem(SIGN_KEY, JSON.stringify({ png, at: Date.now() }));
+        } catch (_) {
+          alert("Подпись слишком большая. Нарисуй чуть проще и попробуй снова.");
+          return;
+        }
+        const flash = document.createElement("div");
+        flash.className = "saved-flash";
+        flash.textContent = "✅ Подпись на сайте!";
+        document.body.appendChild(flash);
+        setTimeout(() => { location.href = "./index.html"; }, 900);
+      });
+
+      btnOff.addEventListener("click", () => {
+        try { localStorage.removeItem(SIGN_KEY); } catch (_) { /* ignore */ }
+        showCurrent();
       });
 
       resize();
+      showCurrent();
     })();
   </script>
 </body>

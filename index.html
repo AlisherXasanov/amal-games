@@ -529,6 +529,22 @@
       text-transform: uppercase;
       color: var(--muted);
     }
+    /* Нарисованная подпись — вместо текстовой */
+    .amal-sign-top .name img {
+      display: block;
+      height: 64px;
+      width: auto;
+      max-width: min(78vw, 340px);
+      object-fit: contain;
+    }
+    .side-cube-sign img {
+      display: block;
+      margin: .15rem auto 0;
+      height: 34px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+    }
   </style>
 </head>
 <body>
@@ -598,7 +614,7 @@
       <button type="button" data-ic="🧪" title="Пробирка">🧪</button>
     </div>
     <button type="button" class="side-cube-comic" id="cubeComicBtn">📖 Комикс о кубе</button>
-    <a class="side-cube-comic" href="./sign.html" style="display:block;text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
+    <a class="side-cube-comic" id="signLink" hidden href="./sign.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
   </aside>
 
   <div class="cube-comic-back" id="cubeComicBack" role="dialog" aria-modal="true" aria-label="Комикс о кубе">
@@ -1185,6 +1201,33 @@
             b.classList.add("active");
           });
         });
+      }
+
+      // Подпись хозяина: нарисованная на sign.html заменяет текстовую
+      const SIGN_KEY = "amal-signature-v1";
+      const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
+      const owner = (() => {
+        try {
+          if (new URLSearchParams(location.search).get("owner") === "AmalOwner2026") return true;
+          return OWNER_KEYS.some((k) => localStorage.getItem(k) === "1");
+        } catch (_) { return false; }
+      })();
+      const signLink = document.getElementById("signLink");
+      if (signLink && owner) { signLink.hidden = false; signLink.style.display = "block"; }
+
+      let sign = null;
+      try { sign = JSON.parse(localStorage.getItem(SIGN_KEY) || "null"); } catch (_) { /* ignore */ }
+      if (sign && sign.png) {
+        const mkImg = () => {
+          const img = new Image();
+          img.src = sign.png;
+          img.alt = "Подпись Amal";
+          return img;
+        };
+        const top = document.querySelector(".amal-sign-top .name");
+        if (top) { top.textContent = ""; top.appendChild(mkImg()); }
+        const side = document.querySelector(".side-cube-sign");
+        if (side) { side.innerHTML = '<span class="by">автор</span>'; side.appendChild(mkImg()); }
       }
 
       // Комикс о кубе — картинки + подписи
