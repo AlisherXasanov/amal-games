@@ -1,7 +1,24 @@
 (() => {
-  const id = new URLSearchParams(location.search).get("id");
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const directKind = params.get("kind");
+  const allowedKinds = new Set([
+    "basketball", "playground", "soccer", "snake", "jump",
+    "race", "zombie", "shooter", "hide", "catch",
+  ]);
   const games = CreateLabStore.listGames();
-  const game = CreateLabStore.getGame(id) || games[0];
+  const directGame = allowedKinds.has(directKind)
+    ? {
+        id: `direct-${directKind}`,
+        name: directKind === "playground" ? "Площадка с кубиками" : "Игра",
+        prompt: directKind === "playground"
+          ? "Маленькие кубики, которые легко брать и переносить."
+          : "",
+        kind: directKind,
+        color: "#0d6e5f",
+      }
+    : null;
+  const game = CreateLabStore.getGame(id) || directGame || games[0];
 
   const title = document.getElementById("title");
   const desc = document.getElementById("desc");
