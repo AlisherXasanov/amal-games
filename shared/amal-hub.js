@@ -21,6 +21,9 @@
     ownerGiftQueue: "amal-hub-owner-gift-queue-v1",
     lastGiftByNick: "amal-hub-last-gift-by-nick-v1",
     nickGuest: "amal-hub-nick-guest-v1",
+    bans: "amal-hub-bans-v1",
+    wipes: "amal-hub-wipes-v1",
+    myBan: "amal-hub-my-ban-v1",
   };
 
   const OWNER_KEYS = ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"];
@@ -63,6 +66,11 @@
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-14-players-ban",
+      title: "Таблица игроков · бан и сброс",
+      body: "В «Кто играет» снова видна таблица всех игроков. Хозяин может банить на 1ч / 5ч / 10ч / 1 день или сбросить весь прогресс во всех играх.",
+    },
     {
       id: "2026-08-12-owner-wave",
       title: "Сюрпризы хозяина · волна по играм",
@@ -208,6 +216,360 @@
     } catch {
       return false;
     }
+  }
+
+  function loadBans() {
+    const list = storeGet(KEYS.bans, []);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function saveBans(list) {
+    storeSet(KEYS.bans, Array.isArray(list) ? list : []);
+  }
+
+  function activeBans() {
+    const now = Date.now();
+    return loadBans().filter((b) => b && Number(b.until || 0) > now);
+  }
+
+  function banForNick(nick) {
+    const key = String(nick || "").trim().toLowerCase();
+    if (!key) return null;
+    return activeBans().find((b) => String(b.nick || "").trim().toLowerCase() === key) || null;
+  }
+
+  function formatBanLeft(until) {
+    const ms = Math.max(0, Number(until || 0) - Date.now());
+    if (ms <= 0) return "0 мин";
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    if (h >= 24) {
+      const d = Math.floor(h / 24);
+      const rh = h % 24;
+      return rh ? `${d}д ${rh}ч` : `${d}д`;
+    }
+    if (h > 0) return m ? `${h}ч ${m}мин` : `${h}ч`;
+    return `${Math.max(1, m)} мин`;
+  }
+
+  function applyLocalBan(payload) {
+    const until = Number(payload && payload.until) || 0;
+    if (until <= Date.now()) {
+      try {
+        localStorage.removeItem(KEYS.myBan);
+      } catch {
+        /* ignore */
+      }
+      return null;
+    }
+    const row = {
+      until,
+      reason: String((payload && payload.reason) || "Бан от владельца").slice(0, 120),
+      by: String((payload && payload.by) || "owner").slice(0, 40),
+      at: Number((payload && payload.at) || Date.now()),
+    };
+    try {
+      localStorage.setItem(KEYS.myBan, JSON.stringify(row));
+    } catch {
+      /* ignore */
+    }
+    return row;
+  }
+
+  function clearLocalBan() {
+    try {
+      localStorage.removeItem(KEYS.myBan);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function readLocalBan() {
+    try {
+      const raw = localStorage.getItem(KEYS.myBan);
+      if (!raw) return null;
+      const row = JSON.parse(raw);
+      if (!row || Number(row.until || 0) <= Date.now()) {
+        clearLocalBan();
+        return null;
+      }
+      return row;
+    } catch {
+      return null;
+    }
+  }
+
+  function myBanStatus() {
+    if (isOwner()) return null;
+    const nickBan = banForNick(getNick());
+    if (nickBan) {
+      applyLocalBan(nickBan);
+      return nickBan;
+    }
+    return readLocalBan();
+  }
+
+  function broadcastModeration(payload) {
+    if (!payload || !payload.type) return;
+    try {
+      if (typeof hostConnections !== "undefined" && hostConnections) {
+        hostConnections.forEach((conn) => {
+          try {
+            if (conn && conn.open) conn.send(payload);
+          } catch {
+            /* ignore */
+          }
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(payload);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function banPlayer(nick, hours, reason) {
+    if (!isOwner()) return { ok: false, error: "Только владелец" };
+    const name = String(nick || "").trim().slice(0, NICK_MAX);
+    if (!name) return { ok: false, error: "Нужен ник" };
+    if (name.toLowerCase() === String(getNick() || "").trim().toLowerCase()) {
+      return { ok: false, error: "Нельзя банить себя" };
+    }
+    const hrs = Math.max(0.1, Number(hours) || 1);
+    const until = Date.now() + Math.round(hrs * 3600000);
+    const row = {
+      nick: name,
+      until,
+      hours: hrs,
+      reason: String(reason || "Бан от владельца").slice(0, 120),
+      by: getNick() || "owner",
+      at: Date.now(),
+    };
+    const next = loadBans().filter((b) => String(b.nick || "").trim().toLowerCase() !== name.toLowerCase());
+    next.unshift(row);
+    saveBans(next.slice(0, 200));
+    broadcastModeration({
+      type: "ban",
+      nick: name,
+      until,
+      reason: row.reason,
+      by: row.by,
+      at: row.at,
+    });
+    return { ok: true, ban: row };
+  }
+
+  function unbanPlayer(nick) {
+    if (!isOwner()) return { ok: false, error: "Только владелец" };
+    const name = String(nick || "").trim().slice(0, NICK_MAX);
+    if (!name) return { ok: false, error: "Нужен ник" };
+    saveBans(loadBans().filter((b) => String(b.nick || "").trim().toLowerCase() !== name.toLowerCase()));
+    broadcastModeration({ type: "unban", nick: name });
+    return { ok: true };
+  }
+
+  function wipePlayerProgress(nick) {
+    if (!isOwner()) return { ok: false, error: "Только владелец" };
+    const name = String(nick || "").trim().slice(0, NICK_MAX);
+    if (!name) return { ok: false, error: "Нужен ник" };
+    const stamp = Date.now();
+    const wipes = storeGet(KEYS.wipes, []);
+    const list = Array.isArray(wipes) ? wipes : [];
+    list.unshift({ nick: name, at: stamp, by: getNick() || "owner" });
+    storeSet(KEYS.wipes, list.slice(0, 100));
+    broadcastModeration({ type: "wipe", nick: name, at: stamp, by: getNick() || "owner" });
+    return { ok: true };
+  }
+
+  function shouldWipeLocal(nick) {
+    const name = String(nick || getNick() || "")
+      .trim()
+      .toLowerCase();
+    if (!name) return false;
+    const wipes = storeGet(KEYS.wipes, []);
+    if (!Array.isArray(wipes)) return false;
+    return wipes.some((w) => String(w.nick || "").trim().toLowerCase() === name);
+  }
+
+  function applyLocalWipe(force) {
+    if (isOwner()) return false;
+    const nick = getNick();
+    if (!force && !shouldWipeLocal(nick)) return false;
+    const keep = new Set([KEYS.nick, KEYS.nickGuest, KEYS.myBan, KEYS.bans, KEYS.changelogSeen]);
+    OWNER_KEYS.forEach((k) => keep.add(k));
+    try {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k) keys.push(k);
+      }
+      keys.forEach((k) => {
+        if (keep.has(k)) return;
+        if (k.startsWith("amal-owner-")) return;
+        try {
+          localStorage.removeItem(k);
+        } catch {
+          /* ignore */
+        }
+      });
+      const wipes = storeGet(KEYS.wipes, []);
+      storeSet(
+        KEYS.wipes,
+        (Array.isArray(wipes) ? wipes : []).filter(
+          (w) => String(w.nick || "").trim().toLowerCase() !== String(nick || "").trim().toLowerCase()
+        )
+      );
+      try {
+        showHubToast("Прогресс сброшен хозяином");
+      } catch {
+        /* ignore */
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function handleModerationMessage(data) {
+    if (!data || !data.type) return false;
+    const my = String(getNick() || "")
+      .trim()
+      .toLowerCase();
+    if (data.type === "ban" && data.nick) {
+      const target = String(data.nick).trim().toLowerCase();
+      if (!isOwner()) {
+        const next = loadBans().filter((b) => String(b.nick || "").trim().toLowerCase() !== target);
+        next.unshift({
+          nick: data.nick,
+          until: Number(data.until) || 0,
+          reason: data.reason || "Бан от владельца",
+          by: data.by || "owner",
+          at: Number(data.at) || Date.now(),
+        });
+        saveBans(next.slice(0, 200));
+      }
+      if (my && my === target && !isOwner()) {
+        applyLocalBan(data);
+        enforceBanGate();
+      }
+      if (isOwner()) maybeRepaintPlayers();
+      return true;
+    }
+    if (data.type === "unban" && data.nick) {
+      const target = String(data.nick).trim().toLowerCase();
+      saveBans(loadBans().filter((b) => String(b.nick || "").trim().toLowerCase() !== target));
+      if (my && my === target) clearLocalBan();
+      const gate = document.getElementById("amal-ban-gate");
+      if (gate && my === target) gate.remove();
+      if (isOwner()) maybeRepaintPlayers();
+      return true;
+    }
+    if (data.type === "wipe" && data.nick) {
+      const target = String(data.nick).trim().toLowerCase();
+      if (!isOwner()) {
+        const wipes = storeGet(KEYS.wipes, []);
+        const list = Array.isArray(wipes) ? wipes : [];
+        list.unshift({ nick: data.nick, at: Number(data.at) || Date.now(), by: data.by || "owner" });
+        storeSet(KEYS.wipes, list.slice(0, 100));
+      }
+      if (my && my === target && !isOwner()) applyLocalWipe(true);
+      return true;
+    }
+    if (data.type === "bans-sync" && Array.isArray(data.bans) && !isOwner()) {
+      saveBans(data.bans);
+      const mine = banForNick(getNick());
+      if (mine) {
+        applyLocalBan(mine);
+        enforceBanGate();
+      }
+      return true;
+    }
+    if (data.type === "wipes-sync" && Array.isArray(data.wipes) && !isOwner()) {
+      storeSet(KEYS.wipes, data.wipes.slice(0, 100));
+      if (shouldWipeLocal(getNick())) applyLocalWipe(true);
+      return true;
+    }
+    return false;
+  }
+
+  function enforceBanGate() {
+    if (isOwner()) return false;
+    const ban = myBanStatus();
+    if (!ban) return false;
+    showBanGate(ban);
+    try {
+      open = false;
+    } catch {
+      /* ignore */
+    }
+    return true;
+  }
+
+  function playersTableRows() {
+    const byNick = new Map();
+    const put = (p, source) => {
+      const nick = String((p && p.nick) || "").trim();
+      if (!nick) return;
+      const key = nick.toLowerCase();
+      const at = Number(p.at || p.lastSeen || p.lastAt || 0);
+      const online = !!(p.live || p.online || (at && Date.now() - at < 120000));
+      const gameLabel = p.gameTitle || gameTitle(p.game || p.lastGame || "") || p.game || p.lastGame || "—";
+      const prev = byNick.get(key);
+      if (prev && prev.online && !online) return;
+      if (prev && Number(prev.lastSeen || 0) > at && prev.source === "live") return;
+      byNick.set(key, {
+        nick,
+        game: gameLabel,
+        gameId: p.game || p.lastGame || "",
+        online,
+        role: p.role || "player",
+        lastSeen: at || Date.now(),
+        source: source || prev?.source || "live",
+      });
+    };
+    try {
+      recentPlayers(1000 * 60 * 60 * 24 * 7).forEach((p) => put(p, "presence"));
+    } catch {
+      /* ignore */
+    }
+    try {
+      Object.values(livePlayers || {}).forEach((p) => put(p, "live"));
+    } catch {
+      /* ignore */
+    }
+    try {
+      listRegistry().forEach((p) => put(p, "registry"));
+    } catch {
+      /* ignore */
+    }
+    return Array.from(byNick.values()).sort((a, b) => {
+      if (a.online !== b.online) return a.online ? -1 : 1;
+      return Number(b.lastSeen || 0) - Number(a.lastSeen || 0);
+    });
+  }
+
+  function showBanGate(ban) {
+    const until = ban && ban.until;
+    const left = formatBanLeft(until);
+    const reason = String((ban && ban.reason) || "Бан от владельца");
+    let root = document.getElementById("amal-ban-gate");
+    if (!root) {
+      root = document.createElement("div");
+      root.id = "amal-ban-gate";
+      root.setAttribute(
+        "style",
+        "position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;background:rgba(8,12,18,.94);color:#f4f7fb;font-family:Segoe UI,system-ui,sans-serif;padding:24px;text-align:center"
+      );
+      document.documentElement.appendChild(root);
+    }
+    const reasonSafe = String(reason)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    root.innerHTML = `<div style="max-width:420px"><h1 style="margin:0 0 12px;font-size:1.6rem">Доступ закрыт</h1><p style="margin:0 0 8px;opacity:.9">${reasonSafe}</p><p style="margin:0;font-size:1.1rem">Осталось: <strong>${left}</strong></p><p style="margin:16px 0 0;opacity:.65;font-size:13px">Бан на все игры Amal Games</p></div>`;
   }
 
   function loadFaceSeeds() {
@@ -1717,6 +2079,7 @@
         global.__amalPresenceBc.onmessage = (ev) => {
           const data = ev.data;
           if (!data) return;
+          if (handleModerationMessage(data)) return;
           if (data.type === "owner-gift") {
             receiveOwnerGift(data);
             return;
@@ -1858,6 +2221,23 @@
         const wasNew = !livePlayers[data.nick];
         upsertLivePlayer(data);
         deliverQueuedGiftsForNick(data.nick);
+        const banned = data.nick ? banForNick(data.nick) : null;
+        if (banned) {
+          try {
+            if (conn.open) {
+              conn.send({
+                type: "ban",
+                nick: banned.nick,
+                until: banned.until,
+                reason: banned.reason,
+                by: banned.by,
+                at: banned.at,
+              });
+            }
+          } catch {
+            /* ignore */
+          }
+        }
         if (data.type === "register" && data.nick) {
           const reg = registerEverywhere(data.nick, data.game);
           if (reg.isNew) {
@@ -1878,6 +2258,8 @@
     conn.on("open", () => {
       try {
         conn.send({ type: "hello", role: "host" });
+        conn.send({ type: "bans-sync", bans: activeBans() });
+        conn.send({ type: "wipes-sync", wipes: storeGet(KEYS.wipes, []) });
         broadcastRoster();
       } catch {
         /* ignore */
@@ -1930,6 +2312,7 @@
       });
       presenceConn.on("data", (data) => {
         if (!data) return;
+        if (handleModerationMessage(data)) return;
         if (data.type === "roster") {
           applyRoster(data);
           return;
@@ -2003,6 +2386,7 @@
 .amal-hub-overlay{pointer-events:auto;position:fixed;inset:0;background:rgba(2,6,23,.78);display:flex;align-items:flex-end;justify-content:center;padding:12px;backdrop-filter:blur(8px)}
 @media(min-width:720px){.amal-hub-overlay{align-items:center}}
 .amal-hub-modal{position:relative;width:min(100%,440px);max-height:min(90dvh,680px);display:flex;flex-direction:column;overflow:hidden;border-radius:24px 24px 18px 18px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(180deg,#171526f5,#0b1020f7);color:#f8fafc;padding:0;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.amal-hub-modal.wide{width:min(100%,720px)}
 .amal-hub-modal-body{flex:1 1 auto;overflow:auto;padding:16px 18px 20px;-webkit-overflow-scrolling:touch}
 .amal-hub-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 12px;background:rgba(11,16,32,.97);z-index:3}
 .amal-hub-bar.top{border-bottom:1px solid rgba(255,255,255,.12)}
@@ -2029,6 +2413,16 @@
 .amal-hub-list{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:8px}
 .amal-hub-list li{border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px;background:rgba(255,255,255,.04);font-size:13px}
 .amal-hub-list .meta{opacity:.65;font-size:11px;margin-bottom:6px;font-weight:800}
+.amal-hub-table-wrap{margin-top:12px;overflow:auto;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.03)}
+.amal-hub-table{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.amal-hub-table th,.amal-hub-table td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}
+.amal-hub-table th{font-size:11px;opacity:.7;font-weight:800;position:sticky;top:0;background:#12101cf2}
+.amal-hub-table tr:last-child td{border-bottom:0}
+.amal-hub-linkish{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;color:inherit;padding:0;cursor:pointer;font:inherit}
+.amal-hub-linkish img{border-radius:50%;border:1px solid rgba(251,191,36,.4);background:#0f172a}
+.amal-hub-ban-actions{display:flex;flex-wrap:wrap;gap:4px}
+.amal-hub-ban-actions button{padding:6px 8px;font-size:11px;border-radius:10px}
+.amal-hub-modal button.danger{background:rgba(185,28,28,.35);border-color:rgba(248,113,113,.45);color:#fecaca}
 .amal-hub-chip{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));left:auto;pointer-events:auto;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.82);color:#e2e8f0;font-size:11px;font-weight:800;max-width:min(58vw,280px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px);z-index:2147483001}
 .amal-hub-chip.owner{border-color:rgba(251,191,36,.45);color:#fde68a;background:rgba(69,26,3,.85)}
 .amal-hub-exit{pointer-events:auto;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2147483002;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.78);color:#fff;font:700 13px/1.2 system-ui,sans-serif;text-decoration:none;backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -2168,7 +2562,9 @@
 
     if (open || gateMode) {
       const canClose = !(gateMode && !nick);
-      html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal" data-amal="modal">`;
+      html += `<div class="amal-hub-overlay" data-amal="backdrop"><div class="amal-hub-modal${
+        view === "admin" && adminPage === "players" ? " wide" : ""
+      }" data-amal="modal">`;
       if (canClose) {
         html += `<div class="amal-hub-bar top"><button type="button" class="amal-hub-close-btn" data-amal="close">✕ Закрыть</button></div>`;
         html += `<button type="button" class="amal-hub-side-close" data-amal="close" title="Закрыть" aria-label="Закрыть">✕</button>`;
@@ -2313,44 +2709,66 @@
     const back = `<div class="amal-hub-row"><button type="button" data-amal="admin-menu" style="flex:1">← Меню</button><button type="button" data-amal="close">Закрыть</button></div>`;
 
     if (adminPage === "players") {
+      const rows = playersTableRows();
+      const onlineNow = rows.filter((r) => r.online).length;
       return `
         <div class="amal-hub-hero"><div class="badge">👥</div><div>
           <h2>Кто играет</h2>
-          <p class="sub">Жми на игрока — профиль, обновить лицо, выдать другое</p>
+          <p class="sub">Таблица игроков · бан / сброс прогресса</p>
         </div></div>
-        <div style="margin-top:10px">${onlinePill} · свежих: <b>${liveCount}</b></div>
-        <ul class="amal-hub-list">${
-          players.length
-            ? players
-                .map(
-                  (p) =>
-                    `<li data-amal="open-profile" data-nick="${escapeHtml(p.nick)}"><div class="meta">${fmtTime(p.at)}${
-                      p.live || Date.now() - p.at < 120000 ? " · онлайн" : ""
-                    }</div>
-                    <div style="display:flex;gap:10px;align-items:center">
-                      <img src="${faceUrl(p.nick)}" alt="" width="44" height="44" style="border-radius:50%;border:2px solid rgba(251,191,36,.45);background:#0f172a;flex:0 0 auto" />
-                      <div><b>${escapeHtml(p.nick)}</b><div style="margin-top:4px;opacity:.75">Игра: ${escapeHtml(
-                        p.gameTitle || p.game,
-                      )}</div></div>
-                    </div>
-                    <div class="amal-hub-row" style="margin-top:8px">
-                      <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">👤 Профиль</button>
-                      <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️ Написать</button>
-                      ${
-                        fullOwner
-                          ? `<button type="button" class="primary" data-amal="quick-grant-nick" data-nick="${escapeHtml(
-                              p.nick,
-                            )}">⚡ В эту игру</button><button type="button" data-amal="grant-pick" data-nick="${escapeHtml(
-                              p.nick,
-                            )}">Игры</button>`
-                          : ""
-                      }
-                    </div></li>`,
-                )
-                .join("")
-            : `<li class="meta">Пока пусто.</li>`
-        }</ul>
-        <div class="amal-hub-help" style="margin-top:10px">Хозяин в списке не показывается. Гость должен открыть игру с ником (другое окно/телефон). Для проверки жми кнопки ниже.</div>
+        <div style="margin-top:10px">${onlinePill} · в таблице: <b>${rows.length}</b> · онлайн: <b>${onlineNow}</b></div>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-table-wrap">
+          <table class="amal-hub-table">
+            <thead>
+              <tr><th>Игрок</th><th>Игра</th><th>Статус</th><th>Действия</th></tr>
+            </thead>
+            <tbody>
+              ${
+                rows.length
+                  ? rows
+                      .map((p) => {
+                        const ban = banForNick(p.nick);
+                        const banLabel = ban ? `бан ${formatBanLeft(ban.until)}` : "";
+                        return `<tr>
+                          <td>
+                            <button type="button" class="amal-hub-linkish" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">
+                              <img src="${faceUrl(p.nick)}" alt="" width="28" height="28" />
+                              <b>${escapeHtml(p.nick)}</b>
+                            </button>
+                          </td>
+                          <td>${escapeHtml(p.game || "—")}</td>
+                          <td>${p.online ? '<span class="amal-hub-pill">● онлайн</span>' : '<span class="amal-hub-pill off">○ был</span>'}${
+                            banLabel ? `<div class="meta" style="margin-top:4px">${escapeHtml(banLabel)}</div>` : ""
+                          }</td>
+                          <td>
+                            <div class="amal-hub-ban-actions">
+                              <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">Профиль</button>
+                              ${
+                                fullOwner
+                                  ? `<button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="1">1ч</button>
+                              <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="5">5ч</button>
+                              <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="10">10ч</button>
+                              <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="24">1д</button>
+                              ${
+                                ban
+                                  ? `<button type="button" data-amal="unban-player" data-nick="${escapeHtml(p.nick)}">Снять бан</button>`
+                                  : ""
+                              }
+                              <button type="button" class="danger" data-amal="wipe-player" data-nick="${escapeHtml(p.nick)}">Сброс всего</button>`
+                                  : ""
+                              }
+                            </div>
+                          </td>
+                        </tr>`;
+                      })
+                      .join("")
+                  : `<tr><td colspan="4" class="meta">Пока никого нет. Гость должен открыть игру с ником (другое окно/телефон) или жми «Тестовый гость».</td></tr>`
+              }
+            </tbody>
+          </table>
+        </div>
         <div class="amal-hub-row" style="margin-top:10px">
           <button type="button" class="primary" data-amal="admin-test-guest">＋ Тестовый гость</button>
           <button type="button" data-amal="admin-open-guest">Открыть окно гостя</button>
@@ -2400,6 +2818,14 @@
           <button type="button" data-amal="gift-pick-nick" data-nick="${escapeHtml(p.nick)}">🎁 Выбрать подарок</button>
           <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️ Написать</button>
           <button type="button" data-amal="quick-grant-nick" data-nick="${escapeHtml(p.nick)}">⚡ Админка</button>
+        </div>
+        <div class="amal-hub-row" style="margin-top:10px">
+          <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="1">Бан 1ч</button>
+          <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="5">5ч</button>
+          <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="10">10ч</button>
+          <button type="button" data-amal="ban-player" data-nick="${escapeHtml(p.nick)}" data-hours="24">1д</button>
+          <button type="button" data-amal="unban-player" data-nick="${escapeHtml(p.nick)}">Снять бан</button>
+          <button type="button" class="danger" data-amal="wipe-player" data-nick="${escapeHtml(p.nick)}">Сброс всего</button>
         </div>
         <div class="amal-hub-row"><button type="button" data-amal="admin-players" style="flex:1">← Кто играет</button><button type="button" data-amal="close">Закрыть</button></div>`;
     }
@@ -2930,6 +3356,49 @@
           msg = "Список игроков очищен";
           paint();
         }
+        if (act === "ban-player") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || "";
+          const hours = Number(el.getAttribute("data-hours") || 1);
+          const res = banPlayer(nick, hours);
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok
+            ? "Бан «" + nick + "» на " + (hours === 24 ? "1 день" : hours + " ч")
+            : "";
+          if (res.ok) showHubToast("🚫 " + msg);
+          adminPage = adminPage === "profile" ? "profile" : "players";
+          paint();
+          return;
+        }
+        if (act === "unban-player") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || "";
+          const res = unbanPlayer(nick);
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok ? "Бан снят: " + nick : "";
+          if (res.ok) showHubToast("✅ " + msg);
+          paint();
+          return;
+        }
+        if (act === "wipe-player") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || "";
+          let ok = false;
+          try {
+            ok = global.confirm(
+              "Сбросить весь прогресс игрока «" + nick + "» во всех играх? Это нельзя отменить."
+            );
+          } catch {
+            ok = true;
+          }
+          if (!ok) return;
+          const res = wipePlayerProgress(nick);
+          err = res.ok ? "" : res.error || "";
+          msg = res.ok ? "Прогресс сброшен: " + nick : "";
+          if (res.ok) showHubToast("🧹 " + msg);
+          paint();
+          return;
+        }
         if (act === "admin-test-guest") {
           if (!isOwner()) return;
           const res = injectTestGuest("ТестГость");
@@ -3237,6 +3706,14 @@
       /* ignore */
     }
     if (isOwner()) ensureOwnerNick();
+    if (enforceBanGate()) {
+      return;
+    }
+    try {
+      if (!isOwner() && shouldWipeLocal(getNick())) applyLocalWipe(true);
+    } catch {
+      /* ignore */
+    }
     const redeemed = redeemGrantFromUrl();
     bumpPresence();
     startPresenceNet();
@@ -3369,6 +3846,10 @@
     injectTestGuest,
     guestTestLink,
     sendAdminDm,
+    banPlayer,
+    unbanPlayer,
+    wipePlayerProgress,
+    playersTableRows,
     CHANGELOG,
   };
 
