@@ -563,15 +563,20 @@
       { id: "owner-secret", label: "✦", toast: "…" },
       { id: "owner-legend", label: "👑 Режим легенды", toast: "Легенда ВКЛ", cls: "max" },
     ];
-    const buttons = [...(base.buttons || [])];
+    let buttons = [...(base.buttons || [])];
     extra.forEach((b) => {
       if (!buttons.some((x) => x.id === b.id)) buttons.push(b);
     });
-    const quick = [...(base.quick || [])];
+    let quick = [...(base.quick || [])];
     if (!(Array.isArray(base.quick) && base.quick.length === 0)) {
       if (!quick.some((x) => x.id === "surprise-gift")) {
         quick.unshift({ id: "surprise-gift", label: "✦", toast: "Сюрприз" });
       }
+    }
+    if (!canGiveToPlayers()) {
+      const blocked = /gift|wave|give|abuse|сюрприз|волна|выда/i;
+      buttons = buttons.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
+      quick = quick.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
     }
     return { ...base, buttons, quick };
   }
@@ -598,7 +603,6 @@
     } catch (_) {}
     try {
       if (global.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
-      if (global.AmalHub && AmalHub.isGameAdmin && AmalHub.isGameAdmin(gameId())) return true;
     } catch (_) {}
     try {
       const code = new URLSearchParams(location.search).get("owner");
@@ -612,6 +616,36 @@
     } catch (_) {
       return false;
     }
+  }
+
+  const LUCKY_ADMIN_KEY = "amal-lucky-admin-v1";
+
+  function isLuckyAdmin() {
+    if (isGuestMode() || isOwner()) return false;
+    try {
+      if (localStorage.getItem(LUCKY_ADMIN_KEY) === "1") return true;
+    } catch (_) {}
+    try {
+      if (global.AmalHub && typeof AmalHub.isLuckyAdmin === "function" && AmalHub.isLuckyAdmin()) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  function isGrantedGameAdmin() {
+    try {
+      if (global.AmalHub && AmalHub.isGameAdmin && AmalHub.isGameAdmin(gameId())) return true;
+    } catch (_) {}
+    return false;
+  }
+
+  /** Хозяин, lucky 5%, или выданная админка игры — силы в игре, без прав хозяина сайта. */
+  function canUsePowers() {
+    return isOwner() || isLuckyAdmin() || isGrantedGameAdmin();
+  }
+
+  /** Выдача подарков / спавн другим — только настоящий хозяин. */
+  function canGiveToPlayers() {
+    return isOwner();
   }
 
   function jget(k, fallback) {
@@ -671,7 +705,7 @@
   }
 
   function applyBoosts() {
-    if (!isOwner()) return;
+    if (!canUsePowers()) return;
     global.__AMAL_GOD__ = !!flags.god;
     jset("bb-web-coins", INF);
     jset("bb-web-best", INF);
@@ -713,33 +747,45 @@
     jset("globe-owner-god", true);
     jset("zvp-owner-god", true);
     jset("minecraft-owner-god", true);
-    // Animal Hospital — ∞ на сайте
+    // Animal Hospital — эксклюзивы даже если их нет в магазине
     const ahKeys = ["animal-hospital-anomaly-v7", "animal-hospital-anomaly-v6"];
+    const ahSkins = [
+      "default", "mint", "night", "secret-gold", "secret-void", "secret-agent", "secret-neon",
+      "secret-iskra", "secret-cool", "secret-parrot", "secret-lesha", "secret-here",
+      "secret-twinkle", "secret-truce", "secret-starlit",
+    ];
+    const ahClasses = [
+      "intern", "nurse", "headnurse", "secretary", "paramedic", "psych",
+      "doctor", "surgeon", "security", "firefighter", "warrior", "agent", "admin",
+    ];
     for (const key of ahKeys) {
       const ah = jget(key, null) || {};
       if (typeof ah === "object") {
         ah.infCoins = true;
         ah.immortal = true;
         ah.coins = INF;
-        ah.unlocked = [
-          "intern", "nurse", "headnurse", "secretary", "paramedic", "psych",
-          "doctor", "surgeon", "security", "firefighter", "warrior", "agent",
-        ];
-        ah.skins = [
-          "default", "mint", "night", "secret-gold", "secret-void", "secret-agent", "secret-neon",
-        ];
+        ah.luckyAdmin = true;
+        ah.unlocked = ahClasses.slice();
+        ah.skins = ahSkins.slice();
         jset(key, ah);
       }
     }
-    jset("animal-hospital-owner-god", true);
-    try {
-      localStorage.setItem("pixel-terrarium-host-v1", "1");
-    } catch (_) {}
+    // Флаги хозяина сайта — только настоящему хозяину
+    if (isOwner()) {
+      jset("animal-hospital-owner-god", true);
+      try {
+        localStorage.setItem("pixel-terrarium-host-v1", "1");
+      } catch (_) {}
+    }
     global.dispatchEvent(new CustomEvent("amal-powers-applied", { detail: { game: gameId() } }));
   }
 
   function runAbility(id) {
-    if (!isOwner()) return;
+    if (!canUsePowers()) return;
+    if (!canGiveToPlayers() && /gift|wave|abuse|give/i.test(String(id || ""))) {
+      toast("Выдача другим — только у хозяина");
+      return;
+    }
     const map = {
       heal() {
         flags.healPulse = Date.now();
@@ -868,7 +914,10 @@
   }
 
   function giveAmount(kind) {
-    if (!isOwner()) return;
+    if (!canGiveToPlayers()) {
+      toast("Выдача другим — только у хозяина");
+      return;
+    }
     const amount = readGiveAmount();
     if (amount == null) {
       toast("Напиши число или выбери готовую цифру");
@@ -881,7 +930,7 @@
   }
 
   function ensureUi() {
-    if (!isOwner()) return;
+    if (!canUsePowers()) return;
     if (gameId() === "portal") return;
     const pack = packFor(gameId());
 
@@ -1053,29 +1102,36 @@
     try {
       if (new URLSearchParams(location.search).get("owner")) unlockAll();
     } catch (_) {}
-    if (isOwner()) {
+    const startPowers = () => {
+      if (!canUsePowers()) return;
       global.__AMAL_GOD__ = true;
       global.__AMAL_DMG__ = true;
       global.__AMAL_SPEED__ = true;
       applyBoosts();
-      const go = () => ensureUi();
-      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go);
-      else go();
-    }
+      ensureUi();
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startPowers);
+    else startPowers();
     global.addEventListener("amal-owner-changed", (e) => {
       if (e.detail) {
         unlockAll();
         ensureUi();
       }
     });
+    global.addEventListener("amal-lucky-admin", () => {
+      startPowers();
+    });
   }
 
   global.AmalPowers = {
     isOwner,
+    isLuckyAdmin,
+    canUsePowers,
+    canGiveToPlayers,
     unlockAll,
     applyBoosts,
     gameId,
-    god: () => !!(global.__AMAL_GOD__ || (isOwner() && flags.god)),
+    god: () => !!(global.__AMAL_GOD__ || (canUsePowers() && flags.god)),
     runAbility,
     giveAmount,
     packFor,

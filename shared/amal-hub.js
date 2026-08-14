@@ -392,11 +392,67 @@
     return map;
   }
 
+  function isLuckyAdmin() {
+    if (isGuestMode() || isOwner()) return false;
+    try {
+      return localStorage.getItem("amal-lucky-admin-v1") === "1";
+    } catch {
+      return false;
+    }
+  }
+
+  function grantLuckyAdmin() {
+    if (isGuestMode()) return { ok: false, error: "Гость" };
+    if (isOwner()) return { ok: true, already: true, owner: true };
+    if (isLuckyAdmin()) return { ok: true, already: true };
+    try {
+      localStorage.setItem("amal-lucky-admin-v1", "1");
+    } catch {
+      return { ok: false, error: "storage" };
+    }
+    try {
+      const map = pruneMyPowers();
+      GRANTABLE_GAMES.forEach((g) => {
+        map[g.id] = { on: true, lucky: true, at: Date.now() };
+      });
+      saveMyPowers(map);
+    } catch {
+      /* ignore */
+    }
+    try {
+      global.dispatchEvent(new CustomEvent("amal-lucky-admin", { detail: { at: Date.now() } }));
+    } catch {
+      /* ignore */
+    }
+    try {
+      if (global.AmalPowers && typeof AmalPowers.applyBoosts === "function") AmalPowers.applyBoosts();
+    } catch {
+      /* ignore */
+    }
+    showHubToast("👑 Админка удачи (5%) · во всех играх · без выдачи другим");
+    return { ok: true, granted: true };
+  }
+
+  /** Шанс по умолчанию 5% (не 10%). */
+  function tryRollLuckyAdmin(chance) {
+    const rate = chance == null ? 0.05 : Number(chance);
+    if (isGuestMode() || isOwner()) return { ok: false, rolled: false };
+    if (isLuckyAdmin()) return { ok: true, already: true, rolled: false };
+    if (!(rate > 0) || Math.random() >= rate) return { ok: false, rolled: true, won: false };
+    const res = grantLuckyAdmin();
+    return Object.assign({ rolled: true, won: !!res.granted }, res);
+  }
+
   function isGameAdmin(gameId) {
     const id = gameId || gameIdFromPath();
     if (isOwner()) return true;
+    if (isLuckyAdmin()) return true;
     const map = pruneMyPowers();
     return !!(map[id] && map[id].on);
+  }
+
+  function canGiveToPlayers() {
+    return isOwner();
   }
 
   function myAdminGames() {
@@ -2059,6 +2115,20 @@
         <button type="button" class="primary" data-amal="send-note" style="flex:1">Отправить</button>
         <button type="button" data-amal="close">Закрыть</button>
       </div>
+      ${
+        !isOwner()
+          ? `<div class="amal-hub-help" style="margin-top:10px">${
+              isLuckyAdmin()
+                ? "👑 У тебя админка удачи · во всех играх · без выдачи другим"
+                : "Испытай удачу: 5% шанс админки во всех играх (эксклюзивы откроются, выдавать другим нельзя)"
+            }</div>
+        ${
+          isLuckyAdmin()
+            ? ""
+            : `<div class="amal-hub-row" style="margin-top:8px"><button type="button" data-amal="roll-lucky" style="flex:1">🎲 Удача 5%</button></div>`
+        }`
+          : ""
+      }
       <ul class="amal-hub-list">${
         mine.length
           ? mine
@@ -2445,11 +2515,17 @@
     }
 
     if (!fullOwner && isGameAdmin()) {
-      const games = myAdminGames();
+      const games = isLuckyAdmin()
+        ? GRANTABLE_GAMES.map((g) => g.id)
+        : myAdminGames();
+      const title = isLuckyAdmin() ? "Админка удачи (5%)" : "Твоя админка";
+      const sub = isLuckyAdmin()
+        ? "Во всех играх · эксклюзивы открыты · выдавать другим нельзя"
+        : "Выдана Амалем";
       return `
         <div class="amal-hub-hero"><div class="badge">⚡</div><div>
-          <h2>Твоя админка</h2>
-          <p class="sub">Выдана Амалем</p>
+          <h2>${title}</h2>
+          <p class="sub">${sub}</p>
         </div></div>
         <div class="amal-hub-help">Игры: ${games.length ? games.map((g) => gameTitle(g)).join(", ") : "нет"}</div>
         <div class="amal-hub-row" style="margin-top:12px">
@@ -2506,6 +2582,25 @@
         if (act === "tab-note") {
           view = "note";
           paint();
+        }
+        if (act === "roll-lucky") {
+          if (isOwner() || isLuckyAdmin()) {
+            msg = isLuckyAdmin() ? "Админка удачи уже есть" : "";
+            paint();
+            return;
+          }
+          const res = tryRollLuckyAdmin(0.05);
+          if (res.won || res.granted) {
+            msg = "👑 Админка удачи! Во всех играх · без выдачи другим";
+            err = "";
+          } else if (res.rolled) {
+            msg = "";
+            err = "Не выпало (5%). Можно попробовать снова.";
+          } else {
+            err = "Сейчас нельзя";
+          }
+          paint();
+          return;
         }
         if (act === "tab-nick") {
           view = "nick";
@@ -3122,6 +3217,10 @@
     isOwner,
     canGrantAdmin,
     isGameAdmin,
+    isLuckyAdmin,
+    canGiveToPlayers,
+    grantLuckyAdmin,
+    tryRollLuckyAdmin,
     myAdminGames,
     issueGrants,
     revokeGrant,

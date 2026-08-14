@@ -512,10 +512,7 @@
       if (window.AmalOwner && typeof AmalOwner.isOwner === "function" && AmalOwner.isOwner()) return true;
     } catch (_) {}
     try {
-      if (window.AmalHub) {
-        if (typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
-        if (typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin()) return true;
-      }
+      if (window.AmalHub && typeof AmalHub.isOwner === "function" && AmalHub.isOwner()) return true;
     } catch (_) {}
     try {
       if (localStorage.getItem("amal-owner-v1") === "1") return true;
@@ -529,14 +526,29 @@
     return isOwner();
   }
 
-  /** Админка только в больнице (хозяин или выпала с 5%). Не пишет флаги на весь сайт. */
+  /** Админка больницы: хозяин, lucky 5% (на все игры), или выдача Амалем. */
   function isGameAdmin() {
     if (isOwner()) return true;
+    try {
+      if (window.AmalHub && typeof AmalHub.isLuckyAdmin === "function" && AmalHub.isLuckyAdmin()) return true;
+      if (window.AmalHub && typeof AmalHub.isGameAdmin === "function" && AmalHub.isGameAdmin("animal-hospital")) {
+        return true;
+      }
+      if (window.AmalPowers && typeof AmalPowers.isLuckyAdmin === "function" && AmalPowers.isLuckyAdmin()) {
+        return true;
+      }
+    } catch (_) {}
     return !!(meta && meta.luckyAdmin);
   }
 
   /** Выдача другим игрокам / спавн по нику — только настоящий хозяин. */
   function canGiveToPlayers() {
+    try {
+      if (window.AmalHub && typeof AmalHub.canGiveToPlayers === "function") return !!AmalHub.canGiveToPlayers();
+      if (window.AmalPowers && typeof AmalPowers.canGiveToPlayers === "function") {
+        return !!AmalPowers.canGiveToPlayers();
+      }
+    } catch (_) {}
     return isOwner();
   }
 
@@ -545,13 +557,20 @@
   }
 
   function grantLuckyAdmin() {
-    if (isOwner() || meta.luckyAdmin) return false;
+    if (isOwner() || isGameAdmin()) return false;
+    let shared = false;
+    try {
+      if (window.AmalHub && typeof AmalHub.grantLuckyAdmin === "function") {
+        const r = AmalHub.grantLuckyAdmin();
+        shared = !!(r && r.ok);
+      }
+    } catch (_) {}
     meta.luckyAdmin = true;
     meta.unlocked = CLASSES.map((c) => c.id);
     meta.skins = SKINS.map((s) => s.id);
     meta.classId = "admin";
     storeSet(SAVE, meta);
-    return true;
+    return shared || true;
   }
 
   function discoveredSurpriseShifts() {
@@ -1442,11 +1461,16 @@
     };
   }
 
-  // ∞ монеты — всем. Секреты/админ-класс — хозяину или luckyAdmin (только эта игра).
+  // ∞ монеты — всем. Секреты/админ — хозяину или lucky/game-admin.
   function forceInfinite() {
     meta.infCoins = true;
     meta.immortal = true;
     meta.coins = INF;
+    try {
+      if (window.AmalHub && typeof AmalHub.isLuckyAdmin === "function" && AmalHub.isLuckyAdmin()) {
+        meta.luckyAdmin = true;
+      }
+    } catch (_) {}
     const normalSkins = SKINS.filter((s) => !s.secret).map((s) => s.id);
     const normalClasses = CLASSES.filter((c) => c.id !== "admin").map((c) => c.id);
     if (isGameAdmin()) {
@@ -1590,9 +1614,9 @@
       if (isOwner()) {
         hint.textContent = "👑 Хозяин · 🪙 ∞ · секреты · можно выдавать игрокам";
       } else if (isGameAdmin()) {
-        hint.textContent = "👑 Админ больницы (5%) · секреты здесь · без выдачи другим · не на весь сайт";
+        hint.textContent = "👑 Админка удачи · секреты и эксклюзивы · без выдачи другим · во всех играх";
       } else {
-        hint.textContent = "🪙 ∞ · обмен: 5% шанс админки больницы · секретные скины только после неё";
+        hint.textContent = "🪙 ∞ · обмен или 📝: 5% шанс админки (не 10%) · эксклюзивы откроются";
       }
     }
     const btnAll = document.getElementById("btnAllSecrets");
@@ -2144,16 +2168,30 @@
 
   function spinExchange() {
     forceInfinite();
-    if (!isOwner() && !meta.luckyAdmin && Math.random() < 0.05) {
-      grantLuckyAdmin();
-      selectedClass = CLASSES.find((c) => c.id === "admin") || selectedClass;
-      persistLobby();
-      exResult.textContent = "👑 Админка больницы! Как у хозяина здесь · без выдачи другим · не на все игры";
-      exWallet.textContent = "🪙 ∞";
-      toast("👑 Админ больницы (5%)");
-      showEvent("👑 Админка больницы · только эта игра", 3.4);
-      refreshLobbyUI();
-      return;
+    if (!isOwner() && !isGameAdmin()) {
+      let won = false;
+      try {
+        if (window.AmalHub && typeof AmalHub.tryRollLuckyAdmin === "function") {
+          const res = AmalHub.tryRollLuckyAdmin(0.05);
+          won = !!(res && (res.won || res.granted));
+        } else if (Math.random() < 0.05) {
+          won = true;
+        }
+      } catch (_) {
+        won = Math.random() < 0.05;
+      }
+      if (won) {
+        grantLuckyAdmin();
+        selectedClass = CLASSES.find((c) => c.id === "admin") || selectedClass;
+        persistLobby();
+        exResult.textContent =
+          "👑 Админка удачи! Во всех играх · эксклюзивы открыты · без выдачи другим";
+        exWallet.textContent = "🪙 ∞";
+        toast("👑 Админка удачи (5%)");
+        showEvent("👑 Админка удачи · не только больница", 3.4);
+        refreshLobbyUI();
+        return;
+      }
     }
     const poolSkins = isGameAdmin()
       ? SKINS.filter((s) => s.secret)
