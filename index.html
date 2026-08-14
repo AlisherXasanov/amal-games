@@ -267,6 +267,96 @@
       background: linear-gradient(180deg, rgba(255,255,255,.5), var(--c, var(--mint)));
       box-shadow: 0 4px 10px rgba(13,110,95,.12);
     }
+    /* Меню-куб: 3D, крутится, радуга + история появления */
+    .menu-cube-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .85rem;
+      margin: 1.35rem auto .4rem;
+    }
+    .menu-cube-count {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .35rem .85rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0d6e5f, #0a5248);
+      color: #fff7d6;
+      font: 800 .82rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: .03em;
+    }
+    .menu-cube-count strong { color: var(--amber); font-size: 1.05rem; }
+    .menu-cube-stage {
+      position: relative;
+      width: 128px; height: 128px;
+      perspective: 560px;
+      display: grid;
+      place-items: center;
+    }
+    .menu-cube-rainbow {
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #ff004c, #ff8a00, #ffe600, #00e676, #00b0ff, #7c4dff, #ff004c);
+      filter: blur(10px);
+      opacity: .6;
+      animation: menuCubeRing 6s linear infinite;
+    }
+    @keyframes menuCubeRing { to { transform: rotate(360deg); } }
+    .menu-cube {
+      position: relative;
+      width: 76px; height: 76px;
+      transform-style: preserve-3d;
+      animation: menuCubeSpin 7s linear infinite;
+      filter: drop-shadow(0 12px 22px rgba(0,0,0,.28));
+    }
+    .menu-cube .mf {
+      position: absolute;
+      width: 76px; height: 76px;
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      border: 2px solid #fff3c4;
+      border-radius: 13px;
+      background: linear-gradient(160deg, #fde68a, #b45309 60%, #451a03);
+      box-shadow: 0 0 16px rgba(251,191,36,.6) inset;
+      backface-visibility: hidden;
+    }
+    .menu-cube .mf0 { transform: translateZ(38px); }
+    .menu-cube .mf1 { transform: rotateY(180deg) translateZ(38px); }
+    .menu-cube .mf2 { transform: rotateY(90deg) translateZ(38px); }
+    .menu-cube .mf3 { transform: rotateY(-90deg) translateZ(38px); }
+    .menu-cube .mf4 { transform: rotateX(90deg) translateZ(38px); }
+    .menu-cube .mf5 { transform: rotateX(-90deg) translateZ(38px); }
+    @keyframes menuCubeSpin {
+      0% { transform: rotateX(-22deg) rotateY(0); }
+      100% { transform: rotateX(-22deg) rotateY(360deg); }
+    }
+    .menu-cube-story {
+      max-width: 32rem;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.2);
+      border-radius: 15px;
+      padding: .85rem 1.1rem;
+      color: var(--ink);
+      font: 600 13px/1.55 Nunito, sans-serif;
+      box-shadow: 0 8px 22px rgba(16,40,32,.07);
+    }
+    .menu-cube-story h3 {
+      margin: 0 0 .35rem;
+      font: 800 .78rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+    .menu-cube-story .note {
+      display: block;
+      margin-top: .45rem;
+      color: var(--muted);
+      font-size: 12px;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -296,6 +386,27 @@
       <span style="--c:#f0b429"></span>
       <span style="--c:#7ed9b8"></span>
       <span style="--c:#c8b8e8"></span>
+    </div>
+
+    <div class="menu-cube-wrap">
+      <span class="menu-cube-count">🎮 Игр на сайте: <strong id="menu-games-n">—</strong></span>
+      <div class="menu-cube-stage" aria-hidden="true">
+        <div class="menu-cube-rainbow"></div>
+        <div class="menu-cube">
+          <span class="mf mf0">🎲</span>
+          <span class="mf mf1">🎮</span>
+          <span class="mf mf2">🧪</span>
+          <span class="mf mf3">⭐</span>
+          <span class="mf mf4">👑</span>
+          <span class="mf mf5">🌈</span>
+        </div>
+      </div>
+      <div class="menu-cube-story">
+        <h3>🎲 Как появился этот куб</h3>
+        Я программировал <b>будущее</b> — и вдруг случилась ошибка. Из неё сам собой родился этот куб.
+        Я хотел его убрать, но не вышло. Зато он дал мне <b>админ-команду</b>.
+        <span class="note">Это просто история его появления — куб тут только как рассказ.</span>
+      </div>
     </div>
   </header>
 
@@ -839,6 +950,8 @@
       const n = document.querySelectorAll("a.card[href]").length;
       const el = document.getElementById("games-count");
       if (el) el.innerHTML = "образцов в каталоге: <strong>" + n + "</strong>";
+      const mn = document.getElementById("menu-games-n");
+      if (mn) mn.textContent = n;
     })();
   </script>
   
@@ -923,6 +1036,6 @@
 
   <script src="./owner-cheats.js"></script>
   <script src="./shared/amal-owner-powers.js?v=20"></script>
-  <script src="./shared/amal-hub.js?v=44"></script>
+  <script src="./shared/amal-hub.js?v=45"></script>
 </body>
 </html>

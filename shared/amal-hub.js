@@ -4145,7 +4145,13 @@
       "#amal-cube-dash input.acd-amt{width:100%;box-sizing:border-box;border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:9px;font:900 14px system-ui,sans-serif;background:#080c17;color:#fde68a;margin-bottom:5px;text-align:center}" +
       "#amal-cube-dash .acd-presets{display:flex;flex-wrap:wrap;gap:5px}" +
       "#amal-cube-dash .acd-presets button{flex:1 0 auto;min-height:28px;padding:5px 7px;border:0;border-radius:999px;background:rgba(251,191,36,.18);color:#fde68a;font:800 10.5px system-ui,sans-serif;cursor:pointer;touch-action:manipulation}" +
+      "#amal-cube-dash .acd-scroll{max-height:190px;overflow:auto;margin-top:4px;display:flex;flex-direction:column;gap:4px;padding-right:2px}" +
+      "#amal-cube-dash .acd-scroll .acd-btn{margin:0}" +
+      "#amal-cube-dash .acd-emgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:2px}" +
+      "#amal-cube-dash .acd-emgrid .acd-fx{aspect-ratio:1;font-size:19px}" +
+      ".amal-big-emote{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);font-size:clamp(96px,30vw,260px);line-height:1;z-index:2147483041;pointer-events:none;user-select:none;filter:drop-shadow(0 10px 26px rgba(0,0,0,.55))}" +
       "@media(max-width:480px){#amal-cube-dash .acd-col{width:154px;top:52px}#amal-cube-dash .acd-panel.acd-free{width:154px}" +
+      "#amal-cube-dash .acd-emgrid{grid-template-columns:repeat(5,1fr)}" +
       "#amal-cube-dash .acd-btn{min-height:38px;font-size:11.5px}#amal-cube-dash .acd-stat .n{font-size:16px}}";
     document.head.appendChild(s);
   }
@@ -4431,6 +4437,252 @@
     showHubToast("🎁 Мистери-бокс: +" + pretty + " 💰" + (jackpot ? " · ДЖЕКПОТ!" : ""));
   }
 
+  /* ── Панель «Все игры» — быстрый переход в любую игру прямо из куба ── */
+  function gameHref(id) {
+    const here = gameIdFromPath();
+    const base = here === "portal" ? "./" : "../";
+    if (id === "__portal") return base;
+    return base + id + "/";
+  }
+
+  function cubeGamesHtml() {
+    const here = gameIdFromPath();
+    let list = [];
+    try {
+      list = GRANTABLE_GAMES.slice();
+    } catch (_) {
+      list = [];
+    }
+    const items = list
+      .filter((g) => g && g.id !== here)
+      .map((g) => '<button type="button" class="acd-btn" data-game="' + escapeHtml(g.id) + '">🎮 ' + escapeHtml(g.name || g.id) + "</button>")
+      .join("");
+    return (
+      '<button type="button" class="acd-btn amber" data-game="__portal">🏠 Каталог всех игр</button>' +
+      '<div class="acd-scroll">' + (items || '<div style="opacity:.7;font-size:11px;padding:4px">пусто</div>') + "</div>"
+    );
+  }
+
+  /* ── Эмоции: большой эмодзи на весь экран (не мешает игре) + запоминаем для фото ── */
+  const CUBE_EMOTES = ["😀", "😎", "😍", "🤩", "😂", "😮", "😢", "😡", "🥳", "😴", "🤔", "😱", "👍", "👎", "❤️", "🔥", "💯", "🎉", "👑", "🌈", "💪", "✌️", "🙌", "💖"];
+  let _amalLastEmote = "😎";
+
+  function cubeEmotesHtml() {
+    const grid = CUBE_EMOTES.map((e) => '<button type="button" class="acd-fx" data-emote="' + e + '" title="Показать эмоцию">' + e + "</button>").join("");
+    return (
+      '<div class="acd-emgrid">' + grid + "</div>" +
+      '<button type="button" class="acd-btn amber" data-cube="emote-face">🎲 Эту эмоцию на куб</button>' +
+      '<button type="button" class="acd-btn" data-cube="photo">📸 Сделать фото</button>'
+    );
+  }
+
+  function bigEmote(emoji) {
+    ensureFxLayer();
+    _amalLastEmote = emoji;
+    const s = document.createElement("div");
+    s.className = "amal-big-emote";
+    s.textContent = emoji;
+    document.body.appendChild(s);
+    s.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(.2) rotate(-14deg)", opacity: 0 },
+        { transform: "translate(-50%,-50%) scale(1.18) rotate(6deg)", opacity: 1, offset: 0.25 },
+        { transform: "translate(-50%,-50%) scale(1) rotate(0deg)", opacity: 1, offset: 0.72 },
+        { transform: "translate(-50%,-62%) scale(.85) rotate(-3deg)", opacity: 0 },
+      ],
+      { duration: 1500, easing: "cubic-bezier(.2,.85,.3,1)" },
+    ).onfinish = () => s.remove();
+  }
+
+  function fxPhotoFlash() {
+    ensureFxLayer();
+    let flash = document.getElementById("amal-fx-flash");
+    if (!flash) {
+      flash = document.createElement("div");
+      flash.id = "amal-fx-flash";
+      document.body.appendChild(flash);
+    }
+    flash.style.background = "#fff";
+    flash.style.mixBlendMode = "normal";
+    flash.animate([{ opacity: 0.85 }, { opacity: 0 }], { duration: 320, easing: "ease-out" });
+  }
+
+  function drawPhotoBg(ctx, w, h) {
+    const g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, "#291804");
+    g.addColorStop(1, "#0f172a");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  function drawPhotoCaption(ctx, w, h) {
+    const cap = gameTitle(gameIdFromPath()) + " · " + (getNick() || "Amal");
+    const fs = Math.max(14, Math.round(h * 0.045));
+    ctx.font = "bold " + fs + "px system-ui,sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillStyle = "rgba(0,0,0,.55)";
+    ctx.fillText(cap, 16, h - 14);
+    ctx.fillStyle = "#fde68a";
+    ctx.fillText(cap, 14, h - 16);
+  }
+
+  function cubePhoto() {
+    try {
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      let best = null;
+      let bestArea = 0;
+      document.querySelectorAll("canvas").forEach((c) => {
+        const a = (c.width || 0) * (c.height || 0);
+        if (a > bestArea) {
+          bestArea = a;
+          best = c;
+        }
+      });
+      const cv = document.createElement("canvas");
+      cv.width = best ? best.width : W;
+      cv.height = best ? best.height : H;
+      const ctx = cv.getContext("2d");
+      let tainted = false;
+      if (best) {
+        try {
+          ctx.drawImage(best, 0, 0, cv.width, cv.height);
+        } catch (_) {
+          tainted = true;
+        }
+      } else {
+        drawPhotoBg(ctx, cv.width, cv.height);
+      }
+      if (_amalLastEmote) {
+        ctx.font = Math.round(cv.height * 0.32) + "px serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(_amalLastEmote, cv.width / 2, cv.height * 0.4);
+      }
+      drawPhotoCaption(ctx, cv.width, cv.height);
+      let url = "";
+      try {
+        url = cv.toDataURL("image/png");
+      } catch (_) {
+        tainted = true;
+      }
+      if (tainted || !url) {
+        // Кадр игры защищён — рисуем красивую рамку с эмоцией
+        drawPhotoBg(ctx, cv.width, cv.height);
+        if (_amalLastEmote) {
+          ctx.font = Math.round(cv.height * 0.36) + "px serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(_amalLastEmote, cv.width / 2, cv.height * 0.42);
+        }
+        drawPhotoCaption(ctx, cv.width, cv.height);
+        url = cv.toDataURL("image/png");
+      }
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "amal-" + gameIdFromPath() + "-" + Date.now() + ".png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      fxPhotoFlash();
+      fxSound("coin");
+      showHubToast("📸 Фото сохранено");
+    } catch (_) {
+      showHubToast("📸 Не вышло снять кадр");
+    }
+  }
+
+  /* ── «Матрица» и крутые эффекты — оверлеи поверх игры, играть не мешают ── */
+  function toggleMatrixFx() {
+    const ex = document.getElementById("amal-mtx");
+    if (ex) {
+      try {
+        cancelAnimationFrame(ex._raf);
+      } catch (_) {
+        /* ignore */
+      }
+      window.removeEventListener("resize", ex._resize);
+      ex.remove();
+      showHubToast("🟩 Матрица выключена");
+      return;
+    }
+    const c = document.createElement("canvas");
+    c.id = "amal-mtx";
+    c.style.cssText = "position:fixed;inset:0;z-index:2147483000;pointer-events:none;opacity:.55";
+    document.body.appendChild(c);
+    const ctx = c.getContext("2d");
+    const size = () => {
+      c.width = window.innerWidth;
+      c.height = window.innerHeight;
+    };
+    size();
+    c._resize = size;
+    window.addEventListener("resize", size);
+    const step = 15;
+    let cols = Math.max(1, Math.floor(c.width / step));
+    let drops = Array(cols).fill(0).map(() => Math.random() * -40);
+    const glyphs = "01アイウエオカキクケコサシスセソタチツテトﾊﾋﾌﾍﾎ$#@%&";
+    const draw = () => {
+      ctx.fillStyle = "rgba(2,10,6,.10)";
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = "#34d399";
+      ctx.font = step + "px monospace";
+      cols = Math.max(1, Math.floor(c.width / step));
+      for (let i = 0; i < cols; i++) {
+        if (drops[i] === undefined) drops[i] = Math.random() * -40;
+        const t = glyphs[Math.floor(Math.random() * glyphs.length)];
+        const y = drops[i] * step;
+        ctx.fillText(t, i * step, y);
+        if (y > c.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      c._raf = requestAnimationFrame(draw);
+    };
+    draw();
+    showHubToast("🟩 Матрица включена");
+  }
+
+  function fxGlitchScreen() {
+    ensureFxLayer();
+    const g = document.createElement("div");
+    g.style.cssText =
+      "position:fixed;inset:0;z-index:2147483038;pointer-events:none;mix-blend-mode:screen;" +
+      "background:repeating-linear-gradient(0deg,rgba(255,0,80,.08),rgba(0,220,255,.08) 3px,transparent 6px)";
+    document.body.appendChild(g);
+    let n = 0;
+    const iv = setInterval(() => {
+      g.style.transform = "translate(" + (Math.random() * 10 - 5) + "px," + (Math.random() * 8 - 4) + "px)";
+      g.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+      if (++n > 14) {
+        clearInterval(iv);
+        g.remove();
+      }
+    }, 70);
+    fxSound("laser");
+  }
+
+  function cubeCoolFx(kind) {
+    try {
+      if (kind === "matrix") toggleMatrixFx();
+      else if (kind === "glitch") fxGlitchScreen();
+      else if (kind === "gravity") fxRain(["🪙", "💎", "⭐", "🍀", "🧊", "🔷", "🟪"], 70);
+      else if (kind === "petals") fxRain(["🌸", "🍁", "🍃", "❄️", "🌼"], 46);
+      else if (kind === "shock") {
+        fxBurst(["⚡", "💥", "✨", "🌩️"], 34);
+        fxSound("boom");
+        fxPhotoFlash();
+      } else if (kind === "off") {
+        const ex = document.getElementById("amal-mtx");
+        if (ex) toggleMatrixFx();
+        applyVibe("off");
+        showHubToast("🚫 Эффекты выключены");
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   function cubeDashPlayersHtml() {
     let list = [];
     try {
@@ -4675,6 +4927,8 @@
           '<button type="button" class="acd-btn amber" data-cube="mystery">🎁 Мистери-бокс</button>',
       ) +
       cubePanelHtml("cube", "🎲 КУБ · СКИНЫ", cubeSkinPanelBody()) +
+      cubePanelHtml("games", "🎮 ВСЕ ИГРЫ", '<div id="amal-cube-games-body">' + cubeGamesHtml() + "</div>") +
+      cubePanelHtml("emotions", "😀 ЭМОЦИИ · ФОТО", cubeEmotesHtml()) +
       "</div>" +
       '<div class="acd-col right">' +
       cubePanelHtml(
@@ -4713,6 +4967,19 @@
           '<button type="button" class="acd-fx" data-snd="applause" title="Аплодисменты">👏</button>' +
           "</div>",
       ) +
+      cubePanelHtml(
+        "matrix",
+        "🟩 МАТРИЦА · ЭФФЕКТЫ",
+        '<div class="acd-fxgrid">' +
+          '<button type="button" class="acd-fx" data-cool="matrix" title="Матрица (вкл/выкл)">🟩</button>' +
+          '<button type="button" class="acd-fx" data-cool="glitch" title="Глитч экрана">🎞️</button>' +
+          '<button type="button" class="acd-fx" data-cool="shock" title="Разряд">⚡</button>' +
+          '<button type="button" class="acd-fx" data-cool="gravity" title="Дождь сокровищ">💎</button>' +
+          '<button type="button" class="acd-fx" data-cool="petals" title="Лепестки">🌸</button>' +
+          '<button type="button" class="acd-fx" data-cool="off" title="Выключить всё">🚫</button>' +
+          "</div>" +
+          '<button type="button" class="acd-btn max" data-cool="matrix">🟩 РЕЖИМ МАТРИЦА</button>',
+      ) +
       "</div>";
     dash.addEventListener("click", (e) => {
       const fx = e.target.closest("[data-fx]");
@@ -4728,6 +4995,25 @@
       const snd = e.target.closest("[data-snd]");
       if (snd) {
         fxSound(snd.getAttribute("data-snd"));
+        return;
+      }
+      const gj = e.target.closest("[data-game]");
+      if (gj) {
+        try {
+          location.href = gameHref(gj.getAttribute("data-game"));
+        } catch (_) {
+          /* ignore */
+        }
+        return;
+      }
+      const emo = e.target.closest("[data-emote]");
+      if (emo) {
+        bigEmote(emo.getAttribute("data-emote"));
+        return;
+      }
+      const cool = e.target.closest("[data-cool]");
+      if (cool) {
+        cubeCoolFx(cool.getAttribute("data-cool"));
         return;
       }
       const skin = e.target.closest("[data-skin]");
@@ -4804,6 +5090,15 @@
         }
         if (act === "mystery") {
           cubeMystery();
+          return;
+        }
+        if (act === "photo") {
+          cubePhoto();
+          return;
+        }
+        if (act === "emote-face") {
+          setTreasure(_amalLastEmote || "😎", "эмоция");
+          showHubToast("🎲 Эмоция на кубе: " + (_amalLastEmote || "😎"));
           return;
         }
         if (act === "treasure-save") {
