@@ -4089,6 +4089,10 @@
       "#amal-cube-dash .acd-body{padding:0 9px}" +
       "#amal-cube-dash .acd-panel.acd-min{padding-bottom:0}#amal-cube-dash .acd-panel.acd-min .acd-h{margin-bottom:0}" +
       "#amal-cube-dash .acd-panel.acd-min .acd-body{display:none}" +
+      "#amal-cube-dash .acd-fxgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:2px}" +
+      "#amal-cube-dash .acd-fx{aspect-ratio:1;border:1px solid rgba(251,191,36,.28);border-radius:12px;cursor:pointer;font-size:22px;" +
+      "background:radial-gradient(circle at 40% 30%,rgba(251,191,36,.25),rgba(0,0,0,.35));color:#fff;touch-action:manipulation;transition:transform .12s}" +
+      "#amal-cube-dash .acd-fx:active{transform:scale(.9)}" +
       "#amal-cube-dash .acd-btn{display:block;width:100%;margin:5px 0 0;min-height:42px;border:1px solid rgba(255,255,255,.09);border-radius:11px;cursor:pointer;" +
       "background:linear-gradient(150deg,rgba(52,211,153,.24),rgba(16,185,129,.1));color:#d1fae5;font:800 12.5px system-ui,sans-serif;touch-action:manipulation}" +
       "#amal-cube-dash .acd-btn:active{transform:scale(.97)}" +
@@ -4128,6 +4132,112 @@
       if (inp) inp.value = (src && src.value) || "100000";
       if (global.AmalPowers && AmalPowers.giveAmount) AmalPowers.giveAmount(kind);
       else showHubToast("💰 Силы загружаются");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /* ── Весёлые эффекты для куба — сыпем прямо поверх игры, играть не мешает ── */
+  function ensureFxLayer() {
+    let layer = document.getElementById("amal-fx-layer");
+    if (layer) return layer;
+    if (!document.getElementById("amal-fx-css")) {
+      const st = document.createElement("style");
+      st.id = "amal-fx-css";
+      st.textContent =
+        "#amal-fx-layer{position:fixed;inset:0;z-index:2147483040;pointer-events:none;overflow:hidden}" +
+        "#amal-fx-layer .amal-fx-p{position:fixed;top:0;left:0;will-change:transform,opacity;user-select:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}" +
+        "#amal-fx-flash{position:fixed;inset:0;z-index:2147483039;pointer-events:none;opacity:0;mix-blend-mode:screen}";
+      document.head.appendChild(st);
+    }
+    layer = document.createElement("div");
+    layer.id = "amal-fx-layer";
+    document.body.appendChild(layer);
+    return layer;
+  }
+
+  function fxPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function fxRain(emojis, count) {
+    const layer = ensureFxLayer();
+    const W = window.innerWidth;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement("span");
+      s.className = "amal-fx-p";
+      s.textContent = fxPick(emojis);
+      s.style.fontSize = 16 + Math.random() * 24 + "px";
+      layer.appendChild(s);
+      const startX = Math.random() * W;
+      const drift = (Math.random() * 2 - 1) * 120;
+      const rot = (Math.random() * 2 - 1) * 540;
+      const dur = 1900 + Math.random() * 1900;
+      s.animate(
+        [
+          { transform: "translate(" + startX + "px,-8vh) rotate(0deg)", opacity: 1 },
+          { transform: "translate(" + (startX + drift) + "px,108vh) rotate(" + rot + "deg)", opacity: 1 },
+        ],
+        { duration: dur, delay: Math.random() * 500, easing: "linear" },
+      ).onfinish = () => s.remove();
+    }
+  }
+
+  function fxBurst(emojis, count) {
+    const layer = ensureFxLayer();
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight * 0.42;
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement("span");
+      s.className = "amal-fx-p";
+      s.textContent = fxPick(emojis);
+      s.style.fontSize = 16 + Math.random() * 20 + "px";
+      layer.appendChild(s);
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 90 + Math.random() * 230;
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist;
+      const dur = 900 + Math.random() * 900;
+      s.animate(
+        [
+          { transform: "translate(" + cx + "px," + cy + "px) scale(.4)", opacity: 1 },
+          { transform: "translate(" + (cx + dx) + "px," + (cy + dy + 60) + "px) scale(1.1)", opacity: 1, offset: 0.7 },
+          { transform: "translate(" + (cx + dx * 1.1) + "px," + (cy + dy + 140) + "px) scale(.9)", opacity: 0 },
+        ],
+        { duration: dur, easing: "cubic-bezier(.15,.7,.4,1)" },
+      ).onfinish = () => s.remove();
+    }
+  }
+
+  function fxDisco() {
+    ensureFxLayer();
+    let flash = document.getElementById("amal-fx-flash");
+    if (!flash) {
+      flash = document.createElement("div");
+      flash.id = "amal-fx-flash";
+      document.body.appendChild(flash);
+    }
+    const colors = ["#ff3b6b", "#ffd23b", "#3bff88", "#3bc9ff", "#c23bff", "#ff8a3b"];
+    let n = 0;
+    const iv = setInterval(() => {
+      flash.style.background = fxPick(colors);
+      flash.animate([{ opacity: 0.55 }, { opacity: 0 }], { duration: 260, easing: "ease-out" });
+      if (++n >= 10) clearInterval(iv);
+    }, 240);
+    fxBurst(["✨", "⭐", "🌟", "💫"], 16);
+  }
+
+  function cubeFx(kind) {
+    try {
+      if (kind === "confetti") fxRain(["🎉", "🎊", "✨", "🟡", "🔴", "🟢", "🔵", "🟣"], 46);
+      else if (kind === "coins") fxRain(["💰", "🪙", "⭐", "💎"], 40);
+      else if (kind === "stars") fxRain(["⭐", "🌟", "✨", "💫"], 40);
+      else if (kind === "hearts") fxRain(["💚", "💛", "❤️", "💖", "💕"], 38);
+      else if (kind === "fireworks") {
+        fxBurst(["🎆", "✨", "⭐", "💥", "🌟"], 30);
+        setTimeout(() => fxBurst(["🎇", "✨", "💫"], 24), 350);
+        setTimeout(() => fxBurst(["🎆", "⭐", "💥"], 24), 700);
+      } else if (kind === "disco") fxDisco();
     } catch (_) {
       /* ignore */
     }
@@ -4361,6 +4471,18 @@
         '<button type="button" data-cube="reset" title="Вернуть панели по бокам">↺</button>',
       ) +
       cubePanelHtml("things", "👑 ТВОИ ВЕЩИ", '<div id="amal-cube-things-body">' + things + "</div>", "", thingsStyle) +
+      cubePanelHtml(
+        "fx",
+        "🎉 ВЕСЕЛЬЕ",
+        '<div class="acd-fxgrid">' +
+          '<button type="button" class="acd-fx" data-fx="confetti" title="Конфетти">🎉</button>' +
+          '<button type="button" class="acd-fx" data-fx="fireworks" title="Салют">🎆</button>' +
+          '<button type="button" class="acd-fx" data-fx="coins" title="Дождь монет">💰</button>' +
+          '<button type="button" class="acd-fx" data-fx="stars" title="Звездопад">⭐</button>' +
+          '<button type="button" class="acd-fx" data-fx="hearts" title="Сердечки">💖</button>' +
+          '<button type="button" class="acd-fx" data-fx="disco" title="Дискотека">🕶️</button>' +
+          "</div>",
+      ) +
       "</div>" +
       '<div class="acd-col right">' +
       cubePanelHtml(
@@ -4384,6 +4506,11 @@
       ) +
       "</div>";
     dash.addEventListener("click", (e) => {
+      const fx = e.target.closest("[data-fx]");
+      if (fx) {
+        cubeFx(fx.getAttribute("data-fx"));
+        return;
+      }
       const thing = e.target.closest("[data-thing]");
       if (thing) {
         try {
