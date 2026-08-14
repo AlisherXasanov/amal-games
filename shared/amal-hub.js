@@ -4070,13 +4070,148 @@
       "#amal-cube-btn::after{content:'АДМИН';position:absolute;top:64px;right:0;padding:3px 7px;border-radius:7px;" +
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif}" +
       "#amal-cube-btn:hover,#amal-cube-btn:active{transform:scale(1.08)}" +
-      "@media(max-width:480px){#amal-cube-pickup,#amal-cube-btn{right:12px;top:38dvh}}";
+      "@media(max-width:480px){#amal-cube-pickup,#amal-cube-btn{right:12px;top:38dvh}}" +
+      /* боковые панели — не перекрывают центр, можно играть */
+      "#amal-cube-dash{position:fixed;inset:0;z-index:2147483002;pointer-events:none;font-family:system-ui,sans-serif}" +
+      "#amal-cube-dash .acd-col{position:absolute;top:58px;bottom:12px;display:flex;flex-direction:column;gap:8px;width:172px;max-width:44vw;overflow:auto;pointer-events:none}" +
+      "#amal-cube-dash .acd-col.left{left:8px}#amal-cube-dash .acd-col.right{right:8px}" +
+      "#amal-cube-dash .acd-panel{pointer-events:auto;background:linear-gradient(165deg,rgba(24,16,4,.96),rgba(10,14,26,.96));border:1px solid #fbbf24;border-radius:14px;padding:8px;box-shadow:0 10px 26px rgba(0,0,0,.5);color:#fff7ed}" +
+      "#amal-cube-dash .acd-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}" +
+      "#amal-cube-dash .acd-h b{font-size:11px;letter-spacing:.03em;color:#fde68a}" +
+      "#amal-cube-dash .acd-h button{width:20px;height:20px;border:0;border-radius:6px;background:rgba(255,255,255,.14);color:#fff;font-size:11px;cursor:pointer;line-height:1}" +
+      "#amal-cube-dash .acd-btn{display:block;width:100%;margin:4px 0 0;min-height:38px;border:0;border-radius:10px;cursor:pointer;background:rgba(52,211,153,.2);color:#d1fae5;font:800 12px system-ui,sans-serif;touch-action:manipulation}" +
+      "#amal-cube-dash .acd-btn.amber{background:rgba(251,191,36,.22);color:#fde68a}" +
+      "#amal-cube-dash .acd-btn.max{background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font-weight:950}" +
+      "#amal-cube-dash .acd-stats{display:flex;gap:5px;margin-bottom:5px}" +
+      "#amal-cube-dash .acd-stat{flex:1;text-align:center;background:rgba(255,255,255,.06);border-radius:8px;padding:5px 2px}" +
+      "#amal-cube-dash .acd-stat .n{font:900 15px system-ui,sans-serif;color:#fde68a}#amal-cube-dash .acd-stat .l{font-size:8px;opacity:.7;text-transform:uppercase}" +
+      "#amal-cube-dash .acd-list{font-size:10px;line-height:1.4;max-height:120px;overflow:auto;color:#e2e8f0}" +
+      "#amal-cube-dash input.acd-amt{width:100%;box-sizing:border-box;border:0;border-radius:8px;padding:8px;font:800 13px system-ui,sans-serif;background:#0b1220;color:#fff7ed;margin-bottom:4px}" +
+      "#amal-cube-dash .acd-presets{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:2px}" +
+      "#amal-cube-dash .acd-presets button{flex:1 0 auto;padding:5px 6px;border:0;border-radius:999px;background:rgba(251,191,36,.16);color:#fde68a;font:800 10px system-ui,sans-serif;cursor:pointer}" +
+      "@media(max-width:480px){#amal-cube-dash .acd-col{width:132px;top:52px}#amal-cube-dash .acd-btn{min-height:34px;font-size:11px}}";
     document.head.appendChild(s);
   }
 
   function removeCubeEl(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
+  }
+
+  function runCubeAbility(id) {
+    try {
+      if (global.AmalPowers && AmalPowers.runAbility) AmalPowers.runAbility(id);
+      else showHubToast("⚡ Силы загружаются");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function cubeGive(kind) {
+    try {
+      const src = document.getElementById("amal-cube-amount");
+      const inp = document.getElementById("amal-powers-amount");
+      if (inp) inp.value = (src && src.value) || "100000";
+      if (global.AmalPowers && AmalPowers.giveAmount) AmalPowers.giveAmount(kind);
+      else showHubToast("💰 Силы загружаются");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function cubeDashPlayersHtml() {
+    let list = [];
+    try {
+      list = playersInThisGameAll();
+    } catch (_) {
+      list = [];
+    }
+    let online = 0;
+    try {
+      online = recentPlayers(1000 * 60 * 3).filter((p) => p.live || Date.now() - p.at < 120000).length;
+    } catch (_) {
+      online = list.length;
+    }
+    const names =
+      list
+        .slice(0, 12)
+        .map((p) => escapeHtml(p.nick || "?") + (p.role === "owner" ? " 👑" : ""))
+        .join("<br>") || "пока никого";
+    return (
+      '<div class="acd-stats">' +
+      '<div class="acd-stat"><div class="n">' + online + '</div><div class="l">онлайн</div></div>' +
+      '<div class="acd-stat"><div class="n">' + list.length + '</div><div class="l">в игре</div></div>' +
+      "</div>" +
+      '<div class="acd-list">' + names + "</div>" +
+      '<button type="button" class="acd-btn amber" data-cube="admin-full">📋 Полная админка</button>'
+    );
+  }
+
+  function refreshCubeDashPlayers() {
+    const box = document.getElementById("amal-cube-players-body");
+    if (box) box.innerHTML = cubeDashPlayersHtml();
+  }
+
+  function showCubeDashboard() {
+    ensureCubeStyles();
+    if (document.getElementById("amal-cube-dash")) {
+      document.getElementById("amal-cube-dash").style.display = "block";
+      refreshCubeDashPlayers();
+      return;
+    }
+    const dash = document.createElement("div");
+    dash.id = "amal-cube-dash";
+    dash.innerHTML =
+      '<div class="acd-col left">' +
+      '<div class="acd-panel"><div class="acd-h"><b>👥 ИГРОКИ</b><button type="button" data-cube="close" title="Скрыть">✕</button></div>' +
+      '<div id="amal-cube-players-body">' + cubeDashPlayersHtml() + "</div></div>" +
+      "</div>" +
+      '<div class="acd-col right">' +
+      '<div class="acd-panel"><div class="acd-h"><b>⚡ СПОСОБНОСТИ</b></div>' +
+      '<button type="button" class="acd-btn max" data-cube="ab-max">⚡ ВСЁ НА МАКС</button>' +
+      '<button type="button" class="acd-btn" data-cube="ab-coins">💰 ∞ монеты</button>' +
+      '<button type="button" class="acd-btn" data-cube="ab-heal">💚 Полный хилл</button>' +
+      '<button type="button" class="acd-btn" data-cube="ab-god">🛡️ Бессмертие</button>' +
+      '<button type="button" class="acd-btn" data-cube="ab-speed">⚡ Скорость</button>' +
+      '<button type="button" class="acd-btn" data-cube="ab-unlock">🔓 Всё открыть</button>' +
+      "</div>" +
+      '<div class="acd-panel"><div class="acd-h"><b>🎁 ВЫДАТЬ СЕБЕ</b></div>' +
+      '<input class="acd-amt" id="amal-cube-amount" type="text" inputmode="numeric" value="100000" placeholder="Напиши число" />' +
+      '<div class="acd-presets"><button type="button" data-amt="1000">1К</button><button type="button" data-amt="100000">100К</button><button type="button" data-amt="1000000">1М</button><button type="button" data-amt="999999999">∞</button></div>' +
+      '<button type="button" class="acd-btn amber" data-cube="give-coins">💰 Монеты</button>' +
+      '<button type="button" class="acd-btn amber" data-cube="give-score">🏆 Очки</button>' +
+      '<button type="button" class="acd-btn amber" data-cube="give-cups">🏅 Кубки</button>' +
+      "</div>" +
+      "</div>";
+    dash.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-cube]");
+      if (b) {
+        const act = b.getAttribute("data-cube");
+        if (act === "close") {
+          dash.style.display = "none";
+          return;
+        }
+        if (act === "admin-full") {
+          openUi("admin");
+          return;
+        }
+        if (act.startsWith("ab-")) {
+          const map = { "ab-max": "max", "ab-coins": "coins", "ab-heal": "heal", "ab-god": "god", "ab-speed": "speed", "ab-unlock": "unlock" };
+          runCubeAbility(map[act]);
+          return;
+        }
+        if (act === "give-coins") cubeGive("coins");
+        if (act === "give-score") cubeGive("score");
+        if (act === "give-cups") cubeGive("cups");
+        return;
+      }
+      const preset = e.target.closest("[data-amt]");
+      if (preset) {
+        const amt = document.getElementById("amal-cube-amount");
+        if (amt) amt.value = preset.getAttribute("data-amt");
+      }
+    });
+    document.body.appendChild(dash);
   }
 
   function showCubeButton() {
@@ -4088,9 +4223,9 @@
     btn.id = "amal-cube-btn";
     btn.type = "button";
     btn.textContent = "🎲";
-    btn.title = "Админ-куб: игроки, способности и команды";
-    btn.setAttribute("aria-label", "Открыть админ-куб");
-    btn.addEventListener("click", () => openUi("admin"));
+    btn.title = "Админ-куб: панели способностей и игроков";
+    btn.setAttribute("aria-label", "Открыть боковые панели админ-куба");
+    btn.addEventListener("click", showCubeDashboard);
     document.body.appendChild(btn);
   }
 
@@ -4102,14 +4237,13 @@
     box.id = "amal-cube-activate";
     box.innerHTML =
       '<div class="cube">🎲</div><b>Личный админ-куб найден</b>' +
-      "<p>Игроки, количество онлайн, все способности, подарки и остальные команды.</p>" +
+      "<p>Боковые панели: игроки, все способности и «выдать себе» — прямо во время игры.</p>" +
       '<button type="button">АКТИВИРОВАТЬ</button>';
     box.querySelector("button").addEventListener("click", () => {
       setCubeState("active");
       showCubeButton();
-      paint();
-      showHubToast("🎲 Админ-куб активирован");
-      openUi("admin");
+      showHubToast("🎲 Панели открыты — играй и пользуйся");
+      showCubeDashboard();
     });
     document.body.appendChild(box);
   }
@@ -4168,6 +4302,7 @@
       bumpPresence();
       updateSameGameStrip();
       maybeRepaintPlayers();
+      if (isOwner()) refreshCubeDashPlayers();
       if (!isOwner() && myBanStatus()) enforceBanGate();
     }, 8000);
     const abuse = activeAbuse();
