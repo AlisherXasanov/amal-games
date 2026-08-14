@@ -3450,7 +3450,10 @@
         }
         e.stopPropagation();
         if (act === "open") openUi(isOwner() || isGameAdmin() ? "admin" : "note");
-        if (act === "close") closeUi();
+        if (act === "close") {
+          if (view === "updates") storeSet(KEYS.changelogSeen, CHANGELOG[0].id);
+          closeUi();
+        }
         if (act === "owner-abilities") {
           closeUi();
           const powers = document.getElementById("amal-powers-panel");
@@ -5295,9 +5298,11 @@
 
   function cubeSkinId() {
     try {
-      return CUBE_SKINS[localStorage.getItem("amal-cube-skin-v1")] ? localStorage.getItem("amal-cube-skin-v1") : "classic";
+      const saved = localStorage.getItem("amal-cube-skin-v1");
+      // по умолчанию — нестабильный RGB (пока хозяин сам не выбрал другой скин)
+      return CUBE_SKINS[saved] ? saved : "rgb";
     } catch (_) {
-      return "classic";
+      return "rgb";
     }
   }
 
@@ -5531,6 +5536,8 @@
       if (seen !== CHANGELOG[0].id && gameIdFromPath() === "portal") {
         open = true;
         view = "updates";
+        // отметить прочитанным сразу, чтобы окно показалось один раз и не мешало меню
+        storeSet(KEYS.changelogSeen, CHANGELOG[0].id);
         paint();
       }
     }
