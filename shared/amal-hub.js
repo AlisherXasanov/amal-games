@@ -2772,9 +2772,10 @@
       html += `<a class="amal-hub-exit" href="../" title="Выйти ко всем играм">← Все игры</a>`;
     }
 
-    if (owner) {
+    // Внутри игры хозяин входит через личный предмет-куб, а не через обычный чип.
+    if (owner && !inGame) {
       html += `<button type="button" class="amal-hub-chip owner" data-amal="open">👑 Хозяин</button>`;
-    } else if (nick) {
+    } else if (!owner && nick) {
       html += `<button type="button" class="amal-hub-chip" data-amal="open">${escapeHtml(
         nick,
       )} · ${escapeHtml(gameTitle(gid))}${gameAdmin ? " · админ" : ""}</button>`;
@@ -3392,6 +3393,7 @@
       </div>
       <div class="amal-hub-grid2"><button type="button" data-amal="admin-live"><span class="ico">📡</span><b>Живая карта</b><span>Лица онлайн</span></button>
         <button type="button" data-amal="admin-players"><span class="ico">👥</span><b>Кто играет</b><span>Ники и игры</span></button>
+        <button type="button" data-amal="owner-abilities"><span class="ico">⚡</span><b>Все способности</b><span>Сила · скорость · монеты</span></button>
         <button type="button" data-amal="admin-registry"><span class="ico">🆕</span><b>Регистрации</b><span>Кто и когда</span></button>
         <button type="button" data-amal="admin-inbox"><span class="ico">📩</span><b>Входящие</b><span>${
           unread.length ? unread.length + " новых" : "пусто"
@@ -3425,6 +3427,12 @@
         e.stopPropagation();
         if (act === "open") openUi(isOwner() || isGameAdmin() ? "admin" : "note");
         if (act === "close") closeUi();
+        if (act === "owner-abilities") {
+          closeUi();
+          const powers = document.getElementById("amal-powers-panel");
+          if (powers) powers.classList.add("open");
+          else showHubToast("⚡ Способности загружаются");
+        }
         if (act === "tab-note") {
           view = "note";
           paint();
@@ -4014,19 +4022,23 @@
     });
   }
 
-  const CUBE_KEY = "amal-secret-cube-v1";
+  const CUBE_KEY = "amal-secret-cube-v2";
 
-  function cubeCollected() {
+  function cubeKey() {
+    return CUBE_KEY + ":" + (gameIdFromPath() || "portal");
+  }
+
+  function cubeState() {
     try {
-      return localStorage.getItem(CUBE_KEY) === "1";
+      return localStorage.getItem(cubeKey()) || "";
     } catch (_) {
-      return false;
+      return "";
     }
   }
 
-  function setCubeCollected() {
+  function setCubeState(value) {
     try {
-      localStorage.setItem(CUBE_KEY, "1");
+      localStorage.setItem(cubeKey(), value);
     } catch (_) {
       /* ignore */
     }
@@ -4037,17 +4049,28 @@
     const s = document.createElement("style");
     s.id = "amal-cube-css";
     s.textContent =
-      "#amal-cube-pickup{position:fixed;left:16px;bottom:84px;z-index:2147483000;width:38px;height:38px;" +
-      "display:grid;place-items:center;font-size:22px;cursor:pointer;border-radius:12px;opacity:.42;" +
-      "background:radial-gradient(circle at 50% 35%,rgba(251,191,36,.35),rgba(15,23,42,.85));" +
-      "border:1px solid rgba(251,191,36,.5);box-shadow:0 0 0 rgba(251,191,36,.6);" +
-      "animation:amalCubeGlow 2.2s ease-in-out infinite;transition:opacity .2s,transform .2s}" +
-      "#amal-cube-pickup:hover{opacity:1;transform:scale(1.12)}" +
-      "@keyframes amalCubeGlow{0%,100%{box-shadow:0 0 6px rgba(251,191,36,.35)}50%{box-shadow:0 0 18px rgba(251,191,36,.7)}}" +
-      "#amal-cube-btn{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483001;" +
-      "width:50px;height:50px;border:1px solid rgba(251,191,36,.65);border-radius:16px;cursor:pointer;font-size:22px;" +
-      "color:#fff;background:linear-gradient(160deg,#78350f,#422006);box-shadow:0 10px 24px rgba(245,158,11,.3)}" +
-      "#amal-cube-btn:hover{transform:translateY(-2px)}";
+      "#amal-cube-pickup{position:fixed;right:16px;top:42dvh;z-index:2147483002;width:68px;height:68px;" +
+      "display:grid;place-items:center;border-radius:20px;cursor:pointer;color:#fff7d6;font-size:34px;" +
+      "background:radial-gradient(circle at 38% 28%,#fde68a,#b45309 58%,#451a03);border:2px solid #fbbf24;" +
+      "box-shadow:0 0 0 5px rgba(251,191,36,.16),0 10px 28px rgba(0,0,0,.48);" +
+      "animation:amalCubeGlow 1.6s ease-in-out infinite;transition:transform .2s;touch-action:manipulation}" +
+      "#amal-cube-pickup::after{content:'ТВОЙ ПРЕДМЕТ';position:absolute;top:74px;right:0;white-space:nowrap;" +
+      "padding:4px 7px;border-radius:7px;background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;letter-spacing:.04em}" +
+      "#amal-cube-pickup:hover,#amal-cube-pickup:active{transform:scale(1.1)}" +
+      "@keyframes amalCubeGlow{0%,100%{filter:brightness(1);box-shadow:0 0 8px rgba(251,191,36,.5),0 10px 28px rgba(0,0,0,.48)}50%{filter:brightness(1.2);box-shadow:0 0 28px rgba(251,191,36,.95),0 10px 28px rgba(0,0,0,.48)}}" +
+      "#amal-cube-activate{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483003;" +
+      "width:min(310px,calc(100vw - 28px));padding:18px;border-radius:22px;text-align:center;color:#fff7ed;" +
+      "background:linear-gradient(160deg,#291804,#0f172a);border:2px solid #fbbf24;box-shadow:0 24px 70px rgba(0,0,0,.65);font-family:system-ui,sans-serif}" +
+      "#amal-cube-activate .cube{font-size:48px;margin-bottom:6px}#amal-cube-activate b{display:block;font-size:18px;margin-bottom:5px}" +
+      "#amal-cube-activate p{margin:0 0 13px;color:#fde68a;font:700 12px/1.4 system-ui,sans-serif}" +
+      "#amal-cube-activate button{width:100%;min-height:52px;border:0;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font:950 14px system-ui,sans-serif;letter-spacing:.05em;touch-action:manipulation}" +
+      "#amal-cube-btn{position:fixed;right:16px;top:42dvh;z-index:2147483002;width:60px;height:60px;" +
+      "border:2px solid #fbbf24;border-radius:18px;cursor:pointer;font-size:28px;color:#fff;" +
+      "background:linear-gradient(160deg,#92400e,#422006);box-shadow:0 10px 28px rgba(245,158,11,.45);touch-action:manipulation}" +
+      "#amal-cube-btn::after{content:'АДМИН';position:absolute;top:64px;right:0;padding:3px 7px;border-radius:7px;" +
+      "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif}" +
+      "#amal-cube-btn:hover,#amal-cube-btn:active{transform:scale(1.08)}" +
+      "@media(max-width:480px){#amal-cube-pickup,#amal-cube-btn{right:12px;top:38dvh}}";
     document.head.appendChild(s);
   }
 
@@ -4058,41 +4081,61 @@
 
   function showCubeButton() {
     removeCubeEl("amal-cube-pickup");
+    removeCubeEl("amal-cube-activate");
     if (document.getElementById("amal-cube-btn")) return;
     ensureCubeStyles();
     const btn = document.createElement("button");
     btn.id = "amal-cube-btn";
     btn.type = "button";
     btn.textContent = "🎲";
-    btn.title = "Твоя админка (секретный кубик)";
+    btn.title = "Админ-куб: игроки, способности и команды";
+    btn.setAttribute("aria-label", "Открыть админ-куб");
     btn.addEventListener("click", () => openUi("admin"));
     document.body.appendChild(btn);
+  }
+
+  function showCubeActivate() {
+    removeCubeEl("amal-cube-pickup");
+    if (document.getElementById("amal-cube-activate")) return;
+    ensureCubeStyles();
+    const box = document.createElement("div");
+    box.id = "amal-cube-activate";
+    box.innerHTML =
+      '<div class="cube">🎲</div><b>Личный админ-куб найден</b>' +
+      "<p>Игроки, количество онлайн, все способности, подарки и остальные команды.</p>" +
+      '<button type="button">АКТИВИРОВАТЬ</button>';
+    box.querySelector("button").addEventListener("click", () => {
+      setCubeState("active");
+      showCubeButton();
+      paint();
+      showHubToast("🎲 Админ-куб активирован");
+      openUi("admin");
+    });
+    document.body.appendChild(box);
   }
 
   function showCubePickup() {
     if (document.getElementById("amal-cube-pickup")) return;
     ensureCubeStyles();
-    const el = document.createElement("div");
+    const el = document.createElement("button");
     el.id = "amal-cube-pickup";
+    el.type = "button";
     el.textContent = "🎲";
-    el.title = "Секретный кубик — забери, чтобы открыть админку";
+    el.title = "Забрать личный админ-куб";
+    el.setAttribute("aria-label", "Забрать личный админ-куб");
     el.addEventListener("click", () => {
-      setCubeCollected();
-      showCubeButton();
-      try {
-        showHubToast("🎲 Кубик активирован — админка на кнопке слева");
-      } catch (_) {
-        /* ignore */
-      }
-      openUi("admin");
+      setCubeState("taken");
+      showCubeActivate();
     });
     document.body.appendChild(el);
   }
 
-  /** Секретный кубик-предмет во всех играх: забираешь → кнопка 🎲 → вся админка. Только хозяин. */
+  /** Личный предмет в каждой игре: взять → активировать → несколько разделов админки. */
   function mountSecretCube() {
     if (!isOwner()) return;
-    if (cubeCollected()) showCubeButton();
+    const state = cubeState();
+    if (state === "active") showCubeButton();
+    else if (state === "taken") showCubeActivate();
     else showCubePickup();
   }
 
