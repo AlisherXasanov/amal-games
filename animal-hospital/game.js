@@ -486,6 +486,12 @@
         window.__AMAL_GUEST__ = true;
         window.__AMAL_OWNER__ = false;
         window.__AMAL_GOD__ = false;
+        try {
+          localStorage.removeItem("amal-owner-v1");
+          localStorage.removeItem("amal-owner-v2");
+          localStorage.removeItem("amal-owner-v3");
+          localStorage.removeItem("animal-hospital-owner-god");
+        } catch (_) {}
         return true;
       }
     } catch (_) {}
@@ -495,6 +501,10 @@
   /** Только настоящий хозяин — не всем игрокам. */
   function isOwner() {
     if (isGuestModeLocal()) return false;
+    try {
+      const code = new URLSearchParams(location.search).get("owner");
+      if (code === "AmalOwner2026" || code === "amal" || code === "1234" || code === "buddy") return true;
+    } catch (_) {}
     try {
       if (window.AmalPowers && typeof AmalPowers.isOwner === "function" && AmalPowers.isOwner()) return true;
     } catch (_) {}

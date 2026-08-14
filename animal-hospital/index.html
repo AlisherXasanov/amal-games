@@ -9,7 +9,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=147" />
+  <link rel="stylesheet" href="./style.css?v=152" />
+  <script>
+    /* Старый баг больницы писал amal-owner-* всем. Сброс один раз. */
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("guest") === "1" || q.get("guest") === "true" || q.get("guest") === "yes") {
+          localStorage.removeItem("amal-owner-v1");
+          localStorage.removeItem("amal-owner-v2");
+          localStorage.removeItem("amal-owner-v3");
+          localStorage.removeItem("animal-hospital-owner-god");
+          window.__AMAL_GUEST__ = true;
+          window.__AMAL_OWNER__ = false;
+          window.__AMAL_GOD__ = false;
+          return;
+        }
+        if (q.get("owner")) return;
+        if (localStorage.getItem("amal-ah-owner-pollution-clear-v2") === "1") return;
+        localStorage.removeItem("amal-owner-v1");
+        localStorage.removeItem("amal-owner-v2");
+        localStorage.removeItem("amal-owner-v3");
+        localStorage.removeItem("animal-hospital-owner-god");
+        window.__AMAL_OWNER__ = false;
+        window.__AMAL_GOD__ = false;
+        localStorage.setItem("amal-ah-owner-pollution-clear-v2", "1");
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -124,7 +151,7 @@
         <p class="hints" id="menuHints">
           🪙 ∞ монеты · лечи животных · смотри на аномалии у окна
         </p>
-        <p class="build-stamp" id="buildStamp">сборка 151 · если старая — жми «Обновить игру»</p>
+        <p class="build-stamp" id="buildStamp">сборка 152 · если старая — жми «Обновить игру»</p>
         <p class="build-stamp"><a href="./lab-group.html" style="color:#0d6e5f">🧪 Группа · Лаборатория (все игры)</a></p>
         <p class="build-stamp"><a href="./lab.html" style="color:#0d6e5f">Лаборатория</a> · <a href="./butterscotch.html" style="color:#1e3a6e">Buttersquish</a> · <a href="./batyr-mish.html" style="color:#1a6058">Батырский Миш</a> · <a href="./dumplings.html" style="color:#c05040">Пельмени</a> · <a href="./pet-care.html" style="color:#ff9a4a">Питомцы</a></p>
         <div class="spawn-players" id="spawnPlayersPanel" hidden>
@@ -222,7 +249,7 @@
   </div>
 
   <script src="../shared/amal-owner-powers.js?v=19"></script>
-  <script src="./game.js?v=151"></script>
+  <script src="./game.js?v=152"></script>
   <script src="../shared/amal-hub.js?v=28"></script>
   <script src="../shared/amal-surprises.js?v=11"></script>
 </body>
