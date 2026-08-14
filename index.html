@@ -390,6 +390,107 @@
       font-size: 12px;
       font-style: italic;
     }
+    /* Куб сбоку в квадратной рамке — для всех, со сменой иконки и комиксом */
+    .side-cube {
+      position: fixed;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      width: 158px;
+      padding: .7rem .6rem;
+      border-radius: 18px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(13,110,95,.2);
+      box-shadow: 0 12px 30px rgba(16,40,32,.16);
+    }
+    .side-cube-frame {
+      position: relative;
+      width: 132px; height: 132px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 50% 40%, #12463f, #0a2a28);
+      box-shadow: inset 0 0 0 2px rgba(251,191,36,.55), inset 0 0 22px rgba(0,0,0,.5);
+    }
+    .side-cube .menu-cube-stage { width: 118px; height: 118px; }
+    .side-cube-count { font: 800 12px Space Grotesk, Nunito, sans-serif; color: var(--teal); }
+    .side-cube-count strong { color: var(--coral); }
+    .side-cube-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+    .side-cube-icons button {
+      width: 27px; height: 27px;
+      padding: 0;
+      border: 1px solid rgba(13,110,95,.25);
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+    }
+    .side-cube-icons button.active {
+      background: var(--amber);
+      border-color: var(--amber);
+      box-shadow: 0 0 0 2px rgba(240,180,41,.35);
+    }
+    .side-cube-comic {
+      width: 100%;
+      padding: .45rem;
+      border: 0;
+      border-radius: 11px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #0d6e5f, #0a5248);
+      color: #f3efe6;
+      font: 800 12px Nunito, sans-serif;
+    }
+    .side-cube-comic:hover { filter: brightness(1.08); }
+    .cube-comic-back {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8,16,20,.62);
+      padding: 1rem;
+    }
+    .cube-comic-back.open { display: flex; }
+    .cube-comic {
+      max-width: 520px;
+      width: 100%;
+      background: #fffef8;
+      border-radius: 18px;
+      padding: 1.2rem;
+      box-shadow: 0 24px 70px rgba(0,0,0,.45);
+    }
+    .cube-comic h3 { font: 800 1rem Fredoka, Nunito, sans-serif; color: var(--teal); margin-bottom: .3rem; }
+    .cube-comic-frames { display: grid; grid-template-columns: repeat(3,1fr); gap: .6rem; margin: .8rem 0; }
+    .cube-comic-frame { border-radius: 13px; padding: .85rem .5rem; color: #fff; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,.15); }
+    .cube-comic-frame .pic { font-size: 32px; line-height: 1.1; }
+    .cube-comic-frame .cap { font: 700 11px/1.35 Nunito, sans-serif; margin-top: .5rem; }
+    .cube-comic-note { color: var(--muted); font: italic 600 12px Nunito, sans-serif; margin-top: .2rem; }
+    .cube-comic-close {
+      margin-top: .9rem;
+      width: 100%;
+      padding: .6rem;
+      border: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f0b429, #e25a3c);
+      color: #1a1400;
+      font: 800 13px Nunito, sans-serif;
+    }
+    @media (max-width: 900px) {
+      .side-cube { left: 8px; width: 118px; padding: .5rem .4rem; gap: .4rem; }
+      .side-cube-frame { width: 104px; height: 104px; }
+      .side-cube .menu-cube-stage { width: 92px; height: 92px; }
+      .side-cube-count { font-size: 11px; }
+    }
+    @media (max-width: 560px) {
+      .cube-comic-frames { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -421,8 +522,10 @@
       <span style="--c:#c8b8e8"></span>
     </div>
 
-    <div class="menu-cube-wrap">
-      <span class="menu-cube-count">🎮 Игр на сайте: <strong id="menu-games-n">—</strong></span>
+  </header>
+
+  <aside class="side-cube" aria-label="Куб лаборатории">
+    <div class="side-cube-frame">
       <div class="menu-cube-stage" aria-hidden="true">
         <div class="menu-cube-rainbow"></div>
         <div class="menu-cube">
@@ -442,14 +545,42 @@
           </div>
         </div>
       </div>
-      <div class="menu-cube-story">
-        <h3>🎲 Как появился этот куб</h3>
-        Я программировал <b>будущее</b> — и вдруг случилась ошибка. Из неё сам собой родился этот куб.
-        Я хотел его убрать, но не вышло. Зато он дал мне <b>админ-команду</b>.
-        <span class="note">Это просто история его появления — куб тут только как рассказ.</span>
-      </div>
     </div>
-  </header>
+    <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
+    <div class="side-cube-icons" id="cubeIconPick" aria-label="Сменить иконку куба">
+      <button type="button" data-ic="🎲" title="Кубик">🎲</button>
+      <button type="button" data-ic="🎮" title="Геймпад">🎮</button>
+      <button type="button" data-ic="💎" title="Алмаз">💎</button>
+      <button type="button" data-ic="🔥" title="Огонь">🔥</button>
+      <button type="button" data-ic="⭐" title="Звезда">⭐</button>
+      <button type="button" data-ic="🌈" title="Радуга">🌈</button>
+      <button type="button" data-ic="👑" title="Корона">👑</button>
+      <button type="button" data-ic="🧪" title="Пробирка">🧪</button>
+    </div>
+    <button type="button" class="side-cube-comic" id="cubeComicBtn">📖 Комикс о кубе</button>
+  </aside>
+
+  <div class="cube-comic-back" id="cubeComicBack" role="dialog" aria-modal="true" aria-label="Комикс о кубе">
+    <div class="cube-comic">
+      <h3>📖 Как появился этот куб</h3>
+      <div class="cube-comic-frames">
+        <div class="cube-comic-frame" style="background:linear-gradient(160deg,#0d6e5f,#312e81)">
+          <div class="pic">🧑‍💻🔮</div>
+          <div class="cap">Я программировал будущее</div>
+        </div>
+        <div class="cube-comic-frame" style="background:linear-gradient(160deg,#e25a3c,#7f1d1d)">
+          <div class="pic">⚠️🧊</div>
+          <div class="cap">Вдруг ошибка — и сам собой появился куб</div>
+        </div>
+        <div class="cube-comic-frame" style="background:linear-gradient(160deg,#f0b429,#b45309)">
+          <div class="pic">🎲👑</div>
+          <div class="cap">Убрать нельзя — зато он дал админ-команду</div>
+        </div>
+      </div>
+      <p class="cube-comic-note">Это просто история его появления — куб тут только как рассказ.</p>
+      <button type="button" class="cube-comic-close" id="cubeComicClose">Понятно</button>
+    </div>
+  </div>
 
   <p class="section-title">Создай сам · новое</p>
   <div class="grid" style="margin-bottom:0.4rem">
@@ -993,6 +1124,35 @@
       if (el) el.innerHTML = "образцов в каталоге: <strong>" + n + "</strong>";
       const mn = document.getElementById("menu-games-n");
       if (mn) mn.textContent = n;
+
+      // Смена иконки куба — выбор сохраняется в браузере
+      const ICON_KEY = "amal-menu-cube-icon";
+      const front = document.querySelector(".side-cube .menu-cube .mf0");
+      const pick = document.getElementById("cubeIconPick");
+      const applyIcon = (ic) => { if (front && ic) front.textContent = ic; };
+      let savedIcon = "🎲";
+      try { savedIcon = localStorage.getItem(ICON_KEY) || "🎲"; } catch (_) { /* ignore */ }
+      applyIcon(savedIcon);
+      if (pick) {
+        pick.querySelectorAll("button").forEach((b) => {
+          if (b.getAttribute("data-ic") === savedIcon) b.classList.add("active");
+          b.addEventListener("click", () => {
+            const ic = b.getAttribute("data-ic");
+            applyIcon(ic);
+            try { localStorage.setItem(ICON_KEY, ic); } catch (_) { /* ignore */ }
+            pick.querySelectorAll("button").forEach((x) => x.classList.remove("active"));
+            b.classList.add("active");
+          });
+        });
+      }
+
+      // Комикс о кубе — картинки + подписи
+      const back = document.getElementById("cubeComicBack");
+      const openBtn = document.getElementById("cubeComicBtn");
+      const closeBtn = document.getElementById("cubeComicClose");
+      if (openBtn && back) openBtn.addEventListener("click", () => back.classList.add("open"));
+      if (closeBtn && back) closeBtn.addEventListener("click", () => back.classList.remove("open"));
+      if (back) back.addEventListener("click", (e) => { if (e.target === back) back.classList.remove("open"); });
     })();
   </script>
   
