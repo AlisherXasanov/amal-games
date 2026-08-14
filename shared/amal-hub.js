@@ -4103,10 +4103,15 @@
       "#amal-cube-btn .c3d .f4{transform:rotateX(90deg) translateZ(24px)}#amal-cube-btn .c3d .f5{transform:rotateX(-90deg) translateZ(24px)}" +
       "#amal-cube-btn.cube-glitch .c3d{animation:amalCubeSpin 7s linear infinite,amalCubeGlitch .5s steps(2) infinite}" +
       /* RGB · нестабильный: 3D сохраняется (крутится быстрее), а глитч/лаг/хрома — на обёртке, чтобы не сплющивать куб */
-      "#amal-cube-btn.cube-rgb .c3d{animation:amalCubeSpin 3.1s linear infinite}" +
-      "#amal-cube-btn.cube-rgb .c3d .f{text-shadow:-2px 0 rgba(255,0,80,.95),2px 0 rgba(0,229,255,.95);box-shadow:0 0 18px rgba(0,229,255,.55) inset}" +
-      "#amal-cube-btn.cube-rgb{animation:amalCubeRgbFlick .22s steps(2) infinite}" +
-      "@keyframes amalCubeRgbFlick{0%{filter:hue-rotate(0deg) saturate(1.9) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{filter:hue-rotate(190deg) saturate(2.7) drop-shadow(0 0 14px rgba(0,229,255,.85));transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}100%{filter:hue-rotate(360deg) saturate(1.9) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}}" +
+      "#amal-cube-btn.cube-rgb .c3d{animation:amalCubeSpin 6s linear infinite}" +
+      "#amal-cube-btn.cube-rgb .c3d .f{text-shadow:-2px 0 rgba(255,0,80,.9),2px 0 rgba(0,229,255,.9);box-shadow:0 0 18px rgba(0,229,255,.5) inset}" +
+      /* глитч короткой вспышкой раз в 7 секунд — «нестабильный», но экран не мигает */
+      "#amal-cube-btn.cube-rgb{animation:amalCubeRgbFlick 7s ease-in-out infinite}" +
+      "@keyframes amalCubeRgbFlick{0%,86%{filter:hue-rotate(0deg) saturate(1.3) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}" +
+      "89%{filter:hue-rotate(150deg) saturate(1.9) drop-shadow(0 0 12px rgba(0,229,255,.7));transform:translate(2px,-1px)}" +
+      "92%{filter:hue-rotate(300deg) saturate(1.9) drop-shadow(0 0 12px rgba(255,0,80,.6));transform:translate(-2px,1px)}" +
+      "95%,100%{filter:hue-rotate(360deg) saturate(1.3) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}}" +
+      "@media(prefers-reduced-motion:reduce){#amal-cube-btn.cube-rgb{animation:none}}" +
       "#amal-cube-btn::after{content:attr(data-label);position:absolute;top:66px;right:0;white-space:nowrap;padding:3px 7px;border-radius:7px;" +
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;max-width:130px;overflow:hidden;text-overflow:ellipsis}" +
       "@keyframes amalCubeSpin{0%{transform:rotateX(-22deg) rotateY(0)}100%{transform:rotateX(-22deg) rotateY(360deg)}}" +
@@ -5299,10 +5304,9 @@
   function cubeSkinId() {
     try {
       const saved = localStorage.getItem("amal-cube-skin-v1");
-      // по умолчанию — нестабильный RGB (пока хозяин сам не выбрал другой скин)
-      return CUBE_SKINS[saved] ? saved : "rgb";
+      return CUBE_SKINS[saved] ? saved : "classic";
     } catch (_) {
-      return "rgb";
+      return "classic";
     }
   }
 
