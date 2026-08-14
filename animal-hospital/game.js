@@ -10,6 +10,14 @@
   const EXCHANGE_COST = 40;
   const INF = 999999999;
 
+  function syncHubActivity(label) {
+    const text = String(label || "Меню").slice(0, 120);
+    try {
+      document.title = "Animal Hospital — " + text;
+      if (window.AmalHub && typeof AmalHub.reportActivity === "function") AmalHub.reportActivity(text);
+    } catch {}
+  }
+
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
   const ctxP = document.getElementById("viewPatient").getContext("2d");
@@ -2924,9 +2932,10 @@
     syncAnimalsFab();
     if (canUseSecretShifts() && g.noAnimals) {
       toast("🐾 Животные ВЫКЛ · кнопка слева включит");
-    } else if (canUseSecretShifts() && g.ownerQuiet) {
+    } else     if (canUseSecretShifts() && g.ownerQuiet) {
       toast("⚠ Без аномалий · кнопка слева выключит");
     }
+    syncHubActivity("Смена: " + shift.name);
     toast(
       (shift.selfServe ? "Самообслуживание · " : "Ресепшен · ") +
         "∞ вещи · ∞ патроны · " +
@@ -3185,6 +3194,7 @@
       `<br>Монеты: ∞` +
       (canUseSecretShifts() ? emptyHint : "");
     showEl(endPanel);
+    syncHubActivity(reason === "insanity" ? "Провал — рассудок 0" : "Смена окончена");
   }
 
   function goMenu() {
@@ -3211,6 +3221,7 @@
     refreshLobbyUI();
     showEl(menu);
     showEl(secretDeathWrap);
+    syncHubActivity("Меню");
   }
 
   function hurtSanity(_n) {
@@ -6070,6 +6081,7 @@
   showEl(menu);
   if (canUseSecretShifts()) showEl(secretDeathWrap);
   else hideEl(secretDeathWrap);
+  syncHubActivity("Меню");
   syncSecretTray();
   applyLobbyTheme();
   const buildStampEl = document.getElementById("buildStamp");

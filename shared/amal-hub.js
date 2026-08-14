@@ -67,6 +67,11 @@
 
   const CHANGELOG = [
     {
+      id: "2026-08-14-watch-players",
+      title: "Слежка за игроком",
+      body: "Хозяин может нажать «Следить»: видно лицо, игра и что делает человек. Забаненный не зайдёт — сразу блок.",
+    },
+    {
       id: "2026-08-14-players-ban",
       title: "Таблица игроков · бан и сброс",
       body: "В «Кто играет» снова видна таблица всех игроков. Хозяин может банить на 1ч / 5ч / 10ч / 1 день или сбросить весь прогресс во всех играх.",
@@ -528,6 +533,7 @@
         role: p.role || "player",
         lastSeen: at || Date.now(),
         source: source || prev?.source || "live",
+        activity: String(p.activity || "").slice(0, 120),
       });
     };
     try {
@@ -570,6 +576,183 @@
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
     root.innerHTML = `<div style="max-width:420px"><h1 style="margin:0 0 12px;font-size:1.6rem">Доступ закрыт</h1><p style="margin:0 0 8px;opacity:.9">${reasonSafe}</p><p style="margin:0;font-size:1.1rem">Осталось: <strong>${left}</strong></p><p style="margin:16px 0 0;opacity:.65;font-size:13px">Бан на все игры Amal Games</p></div>`;
+  }
+
+  function getPlayerActivity() {
+    try {
+      if (global.__AMAL_ACTIVITY__ && String(global.__AMAL_ACTIVITY__).trim()) {
+        return String(global.__AMAL_ACTIVITY__).trim().slice(0, 120);
+      }
+    } catch {
+      /* ignore */
+    }
+    try {
+      const t = String(document.title || "").trim();
+      if (t) return t.slice(0, 120);
+    } catch {
+      /* ignore */
+    }
+    return "В игре";
+  }
+
+  function reportActivity(text) {
+    try {
+      global.__AMAL_ACTIVITY__ = String(text || "").trim().slice(0, 120);
+    } catch {
+      /* ignore */
+    }
+    if (!isOwner()) bumpPresence();
+  }
+
+  const activityLog = {};
+  const MAX_ACTIVITY_LOG = 14;
+  let watchNick = "";
+  try {
+    watchNick = sessionStorage.getItem("amal-hub-watch-v1") || "";
+  } catch {
+    watchNick = "";
+  }
+
+  function pushActivityLog(nick, data) {
+    const key = String(nick || "").trim();
+    if (!key || !data) return;
+    const prev = activityLog[key] && activityLog[key][0];
+    const activity = String(data.activity || "").trim();
+    const game = data.game || data.gameTitle || "";
+    if (prev && prev.activity === activity && prev.game === game && Date.now() - (prev.at || 0) < 15000) return;
+    if (!activityLog[key]) activityLog[key] = [];
+    activityLog[key].unshift({
+      at: data.at || Date.now(),
+      activity: activity || "В игре",
+      game: gameTitle(game) || game || "—",
+    });
+    activityLog[key] = activityLog[key].slice(0, MAX_ACTIVITY_LOG);
+  }
+
+  function getWatchTarget() {
+    const nick = String(watchNick || "").trim();
+    if (!nick) return null;
+    return findPlayerByNick(nick) || { nick, game: "portal", gameTitle: "—", at: 0, live: false, activity: "—" };
+  }
+
+  function startWatch(nick) {
+    if (!isOwner()) return { ok: false, error: "Только хозяин" };
+    const name = String(nick || "").trim().slice(0, NICK_MAX);
+    if (!name) return { ok: false, error: "Нужен ник" };
+    watchNick = name;
+    try {
+      sessionStorage.setItem("amal-hub-watch-v1", name);
+    } catch {
+      /* ignore */
+    }
+    updateWatchPanel();
+    showHubToast("👁 Слежу за: " + name);
+    return { ok: true, nick: name };
+  }
+
+  function stopWatch() {
+    watchNick = "";
+    try {
+      sessionStorage.removeItem("amal-hub-watch-v1");
+    } catch {
+      /* ignore */
+    }
+    const el = document.getElementById("amal-watch-panel");
+    if (el) el.remove();
+  }
+
+  function updateWatchPanel() {
+    if (!isOwner()) {
+      stopWatch();
+      return;
+    }
+    const nick = String(watchNick || "").trim();
+    if (!nick) {
+      const el = document.getElementById("amal-watch-panel");
+      if (el) el.remove();
+      return;
+    }
+    const p = getWatchTarget();
+    const online = !!(p && (p.live || (p.at && Date.now() - p.at < 120000)));
+    const ban = banForNick(nick);
+    let panel = document.getElementById("amal-watch-panel");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "amal-watch-panel";
+      const hub = document.getElementById("amal-hub-root");
+      if (hub) hub.appendChild(panel);
+      else document.body.appendChild(panel);
+      panel.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-amal]");
+        if (!btn) return;
+        e.stopPropagation();
+        const act = btn.getAttribute("data-amal");
+        const n = btn.getAttribute("data-nick") || watchNick;
+        if (act === "watch-stop") {
+          stopWatch();
+          return;
+        }
+        if (act === "watch-profile") {
+          profileNick = n;
+          replyTo = n;
+          adminPage = "profile";
+          open = true;
+          view = "admin";
+          paint();
+          return;
+        }
+        if (act === "watch-open") {
+          openWatchGame(n);
+          return;
+        }
+        if (act === "ban-player") {
+          const hrs = Number(btn.getAttribute("data-hours") || 1);
+          const res = banPlayer(n, hrs);
+          if (res.ok) showHubToast("🚫 Бан " + n);
+          updateWatchPanel();
+          if (open && view === "admin") paint();
+        }
+      });
+    }
+    const activity = String((p && p.activity) || "В игре").slice(0, 120);
+    const gameLabel = escapeHtml((p && (p.gameTitle || gameTitle(p.game))) || "—");
+    const log = (activityLog[nick] || []).slice(0, 4);
+    panel.innerHTML =
+      `<div class="amal-watch-head"><span>👁 Слежу</span><button type="button" data-amal="watch-stop" title="Стоп">✕</button></div>` +
+      `<div class="amal-watch-body">` +
+      `<img src="${faceUrl(nick, Date.now())}" alt="" />` +
+      `<div class="amal-watch-info">` +
+      `<div class="amal-watch-nick">${escapeHtml(nick)}</div>` +
+      `<div class="amal-watch-game">${gameLabel}</div>` +
+      `<div class="amal-watch-act">${escapeHtml(activity)}</div>` +
+      `<div class="amal-watch-on"><span class="amal-hub-pill ${online ? "" : "off"}">${online ? "● онлайн" : "○ оффлайн"}</span>` +
+      (ban ? `<span class="amal-hub-pill off">🚫 бан ${escapeHtml(formatBanLeft(ban.until))}</span>` : "") +
+      `</div></div></div>` +
+      (log.length
+        ? `<ul class="amal-watch-log">${log
+            .map(
+              (row) =>
+                `<li><span class="t">${fmtTime(row.at)}</span> ${escapeHtml(row.game)} · ${escapeHtml(row.activity)}</li>`,
+            )
+            .join("")}</ul>`
+        : "") +
+      `<div class="amal-watch-actions">` +
+      `<button type="button" data-amal="watch-open" data-nick="${escapeHtml(nick)}">В игру</button>` +
+      `<button type="button" data-amal="watch-profile" data-nick="${escapeHtml(nick)}">Профиль</button>` +
+      `<button type="button" data-amal="ban-player" data-nick="${escapeHtml(nick)}" data-hours="1">Бан 1ч</button>` +
+      `</div>`;
+  }
+
+  function openWatchGame(nick) {
+    const p = findPlayerByNick(nick);
+    const gid = (p && p.game) || "portal";
+    try {
+      const base = gameIdFromPath() === "portal" ? "./" : "../";
+      const href = base + gid + "/?owner=AmalOwner2026";
+      global.open(href, "_blank", "noopener,noreferrer");
+    } catch {
+      /* ignore */
+    }
   }
 
   function loadFaceSeeds() {
@@ -1270,7 +1453,9 @@
       live: true,
       role: data.role || "guest",
       liveGuest: !!data.liveGuest,
+      activity: String(data.activity || getPlayerActivity()).slice(0, 120),
     };
+    if (isOwner()) pushActivityLog(nick, livePlayers[nick]);
     // Дублируем в localStorage хозяина, чтобы список не пустел сразу
     if (isOwner()) {
       const map = loadPresence();
@@ -1291,6 +1476,7 @@
       live: true,
       role: p.role || "guest",
       liveGuest: !!p.liveGuest,
+      activity: p.activity || "",
     }));
     const payload = { type: "roster", players, at: Date.now() };
     hostConnections.forEach((conn) => {
@@ -1320,7 +1506,9 @@
         live: true,
         role: p.role || "guest",
         liveGuest: !!p.liveGuest,
+        activity: String(p.activity || "").slice(0, 120),
       };
+      if (isOwner()) pushActivityLog(nick, livePlayers[nick]);
     });
     updateSameGameStrip();
     maybeRepaintPlayers();
@@ -1932,7 +2120,8 @@
 
   function maybeRepaintPlayers() {
     updateSameGameStrip();
-    if (!open || (adminPage !== "players" && adminPage !== "live" && adminPage !== "profile")) return;
+    if (isOwner()) updateWatchPanel();
+    if (!open || (adminPage !== "players" && adminPage !== "live" && adminPage !== "profile" && adminPage !== "watch")) return;
     const now = Date.now();
     if (now - lastPlayersPaint < 800) return;
     lastPlayersPaint = now;
@@ -1953,8 +2142,13 @@
   }
 
   function bumpPresence() {
+    if (!isOwner() && myBanStatus()) {
+      enforceBanGate();
+      return;
+    }
     const nick = getNick();
     const gid = gameIdFromPath();
+    const activity = getPlayerActivity();
     if (!nick) return;
     // Хозяин тоже светится в игре, чтобы гости видели обоих (и кто зашёл первым)
     if (isOwner()) {
@@ -1972,6 +2166,7 @@
         live: true,
         role: "owner",
         liveGuest: false,
+        activity,
       };
       livePlayers[nick] = ownerPayload;
       const map = loadPresence();
@@ -1995,6 +2190,7 @@
       live: true,
       role: "guest",
       liveGuest: true,
+      activity,
     };
     const map = loadPresence();
     map[nick] = payload;
@@ -2237,8 +2433,8 @@
           } catch {
             /* ignore */
           }
-        }
-        if (data.type === "register" && data.nick) {
+          showHubToast("🚫 Забаненный не пустит: " + data.nick);
+        } else if (data.type === "register" && data.nick) {
           const reg = registerEverywhere(data.nick, data.game);
           if (reg.isNew) {
             notifyOwnerAboutRegistration(reg.entry);
@@ -2423,6 +2619,21 @@
 .amal-hub-ban-actions{display:flex;flex-wrap:wrap;gap:4px}
 .amal-hub-ban-actions button{padding:6px 8px;font-size:11px;border-radius:10px}
 .amal-hub-modal button.danger{background:rgba(185,28,28,.35);border-color:rgba(248,113,113,.45);color:#fecaca}
+#amal-watch-panel{pointer-events:auto;position:fixed;left:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:2147483002;width:min(92vw,300px);border-radius:18px;border:1px solid rgba(251,191,36,.45);background:linear-gradient(165deg,#1a1528f5,#0b1020f8);color:#f8fafc;box-shadow:0 16px 40px rgba(0,0,0,.55);overflow:hidden;font-size:12px}
+.amal-watch-head{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(251,191,36,.12);font-weight:800;font-size:11px}
+.amal-watch-head button{border:0;background:rgba(255,255,255,.1);color:#fff;border-radius:8px;width:28px;height:28px;cursor:pointer}
+.amal-watch-body{display:flex;gap:10px;padding:10px;align-items:flex-start}
+.amal-watch-body img{width:56px;height:56px;border-radius:50%;border:2px solid rgba(251,191,36,.5);background:#0f172a;flex:0 0 auto}
+.amal-watch-nick{font-weight:800;font-size:14px}
+.amal-watch-game{opacity:.75;margin-top:2px}
+.amal-watch-act{margin-top:6px;font-size:11px;line-height:1.35;color:#fde68a}
+.amal-watch-on{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+.amal-watch-log{margin:0;padding:8px 10px 0;list-style:none;border-top:1px solid rgba(255,255,255,.08);max-height:88px;overflow:auto}
+.amal-watch-log li{font-size:10px;opacity:.8;padding:3px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.amal-watch-log .t{opacity:.55;margin-right:4px}
+.amal-watch-actions{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.amal-watch-actions button{flex:1;min-width:72px;padding:8px 6px;font-size:11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-weight:800}
+.amal-hub-table .act-cell{max-width:140px;font-size:11px;opacity:.85;line-height:1.3}
 .amal-hub-chip{position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));left:auto;pointer-events:auto;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(15,23,42,.82);color:#e2e8f0;font-size:11px;font-weight:800;max-width:min(58vw,280px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;backdrop-filter:blur(8px);z-index:2147483001}
 .amal-hub-chip.owner{border-color:rgba(251,191,36,.45);color:#fde68a;background:rgba(69,26,3,.85)}
 .amal-hub-exit{pointer-events:auto;position:fixed;left:10px;top:calc(10px + env(safe-area-inset-top,0px));z-index:2147483002;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.78);color:#fff;font:700 13px/1.2 system-ui,sans-serif;text-decoration:none;backdrop-filter:blur(6px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
@@ -2722,7 +2933,7 @@
         <div class="amal-hub-table-wrap">
           <table class="amal-hub-table">
             <thead>
-              <tr><th>Игрок</th><th>Игра</th><th>Статус</th><th>Действия</th></tr>
+              <tr><th>Игрок</th><th>Игра</th><th>Что делает</th><th>Статус</th><th>Действия</th></tr>
             </thead>
             <tbody>
               ${
@@ -2739,11 +2950,13 @@
                             </button>
                           </td>
                           <td>${escapeHtml(p.game || "—")}</td>
+                          <td class="act-cell">${escapeHtml(p.activity || "—")}</td>
                           <td>${p.online ? '<span class="amal-hub-pill">● онлайн</span>' : '<span class="amal-hub-pill off">○ был</span>'}${
                             banLabel ? `<div class="meta" style="margin-top:4px">${escapeHtml(banLabel)}</div>` : ""
                           }</td>
                           <td>
                             <div class="amal-hub-ban-actions">
+                              <button type="button" data-amal="watch-player" data-nick="${escapeHtml(p.nick)}">👁</button>
                               <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">Профиль</button>
                               ${
                                 fullOwner
@@ -2764,7 +2977,7 @@
                         </tr>`;
                       })
                       .join("")
-                  : `<tr><td colspan="4" class="meta">Пока никого нет. Гость должен открыть игру с ником (другое окно/телефон) или жми «Тестовый гость».</td></tr>`
+                  : `<tr><td colspan="5" class="meta">Пока никого нет. Гость должен открыть игру с ником (другое окно/телефон) или жми «Тестовый гость».</td></tr>`
               }
             </tbody>
           </table>
@@ -2775,6 +2988,49 @@
           <button type="button" data-amal="admin-clear-presence">Очистить список</button>
         </div>
         ${back}`;
+    }
+
+    if (adminPage === "watch" && fullOwner) {
+      const nick = watchNick || profileNick || "";
+      const p = findPlayerByNick(nick) || { nick, game: "portal", gameTitle: "—", activity: "—", at: 0 };
+      const online = !!(p.live || (p.at && Date.now() - p.at < 120000));
+      const log = (activityLog[nick] || []).slice(0, MAX_ACTIVITY_LOG);
+      const ban = banForNick(nick);
+      return `
+        <div class="amal-hub-hero"><div class="badge">👁</div><div>
+          <h2>Слежу за игроком</h2>
+          <p class="sub">Лицо · игра · что делает · история</p>
+        </div></div>
+        <div class="amal-hub-profile">
+          <img src="${faceUrl(nick, Date.now())}" alt="" />
+          <div class="nm">${escapeHtml(nick || "—")}</div>
+          <div class="gm">${escapeHtml(p.gameTitle || p.game || "—")}</div>
+          <div class="sub" style="margin-top:8px">${escapeHtml(String(p.activity || "—"))}</div>
+          <div class="on"><span class="amal-hub-pill ${online ? "" : "off"}">${online ? "● онлайн" : "○ оффлайн"}</span>${
+            ban ? `<span class="amal-hub-pill off">🚫 бан ${escapeHtml(formatBanLeft(ban.until))}</span>` : ""
+          }</div>
+        </div>
+        ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
+        ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <ul class="amal-hub-list">${
+          log.length
+            ? log
+                .map(
+                  (row) =>
+                    `<li><div class="meta">${fmtTime(row.at)} · ${escapeHtml(row.game)}</div>${escapeHtml(row.activity)}</li>`,
+                )
+                .join("")
+            : `<li class="meta">История появится, когда игрок что-то делает</li>`
+        }</ul>
+        <div class="amal-hub-row">
+          <button type="button" data-amal="watch-open" data-nick="${escapeHtml(nick)}" style="flex:1">В его игру</button>
+          <button type="button" data-amal="open-profile" data-nick="${escapeHtml(nick)}">Профиль</button>
+        </div>
+        <div class="amal-hub-row">
+          <button type="button" data-amal="watch-stop" style="flex:1">Стоп слежку</button>
+          <button type="button" data-amal="admin-live">Живая карта</button>
+        </div>
+        <div class="amal-hub-row"><button type="button" data-amal="admin-players" style="flex:1">← Кто играет</button><button type="button" data-amal="close">Закрыть</button></div>`;
     }
 
     if (adminPage === "profile" && fullOwner) {
@@ -2801,9 +3057,16 @@
             online ? "● сейчас играет" : "○ был недавно / оффлайн"
           }</span></div>
           <div class="sub" style="margin-top:10px">Последний подарок: <b>${escapeHtml(lastGift.label)}</b></div>
+          <div class="sub" style="margin-top:8px">Сейчас: <b>${escapeHtml(String(p.activity || "—"))}</b></div>
         </div>
         ${err ? `<div class="amal-hub-err">${escapeHtml(err)}</div>` : ""}
         ${msg ? `<div class="amal-hub-ok">${escapeHtml(msg)}</div>` : ""}
+        <div class="amal-hub-row" style="margin-top:12px">
+          <button type="button" class="primary" data-amal="watch-player" data-nick="${escapeHtml(
+            p.nick,
+          )}" style="flex:1">👁 Следить</button>
+          <button type="button" data-amal="watch-open" data-nick="${escapeHtml(p.nick)}">В его игру</button>
+        </div>
         <div class="amal-hub-row" style="margin-top:12px">
           <button type="button" class="primary" data-amal="profile-refresh" data-nick="${escapeHtml(
             p.nick,
@@ -2928,8 +3191,12 @@
                     <img src="${faceUrl(p.nick)}" alt="" loading="lazy" />
                     <div class="nm">${escapeHtml(p.nick)}</div>
                     <div class="gm">${escapeHtml(p.gameTitle || p.game)}</div>
+                    <div class="act" style="font-size:10px;opacity:.8;margin-top:4px;max-height:32px;overflow:hidden">${escapeHtml(
+                      String(p.activity || "В игре"),
+                    )}</div>
                     <div class="on">${online ? "● сейчас играет" : "○ был недавно"}</div>
                     <div class="amal-hub-row" style="margin-top:8px;justify-content:center">
+                      <button type="button" data-amal="watch-player" data-nick="${escapeHtml(p.nick)}">👁</button>
                       <button type="button" data-amal="open-profile" data-nick="${escapeHtml(p.nick)}">👤</button>
                       <button type="button" data-amal="reply" data-to="${escapeHtml(p.nick)}">✉️</button>
                       <button type="button" class="primary" data-amal="quick-grant-nick" data-nick="${escapeHtml(p.nick)}">⚡</button>
@@ -3215,6 +3482,37 @@
           view = "admin";
           err = "";
           msg = "";
+          paint();
+          return;
+        }
+        if (act === "watch-player") {
+          if (!isOwner()) return;
+          const nick = el.getAttribute("data-nick") || "";
+          const res = startWatch(nick);
+          if (!res.ok) {
+            err = res.error || "";
+            msg = "";
+          } else {
+            err = "";
+            msg = "Слежу за «" + nick + "» — панель слева внизу";
+            profileNick = nick;
+            adminPage = "watch";
+          }
+          open = true;
+          view = "admin";
+          paint();
+          return;
+        }
+        if (act === "watch-open") {
+          if (!isOwner()) return;
+          openWatchGame(el.getAttribute("data-nick") || profileNick || watchNick);
+          return;
+        }
+        if (act === "watch-stop") {
+          if (!isOwner()) return;
+          stopWatch();
+          msg = "Слежка выключена";
+          if (adminPage === "watch") adminPage = "players";
           paint();
           return;
         }
@@ -3720,10 +4018,12 @@
     flushPendingGifts();
     paint();
     updateSameGameStrip();
+    if (isOwner() && watchNick) updateWatchPanel();
     setInterval(() => {
       bumpPresence();
       updateSameGameStrip();
       maybeRepaintPlayers();
+      if (!isOwner() && myBanStatus()) enforceBanGate();
     }, 8000);
     const abuse = activeAbuse();
     if (abuse) showAdminAbuseFx(abuse);
@@ -3802,7 +4102,7 @@
 
     setInterval(bumpPresence, 8000);
     setInterval(() => {
-      if (open && (adminPage === "live" || adminPage === "players" || adminPage === "profile") && isOwner()) paint();
+      if (open && (adminPage === "live" || adminPage === "players" || adminPage === "profile" || adminPage === "watch") && isOwner()) paint();
     }, 3000);
     global.addEventListener("amal-owner-changed", () => {
       try {
@@ -3850,6 +4150,9 @@
     unbanPlayer,
     wipePlayerProgress,
     playersTableRows,
+    startWatch,
+    stopWatch,
+    reportActivity,
     CHANGELOG,
   };
 
