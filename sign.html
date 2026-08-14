@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Моя подпись · Amal's Lab</title>
+  <meta name="description" content="Нарисуй свою подпись пальцем или мышкой и сохрани картинкой." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #0d6e5f;
+      --mint: #7ed9b8;
+      --amber: #f0b429;
+      --coral: #e25a3c;
+      --ink: #102018;
+      --muted: #5a6a62;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: Nunito, system-ui, sans-serif;
+      color: var(--ink);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      gap: .9rem;
+      background:
+        radial-gradient(ellipse 70% 40% at 15% 0%, rgba(126,217,184,.45), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 5%, rgba(240,180,41,.28), transparent 50%),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc 55%, #c8dcd2);
+    }
+    header { text-align: center; max-width: 34rem; }
+    h1 {
+      font-family: Fredoka, Nunito, sans-serif;
+      font-size: clamp(1.5rem, 5vw, 2.1rem);
+      color: var(--teal);
+    }
+    .sub { color: var(--muted); font-weight: 700; font-size: .95rem; margin-top: .25rem; }
+    .pad-wrap {
+      width: min(680px, 100%);
+      background: #fffef8;
+      border: 1px solid rgba(13,110,95,.2);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(16,40,32,.12);
+      padding: .8rem;
+    }
+    .pad {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 8;
+      border: 2px dashed rgba(13,110,95,.35);
+      border-radius: 12px;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(13,110,95,.06) 41px),
+        #fff;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: crosshair; }
+    .pad .baseline {
+      position: absolute; left: 6%; right: 6%; bottom: 26%;
+      border-bottom: 2px solid rgba(226,90,60,.4);
+      pointer-events: none;
+    }
+    .pad .hint {
+      position: absolute; inset: 0;
+      display: grid; place-items: center;
+      color: rgba(13,110,95,.35);
+      font-family: Caveat, cursive; font-size: 2rem; font-weight: 700;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    .pad.drawn .hint { opacity: 0; }
+    .tools { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; justify-content: center; margin-top: .7rem; }
+    .colors { display: flex; gap: .4rem; }
+    .colors button {
+      width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+      border: 2px solid rgba(0,0,0,.15);
+    }
+    .colors button.active { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,110,95,.2); }
+    .sizes { display: flex; gap: .4rem; }
+    .sizes button {
+      min-width: 34px; height: 30px; border-radius: 9px; cursor: pointer;
+      border: 1px solid rgba(13,110,95,.25); background: #fff; font-weight: 800; color: var(--teal);
+    }
+    .sizes button.active { background: var(--amber); border-color: var(--amber); color: #1a1400; }
+    .actions { display: flex; flex-wrap: wrap; gap: .55rem; width: min(680px, 100%); }
+    .actions button, .actions a {
+      flex: 1 1 auto;
+      min-height: 50px;
+      border: 0; border-radius: 13px; cursor: pointer;
+      font: 800 15px Nunito, sans-serif; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    }
+    .btn-clear { background: #fff; color: var(--coral); border: 1px solid rgba(226,90,60,.4); }
+    .btn-save { background: linear-gradient(135deg, var(--teal), #0a5248); color: #f3efe6; }
+    .btn-back { background: rgba(255,255,255,.85); color: var(--teal); border: 1px solid rgba(13,110,95,.25); }
+    .note { color: var(--muted); font-size: .85rem; font-weight: 700; text-align: center; max-width: 34rem; }
+    .preview { font-family: Caveat, cursive; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>✍️ Моя подпись</h1>
+    <p class="sub">Нарисуй свою подпись пальцем или мышкой. Потом сохрани картинкой и пришли её в чат.</p>
+  </header>
+
+  <div class="pad-wrap">
+    <div class="pad" id="pad">
+      <canvas id="cv"></canvas>
+      <div class="baseline"></div>
+      <div class="hint">распишись здесь</div>
+    </div>
+    <div class="tools">
+      <div class="colors" id="colors">
+        <button data-color="#102018" style="background:#102018" class="active" title="Чёрный"></button>
+        <button data-color="#0d6e5f" style="background:#0d6e5f" title="Зелёный"></button>
+        <button data-color="#e25a3c" style="background:#e25a3c" title="Красный"></button>
+        <button data-color="#2563eb" style="background:#2563eb" title="Синий"></button>
+        <button data-color="#f0b429" style="background:#f0b429" title="Жёлтый"></button>
+      </div>
+      <div class="sizes" id="sizes">
+        <button data-size="3" title="Тонко">•</button>
+        <button data-size="6" class="active" title="Средне">●</button>
+        <button data-size="11" title="Толсто">⬤</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn-clear" id="btnClear">🧹 Стереть</button>
+    <button type="button" class="btn-save" id="btnSave">💾 Сохранить картинкой</button>
+    <a class="btn-back" href="./index.html">← На сайт</a>
+  </div>
+  <p class="note">Совет: распишись покрупнее. Файл сохранится как <b>amal-signature.png</b> (с прозрачным фоном). После сохранения пришли его в чат — я поставлю подпись на сайт.</p>
+
+  <script>
+    (() => {
+      const pad = document.getElementById("pad");
+      const cv = document.getElementById("cv");
+      const ctx = cv.getContext("2d");
+      let color = "#102018";
+      let size = 6;
+      let drawing = false;
+      let last = null;
+      let dirty = false;
+      let dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+
+      function resize() {
+        // сохранить рисунок при ресайзе
+        const prev = dirty ? cv.toDataURL() : null;
+        const rect = pad.getBoundingClientRect();
+        cv.width = Math.round(rect.width * dpr);
+        cv.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        if (prev) {
+          const img = new Image();
+          img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+          img.src = prev;
+        }
+      }
+      window.addEventListener("resize", resize);
+
+      function pos(e) {
+        const rect = cv.getBoundingClientRect();
+        const p = (e.touches && e.touches[0]) || e;
+        return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+      }
+      function start(e) {
+        drawing = true;
+        last = pos(e);
+        dot(last);
+        if (!dirty) { dirty = true; pad.classList.add("drawn"); }
+        e.preventDefault();
+      }
+      function move(e) {
+        if (!drawing) return;
+        const p = pos(e);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = size;
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        last = p;
+        e.preventDefault();
+      }
+      function dot(p) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      function end() { drawing = false; last = null; }
+
+      cv.addEventListener("pointerdown", start);
+      cv.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", end);
+      cv.addEventListener("pointercancel", end);
+
+      document.getElementById("colors").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-color]");
+        if (!b) return;
+        color = b.getAttribute("data-color");
+        document.querySelectorAll("#colors button").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+      });
+      document.getElementById("sizes").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-size]");
+        if (!b) return;
+        size = parseInt(b.getAttribute("data-size"), 10);
+        document.querySelectorAll("#sizes button").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+      });
+
+      document.getElementById("btnClear").addEventListener("click", () => {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        dirty = false;
+        pad.classList.remove("drawn");
+      });
+
+      document.getElementById("btnSave").addEventListener("click", () => {
+        if (!dirty) { alert("Сначала нарисуй подпись 🙂"); return; }
+        try {
+          const url = cv.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "amal-signature.png";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } catch (_) {
+          alert("Не получилось сохранить. Попробуй ещё раз.");
+        }
+      });
+
+      resize();
+    })();
+  </script>
+</body>
+</html>
