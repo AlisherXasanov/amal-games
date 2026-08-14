@@ -547,7 +547,7 @@
       object-fit: contain;
     }
     /* Маскот Ушастик в углу — здоровается и реагирует на клики */
-    .buddy {
+    .amal-buddy {
       position: fixed;
       right: 16px; bottom: 74px;
       z-index: 70;
@@ -579,7 +579,7 @@
       border: 6px solid transparent;
       border-top-color: #fffef8;
     }
-    .buddy.say .buddy-bubble { opacity: 1; transform: translateY(0) scale(1); }
+    .amal-buddy.say .buddy-bubble { opacity: 1; transform: translateY(0) scale(1); }
     .buddy-body {
       position: relative;
       width: 62px; height: 62px;
@@ -588,7 +588,7 @@
       position: absolute; inset: 0;
       transform-origin: 50% 100%;
     }
-    .buddy.hop .buddy-char { animation: buddyHop .55s ease; }
+    .amal-buddy.hop .buddy-char { animation: buddyHop .55s ease; }
     @keyframes buddyHop {
       0% { transform: translateY(0) scale(1,1); }
       30% { transform: translateY(-16px) scale(.94,1.08); }
@@ -619,7 +619,7 @@
     }
     .buddy-eye.l { left: 26%; }
     .buddy-eye.r { right: 26%; }
-    .buddy.blink .buddy-eye { animation: buddyBlink .28s ease; }
+    .amal-buddy.blink .buddy-eye { animation: buddyBlink .28s ease; }
     @keyframes buddyBlink { 50% { transform: scaleY(.15); } }
     .buddy-cheek {
       position: absolute; top: 55%;
@@ -636,7 +636,7 @@
       border-radius: 0 0 8px 8px;
     }
     @media (max-width: 560px) {
-      .buddy { right: 10px; bottom: 66px; }
+      .amal-buddy { right: 10px; bottom: 66px; }
       .buddy-body { width: 52px; height: 52px; }
     }
   </style>
@@ -711,7 +711,7 @@
     <a class="side-cube-comic" id="signLink" hidden href="./sign.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
   </aside>
 
-  <div class="buddy" id="buddy" role="button" tabindex="0" aria-label="Ушастик — поздороваться">
+  <div class="amal-buddy" id="buddy" role="button" tabindex="0" aria-label="Ушастик — поздороваться">
     <div class="buddy-bubble" id="buddyBubble"></div>
     <div class="buddy-body">
       <div class="buddy-char">
