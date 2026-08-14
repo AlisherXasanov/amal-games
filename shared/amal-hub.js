@@ -4111,7 +4111,18 @@
       "89%{filter:hue-rotate(150deg) saturate(1.9) drop-shadow(0 0 12px rgba(0,229,255,.7));transform:translate(2px,-1px)}" +
       "92%{filter:hue-rotate(300deg) saturate(1.9) drop-shadow(0 0 12px rgba(255,0,80,.6));transform:translate(-2px,1px)}" +
       "95%,100%{filter:hue-rotate(360deg) saturate(1.3) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}}" +
-      "@media(prefers-reduced-motion:reduce){#amal-cube-btn.cube-rgb{animation:none}}" +
+      /* «разрыв» сбоку: узкая RGB-полоса изредка съезжает вбок, будто картинку рвёт */
+      "#amal-cube-btn.cube-rgb::before{content:'';position:absolute;left:-7px;right:-7px;top:38%;height:8px;z-index:5;pointer-events:none;border-radius:2px;" +
+      "background:linear-gradient(90deg,rgba(255,0,80,.85),rgba(255,255,255,.65),rgba(0,229,255,.85));mix-blend-mode:screen;opacity:0;" +
+      "animation:amalCubeTear 9s ease-in-out infinite}" +
+      "@keyframes amalCubeTear{0%,64%{opacity:0;transform:translateX(0);top:38%}" +
+      "66%{opacity:.9;transform:translateX(-8px);top:34%}" +
+      "68%{opacity:.7;transform:translateX(7px);top:52%}" +
+      "70%{opacity:.9;transform:translateX(-5px);top:44%}" +
+      "72%,87%{opacity:0;transform:translateX(0);top:44%}" +
+      "89%{opacity:.85;transform:translateX(6px);top:60%}" +
+      "91%,100%{opacity:0;transform:translateX(0);top:38%}}" +
+      "@media(prefers-reduced-motion:reduce){#amal-cube-btn.cube-rgb,#amal-cube-btn.cube-rgb::before{animation:none}}" +
       "#amal-cube-btn::after{content:attr(data-label);position:absolute;top:66px;right:0;white-space:nowrap;padding:3px 7px;border-radius:7px;" +
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;max-width:130px;overflow:hidden;text-overflow:ellipsis}" +
       "@keyframes amalCubeSpin{0%{transform:rotateX(-22deg) rotateY(0)}100%{transform:rotateX(-22deg) rotateY(360deg)}}" +
@@ -5304,9 +5315,10 @@
   function cubeSkinId() {
     try {
       const saved = localStorage.getItem("amal-cube-skin-v1");
-      return CUBE_SKINS[saved] ? saved : "classic";
+      // по умолчанию — нестабильный RGB: редкий глитч и разрыв, без мигания
+      return CUBE_SKINS[saved] ? saved : "rgb";
     } catch (_) {
-      return "classic";
+      return "rgb";
     }
   }
 
