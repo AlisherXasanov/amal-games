@@ -4099,6 +4099,11 @@
       "#amal-cube-btn .c3d .f2{transform:rotateY(90deg) translateZ(24px)}#amal-cube-btn .c3d .f3{transform:rotateY(-90deg) translateZ(24px)}" +
       "#amal-cube-btn .c3d .f4{transform:rotateX(90deg) translateZ(24px)}#amal-cube-btn .c3d .f5{transform:rotateX(-90deg) translateZ(24px)}" +
       "#amal-cube-btn.cube-glitch .c3d{animation:amalCubeSpin 7s linear infinite,amalCubeGlitch .5s steps(2) infinite}" +
+      /* RGB · нестабильный: 3D сохраняется (крутится быстрее), а глитч/лаг/хрома — на обёртке, чтобы не сплющивать куб */
+      "#amal-cube-btn.cube-rgb .c3d{animation:amalCubeSpin 3.1s linear infinite}" +
+      "#amal-cube-btn.cube-rgb .c3d .f{text-shadow:-2px 0 rgba(255,0,80,.95),2px 0 rgba(0,229,255,.95);box-shadow:0 0 18px rgba(0,229,255,.55) inset}" +
+      "#amal-cube-btn.cube-rgb{animation:amalCubeRgbFlick .22s steps(2) infinite}" +
+      "@keyframes amalCubeRgbFlick{0%{filter:hue-rotate(0deg) saturate(1.9) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{filter:hue-rotate(190deg) saturate(2.7) drop-shadow(0 0 14px rgba(0,229,255,.85));transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}100%{filter:hue-rotate(360deg) saturate(1.9) drop-shadow(0 10px 20px rgba(0,0,0,.5));transform:translate(0,0)}}" +
       "#amal-cube-btn::after{content:attr(data-label);position:absolute;top:66px;right:0;white-space:nowrap;padding:3px 7px;border-radius:7px;" +
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;max-width:130px;overflow:hidden;text-overflow:ellipsis}" +
       "@keyframes amalCubeSpin{0%{transform:rotateX(-22deg) rotateY(0)}100%{transform:rotateX(-22deg) rotateY(360deg)}}" +
@@ -4662,10 +4667,100 @@
     fxSound("laser");
   }
 
+  /* ── RGB · нестабильные эффекты: помехи, разрыв экрана, хрома, лаг ── */
+  function fxOverlay(css, ms, tick) {
+    ensureFxLayer();
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;inset:0;z-index:2147483037;pointer-events:none;" + css;
+    document.body.appendChild(el);
+    let n = 0;
+    const iv = setInterval(() => {
+      try {
+        if (tick) tick(el, n);
+      } catch (_) {
+        /* ignore */
+      }
+      n++;
+    }, 60);
+    setTimeout(() => {
+      clearInterval(iv);
+      el.remove();
+    }, ms || 2600);
+    return el;
+  }
+
+  function fxRgbStorm(ms) {
+    fxSound("laser");
+    fxOverlay(
+      "mix-blend-mode:screen;background:repeating-linear-gradient(90deg,rgba(255,0,76,.55) 0 3px,rgba(0,229,255,.55) 3px 6px,rgba(0,255,120,.45) 6px 9px,transparent 9px 17px)",
+      ms || 2800,
+      (el) => {
+        el.style.transform = "translate(" + (Math.random() * 14 - 7) + "px," + (Math.random() * 10 - 5) + "px)";
+        el.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+        el.style.opacity = (0.4 + Math.random() * 0.5).toFixed(2);
+      },
+    );
+  }
+
+  function fxScreenTear(ms) {
+    fxSound("laser");
+    fxOverlay(
+      "background:repeating-linear-gradient(0deg,rgba(255,255,255,.09) 0 18px,transparent 18px 40px);mix-blend-mode:overlay",
+      ms || 2200,
+      (el) => {
+        el.style.transform = "translateY(" + (Math.random() * 22 - 11) + "px) skewX(" + (Math.random() * 5 - 2.5) + "deg)";
+        el.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg) contrast(1.4)";
+      },
+    );
+  }
+
+  function fxChroma(ms) {
+    fxSound("beat");
+    fxOverlay("mix-blend-mode:screen;background:radial-gradient(circle at 50% 45%,rgba(255,0,60,.4),transparent 62%)", ms || 2400, (el) => {
+      el.style.transform = "translateX(" + (Math.random() * 18 - 9) + "px)";
+    });
+    fxOverlay("mix-blend-mode:screen;background:radial-gradient(circle at 50% 45%,rgba(0,150,255,.4),transparent 62%)", ms || 2400, (el) => {
+      el.style.transform = "translateX(" + (Math.random() * 18 - 9) + "px)";
+    });
+  }
+
+  function fxLagStutter(ms) {
+    fxSound("boom");
+    fxOverlay("mix-blend-mode:screen;background:linear-gradient(0deg,rgba(255,0,76,.3),rgba(0,229,255,.3))", ms || 1900, (el) => {
+      el.style.opacity = Math.random() > 0.5 ? "0.9" : "0";
+      el.style.transform = "translate(" + (Math.random() * 12 - 6) + "px," + (Math.random() * 12 - 6) + "px)";
+      el.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+    });
+  }
+
+  function fxRave() {
+    fxDisco();
+    fxSound("beat");
+    fxRgbStorm(2600);
+  }
+
+  function fxRgbOverload() {
+    setCubeSkin("rgb");
+    fxRgbStorm(3600);
+    fxScreenTear(3200);
+    fxChroma(3000);
+    fxBurst(["🌈", "💥", "⚡", "✨", "🟥", "🟦", "🟩"], 42);
+    fxSound("boom");
+    setTimeout(() => fxSound("laser"), 200);
+    setTimeout(() => fxSound("jackpot"), 520);
+    showHubToast("🌈 RGB-ПЕРЕГРУЗ · куб нестабилен!");
+  }
+
   function cubeCoolFx(kind) {
     try {
       if (kind === "matrix") toggleMatrixFx();
       else if (kind === "glitch") fxGlitchScreen();
+      else if (kind === "rgbstorm") fxRgbStorm();
+      else if (kind === "tear") fxScreenTear();
+      else if (kind === "chroma") fxChroma();
+      else if (kind === "lag") fxLagStutter();
+      else if (kind === "rave") fxRave();
+      else if (kind === "overload") fxRgbOverload();
       else if (kind === "gravity") fxRain(["🪙", "💎", "⭐", "🍀", "🧊", "🔷", "🟪"], 70);
       else if (kind === "petals") fxRain(["🌸", "🍁", "🍃", "❄️", "🌼"], 46);
       else if (kind === "shock") {
@@ -4934,7 +5029,8 @@
       cubePanelHtml(
         "abilities",
         "⚡ СПОСОБНОСТИ",
-        '<button type="button" class="acd-btn max" data-cube="ab-max">⚡ ВСЁ НА МАКС</button>' +
+        '<button type="button" class="acd-btn max" data-cube="ab-mega">🌈 RGB-ПЕРЕГРУЗ · ВСЁ+ГЛИТЧ</button>' +
+          '<button type="button" class="acd-btn max" data-cube="ab-max">⚡ ВСЁ НА МАКС</button>' +
           '<button type="button" class="acd-btn" data-cube="ab-coins">💰 ∞ монеты</button>' +
           '<button type="button" class="acd-btn" data-cube="ab-heal">💚 Полный хилл</button>' +
           '<button type="button" class="acd-btn" data-cube="ab-god">🛡️ Бессмертие</button>' +
@@ -4969,16 +5065,19 @@
       ) +
       cubePanelHtml(
         "matrix",
-        "🟩 МАТРИЦА · ЭФФЕКТЫ",
-        '<div class="acd-fxgrid">' +
-          '<button type="button" class="acd-fx" data-cool="matrix" title="Матрица (вкл/выкл)">🟩</button>' +
+        "🌈 RGB · ГЛИТЧ",
+        '<button type="button" class="acd-btn max" data-cool="overload">🌈💥 RGB-ПЕРЕГРУЗ</button>' +
+          '<div class="acd-fxgrid" style="margin-top:6px">' +
+          '<button type="button" class="acd-fx" data-cool="rgbstorm" title="RGB-буря (помехи)">🌈</button>' +
+          '<button type="button" class="acd-fx" data-cool="tear" title="Разрыв экрана">📺</button>' +
+          '<button type="button" class="acd-fx" data-cool="chroma" title="Хрома-сдвиг">👓</button>' +
+          '<button type="button" class="acd-fx" data-cool="lag" title="Лаг · нестабильность">🐢</button>' +
+          '<button type="button" class="acd-fx" data-cool="rave" title="RGB-рейв">🔊</button>' +
           '<button type="button" class="acd-fx" data-cool="glitch" title="Глитч экрана">🎞️</button>' +
           '<button type="button" class="acd-fx" data-cool="shock" title="Разряд">⚡</button>' +
-          '<button type="button" class="acd-fx" data-cool="gravity" title="Дождь сокровищ">💎</button>' +
-          '<button type="button" class="acd-fx" data-cool="petals" title="Лепестки">🌸</button>' +
+          '<button type="button" class="acd-fx" data-cool="matrix" title="Матрица (по желанию)">🟩</button>' +
           '<button type="button" class="acd-fx" data-cool="off" title="Выключить всё">🚫</button>' +
-          "</div>" +
-          '<button type="button" class="acd-btn max" data-cool="matrix">🟩 РЕЖИМ МАТРИЦА</button>',
+          "</div>",
       ) +
       "</div>";
     dash.addEventListener("click", (e) => {
@@ -5081,6 +5180,11 @@
         if (act === "polygon") {
           const base = gameIdFromPath() === "portal" ? "polygon/" : "../polygon/";
           location.href = base + "?owner=AmalOwner2026&stealth=1";
+          return;
+        }
+        if (act === "ab-mega") {
+          runCubeAbility("max");
+          fxRgbOverload();
           return;
         }
         if (act.startsWith("ab-")) {
@@ -5186,6 +5290,7 @@
     neon: { name: "Неон", emoji: "⚡", face: "linear-gradient(160deg,#d946ef,#4c1d95)", edge: "#f0abfc", glow: "rgba(217,70,239,.8)" },
     matrix: { name: "Матрица", emoji: "🟢", face: "linear-gradient(160deg,#065f46,#022c22)", edge: "#34d399", glow: "rgba(16,185,129,.8)" },
     mistake: { name: "Ошибка", emoji: "⚠️", face: "linear-gradient(160deg,#1f2937,#000)", edge: "#ef4444", glow: "rgba(239,68,68,.9)", glitch: true },
+    rgb: { name: "RGB · нестабильный", emoji: "🌈", face: "linear-gradient(135deg,#ff004c,#7c3aed 45%,#00e5ff)", edge: "#ffffff", glow: "rgba(0,229,255,.9)", rgb: true },
   };
 
   function cubeSkinId() {
@@ -5237,6 +5342,7 @@
     btn.style.setProperty("--edge", sk.edge);
     btn.style.setProperty("--glow", sk.glow);
     btn.classList.toggle("cube-glitch", !!sk.glitch);
+    btn.classList.toggle("cube-rgb", !!sk.rgb);
     const tr = getTreasure();
     const faces = btn.querySelectorAll(".c3d .f");
     const frontEmoji = tr ? tr.emoji : sk.emoji;

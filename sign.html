@@ -206,7 +206,7 @@
     <div class="actions">
       <button type="button" class="btn-off" id="btnOff" hidden>🚫 Убрать подпись с сайта</button>
     </div>
-    <p class="note">Распишись покрупнее. Как нажмёшь «Поставить на сайт» — подпись появится в шапке главной страницы и на виджете с кубом.</p>
+    <p class="note">Распишись покрупнее. Как нажмёшь кнопку — подпись появится в шапке главной страницы и на виджете с кубом. Переподписать можно в любой момент: заходи сюда снова, рисуй заново и нажимай «Переподписать».</p>
   </div>
 
   <script>
@@ -370,6 +370,8 @@
       const currentImg = document.getElementById("currentImg");
       const btnOff = document.getElementById("btnOff");
 
+      const btnSave = document.getElementById("btnSave");
+
       function showCurrent() {
         let saved = null;
         try { saved = JSON.parse(localStorage.getItem(SIGN_KEY) || "null"); } catch (_) { /* ignore */ }
@@ -377,13 +379,15 @@
           currentImg.src = saved.png;
           current.hidden = false;
           btnOff.hidden = false;
+          btnSave.textContent = "✍️ Переподписать (заменить)";
         } else {
           current.hidden = true;
           btnOff.hidden = true;
+          btnSave.textContent = "✅ Поставить на сайт";
         }
       }
 
-      document.getElementById("btnSave").addEventListener("click", () => {
+      btnSave.addEventListener("click", () => {
         if (!dirty) { alert("Сначала распишись 🙂"); return; }
         const png = trimmedPng();
         if (!png) { alert("Подпись пустая — попробуй ещё раз."); return; }
