@@ -529,8 +529,29 @@
     return isOwner();
   }
 
-  function canUseSecretShifts() {
+  /** Админка только в больнице (хозяин или выпала с 5%). Не пишет флаги на весь сайт. */
+  function isGameAdmin() {
+    if (isOwner()) return true;
+    return !!(meta && meta.luckyAdmin);
+  }
+
+  /** Выдача другим игрокам / спавн по нику — только настоящий хозяин. */
+  function canGiveToPlayers() {
     return isOwner();
+  }
+
+  function canUseSecretShifts() {
+    return isGameAdmin();
+  }
+
+  function grantLuckyAdmin() {
+    if (isOwner() || meta.luckyAdmin) return false;
+    meta.luckyAdmin = true;
+    meta.unlocked = CLASSES.map((c) => c.id);
+    meta.skins = SKINS.map((s) => s.id);
+    meta.classId = "admin";
+    storeSet(SAVE, meta);
+    return true;
   }
 
   function discoveredSurpriseShifts() {
@@ -1421,17 +1442,17 @@
     };
   }
 
-  // ∞ монеты в этой игре — для всех. Секретные скины/админ — только хозяину.
+  // ∞ монеты — всем. Секреты/админ-класс — хозяину или luckyAdmin (только эта игра).
   function forceInfinite() {
     meta.infCoins = true;
     meta.immortal = true;
     meta.coins = INF;
     const normalSkins = SKINS.filter((s) => !s.secret).map((s) => s.id);
     const normalClasses = CLASSES.filter((c) => c.id !== "admin").map((c) => c.id);
-    if (isOwner()) {
+    if (isGameAdmin()) {
       meta.unlocked = CLASSES.map((c) => c.id);
       meta.skins = SKINS.map((s) => s.id);
-      if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
+      if (isOwner() && (!meta.classId || meta.classId === "intern")) meta.classId = "admin";
     } else {
       meta.unlocked = normalClasses;
       meta.skins = normalSkins;
@@ -1498,15 +1519,15 @@
     return true;
   }
   function hasClass(id) {
-    if (id === "admin") return isOwner();
-    if (isOwner()) return true;
+    if (id === "admin") return isGameAdmin();
+    if (isGameAdmin()) return true;
     return Array.isArray(meta.unlocked) && meta.unlocked.includes(id);
   }
   function hasSkin(id) {
     const skin = SKINS.find((s) => s.id === id);
     if (!skin) return false;
     if (!skin.secret) return true;
-    if (isOwner()) return true;
+    if (isGameAdmin()) return true;
     return Array.isArray(meta.skins) && meta.skins.includes(id);
   }
 
@@ -1539,7 +1560,7 @@
         (c) => `<option value="${c.id}" ${c.id === selectedClass.id ? "selected" : ""}>${c.name} — ${c.desc}</option>`
       )
       .join("");
-    buddySelect.innerHTML = BUDDIES.filter((b) => !b.secret || isOwner())
+    buddySelect.innerHTML = BUDDIES.filter((b) => !b.secret || isGameAdmin())
       .map(
         (b) => `<option value="${b.id}" ${b.id === selectedBuddy.id ? "selected" : ""}>${b.name} — ${b.desc}</option>`
       )
@@ -1566,15 +1587,19 @@
 
     const hint = document.getElementById("menuHints");
     if (hint) {
-      hint.textContent = canUseSecretShifts()
-        ? "👑 Админ команды · 🪙 ∞ · жёлтые стрелки к автоматам · ∞ время"
-        : "🪙 ∞ монеты · лечи животных · смотри на аномалии у окна";
+      if (isOwner()) {
+        hint.textContent = "👑 Хозяин · 🪙 ∞ · секреты · можно выдавать игрокам";
+      } else if (isGameAdmin()) {
+        hint.textContent = "👑 Админ больницы (5%) · секреты здесь · без выдачи другим · не на весь сайт";
+      } else {
+        hint.textContent = "🪙 ∞ · обмен: 5% шанс админки больницы · секретные скины только после неё";
+      }
     }
     const btnAll = document.getElementById("btnAllSecrets");
     if (btnAll) btnAll.hidden = !canUseSecretShifts();
     const spawnPanel = document.getElementById("spawnPlayersPanel");
     if (spawnPanel) {
-      if (canUseSecretShifts()) showEl(spawnPanel);
+      if (canGiveToPlayers()) showEl(spawnPanel);
       else hideEl(spawnPanel);
     }
     if (secretDeathWrap) {
@@ -2109,7 +2134,9 @@
   function openExchange() {
     forceInfinite();
     exWallet.textContent = "🪙 ∞";
-    exResult.textContent = "Крути бесплатно — класс или секретный скин";
+    exResult.textContent = isGameAdmin()
+      ? "Крути — класс или секретный скин"
+      : "Крути — класс/скин · 5% шанс админки больницы";
     hideEl(menu);
     hideEl(secretDeathWrap);
     showEl(exchangePanel);
@@ -2117,10 +2144,21 @@
 
   function spinExchange() {
     forceInfinite();
-    const poolSkins = isOwner()
+    if (!isOwner() && !meta.luckyAdmin && Math.random() < 0.05) {
+      grantLuckyAdmin();
+      selectedClass = CLASSES.find((c) => c.id === "admin") || selectedClass;
+      persistLobby();
+      exResult.textContent = "👑 Админка больницы! Как у хозяина здесь · без выдачи другим · не на все игры";
+      exWallet.textContent = "🪙 ∞";
+      toast("👑 Админ больницы (5%)");
+      showEvent("👑 Админка больницы · только эта игра", 3.4);
+      refreshLobbyUI();
+      return;
+    }
+    const poolSkins = isGameAdmin()
       ? SKINS.filter((s) => s.secret)
       : SKINS.filter((s) => !s.secret);
-    const rollClass = CLASSES.filter((c) => c.cost > 0 && (isOwner() || c.id !== "admin"));
+    const rollClass = CLASSES.filter((c) => c.cost > 0 && (isGameAdmin() || c.id !== "admin"));
     let msg = "";
     if (poolSkins.length && Math.random() < 0.55) {
       const skin = rand(poolSkins);
@@ -2343,8 +2381,8 @@
   }
 
   function spawnPlayerRegistry(nick, characterId, perkIds) {
-    if (!canUseSecretShifts()) {
-      toast("Только хозяин");
+    if (!canGiveToPlayers()) {
+      toast("Выдавать игрокам может только хозяин");
       return false;
     }
     const name = String(nick || "").trim().slice(0, 24);
