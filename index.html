@@ -308,19 +308,20 @@
       position: relative;
       width: 76px; height: 76px;
       transform-style: preserve-3d;
-      animation: menuCubeSpin 7s linear infinite;
+      animation: menuCubeSpin 9s ease-in-out infinite;
       filter: drop-shadow(0 12px 22px rgba(0,0,0,.28));
     }
+    /* Внешний куб — стеклянный, чтобы видеть маленький куб внутри */
     .menu-cube .mf {
       position: absolute;
       width: 76px; height: 76px;
       display: grid;
       place-items: center;
-      font-size: 34px;
-      border: 2px solid #fff3c4;
+      font-size: 30px;
+      border: 2px solid rgba(255,243,196,.85);
       border-radius: 13px;
-      background: linear-gradient(160deg, #fde68a, #b45309 60%, #451a03);
-      box-shadow: 0 0 16px rgba(251,191,36,.6) inset;
+      background: linear-gradient(160deg, rgba(253,230,138,.30), rgba(180,83,9,.30));
+      box-shadow: 0 0 16px rgba(251,191,36,.45) inset;
       backface-visibility: hidden;
     }
     .menu-cube .mf0 { transform: translateZ(38px); }
@@ -329,9 +330,41 @@
     .menu-cube .mf3 { transform: rotateY(-90deg) translateZ(38px); }
     .menu-cube .mf4 { transform: rotateX(90deg) translateZ(38px); }
     .menu-cube .mf5 { transform: rotateX(-90deg) translateZ(38px); }
+    /* Другое вращение — кувырок по всем осям */
     @keyframes menuCubeSpin {
-      0% { transform: rotateX(-22deg) rotateY(0); }
-      100% { transform: rotateX(-22deg) rotateY(360deg); }
+      0%   { transform: rotateX(-18deg) rotateY(0deg) rotateZ(0deg); }
+      50%  { transform: rotateX(24deg) rotateY(180deg) rotateZ(10deg); }
+      100% { transform: rotateX(-18deg) rotateY(360deg) rotateZ(0deg); }
+    }
+    /* Маленький куб внутри — крутится в другую сторону */
+    .menu-cube-inner {
+      position: absolute;
+      top: 21px; left: 21px;
+      width: 34px; height: 34px;
+      transform-style: preserve-3d;
+      animation: menuCubeInner 5s linear infinite;
+    }
+    .menu-cube-inner .mfi {
+      position: absolute;
+      width: 34px; height: 34px;
+      display: grid;
+      place-items: center;
+      font-size: 17px;
+      border: 1.5px solid #fff3c4;
+      border-radius: 8px;
+      background: linear-gradient(160deg, #fde68a, #b45309 60%, #451a03);
+      box-shadow: 0 0 10px rgba(251,191,36,.75) inset;
+      backface-visibility: hidden;
+    }
+    .menu-cube-inner .mfi0 { transform: translateZ(17px); }
+    .menu-cube-inner .mfi1 { transform: rotateY(180deg) translateZ(17px); }
+    .menu-cube-inner .mfi2 { transform: rotateY(90deg) translateZ(17px); }
+    .menu-cube-inner .mfi3 { transform: rotateY(-90deg) translateZ(17px); }
+    .menu-cube-inner .mfi4 { transform: rotateX(90deg) translateZ(17px); }
+    .menu-cube-inner .mfi5 { transform: rotateX(-90deg) translateZ(17px); }
+    @keyframes menuCubeInner {
+      0%   { transform: rotateX(12deg) rotateY(360deg) rotateZ(0deg); }
+      100% { transform: rotateX(12deg) rotateY(0deg) rotateZ(-360deg); }
     }
     .menu-cube-story {
       max-width: 32rem;
@@ -399,6 +432,14 @@
           <span class="mf mf3">⭐</span>
           <span class="mf mf4">👑</span>
           <span class="mf mf5">🌈</span>
+          <div class="menu-cube-inner">
+            <span class="mfi mfi0">💎</span>
+            <span class="mfi mfi1">🎲</span>
+            <span class="mfi mfi2">✨</span>
+            <span class="mfi mfi3">⭐</span>
+            <span class="mfi mfi4">🔥</span>
+            <span class="mfi mfi5">💚</span>
+          </div>
         </div>
       </div>
       <div class="menu-cube-story">
