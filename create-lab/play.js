@@ -85,8 +85,8 @@
         bodies: [
           { type: "person", x: 90, y: 360, w: 24, h: 50, vx: 0, vy: 0, color: "#1a5c4a" },
           { type: "circle", x: 180, y: 100, r: 22, vx: 30, vy: 0, color: "#7ec94a" },
-          { type: "box", x: 280, y: 60, w: 40, h: 40, vx: -10, vy: 0, color: "#e25a3c" },
-          { type: "box", x: 340, y: 40, w: 28, h: 55, vx: 0, vy: 0, color: "#f0b429" },
+          { type: "box", x: 280, y: 60, w: 24, h: 24, vx: -10, vy: 0, color: "#e25a3c" },
+          { type: "box", x: 340, y: 40, w: 22, h: 22, vx: 0, vy: 0, color: "#f0b429" },
         ],
       };
       setScore(state.bodies.length);
@@ -276,7 +276,8 @@
       } else {
         const w = b.w || 24;
         const h = b.h || 50;
-        if (p.x >= b.x && p.x <= b.x + w && p.y >= b.y && p.y <= b.y + h) return b;
+        const pad = b.type === "box" ? 8 : 0;
+        if (p.x >= b.x - pad && p.x <= b.x + w + pad && p.y >= b.y - pad && p.y <= b.y + h + pad) return b;
       }
     }
     return null;
@@ -286,7 +287,7 @@
     if (spawnMode === "person") {
       state.bodies.push({ type: "person", x: p.x - 12, y: p.y - 25, w: 24, h: 50, vx: 0, vy: 0, color: "#1a5c4a" });
     } else if (spawnMode === "box") {
-      state.bodies.push({ type: "box", x: p.x - 18, y: p.y - 18, w: 36, h: 36, vx: (Math.random() - 0.5) * 60, vy: 0, color: Math.random() > 0.5 ? color : "#e25a3c" });
+      state.bodies.push({ type: "box", x: p.x - 11, y: p.y - 11, w: 22, h: 22, vx: (Math.random() - 0.5) * 60, vy: 0, color: Math.random() > 0.5 ? color : "#e25a3c" });
     } else {
       state.bodies.push({ type: "circle", x: p.x, y: p.y, r: 18 + Math.random() * 10, vx: (Math.random() - 0.5) * 80, vy: 0, color: "#7ec94a" });
     }
