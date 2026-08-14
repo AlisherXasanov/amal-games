@@ -2087,8 +2087,8 @@
     const all = playersInThisGameAll();
     const myNick = (getNick() || "").toLowerCase();
     const others = all.filter((p) => String(p.nick || "").toLowerCase() !== myNick);
-    // Полоска если есть кто-то ещё ИЛИ ты хозяин и уже в игре (чтобы видеть очередь входа)
-    if (!others.length && !(isOwner() && all.length)) {
+    // Полоску показываем только когда есть ДРУГИЕ игроки. Себе «ты играешь» не показываем.
+    if (!others.length) {
       if (old) old.remove();
       return;
     }
