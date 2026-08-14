@@ -67,6 +67,11 @@
 
   const CHANGELOG = [
     {
+      id: "2026-08-14-secret-cube",
+      title: "Секретный кубик · твоя админка",
+      body: "В каждой игре у хозяина появляется секретный кубик 🎲 (слева снизу). Забери его — останется кнопка 🎲, по ней открывается вся админка: кто играет, сколько игроков, все кнопки.",
+    },
+    {
       id: "2026-08-14-shift-timer-ushastik",
       title: "Таймер смены · Ушастик тихий",
       body: "Смена в больнице снова идёт по времени (∞ только монеты). Create Lab: Ушастик не говорит сам — только текст. Комикс с картинками.",
@@ -4009,6 +4014,88 @@
     });
   }
 
+  const CUBE_KEY = "amal-secret-cube-v1";
+
+  function cubeCollected() {
+    try {
+      return localStorage.getItem(CUBE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setCubeCollected() {
+    try {
+      localStorage.setItem(CUBE_KEY, "1");
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function ensureCubeStyles() {
+    if (document.getElementById("amal-cube-css")) return;
+    const s = document.createElement("style");
+    s.id = "amal-cube-css";
+    s.textContent =
+      "#amal-cube-pickup{position:fixed;left:16px;bottom:84px;z-index:2147483000;width:38px;height:38px;" +
+      "display:grid;place-items:center;font-size:22px;cursor:pointer;border-radius:12px;opacity:.42;" +
+      "background:radial-gradient(circle at 50% 35%,rgba(251,191,36,.35),rgba(15,23,42,.85));" +
+      "border:1px solid rgba(251,191,36,.5);box-shadow:0 0 0 rgba(251,191,36,.6);" +
+      "animation:amalCubeGlow 2.2s ease-in-out infinite;transition:opacity .2s,transform .2s}" +
+      "#amal-cube-pickup:hover{opacity:1;transform:scale(1.12)}" +
+      "@keyframes amalCubeGlow{0%,100%{box-shadow:0 0 6px rgba(251,191,36,.35)}50%{box-shadow:0 0 18px rgba(251,191,36,.7)}}" +
+      "#amal-cube-btn{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:2147483001;" +
+      "width:50px;height:50px;border:1px solid rgba(251,191,36,.65);border-radius:16px;cursor:pointer;font-size:22px;" +
+      "color:#fff;background:linear-gradient(160deg,#78350f,#422006);box-shadow:0 10px 24px rgba(245,158,11,.3)}" +
+      "#amal-cube-btn:hover{transform:translateY(-2px)}";
+    document.head.appendChild(s);
+  }
+
+  function removeCubeEl(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  function showCubeButton() {
+    removeCubeEl("amal-cube-pickup");
+    if (document.getElementById("amal-cube-btn")) return;
+    ensureCubeStyles();
+    const btn = document.createElement("button");
+    btn.id = "amal-cube-btn";
+    btn.type = "button";
+    btn.textContent = "🎲";
+    btn.title = "Твоя админка (секретный кубик)";
+    btn.addEventListener("click", () => openUi("admin"));
+    document.body.appendChild(btn);
+  }
+
+  function showCubePickup() {
+    if (document.getElementById("amal-cube-pickup")) return;
+    ensureCubeStyles();
+    const el = document.createElement("div");
+    el.id = "amal-cube-pickup";
+    el.textContent = "🎲";
+    el.title = "Секретный кубик — забери, чтобы открыть админку";
+    el.addEventListener("click", () => {
+      setCubeCollected();
+      showCubeButton();
+      try {
+        showHubToast("🎲 Кубик активирован — админка на кнопке слева");
+      } catch (_) {
+        /* ignore */
+      }
+      openUi("admin");
+    });
+    document.body.appendChild(el);
+  }
+
+  /** Секретный кубик-предмет во всех играх: забираешь → кнопка 🎲 → вся админка. Только хозяин. */
+  function mountSecretCube() {
+    if (!isOwner()) return;
+    if (cubeCollected()) showCubeButton();
+    else showCubePickup();
+  }
+
   function boot() {
     ensureStyles();
     try {
@@ -4042,6 +4129,11 @@
     }, 8000);
     const abuse = activeAbuse();
     if (abuse) showAdminAbuseFx(abuse);
+    try {
+      mountSecretCube();
+    } catch (_) {
+      /* ignore */
+    }
     if (!getNick() && !isOwner()) {
       gateMode = true;
       open = true;

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Animal Hospital · Вселенная</title>
+  <meta name="description" content="Всё из Animal Hospital и вокруг: больница, Lab, Best Console, мини-игры и весь сайт Amal." />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      color: #102018;
+      font-family: Nunito, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 45% at 10% 0%, rgba(126,217,184,.45), transparent 55%),
+        radial-gradient(ellipse 55% 40% at 95% 8%, rgba(240,180,41,.28), transparent 50%),
+        radial-gradient(ellipse 40% 30% at 50% 100%, rgba(124,58,237,.12), transparent 55%),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc);
+      padding: 1.25rem 1rem 3rem;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 1rem;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      color: #345048;
+      font: 700 13px Nunito, sans-serif;
+      text-decoration: none;
+    }
+    .hero { text-align: center; margin: 0.5rem auto 1.5rem; max-width: 44rem; }
+    .eyebrow {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.2em;
+      color: #0d6e5f;
+    }
+    h1 {
+      font: 700 clamp(1.9rem, 5.5vw, 2.8rem) Fredoka, sans-serif;
+      color: #0d6e5f;
+      margin: 0.35rem 0;
+    }
+    .sub { color: #5a6a62; font: 600 15px/1.5 Nunito, sans-serif; }
+    .count {
+      display: inline-block;
+      margin-top: 0.85rem;
+      padding: 0.4rem 0.95rem;
+      border-radius: 999px;
+      background: #102018;
+      color: #7ed9b8;
+      font: 800 13px Space Grotesk, Nunito, sans-serif;
+    }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+    }
+    .links a {
+      text-decoration: none;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(13,110,95,.18);
+      color: #0d6e5f;
+      font: 800 12px Nunito, sans-serif;
+    }
+    .links a.primary { background: #0d6e5f; color: #f3efe6; border-color: transparent; }
+    .sec {
+      max-width: 1040px;
+      margin: 1.5rem auto 0.55rem;
+      font: 800 0.75rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5a6a62;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.85rem;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    a.card {
+      text-decoration: none;
+      color: inherit;
+      background: rgba(255,255,255,.93);
+      border: 1px solid rgba(13,110,95,.12);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 158px;
+      transition: transform .15s, box-shadow .15s;
+    }
+    a.card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(16,40,32,.12);
+    }
+    a.card.featured { border-color: #0d6e5f; box-shadow: 0 0 0 2px rgba(13,110,95,.14); }
+    a.card.dream { border-style: dashed; opacity: .92; }
+    .thumb {
+      height: 68px;
+      display: grid;
+      place-items: center;
+      font-size: 1.9rem;
+    }
+    .body { padding: 0.8rem 0.95rem 1rem; flex: 1; display: flex; flex-direction: column; }
+    .body h2 { font: 700 1.02rem Fredoka, Nunito, sans-serif; color: #102018; }
+    .body p { margin-top: 0.28rem; color: #5a6a62; font: 600 12px/1.4 Nunito, sans-serif; flex: 1; }
+    .go {
+      margin-top: 0.65rem;
+      display: inline-block;
+      padding: 0.38rem 0.75rem;
+      border-radius: 8px;
+      background: #0d6e5f;
+      color: #f3efe6;
+      font: 800 11px Nunito, sans-serif;
+      width: fit-content;
+    }
+    a.card.dream .go { background: #64748b; }
+    .note {
+      max-width: 720px;
+      margin: 1.2rem auto 0;
+      padding: 1rem 1.1rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(13,110,95,.14);
+      font: 600 13px/1.45 Nunito, sans-serif;
+      color: #5a6a62;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="../">&larr; Все игры Amal</a>
+
+  <header class="hero">
+    <p class="eyebrow">ANIMAL HOSPITAL UNIVERSE</p>
+    <h1>Вселенная больницы</h1>
+    <p class="sub">Всё, что уже есть, и то, что только задумано — на одной странице. Главная игра, Lab, консоль с 20 приложениями, мини-игры и весь сайт.</p>
+    <p class="count" id="count">объектов: —</p>
+    <div class="links">
+      <a class="primary" href="./index.html">🐾 Больница</a>
+      <a href="./best-console.html">🎮 Best Console</a>
+      <a href="./lab-group.html">🧪 Группа Lab</a>
+      <a href="../">🌐 Весь сайт</a>
+    </div>
+  </header>
+
+  <p class="sec">Главное</p>
+  <div class="grid" id="main"></div>
+
+  <p class="sec">Best Console · 20 приложений в одной</p>
+  <div class="grid" id="console"></div>
+
+  <p class="sec">Мини-игры и Lab</p>
+  <div class="grid" id="minis"></div>
+
+  <p class="sec">Образы · титры · топ</p>
+  <div class="grid" id="extra"></div>
+
+  <p class="sec">Весь сайт Amal · рядом с больницей</p>
+  <div class="grid" id="site"></div>
+
+  <p class="sec">Мечты · ещё придумаем</p>
+  <div class="grid" id="dreams"></div>
+
+  <p class="note">Жми 📝 в любой игре — ник и заметка Амалю. Хозяин видит, кто играет, может следить 👁 и банить. Обновления — в кнопке ✨ хаба.</p>
+
+  <script>
+    function card(g) {
+      const cls = [g.featured ? "featured" : "", g.dream ? "dream" : ""].filter(Boolean).join(" ");
+      return `<a class="card ${cls}" href="${g.href}">
+        <div class="thumb" style="background:${g.thumb}">${g.icon}</div>
+        <div class="body">
+          <h2>${g.title}</h2>
+          <p>${g.desc}</p>
+          <span class="go">${g.dream ? "Скоро" : "Открыть"}</span>
+        </div>
+      </a>`;
+    }
+
+    const MAIN = [
+      { href: "./index.html", icon: "🐾", title: "Animal Hospital", desc: "Смены, аномалии, магазин, секреты, ✦.", featured: true, thumb: "linear-gradient(135deg,#2a6f6a,#143a3f)" },
+      { href: "./lab.html", icon: "🧪", title: "Лаборатория", desc: "Образцы, смешивание, журнал.", featured: true, thumb: "linear-gradient(135deg,#0d6e5f,#f0b429)" },
+      { href: "./best-console.html", icon: "🎮", title: "Best Console", desc: "20 мини-приложений: змейка, 2048, салют…", featured: true, thumb: "linear-gradient(135deg,#1e293b,#0d6e5f)" },
+      { href: "./top-2.html", icon: "🏆", title: "Топ-2", desc: "Неон-змейка и небо-прыжок.", thumb: "linear-gradient(135deg,#fbbf24,#78350f)" },
+    ];
+
+    const CONSOLE = [
+      { href: "./best-console.html#snake", icon: "🐍", title: "Неон-змейка", desc: "WASD · яблоки.", thumb: "linear-gradient(135deg,#081018,#7ef0c0)" },
+      { href: "./best-console.html#fire", icon: "🎆", title: "Фейерверк", desc: "Клик — салют.", thumb: "linear-gradient(135deg,#050510,#ff4060)" },
+      { href: "./best-console.html#beat", icon: "🥁", title: "Бит-pad", desc: "8 ударов.", thumb: "linear-gradient(135deg,#180818,#f59e0b)" },
+      { href: "./best-console.html#draw", icon: "🎨", title: "Рисовалка", desc: "Мышь · цвета.", thumb: "linear-gradient(135deg,#f0ece0,#e25a3c)" },
+      { href: "./best-console.html#oracle", icon: "🔮", title: "Оракул", desc: "Предсказание.", thumb: "linear-gradient(135deg,#201040,#a070ff)" },
+      { href: "./best-console.html#memory", icon: "🧠", title: "Память", desc: "Найди пары.", thumb: "linear-gradient(135deg,#1a2030,#7ec8ff)" },
+      { href: "./best-console.html#flappy", icon: "🐦", title: "Flappy", desc: "Пробел · трубы.", thumb: "linear-gradient(135deg,#78c8f0,#ffd040)" },
+      { href: "./best-console.html#merge", icon: "🔢", title: "Merge 2048", desc: "Стрелки.", thumb: "linear-gradient(135deg,#faf0e0,#0d6e5f)" },
+      { href: "./best-console.html", icon: "➕", title: "Ещё 12 в консоли", desc: "Таймер, реакция, орбиты, шифр…", thumb: "linear-gradient(135deg,#102028,#64748b)" },
+    ];
+
+    const MINIS = [
+      { href: "./butterscotch.html", icon: "🧈", title: "Buttersquish", desc: "Парк с питомцем.", thumb: "linear-gradient(135deg,#f5e06a,#1e3a6e)" },
+      { href: "./dumplings.html", icon: "🥟", title: "Пельмени", desc: "Лепи и продавай.", thumb: "linear-gradient(135deg,#c05040,#e8d8c0)" },
+      { href: "./batyr-mish.html", icon: "🥋", title: "Батырский Миш", desc: "Миш и лес.", thumb: "linear-gradient(135deg,#1a6058,#7ed9b8)" },
+      { href: "./pet-care.html", icon: "🐱", title: "Питомцы", desc: "Кот и корги.", thumb: "linear-gradient(135deg,#ff9a4a,#ffe0c0)" },
+      { href: "./boop-toy.html", icon: "👆", title: "Boop Toy", desc: "Тыкай игрушку.", thumb: "linear-gradient(135deg,#fb7185,#fda4af)" },
+      { href: "./crows-roar.html", icon: "🐦‍⬛", title: "Crow's Roar", desc: "Ворон.", thumb: "linear-gradient(135deg,#111827,#4b5563)" },
+      { href: "./lesha-games.html", icon: "🎬", title: "Ocean Cinema", desc: "Кино Лёши.", thumb: "linear-gradient(135deg,#0ea5e9,#0c4a6e)" },
+      { href: "./lesha-quest.html", icon: "🗺️", title: "Lesha Quest", desc: "Квест.", thumb: "linear-gradient(135deg,#15803d,#14532d)" },
+      { href: "./only-us.html", icon: "💜", title: "Only Us", desc: "Только мы.", thumb: "linear-gradient(135deg,#7c3aed,#312e81)" },
+    ];
+
+    const EXTRA = [
+      { href: "./looks-sammy-jen.html", icon: "👀", title: "Sammy & Jen", desc: "Образы.", thumb: "linear-gradient(135deg,#f472b6,#c084fc)" },
+      { href: "./looks-roblox.html", icon: "🧱", title: "Roblox Looks", desc: "Roblox-стиль.", thumb: "linear-gradient(135deg,#ef4444,#f97316)" },
+      { href: "./thanks-outro.html", icon: "🙏", title: "Thanks Outro", desc: "Титры.", thumb: "linear-gradient(135deg,#64748b,#0f172a)" },
+      { href: "./lab-group.html", icon: "📋", title: "Группа Lab", desc: "Список всех мини.", thumb: "linear-gradient(135deg,#0d6e5f,#7ed9b8)" },
+    ];
+
+    const SITE = [
+      { href: "../zombie-vs-plants/", icon: "🧟", title: "Zombie vs Plants", desc: "Первая большая игра.", thumb: "linear-gradient(135deg,#3d7a3a,#1a3d18)" },
+      { href: "../terraverse/", icon: "⛏️", title: "Terraverse", desc: "2D-песочница.", thumb: "linear-gradient(135deg,#5a9e3a,#3d6ea8)" },
+      { href: "../snake-game/", icon: "🐍", title: "Snake Arcade", desc: "Классика.", thumb: "linear-gradient(135deg,#0d6e5f,#7ed9b8)" },
+      { href: "../echo-postman/", icon: "📬", title: "Echo Postman", desc: "Новая игра.", thumb: "linear-gradient(135deg,#6366f1,#312e81)" },
+      { href: "../ghost-lesson/", icon: "👻", title: "Несуществующий урок", desc: "Ночная школа.", thumb: "linear-gradient(135deg,#1e1b4b,#64748b)" },
+      { href: "../old-pc/", icon: "🖥️", title: "Старый ПК", desc: "Windows 95.", thumb: "linear-gradient(135deg,#94a3b8,#334155)" },
+      { href: "../portal-3d/", icon: "⬡", title: "Полка 3D", desc: "Obby, Tycoon…", thumb: "linear-gradient(135deg,#334155,#0d6e5f)" },
+      { href: "../", icon: "🌐", title: "Полный каталог", desc: "Все игры Amal Lab.", thumb: "linear-gradient(135deg,#e8f4ef,#0d6e5f)" },
+    ];
+
+    const DREAMS = [
+      { href: "./lab.html", icon: "🌙", title: "Ночные смены · ещё", desc: "Новые секреты и темы — в Lab и больнице.", dream: true, thumb: "linear-gradient(135deg,#312e81,#fbbf24)" },
+      { href: "./index.html", icon: "👥", title: "Больше игроков в смене", desc: "Пара и локальный кооп уже есть — дальше больше.", dream: true, thumb: "linear-gradient(135deg,#0d6e5f,#7c3aed)" },
+      { href: "../create-lab/", icon: "🛠️", title: "Create Lab", desc: "Свои игры и анимации на сайте.", dream: true, thumb: "linear-gradient(135deg,#0d6e5f,#e25a3c)" },
+      { href: "./thanks-outro.html", icon: "✨", title: "Ещё сюрпризы", desc: "То, чего ещё не было — появится здесь.", dream: true, thumb: "linear-gradient(135deg,#64748b,#fde68a)" },
+    ];
+
+    const all = [...MAIN, ...CONSOLE, ...MINIS, ...EXTRA, ...SITE, ...DREAMS];
+    document.getElementById("main").innerHTML = MAIN.map(card).join("");
+    document.getElementById("console").innerHTML = CONSOLE.map(card).join("");
+    document.getElementById("minis").innerHTML = MINIS.map(card).join("");
+    document.getElementById("extra").innerHTML = EXTRA.map(card).join("");
+    document.getElementById("site").innerHTML = SITE.map(card).join("");
+    document.getElementById("dreams").innerHTML = DREAMS.map(card).join("");
+    document.getElementById("count").textContent = "объектов: " + all.length;
+  </script>
+  <script src="../shared/amal-hub.js?v=35"></script>
+</body>
+</html>
