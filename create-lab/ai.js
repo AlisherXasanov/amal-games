@@ -43,6 +43,8 @@ window.Ushastik = (() => {
     const micLabel = opts.micLabelEl || document.getElementById("mic-label");
     const onCommand = opts.onCommand || (() => {});
     const onListeningChange = opts.onListeningChange || (() => {});
+    /** По умолчанию только таблички с текстом — без голоса, пока сам не включишь. */
+    let voiceOn = opts.voiceEnabled === true;
 
     let recognition = null;
     let listening = false;
@@ -115,11 +117,12 @@ window.Ushastik = (() => {
       return prefer || ru[0] || null;
     }
 
-    function speak(text, { silentLog } = {}) {
+    function speak(text, opts = {}) {
       if (!text) return;
-      if (!silentLog) addBubble("ai", text);
+      const useVoice = opts.voice === true || (opts.voice !== false && voiceOn);
+      if (!opts.silentLog) addBubble("ai", text);
       setStatus(text);
-      if (!("speechSynthesis" in window)) return;
+      if (!useVoice || !("speechSynthesis" in window)) return;
 
       stopTalk();
       speaking = true;
@@ -143,6 +146,16 @@ window.Ushastik = (() => {
         setState(listening ? "listening" : "idle");
       };
       speechSynthesis.speak(utter);
+    }
+
+    /** Только текст на экране — без озвучки. */
+    function say(text) {
+      speak(text, { voice: false });
+    }
+
+    function setVoice(on) {
+      voiceOn = !!on;
+      if (!voiceOn) stopTalk();
     }
 
     function interpret(raw) {
@@ -211,7 +224,7 @@ window.Ushastik = (() => {
       }
       addBubble("user", cleaned);
       const result = interpret(cleaned);
-      speak(result.reply);
+      speak(result.reply, { voice: voiceOn });
       onCommand(result);
       if (result.go && opts.autoNavigate !== false) {
         if (result.draft && !result.instant) {
@@ -420,18 +433,30 @@ window.Ushastik = (() => {
       speechSynthesis.getVoices();
       speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
     }
+    if (!window.__ushastikPageHide) {
+      window.__ushastikPageHide = true;
+      const hush = () => {
+        try {
+          if ("speechSynthesis" in window) speechSynthesis.cancel();
+        } catch (_) {}
+      };
+      window.addEventListener("pagehide", hush);
+      window.addEventListener("beforeunload", hush);
+    }
 
     setMicLabel(false);
 
     return {
       speak,
+      say,
+      setVoice,
       startListen,
       stopListen,
       toggleMic,
       interpret,
       handleTranscript,
       greet() {
-        speak(pick(REPLIES.greet));
+        say(pick(REPLIES.greet));
       },
     };
   }

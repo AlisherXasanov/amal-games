@@ -198,7 +198,7 @@
     frames.splice(current + 1, 0, blankFrame());
     current += 1;
     redraw();
-    ai.speak("Новый кадр готов. Рисуй дальше!");
+    ai.say("Новый кадр готов. Рисуй дальше!");
   };
 
   document.getElementById("btn-dup").onclick = () => {
@@ -290,7 +290,7 @@
     const payload = exportPayload();
     CreateLabStore.upsertAnim(payload);
     renderSaved();
-    ai.speak(`Сохранил анимацию «${payload.name}».`);
+    ai.say(`Сохранил анимацию «${payload.name}».`);
   };
 
   function renderSaved() {
@@ -351,12 +351,12 @@
     }
     if (/играй|плей|воспроиз/.test(low)) {
       if (!playing) startPlay();
-      ai.speak("Кручу анимацию!");
+      ai.say("Кручу анимацию!");
       return;
     }
     if (/стоп|останови/.test(low)) {
       stopPlay();
-      ai.speak("Остановил.");
+      ai.say("Остановил.");
       return;
     }
     if (/сохрани/.test(low)) {
@@ -365,7 +365,7 @@
     }
     if (/очисти/.test(low)) {
       document.getElementById("btn-clear").click();
-      ai.speak("Кадр чистый.");
+      ai.say("Кадр чистый.");
       return;
     }
     rawHandle(text);

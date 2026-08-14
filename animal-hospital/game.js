@@ -2811,6 +2811,24 @@
     renderInv();
   }
 
+  function fmtShiftTime(sec) {
+    if (!Number.isFinite(sec) || sec === Infinity) return "∞";
+    const s = Math.max(0, Math.ceil(sec));
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${String(r).padStart(2, "0")}`;
+  }
+
+  /** Таймер смены — у всех по shift.time. Бесконечный день больше не включается автоматически. */
+  function shiftEndlessMode(_shift) {
+    return false;
+  }
+
+  function shiftDurationSec(shift) {
+    const t = Number(shift && shift.time);
+    return t > 0 ? t : 140;
+  }
+
   function startShift() {
     ensureOwnerPerks();
     persistLobby();
@@ -2830,10 +2848,11 @@
       players.push(makePlayer(CLASSES.find((c) => c.id === "nurse") || CLASSES[1], 360, 220, false, "Игрок 2", "#a0d8ff"));
     }
 
+    const endless = shiftEndlessMode(shift);
     g = {
       t: 0,
-      left: Infinity,
-      endless: true,
+      left: endless ? Infinity : shiftDurationSec(shift),
+      endless,
       shift,
       coins: 0,
       treated: 0,
@@ -4934,11 +4953,12 @@
         eHint = `E — ${hint.label}`;
       }
     }
+    const timeLabel = g.endless ? "∞" : fmtShiftTime(g.left);
     hudStats.innerHTML =
-      `${g.shift.name.split("·")[0].trim()} · ⏱ ∞ · 🪙 ∞` +
+      `${g.shift.name.split("·")[0].trim()} · ⏱ ${timeLabel} · 🪙 ∞` +
       `<br>❤️ ${g.treated} · 🚫 ${g.blocked} · ⚠ ${g.leaked}` +
       (g.died ? ` · 💀 ${g.died}` : "") +
-      ` · 👾 ${g.monsters.length} · ∞очередь ${g.queue.length}` +
+      ` · 👾 ${g.monsters.length} · очередь ${g.queue.length}` +
       (eHint ? `<br><span style="color:#7ed9b8">${eHint}</span>` : "") +
       (g.players[0].weapon
         ? `<br><span style="color:#ffd36a">${g.players[0].weapon.icon} F — аномалию сразу · R зарядка · C кофе</span>`
@@ -4953,7 +4973,7 @@
           .map((r) => (r.rare ? r.name + "·" + r.rare : r.name) + (r.weird ? "?" : ""))
           .join(" · ")
       : "ждём…";
-    queueStrip.textContent = "∞ Заявки: " + req + (g.queue.length > 8 ? " …" : "");
+    queueStrip.textContent = (g.endless ? "∞ " : "") + "Заявки: " + req + (g.queue.length > 8 ? " …" : "");
   }
 
   function roundRect(x, y, w, h, r) {

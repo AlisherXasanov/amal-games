@@ -220,7 +220,7 @@
         u.textContent = text;
         log.appendChild(u);
       }
-      ai.speak(`Открываю «${made.name}»!`);
+      ai.say(`Открываю «${made.name}»!`);
       setTimeout(() => { location.href = made.href; }, 700);
       return;
     }
@@ -244,7 +244,7 @@
       u.textContent = text;
       log.appendChild(u);
     }
-    ai.speak(`Включаю «${made.kindRu}»!`);
+    ai.say(`Включаю «${made.kindRu}»!`);
     setTimeout(() => {
       location.href = `./play.html?id=${encodeURIComponent(made.game.id)}`;
     }, 700);
@@ -260,7 +260,7 @@
   };
 
   renderSaved();
-  ai.speak("Скажи или напиши идею — сразу включу. Например: маленькая площадка.");
+  ai.say("Напиши или скажи идею — покажу текстом. Голос: кнопка «Поздороваться» или микрофон (если включишь 🔊).");
 
   const textForm = document.getElementById("text-form");
   if (textForm) {
