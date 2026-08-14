@@ -4088,12 +4088,27 @@
       "#amal-cube-activate .cube{font-size:48px;margin-bottom:6px}#amal-cube-activate b{display:block;font-size:18px;margin-bottom:5px}" +
       "#amal-cube-activate p{margin:0 0 13px;color:#fde68a;font:700 12px/1.4 system-ui,sans-serif}" +
       "#amal-cube-activate button{width:100%;min-height:52px;border:0;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font:950 14px system-ui,sans-serif;letter-spacing:.05em;touch-action:manipulation}" +
-      "#amal-cube-btn{position:fixed;right:16px;top:42dvh;z-index:2147483002;width:60px;height:60px;" +
-      "border:2px solid #fbbf24;border-radius:18px;cursor:pointer;font-size:28px;color:#fff;" +
-      "background:linear-gradient(160deg,#92400e,#422006);box-shadow:0 10px 28px rgba(245,158,11,.45);touch-action:manipulation}" +
-      "#amal-cube-btn::after{content:'АДМИН';position:absolute;top:64px;right:0;padding:3px 7px;border-radius:7px;" +
-      "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif}" +
-      "#amal-cube-btn:hover,#amal-cube-btn:active{transform:scale(1.08)}" +
+      "#amal-cube-btn{position:fixed;right:16px;top:42dvh;z-index:2147483002;width:62px;height:62px;padding:0;border:0;" +
+      "background:transparent;cursor:pointer;perspective:320px;touch-action:manipulation;filter:drop-shadow(0 10px 20px rgba(0,0,0,.5))}" +
+      "#amal-cube-btn .c3d{position:absolute;inset:7px;transform-style:preserve-3d;animation:amalCubeSpin 7s linear infinite}" +
+      "#amal-cube-btn:hover .c3d,#amal-cube-btn:active .c3d{animation-duration:2.2s}" +
+      "#amal-cube-btn .c3d .f{position:absolute;width:48px;height:48px;display:grid;place-items:center;font-size:24px;" +
+      "border:2px solid var(--edge,#fbbf24);border-radius:9px;background:var(--face,linear-gradient(160deg,#92400e,#422006));" +
+      "box-shadow:0 0 12px var(--glow,rgba(245,158,11,.5)) inset;color:#fff;backface-visibility:hidden}" +
+      "#amal-cube-btn .c3d .f0{transform:translateZ(24px)}#amal-cube-btn .c3d .f1{transform:rotateY(180deg) translateZ(24px)}" +
+      "#amal-cube-btn .c3d .f2{transform:rotateY(90deg) translateZ(24px)}#amal-cube-btn .c3d .f3{transform:rotateY(-90deg) translateZ(24px)}" +
+      "#amal-cube-btn .c3d .f4{transform:rotateX(90deg) translateZ(24px)}#amal-cube-btn .c3d .f5{transform:rotateX(-90deg) translateZ(24px)}" +
+      "#amal-cube-btn.cube-glitch .c3d{animation:amalCubeSpin 7s linear infinite,amalCubeGlitch .5s steps(2) infinite}" +
+      "#amal-cube-btn::after{content:attr(data-label);position:absolute;top:66px;right:0;white-space:nowrap;padding:3px 7px;border-radius:7px;" +
+      "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;max-width:130px;overflow:hidden;text-overflow:ellipsis}" +
+      "@keyframes amalCubeSpin{0%{transform:rotateX(-22deg) rotateY(0)}100%{transform:rotateX(-22deg) rotateY(360deg)}}" +
+      "@keyframes amalCubeGlitch{0%{filter:hue-rotate(0) saturate(1)}50%{filter:hue-rotate(80deg) saturate(2)}100%{filter:hue-rotate(0) saturate(1)}}" +
+      "#amal-cube-story{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483004;" +
+      "width:min(330px,calc(100vw - 28px));padding:20px;border-radius:22px;text-align:center;color:#fff7ed;" +
+      "background:linear-gradient(160deg,#291804,#0f172a);border:2px solid #fbbf24;box-shadow:0 24px 70px rgba(0,0,0,.7);font-family:system-ui,sans-serif}" +
+      "#amal-cube-story .cube{font-size:46px;margin-bottom:6px}#amal-cube-story b{display:block;font-size:18px;margin-bottom:8px;color:#fde68a}" +
+      "#amal-cube-story p{margin:0 0 14px;color:#fde68a;font:600 12.5px/1.55 system-ui,sans-serif}" +
+      "#amal-cube-story button{width:100%;min-height:50px;border:0;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f97316);color:#1c1002;font:950 14px system-ui,sans-serif;letter-spacing:.04em;touch-action:manipulation}" +
       "@media(max-width:480px){#amal-cube-pickup,#amal-cube-btn{right:12px;top:38dvh}}" +
       /* боковые панели — не перекрывают центр, можно играть и таскать их */
       "#amal-cube-dash{position:fixed;inset:0;z-index:2147483002;pointer-events:none;font-family:system-ui,sans-serif}" +
@@ -4171,7 +4186,13 @@
       st.textContent =
         "#amal-fx-layer{position:fixed;inset:0;z-index:2147483040;pointer-events:none;overflow:hidden}" +
         "#amal-fx-layer .amal-fx-p{position:fixed;top:0;left:0;will-change:transform,opacity;user-select:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}" +
-        "#amal-fx-flash{position:fixed;inset:0;z-index:2147483039;pointer-events:none;opacity:0;mix-blend-mode:screen}";
+        "#amal-fx-flash{position:fixed;inset:0;z-index:2147483039;pointer-events:none;opacity:0;mix-blend-mode:screen}" +
+        "#amal-vibe{position:fixed;inset:0;z-index:2147483001;pointer-events:none;display:none}" +
+        "#amal-vibe.amal-vibe-gold{background:radial-gradient(circle at 50% 30%,rgba(255,215,90,.6),rgba(180,120,0,.4));mix-blend-mode:overlay}" +
+        "#amal-vibe.amal-vibe-night{background:linear-gradient(180deg,rgba(8,12,44,.55),rgba(2,4,20,.68));mix-blend-mode:multiply}" +
+        "#amal-vibe.amal-vibe-neon{background:linear-gradient(120deg,rgba(255,0,200,.42),rgba(0,220,255,.42));mix-blend-mode:overlay}" +
+        "#amal-vibe.amal-vibe-rainbow{background:linear-gradient(120deg,#ff004c,#ff9500,#ffe600,#00e676,#00b0ff,#d500f9);background-size:300% 300%;opacity:.35;mix-blend-mode:overlay;animation:amalVibeShift 6s linear infinite}" +
+        "@keyframes amalVibeShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}";
       document.head.appendChild(st);
     }
     layer = document.createElement("div");
@@ -4253,18 +4274,161 @@
 
   function cubeFx(kind) {
     try {
-      if (kind === "confetti") fxRain(["🎉", "🎊", "✨", "🟡", "🔴", "🟢", "🔵", "🟣"], 46);
-      else if (kind === "coins") fxRain(["💰", "🪙", "⭐", "💎"], 40);
-      else if (kind === "stars") fxRain(["⭐", "🌟", "✨", "💫"], 40);
-      else if (kind === "hearts") fxRain(["💚", "💛", "❤️", "💖", "💕"], 38);
+      if (kind === "confetti") {
+        fxRain(["🎉", "🎊", "✨", "🟡", "🔴", "🟢", "🔵", "🟣"], 46);
+        fxSound("applause");
+      } else if (kind === "coins") {
+        fxRain(["💰", "🪙", "⭐", "💎"], 40);
+        fxSound("coin");
+      } else if (kind === "stars") {
+        fxRain(["⭐", "🌟", "✨", "💫"], 40);
+        fxSound("coin");
+      } else if (kind === "hearts") fxRain(["💚", "💛", "❤️", "💖", "💕"], 38);
       else if (kind === "fireworks") {
         fxBurst(["🎆", "✨", "⭐", "💥", "🌟"], 30);
         setTimeout(() => fxBurst(["🎇", "✨", "💫"], 24), 350);
         setTimeout(() => fxBurst(["🎆", "⭐", "💥"], 24), 700);
-      } else if (kind === "disco") fxDisco();
+        fxSound("boom");
+        setTimeout(() => fxSound("fanfare"), 300);
+      } else if (kind === "disco") {
+        fxDisco();
+        fxSound("beat");
+      }
     } catch (_) {
       /* ignore */
     }
+  }
+
+  /* ── Звук куба: синтез через WebAudio, без файлов, работает в любой игре ── */
+  let _amalActx = null;
+  function fxAudioCtx() {
+    try {
+      if (!_amalActx) _amalActx = new (window.AudioContext || window.webkitAudioContext)();
+      if (_amalActx.state === "suspended") _amalActx.resume();
+      return _amalActx;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function fxBeep(ctx, freq, start, dur, type, gain) {
+    const t0 = ctx.currentTime + start;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain || 0.2, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start(t0);
+    o.stop(t0 + dur + 0.03);
+  }
+
+  function fxSound(kind) {
+    const ctx = fxAudioCtx();
+    if (!ctx) return;
+    try {
+      if (kind === "coin") {
+        fxBeep(ctx, 988, 0, 0.08, "square", 0.16);
+        fxBeep(ctx, 1319, 0.06, 0.12, "square", 0.16);
+      } else if (kind === "fanfare") {
+        [523, 659, 784, 1047].forEach((f, i) => fxBeep(ctx, f, i * 0.12, 0.2, "triangle", 0.2));
+      } else if (kind === "jackpot") {
+        [523, 659, 784, 1047, 1319, 1047, 1319].forEach((f, i) => fxBeep(ctx, f, i * 0.09, 0.2, "triangle", 0.22));
+      } else if (kind === "boom") {
+        fxBeep(ctx, 90, 0, 0.35, "sawtooth", 0.32);
+        fxBeep(ctx, 55, 0.02, 0.42, "sine", 0.3);
+      } else if (kind === "laser") {
+        const t0 = ctx.currentTime;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sawtooth";
+        o.frequency.setValueAtTime(1200, t0);
+        o.frequency.exponentialRampToValueAtTime(180, t0 + 0.25);
+        g.gain.setValueAtTime(0.2, t0);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + 0.3);
+      } else if (kind === "applause") {
+        for (let i = 0; i < 20; i++) fxBeep(ctx, 400 + Math.random() * 3200, Math.random() * 0.5, 0.05, "square", 0.04);
+      } else if (kind === "beat") {
+        [0, 0.2, 0.4, 0.6].forEach((t) => fxBeep(ctx, 120, t, 0.12, "sine", 0.3));
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /* ── Визуальный «стиль игры» — цветной слой поверх игры (панели не красит) ── */
+  function ensureVibeLayer() {
+    let v = document.getElementById("amal-vibe");
+    if (v) return v;
+    ensureFxLayer();
+    v = document.createElement("div");
+    v.id = "amal-vibe";
+    v.style.display = "none";
+    document.body.appendChild(v);
+    return v;
+  }
+
+  function applyVibe(kind) {
+    const v = ensureVibeLayer();
+    const map = { gold: "amal-vibe-gold", night: "amal-vibe-night", rainbow: "amal-vibe-rainbow", neon: "amal-vibe-neon" };
+    v.className = "";
+    if (kind === "off" || !map[kind]) {
+      v.style.display = "none";
+      try {
+        localStorage.removeItem("amal-vibe-v1");
+      } catch (_) {
+        /* ignore */
+      }
+      showHubToast("🎨 Обычный вид");
+      return;
+    }
+    v.classList.add(map[kind]);
+    v.style.display = "block";
+    try {
+      localStorage.setItem("amal-vibe-v1", kind);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function restoreVibe() {
+    let saved = "";
+    try {
+      saved = localStorage.getItem("amal-vibe-v1") || "";
+    } catch (_) {
+      saved = "";
+    }
+    if (saved) applyVibe(saved);
+  }
+
+  /* ── Мистери-бокс — случайный джекпот монет с эффектом и звуком ── */
+  function cubeMystery() {
+    const rewards = [1000, 5000, 25000, 100000, 500000, 1000000, 999999999];
+    const amt = fxPick(rewards);
+    try {
+      const src = document.getElementById("amal-cube-amount");
+      if (src) src.value = String(amt);
+    } catch (_) {
+      /* ignore */
+    }
+    cubeGive("coins");
+    const jackpot = amt >= 1000000;
+    fxSound(jackpot ? "jackpot" : "coin");
+    cubeFx(jackpot ? "fireworks" : "coins");
+    let pretty = String(amt);
+    try {
+      pretty = amt.toLocaleString("ru-RU");
+    } catch (_) {
+      /* ignore */
+    }
+    showHubToast("🎁 Мистери-бокс: +" + pretty + " 💰" + (jackpot ? " · ДЖЕКПОТ!" : ""));
   }
 
   function cubeDashPlayersHtml() {
@@ -4481,6 +4645,7 @@
       setLegacyThingsBarHidden(true);
       refreshCubeDashPlayers();
       refreshCubeDashThings();
+      restoreVibe();
       return;
     }
     const dash = document.createElement("div");
@@ -4506,8 +4671,10 @@
           '<button type="button" class="acd-fx" data-fx="stars" title="Звездопад">⭐</button>' +
           '<button type="button" class="acd-fx" data-fx="hearts" title="Сердечки">💖</button>' +
           '<button type="button" class="acd-fx" data-fx="disco" title="Дискотека">🕶️</button>' +
-          "</div>",
+          "</div>" +
+          '<button type="button" class="acd-btn amber" data-cube="mystery">🎁 Мистери-бокс</button>',
       ) +
+      cubePanelHtml("cube", "🎲 КУБ · СКИНЫ", cubeSkinPanelBody()) +
       "</div>" +
       '<div class="acd-col right">' +
       cubePanelHtml(
@@ -4529,11 +4696,52 @@
           '<button type="button" class="acd-btn amber" data-cube="give-score">🏆 Очки</button>' +
           '<button type="button" class="acd-btn amber" data-cube="give-cups">🏅 Кубки</button>',
       ) +
+      cubePanelHtml(
+        "vibe",
+        "🎨 СТИЛЬ ИГРЫ",
+        '<div class="acd-fxgrid">' +
+          '<button type="button" class="acd-fx" data-vibe="gold" title="Золото">👑</button>' +
+          '<button type="button" class="acd-fx" data-vibe="night" title="Ночь">🌙</button>' +
+          '<button type="button" class="acd-fx" data-vibe="rainbow" title="Радуга">🌈</button>' +
+          '<button type="button" class="acd-fx" data-vibe="neon" title="Неон">💜</button>' +
+          '<button type="button" class="acd-fx" data-vibe="off" title="Обычный вид">🚫</button>' +
+          "</div>" +
+          '<div class="acd-fxgrid" style="margin-top:6px">' +
+          '<button type="button" class="acd-fx" data-snd="fanfare" title="Фанфары">🎺</button>' +
+          '<button type="button" class="acd-fx" data-snd="boom" title="Взрыв">💣</button>' +
+          '<button type="button" class="acd-fx" data-snd="laser" title="Лазер">🔫</button>' +
+          '<button type="button" class="acd-fx" data-snd="applause" title="Аплодисменты">👏</button>' +
+          "</div>",
+      ) +
       "</div>";
     dash.addEventListener("click", (e) => {
       const fx = e.target.closest("[data-fx]");
       if (fx) {
         cubeFx(fx.getAttribute("data-fx"));
+        return;
+      }
+      const vibe = e.target.closest("[data-vibe]");
+      if (vibe) {
+        applyVibe(vibe.getAttribute("data-vibe"));
+        return;
+      }
+      const snd = e.target.closest("[data-snd]");
+      if (snd) {
+        fxSound(snd.getAttribute("data-snd"));
+        return;
+      }
+      const skin = e.target.closest("[data-skin]");
+      if (skin) {
+        const id = skin.getAttribute("data-skin");
+        setCubeSkin(id);
+        showHubToast("🎲 Скин: " + ((CUBE_SKINS[id] && CUBE_SKINS[id].name) || id));
+        return;
+      }
+      const tr = e.target.closest("[data-tr]");
+      if (tr) {
+        const nameEl = document.getElementById("amal-cube-treasure-name");
+        setTreasure(tr.getAttribute("data-tr"), nameEl ? nameEl.value : "");
+        showHubToast("💎 Сокровище на кубе");
         return;
       }
       const thing = e.target.closest("[data-thing]");
@@ -4594,6 +4802,21 @@
           runCubeAbility(map[act]);
           return;
         }
+        if (act === "mystery") {
+          cubeMystery();
+          return;
+        }
+        if (act === "treasure-save") {
+          const cur = getTreasure();
+          const nameEl = document.getElementById("amal-cube-treasure-name");
+          setTreasure((cur && cur.emoji) || "💎", nameEl ? nameEl.value : "");
+          showHubToast("💎 Сокровище обновлено");
+          return;
+        }
+        if (act === "story") {
+          showCubeStory();
+          return;
+        }
         if (act === "give-coins") cubeGive("coins");
         if (act === "give-score") cubeGive("score");
         if (act === "give-cups") cubeGive("cups");
@@ -4631,6 +4854,7 @@
       if (flags.hidden && flags.hidden[id]) panel.style.display = "none";
     });
     setLegacyThingsBarHidden(true);
+    restoreVibe();
   }
 
   /** Кубик — выключатель: одним нажатием убрать все панели с экрана и вернуть обратно. */
@@ -4657,6 +4881,111 @@
     showCubeDashboard();
   }
 
+  /* ── 3D-куб: скины и «сокровище игры» ── */
+  const CUBE_SKINS = {
+    classic: { name: "Классика", emoji: "🎲", face: "linear-gradient(160deg,#92400e,#422006)", edge: "#fbbf24", glow: "rgba(245,158,11,.55)" },
+    gold: { name: "Золото", emoji: "👑", face: "linear-gradient(160deg,#fde68a,#b45309)", edge: "#fff3c4", glow: "rgba(251,191,36,.85)" },
+    diamond: { name: "Алмаз", emoji: "💎", face: "linear-gradient(160deg,#67e8f9,#0e7490)", edge: "#a5f3fc", glow: "rgba(34,211,238,.7)" },
+    fire: { name: "Огонь", emoji: "🔥", face: "linear-gradient(160deg,#f97316,#7f1d1d)", edge: "#fca5a5", glow: "rgba(239,68,68,.7)" },
+    ice: { name: "Лёд", emoji: "❄️", face: "linear-gradient(160deg,#bfdbfe,#1e3a8a)", edge: "#dbeafe", glow: "rgba(96,165,250,.7)" },
+    neon: { name: "Неон", emoji: "⚡", face: "linear-gradient(160deg,#d946ef,#4c1d95)", edge: "#f0abfc", glow: "rgba(217,70,239,.8)" },
+    matrix: { name: "Матрица", emoji: "🟢", face: "linear-gradient(160deg,#065f46,#022c22)", edge: "#34d399", glow: "rgba(16,185,129,.8)" },
+    mistake: { name: "Ошибка", emoji: "⚠️", face: "linear-gradient(160deg,#1f2937,#000)", edge: "#ef4444", glow: "rgba(239,68,68,.9)", glitch: true },
+  };
+
+  function cubeSkinId() {
+    try {
+      return CUBE_SKINS[localStorage.getItem("amal-cube-skin-v1")] ? localStorage.getItem("amal-cube-skin-v1") : "classic";
+    } catch (_) {
+      return "classic";
+    }
+  }
+
+  function setCubeSkin(id) {
+    if (!CUBE_SKINS[id]) id = "classic";
+    try {
+      localStorage.setItem("amal-cube-skin-v1", id);
+    } catch (_) {
+      /* ignore */
+    }
+    paintCube3d();
+  }
+
+  function cubeTreasureKey() {
+    return "amal-cube-treasure:" + (gameIdFromPath() || "portal");
+  }
+
+  function getTreasure() {
+    try {
+      const v = JSON.parse(localStorage.getItem(cubeTreasureKey()) || "null");
+      if (v && v.emoji) return v;
+    } catch (_) {
+      /* ignore */
+    }
+    return null;
+  }
+
+  function setTreasure(emoji, name) {
+    try {
+      localStorage.setItem(cubeTreasureKey(), JSON.stringify({ emoji: emoji || "💎", name: (name || "").slice(0, 24) }));
+    } catch (_) {
+      /* ignore */
+    }
+    paintCube3d();
+  }
+
+  function paintCube3d() {
+    const btn = document.getElementById("amal-cube-btn");
+    if (!btn) return;
+    const sk = CUBE_SKINS[cubeSkinId()] || CUBE_SKINS.classic;
+    btn.style.setProperty("--face", sk.face);
+    btn.style.setProperty("--edge", sk.edge);
+    btn.style.setProperty("--glow", sk.glow);
+    btn.classList.toggle("cube-glitch", !!sk.glitch);
+    const tr = getTreasure();
+    const faces = btn.querySelectorAll(".c3d .f");
+    const frontEmoji = tr ? tr.emoji : sk.emoji;
+    faces.forEach((f, i) => {
+      f.textContent = i === 0 ? frontEmoji : sk.emoji;
+    });
+    btn.dataset.label = tr && tr.name ? tr.name : "АДМИН";
+  }
+
+  function cubeSkinPanelBody() {
+    const skins = Object.keys(CUBE_SKINS)
+      .map((id) => '<button type="button" class="acd-fx" data-skin="' + id + '" title="' + CUBE_SKINS[id].name + '">' + CUBE_SKINS[id].emoji + "</button>")
+      .join("");
+    const trPresets = ["💎", "👑", "🔥", "🗝️", "🏆", "⭐"]
+      .map((e) => '<button type="button" class="acd-fx" data-tr="' + e + '">' + e + "</button>")
+      .join("");
+    const tr = getTreasure();
+    return (
+      '<div class="acd-fxgrid">' + skins + "</div>" +
+      '<div style="margin-top:9px;font:800 10px system-ui,sans-serif;color:#fde68a;opacity:.85">💎 Сокровище игры (видно на кубе)</div>' +
+      '<div class="acd-fxgrid" style="margin-top:5px">' + trPresets + "</div>" +
+      '<input class="acd-amt" id="amal-cube-treasure-name" type="text" maxlength="24" placeholder="Название сокровища" value="' +
+      escapeHtml((tr && tr.name) || "") +
+      '" style="margin-top:6px;font-size:12px" />' +
+      '<button type="button" class="acd-btn amber" data-cube="treasure-save">💾 Поставить на куб</button>' +
+      '<button type="button" class="acd-btn" data-cube="story">📜 История куба</button>'
+    );
+  }
+
+  function showCubeStory() {
+    ensureCubeStyles();
+    if (document.getElementById("amal-cube-story")) return;
+    const box = document.createElement("div");
+    box.id = "amal-cube-story";
+    box.innerHTML =
+      '<div class="cube">🎲</div><b>История куба</b>' +
+      "<p>Я задумывал совсем другое. А получилось — вот это, по ошибке.<br>" +
+      "Куб появился сам. Убрать его нельзя, и команду сменить он не даёт.<br>" +
+      "Зато теперь он твой: 3D, со скинами, и показывает главное сокровище каждой игры.</p>" +
+      "<button type=\"button\">Понятно</button>";
+    box.querySelector("button").addEventListener("click", () => box.remove());
+    document.body.appendChild(box);
+  }
+
   function showCubeButton() {
     removeCubeEl("amal-cube-pickup");
     removeCubeEl("amal-cube-activate");
@@ -4665,11 +4994,15 @@
     const btn = document.createElement("button");
     btn.id = "amal-cube-btn";
     btn.type = "button";
-    btn.textContent = "🎲";
+    btn.innerHTML =
+      '<span class="c3d"><span class="f f0"></span><span class="f f1"></span><span class="f f2"></span>' +
+      '<span class="f f3"></span><span class="f f4"></span><span class="f f5"></span></span>';
+    btn.dataset.label = "АДМИН";
     btn.title = "Админ-куб: показать или спрятать панели";
     btn.setAttribute("aria-label", "Показать или спрятать боковые панели админ-куба");
     btn.addEventListener("click", toggleCubeDashboard);
     document.body.appendChild(btn);
+    paintCube3d();
   }
 
   function showCubeActivate() {

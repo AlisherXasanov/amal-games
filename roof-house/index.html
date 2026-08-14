@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Дом под крышей</title>
-  <meta name="description" content="Р вЂќР С•Р С РЎРѓ Р С”РЎР‚РЎвЂ№РЎв‚¬Р ВµР в„– Р С‘ РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р Р…РЎвЂ№Р СР С‘ РЎРЊРЎвЂљР В°Р В¶Р В°Р СР С‘: Р В·Р В°РЎвЂ¦Р С•Р Т‘Р С‘ Р Р…Р В° Р С”Р В°Р В¶Р Т‘РЎвЂ№Р в„– РІР‚вЂќ РЎвЂљР В°Р С РЎРѓР Р†Р С•Р в„– Р С—РЎР‚Р С‘Р С”Р С•Р В»." />
+  <meta name="description" content="Дом с крышей и странными этажами: заходи на каждый — там свой прикол." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,38 +15,38 @@
   <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
-    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Р вЂќР С•Р С Р С—Р С•Р Т‘ Р С”РЎР‚РЎвЂ№РЎв‚¬Р ВµР в„–"></canvas>
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Дом под крышей"></canvas>
 
     <div id="hud" class="hud hidden">
       <div class="hud-row">
-        <span id="floor">Р В­РЎвЂљР В°Р В¶: Р С—Р С•Р Т‘Р Р†Р В°Р В»</span>
-        <span id="found">Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљР С•: 0/10</span>
-        <span id="roof">Р С™РЎР‚РЎвЂ№РЎв‚¬Р В°: Р В·Р В°Р С”РЎР‚РЎвЂ№РЎвЂљР В°</span>
+        <span id="floor">Этаж: подвал</span>
+        <span id="found">Открыто: 0/10</span>
+        <span id="roof">Крыша: закрыта</span>
       </div>
-      <p id="hint" class="hint">РІвЂ С’РІвЂ вЂ™ РІР‚вЂќ РЎвЂ¦Р С•Р Т‘РЎРЉР В±Р В° Р’В· РІвЂ вЂРІвЂ вЂњ РЎС“ Р В»Р ВµРЎРѓРЎвЂљР Р…Р С‘РЎвЂ РЎвЂ№ РІР‚вЂќ РЎРЊРЎвЂљР В°Р В¶ Р’В· E РІР‚вЂќ РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р Р…Р С•РЎРѓРЎвЂљРЎРЉ</p>
-      <button type="button" id="menu-btn" class="menu-btn">Р СљР ВµР Р…РЎР‹</button>
+      <p id="hint" class="hint">←→ — ходьба · ↑↓ у лестницы — этаж · E — странность</p>
+      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="panel">
-        <p class="brand">Р вЂќР С•Р С Р С—Р С•Р Т‘ Р С”РЎР‚РЎвЂ№РЎв‚¬Р ВµР в„–</p>
-        <h1 id="title">Р С™РЎР‚РЎвЂ№РЎв‚¬Р В° Р ВµРЎРѓРЎвЂљРЎРЉ РІР‚вЂќ РЎРЊРЎвЂљР В°Р В¶Р ВµР в„– РЎРѓР В»Р С‘РЎв‚¬Р С”Р С•Р С Р СР Р…Р С•Р С–Р С•</h1>
+        <p class="brand">Дом под крышей</p>
+        <h1 id="title">Крыша есть — этажей слишком много</h1>
         <p id="blurb" class="blurb">
-          Р В Р В°Р В·РЎР‚Р ВµР В· Р Т‘Р С•Р СР В°: Р С—Р С•Р Т‘Р Р…Р С‘Р СР В°Р в„–РЎРѓРЎРЏ Р С—Р С• Р В»Р ВµРЎРѓРЎвЂљР Р…Р С‘РЎвЂ Р Вµ, Р В·Р В°РЎвЂ¦Р С•Р Т‘Р С‘ Р Р† Р С”Р С•Р СР Р…Р В°РЎвЂљРЎвЂ№. Р СњР В° Р С”Р В°Р В¶Р Т‘Р С•Р С РЎРЊРЎвЂљР В°Р В¶Р Вµ РІР‚вЂќ РЎвЂЎРЎвЂљР С•-РЎвЂљР С• РЎРѓР СР ВµРЎв‚¬Р Р…Р С•Р Вµ Р С‘ РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р Р…Р С•Р Вµ.
-          Р С›РЎвЂљР С”РЎР‚Р С•Р в„– Р Р†РЎРѓР Вµ Р Т‘Р ВµРЎРѓРЎРЏРЎвЂљРЎРЉ РІР‚вЂќ Р С‘ Р Т‘Р С•Р В±Р ВµРЎР‚Р С‘РЎРѓРЎРЉ Р Т‘Р С• Р С”РЎР‚РЎвЂ№РЎв‚¬Р С‘.
+          Разрез дома: поднимайся по лестнице, заходи в комнаты. На каждом этаже — что-то смешное и странное.
+          Открой все десять — и доберись до крыши.
         </p>
-        <button type="button" id="start-btn" class="btn">Р вЂ™Р С•Р в„–РЎвЂљР С‘ Р Р† Р Т‘Р С•Р С</button>
-        <p class="controls">Р РЋРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ Р С‘Р В»Р С‘ WASD Р’В· E РІР‚вЂќ Р Р†Р В·Р В°Р С‘Р СР С•Р Т‘Р ВµР в„–РЎРѓРЎвЂљР Р†Р С‘Р Вµ Р’В· Р В°Р Т‘Р СР С‘Р Р… РІС™РЋ</p>
+        <button type="button" id="start-btn" class="btn">Войти в дом</button>
+        <p class="controls">Стрелки или WASD · E — взаимодействие · админ ⚡</p>
       </div>
     </div>
 
     <div id="touch" class="touch hidden" aria-hidden="true">
       <div class="pad">
-        <button type="button" data-dir="up">РІвЂ вЂ</button>
+        <button type="button" data-dir="up">↑</button>
         <div class="row">
-          <button type="button" data-dir="left">РІвЂ С’</button>
-          <button type="button" data-dir="down">РІвЂ вЂњ</button>
-          <button type="button" data-dir="right">РІвЂ вЂ™</button>
+          <button type="button" data-dir="left">←</button>
+          <button type="button" data-dir="down">↓</button>
+          <button type="button" data-dir="right">→</button>
         </div>
       </div>
       <button type="button" id="use-btn" class="act use">E</button>
@@ -55,6 +55,6 @@
 
   <script src="../shared/amal-owner-powers.js?v=20"></script>
   <script src="./game.js?v=2"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
 </body>
 </html>

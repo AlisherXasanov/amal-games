@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Несуществующий урок</title>
-  <meta name="description" content="Р СњР С•РЎвЂЎР Р…Р В°РЎРЏ РЎв‚¬Р С”Р С•Р В»Р В° Р В±Р ВµР В· РЎР‚Р В°РЎРѓР С—Р С‘РЎРѓР В°Р Р…Р С‘РЎРЏ: РЎРѓР С•Р В±Р ВµРЎР‚Р С‘ Р С•РЎвЂљР Р†Р ВµРЎвЂљРЎвЂ№ Р СР ВµР В»Р С•Р С Р С‘ Р В·Р В°Р С”РЎР‚Р С•Р в„– РЎС“РЎР‚Р С•Р С”, Р С”Р С•РЎвЂљР С•РЎР‚Р С•Р С–Р С• Р Р…Р ВµРЎвЂљ." />
+  <meta name="description" content="Ночная школа без расписания: собери ответы мелом и закрой урок, которого нет." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,47 +15,47 @@
   <a class="portal-back" href="../">&larr; Все игры</a>
 
   <div id="app">
-    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Р СњР ВµРЎРѓРЎС“РЎвЂ°Р ВµРЎРѓРЎвЂљР Р†РЎС“РЎР‹РЎвЂ°Р С‘Р в„– РЎС“РЎР‚Р С•Р С”"></canvas>
+    <canvas id="game" width="960" height="540" tabindex="0" aria-label="Несуществующий урок"></canvas>
 
     <div id="hud" class="hud hidden">
       <div class="hud-row">
-        <span id="answers">Р С›РЎвЂљР Р†Р ВµРЎвЂљРЎвЂ№: 0/5</span>
-        <span id="bell">Р вЂ”Р Р†Р С•Р Р…Р С•Р С”: 100%</span>
-        <span id="held">Р вЂ™ РЎР‚РЎС“Р С”Р В°РЎвЂ¦: РІР‚вЂќ</span>
+        <span id="answers">Ответы: 0/5</span>
+        <span id="bell">Звонок: 100%</span>
+        <span id="held">В руках: —</span>
       </div>
-      <p id="hint" class="hint">WASD / РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ Р’В· E РІР‚вЂќ Р Р†Р В·РЎРЏРЎвЂљРЎРЉ / Р С•РЎвЂљР Т‘Р В°РЎвЂљРЎРЉ Р’В· Р С—РЎР‚Р С•Р В±Р ВµР В» РІР‚вЂќ Р С—РЎР‚РЎвЂ№Р В¶Р С•Р С”</p>
-      <button type="button" id="menu-btn" class="menu-btn">Р СљР ВµР Р…РЎР‹</button>
+      <p id="hint" class="hint">WASD / стрелки · E — взять / отдать · пробел — прыжок</p>
+      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="panel">
-        <p class="brand">Р СњР ВµРЎРѓРЎС“РЎвЂ°Р ВµРЎРѓРЎвЂљР Р†РЎС“РЎР‹РЎвЂ°Р С‘Р в„– РЎС“РЎР‚Р С•Р С”</p>
-        <h1 id="title">Р вЂ™ РЎР‚Р В°РЎРѓР С—Р С‘РЎРѓР В°Р Р…Р С‘Р С‘ РІР‚вЂќ Р С—РЎС“РЎРѓРЎвЂљР В°РЎРЏ Р С”Р В»Р ВµРЎвЂљР С”Р В°</h1>
+        <p class="brand">Несуществующий урок</p>
+        <h1 id="title">В расписании — пустая клетка</h1>
         <p id="blurb" class="blurb">
-          Р РЃР С”Р С•Р В»Р В° Р С•РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°Р ВµРЎвЂљРЎРѓРЎРЏ РЎвЂљР С•Р В»РЎРЉР С”Р С• Р Р† РЎвЂ°Р ВµР В»Р С‘ Р СР ВµР В¶Р Т‘РЎС“ Р В·Р Р†Р С•Р Р…Р С”Р В°Р СР С‘. Р СџРЎР‚Р С‘Р В·РЎР‚Р В°Р С”Р С‘-РЎС“РЎвЂЎР ВµР Р…Р С‘Р С”Р С‘ Р В¶Р Т‘РЎС“РЎвЂљ Р С•РЎвЂљР Р†Р ВµРЎвЂљРЎвЂ№,
-          Р С”Р С•РЎвЂљР С•РЎР‚РЎвЂ№РЎвЂ¦ Р Р…Р С‘Р С”РЎвЂљР С• Р Р…Р Вµ Р С—Р С‘РЎРѓР В°Р В». Р РЋР С•Р В±Р ВµРЎР‚Р С‘ Р СР ВµР В» РЎРѓ Р С—Р С•Р В»Р В°, Р С•РЎвЂљР Т‘Р В°Р в„– Р Р…РЎС“Р В¶Р Р…РЎвЂ№Р в„– Р С•РЎвЂљР Р†Р ВµРЎвЂљ РІР‚вЂќ Р С‘ РЎС“РЎР‚Р С•Р С” РЎРѓРЎвЂљР В°Р Р…Р ВµРЎвЂљ Р Р…Р В°РЎРѓРЎвЂљР С•РЎРЏРЎвЂ°Р С‘Р С.
+          Школа открывается только в щели между звонками. Призраки-ученики ждут ответы,
+          которых никто не писал. Собери мел с пола, отдай нужный ответ — и урок станет настоящим.
         </p>
-        <button type="button" id="start-btn" class="btn">Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ Р С”Р В»Р В°РЎРѓРЎРѓ</button>
-        <p class="controls">Р С™Р В»Р В°Р Р†Р С‘Р В°РЎвЂљРЎС“РЎР‚Р В°: WASD, Р С—РЎР‚Р С•Р В±Р ВµР В», E Р’В· Р СњР В° РЎвЂљР ВµР В»Р ВµРЎвЂћР С•Р Р…Р Вµ РІР‚вЂќ Р С”Р Р…Р С•Р С—Р С”Р С‘ Р Р†Р Р…Р С‘Р В·РЎС“</p>
+        <button type="button" id="start-btn" class="btn">Открыть класс</button>
+        <p class="controls">Клавиатура: WASD, пробел, E · На телефоне — кнопки внизу</p>
       </div>
     </div>
 
     <div id="touch" class="touch hidden" aria-hidden="true">
       <div class="pad">
-        <button type="button" data-dir="up">РІвЂ вЂ</button>
+        <button type="button" data-dir="up">↑</button>
         <div class="row">
-          <button type="button" data-dir="left">РІвЂ С’</button>
-          <button type="button" data-dir="down">РІвЂ вЂњ</button>
-          <button type="button" data-dir="right">РІвЂ вЂ™</button>
+          <button type="button" data-dir="left">←</button>
+          <button type="button" data-dir="down">↓</button>
+          <button type="button" data-dir="right">→</button>
         </div>
       </div>
-      <button type="button" id="jump-btn" class="act">Р СџР В Р В«Р вЂ“Р С›Р С™</button>
+      <button type="button" id="jump-btn" class="act">ПРЫЖОК</button>
       <button type="button" id="use-btn" class="act use">E</button>
     </div>
   </div>
 
   <script src="../shared/amal-owner-powers.js?v=20"></script>
   <script src="./game.js?v=3"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
 </body>
 </html>

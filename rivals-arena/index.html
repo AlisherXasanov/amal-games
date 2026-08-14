@@ -64,26 +64,26 @@
   </style>
 </head>
 <body>
-  <div id="draft">С‡РµСЂРЅРѕРІРёРє В· РЅРµ РЅР° СЃР°Р№С‚Рµ</div>
-  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">РњРµРЅСЋ РёРіСЂ</a>
+  <div id="draft">черновик · не на сайте</div>
+  <a id="btnMenu" href="../_private/" style="position:fixed;top:42px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:linear-gradient(135deg,#38bdf8,#2563eb);color:#fff;font:800 12px/1 system-ui;text-decoration:none">Меню игр</a>
   <div id="titleCard">
-    <h1>RIVALS В· 1 РЅР° 1 РґСѓСЌР»СЊ</h1>
-    <p>С†РµР»СЊ: СЃР±РёС‚СЊ HP Р±РѕС‚Р°</p>
+    <h1>RIVALS · 1 на 1 дуэль</h1>
+    <p>цель: сбить HP бота</p>
   </div>
   <div id="hud">
-    <div class="row"><span>РЎС‡С‘С‚</span><span class="score"><span id="ps">0</span> : <span id="bs">0</span></span></div>
-    <div class="row"><span style="color:#67e8f9">РўС‹</span><span style="color:#fdba74">Р‘РѕС‚</span></div>
-    <div class="hp-label"><span>РўРІРѕС‘ HP</span><span id="php">100</span></div>
+    <div class="row"><span>Счёт</span><span class="score"><span id="ps">0</span> : <span id="bs">0</span></span></div>
+    <div class="row"><span style="color:#67e8f9">Ты</span><span style="color:#fdba74">Бот</span></div>
+    <div class="hp-label"><span>Твоё HP</span><span id="php">100</span></div>
     <div class="bar"><div class="fill you" id="pbar"></div></div>
-    <div class="hp-label"><span>HP Р±РѕС‚Р°</span><span id="bhp">100</span></div>
+    <div class="hp-label"><span>HP бота</span><span id="bhp">100</span></div>
     <div class="bar"><div class="fill bot" id="bbar"></div></div>
   </div>
-  <div id="roundBanner">Р Р°СѓРЅРґ <span id="round">1</span></div>
-  <div id="tip">WASD вЂ” Р±РµРі В· РџРљРњ вЂ” РєР°РјРµСЂР° В· СѓРєСЂРѕР№СЃСЏ Р·Р° СЃС‚РµРЅР°РјРё В· СЃР±РµР№ HP Р±РѕС‚Р° РґРѕ 0</div>
+  <div id="roundBanner">Раунд <span id="round">1</span></div>
+  <div id="tip">WASD — бег · ПКМ — камера · укройся за стенами · сбей HP бота до 0</div>
   <div id="abilities">
-    <button type="button" class="shot" id="btnShot">Р’С‹СЃС‚СЂРµР»<small>Р›РљРњ</small></button>
-    <button type="button" class="dash" id="btnDash">Р С‹РІРѕРє<small>Shift</small></button>
-    <button type="button" class="ult" id="btnUlt">РЈР»СЊС‚Р°<small>F</small></button>
+    <button type="button" class="shot" id="btnShot">Выстрел<small>ЛКМ</small></button>
+    <button type="button" class="dash" id="btnDash">Рывок<small>Shift</small></button>
+    <button type="button" class="ult" id="btnUlt">Ульта<small>F</small></button>
   </div>
   <div id="toast"></div>
 
@@ -260,11 +260,11 @@
     const shots = [];
     const tipEl = document.getElementById("tip");
     const TIPS = [
-      "РЎС‚СЂРµР»СЏР№ РІ Р±РѕС‚Р° (Р›РљРњ / РєРЅРѕРїРєР° Р’С‹СЃС‚СЂРµР»)",
-      "Р С‹РІРѕРє (Shift) вЂ” СѓР№С‚Рё РѕС‚ СЃРЅР°СЂСЏРґРѕРІ",
-      "РЈР»СЊС‚Р° (F) вЂ” РјРѕС‰РЅС‹Р№ Р·Р°Р»Рї, РєСѓР»РґР°СѓРЅ!",
-      "РџСЂСЏС‡СЊСЃСЏ Р·Р° СѓРєСЂС‹С‚РёСЏРјРё РЅР° Р°СЂРµРЅРµ",
-      "РЎР±РµР№ HP Р±РѕС‚Р° РґРѕ 0 вЂ” СЂР°СѓРЅРґ С‚РІРѕР№",
+      "Стреляй в бота (ЛКМ / кнопка Выстрел)",
+      "Рывок (Shift) — уйти от снарядов",
+      "Ульта (F) — мощный залп, кулдаун!",
+      "Прячься за укрытиями на арене",
+      "Сбей HP бота до 0 — раунд твой",
     ];
     let tipI = 0, tipTimer = 4;
 
@@ -288,13 +288,13 @@
       document.getElementById("btnShot").disabled = roundLock > 0;
       if (dashCd > 0) {
         document.getElementById("btnDash").querySelector("small").textContent =
-          dashCd.toFixed(1) + "СЃ";
+          dashCd.toFixed(1) + "с";
       } else {
         document.getElementById("btnDash").querySelector("small").textContent = "Shift";
       }
       if (ultCd > 0) {
         document.getElementById("btnUlt").querySelector("small").textContent =
-          ultCd.toFixed(1) + "СЃ";
+          ultCd.toFixed(1) + "с";
       } else {
         document.getElementById("btnUlt").querySelector("small").textContent = "F";
       }
@@ -303,11 +303,11 @@
     function resetRound(winner) {
       if (winner === "bot") {
         bScore++;
-        if (AmalDraftOwner.canDie()) toast("РўС‹ РїСЂРѕРёРіСЂР°Р» СЂР°СѓРЅРґ В· СЂРµРІР°РЅС€", 2.2);
-        else toast("Р Р°СѓРЅРґ РїСЂРѕРёРіСЂР°РЅ В· С…РѕР·СЏРёРЅ РЅРµ РіРёР±РЅРµС‚ В· СЂРµРІР°РЅС€", 2.2);
+        if (AmalDraftOwner.canDie()) toast("Ты проиграл раунд · реванш", 2.2);
+        else toast("Раунд проигран · хозяин не гибнет · реванш", 2.2);
       } else {
         pScore++;
-        toast("Р Р°СѓРЅРґ Р·Р° С‚РѕР±РѕР№!", 1.8);
+        toast("Раунд за тобой!", 1.8);
       }
       round++;
       pHP = 100;
@@ -323,7 +323,7 @@
       dashBoost = 0;
       ultActive = 0;
       roundLock = 1.4;
-      tipEl.textContent = "РќРѕРІС‹Р№ СЂР°СѓРЅРґ! РЎР±РµР№ HP Р±РѕС‚Р°";
+      tipEl.textContent = "Новый раунд! Сбей HP бота";
       syncHud();
     }
 
@@ -367,14 +367,14 @@
     function doDash() {
       if (roundLock > 0 || dashCd > 0) return;
       const dir = lookDir();
-      // Owner fly uses Shift for descend вЂ” still allow button / forced dash
+      // Owner fly uses Shift for descend — still allow button / forced dash
       player.mesh.position.x += dir.x * 7;
       player.mesh.position.z += dir.z * 7;
       player.mesh.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, player.mesh.position.x));
       player.mesh.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, player.mesh.position.z));
       dashBoost = 0.35;
       dashCd = 2.2;
-      tipEl.textContent = "Р С‹РІРѕРє!";
+      tipEl.textContent = "Рывок!";
       syncHud();
     }
 
@@ -382,8 +382,8 @@
       if (roundLock > 0 || ultCd > 0) return;
       ultActive = 2.5;
       ultCd = 10;
-      toast("РЈР›Р¬РўРђ!", 1.2);
-      tipEl.textContent = "РЈР»СЊС‚Р° Р°РєС‚РёРІРЅР° вЂ” СЃС‚СЂРµР»СЏР№ РјРѕС‰РЅРµРµ!";
+      toast("УЛЬТА!", 1.2);
+      tipEl.textContent = "Ульта активна — стреляй мощнее!";
       doShot();
       syncHud();
     }
@@ -407,7 +407,7 @@
       if ((e.code === "ShiftLeft" || e.code === "ShiftRight") && !shiftWas) {
         // dash even for owner (button also works); skip if currently flying-descend intent
         if (!player.state.fly || AmalDraftOwner.isOwner()) {
-          // For owner in fly: still allow dash via Shift unless holding for descend only вЂ”
+          // For owner in fly: still allow dash via Shift unless holding for descend only —
           // use dash when Shift tapped (keyup soon). Here: always dash on keydown once.
           if (!player.state.fly) doDash();
           else doDash();
@@ -419,7 +419,7 @@
       if (e.code === "ShiftLeft" || e.code === "ShiftRight") shiftWas = false;
     });
 
-    toast("1 РЅР° 1 В· СЃР±РµР№ HP Р±РѕС‚Р°!", 2.2);
+    toast("1 на 1 · сбей HP бота!", 2.2);
 
     let last = performance.now();
     function animate(now) {
@@ -528,7 +528,7 @@
   })();
   </script>
   <script src="../shared/amal-owner-powers.js?v=20"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
   <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>

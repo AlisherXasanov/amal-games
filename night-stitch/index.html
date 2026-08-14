@@ -15,39 +15,39 @@
     <canvas id="game" width="960" height="540" tabindex="0"></canvas>
 
     <div id="hud" class="hud hidden">
-      <span id="stitches">Р СњР С‘РЎвЂљР С‘: 0/5</span>
-      <span id="msg">Р СћРЎвЂ№ РЎС“Р С—РЎР‚Р В°Р Р†Р В»РЎРЏР ВµРЎв‚¬РЎРЉ Р’В· РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ / WASD / Р С”Р В»Р С‘Р С”</span>
-      <button type="button" id="menu-btn" class="menu-btn">Р СљР ВµР Р…РЎР‹</button>
+      <span id="stitches">Нити: 0/5</span>
+      <span id="msg">Ты управляешь · стрелки / WASD / клик</span>
+      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
     </div>
 
     <div id="overlay" class="overlay">
       <div class="panel">
-        <h1 id="title">Р СњР С‘РЎвЂљРЎРЉ РЎРѓР Р…Р В°</h1>
+        <h1 id="title">Нить сна</h1>
         <p id="blurb">
-          <strong>Р СћРЎвЂ№ РЎвЂ¦Р С•Р Т‘Р С‘РЎв‚¬РЎРЉ РЎРѓР В°Р С</strong> РІР‚вЂќ РЎРѓРЎвЂљРЎР‚Р ВµР В»Р С”Р С‘ Р Р†Р Р…Р С‘Р В·РЎС“, WASD Р С‘Р В»Р С‘ Р С”Р В»Р С‘Р С” Р С—Р С• Р С”Р В°РЎР‚РЎвЂљР Вµ.<br />
-          Р РЋР С•Р В±Р ВµРЎР‚Р С‘ РЎвЂћР С‘Р С•Р В»Р ВµРЎвЂљР С•Р Р†РЎвЂ№Р Вµ Р Р…Р С‘РЎвЂљР С‘, Р С—Р С•РЎвЂљР С•Р С Р С”Р С•РЎРѓР Р…Р С‘РЎРѓРЎРЉ Р В·Р ВµР В»РЎвЂР Р…Р С•Р С–Р С• <strong>Р Р€Р СћР В Р С›</strong>.<br />
-          Р С›РЎвЂљ РЎвЂљР ВµР Р…Р С‘ РІР‚вЂќ Р С”Р Р…Р С•Р С—Р С”Р В° <strong>Р В Р В«Р вЂ™Р С›Р С™</strong>.
+          <strong>Ты ходишь сам</strong> — стрелки внизу, WASD или клик по карте.<br />
+          Собери фиолетовые нити, потом коснись зелёного <strong>УТРО</strong>.<br />
+          От тени — кнопка <strong>РЫВОК</strong>.
         </p>
-        <button type="button" id="start-btn" class="btn big">Р СњР С’Р В§Р С’Р СћР В¬</button>
-        <p class="alt">Р С’Р Т‘Р СР С‘Р Р…-РЎРѓР С‘Р В»РЎвЂ№ РЎвЂ¦Р С•Р В·РЎРЏР С‘Р Р…Р В° Р’В· Р С”Р Р…Р С•Р С—Р С”Р В° <strong>Р СљР ВµР Р…РЎР‹</strong> Р Р† Р С‘Р С–РЎР‚Р Вµ</p>
+        <button type="button" id="start-btn" class="btn big">НАЧАТЬ</button>
+        <p class="alt">Админ-силы хозяина · кнопка <strong>Меню</strong> в игре</p>
       </div>
     </div>
 
     <div id="controls" class="controls hidden">
       <div class="pad">
-        <button type="button" data-dir="up">РІвЂ вЂ</button>
+        <button type="button" data-dir="up">↑</button>
         <div class="row">
-          <button type="button" data-dir="left">РІвЂ С’</button>
-          <button type="button" data-dir="down">РІвЂ вЂњ</button>
-          <button type="button" data-dir="right">РІвЂ вЂ™</button>
+          <button type="button" data-dir="left">←</button>
+          <button type="button" data-dir="down">↓</button>
+          <button type="button" data-dir="right">→</button>
         </div>
       </div>
-      <button type="button" id="dash-btn" class="dash-btn">Р В Р В«Р вЂ™Р С›Р С™</button>
+      <button type="button" id="dash-btn" class="dash-btn">РЫВОК</button>
     </div>
   </div>
 
   <script src="../shared/amal-owner-powers.js?v=20"></script>
   <script src="./game.js?v=6"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pet Simulator 3D</title>
-  <meta name="description" content="3D Pet Simulator РІР‚вЂќ РЎРѓР С•Р В±Р С‘РЎР‚Р В°Р в„– Р С—Р С‘РЎвЂљР С•Р СРЎвЂ Р ВµР Р†, Р С•РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°Р в„– РЎРЏР в„–РЎвЂ Р В°!" />
+  <meta name="description" content="3D Pet Simulator — собирай питомцев, открывай яйца!" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; background: #0f0f23; font-family: system-ui, sans-serif; }
@@ -37,22 +37,22 @@
 <body>
   <div id="ui">
     <b>Pet Simulator</b><br/>
-    Р СљР С•Р Р…Р ВµРЎвЂљРЎвЂ№: <span id="coins">0</span><br/>
-    Р СџР С‘РЎвЂљР С•Р СРЎвЂ РЎвЂ№: <span id="pet-count">0</span>
-    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">СЂСџвЂвЂ Р С’Р Т‘Р СР С‘Р Р… Р’В· РЎРЊР С”РЎРѓР С”Р В»РЎР‹Р В·Р С‘Р Р† Р Р† Р СР В°Р С–Р В°Р В·Р С‘Р Р…Р Вµ</div>
+    Монеты: <span id="coins">0</span><br/>
+    Питомцы: <span id="pet-count">0</span>
+    <div id="admin-tag" style="display:none;margin-top:4px;color:#fde68a;font-weight:800">👑 Админ · эксклюзив в магазине</div>
   </div>
-  <a id="back" href="../">РІвЂ С’ Р С™Р В°РЎвЂљР В°Р В»Р С•Р С–</a>
+  <a id="back" href="../">← Каталог</a>
   <div id="pets-bar"></div>
   <div id="admin-shop">
-    <div class="label">СЂСџвЂвЂ Р СћР С•Р В»РЎРЉР С”Р С• Р В°Р Т‘Р СР С‘Р Р… Р’В· Р Р†Р ВµРЎвЂ°Р С‘, Р Р…Р Вµ Р С”Р С•Р СР В°Р Р…Р Т‘РЎвЂ№</div>
-    <button id="ex-egg" type="button">Р В Р В°Р Т‘РЎС“Р В¶Р Р…Р С•Р Вµ Р В»Р ВµР С–Р ВµР Р…Р Т‘Р В°РЎР‚Р Р…Р С•Р Вµ РЎРЏР в„–РЎвЂ Р С• ($0)</button>
-    <button id="ex-pedestal" type="button">Р вЂ”Р С•Р В»Р С•РЎвЂљР С•Р в„– Р С—РЎРЉР ВµР Т‘Р ВµРЎРѓРЎвЂљР В°Р В» ($0)</button>
-    <button id="ex-crownpet" type="button">Р С™Р С•РЎР‚Р С•Р Р…Р В°-Р С—Р С‘РЎвЂљР С•Р СР ВµРЎвЂ  ($0)</button>
+    <div class="label">👑 Только админ · вещи, не команды</div>
+    <button id="ex-egg" type="button">Радужное легендарное яйцо ($0)</button>
+    <button id="ex-pedestal" type="button">Золотой пьедестал ($0)</button>
+    <button id="ex-crownpet" type="button">Корона-питомец ($0)</button>
   </div>
   <div id="actions">
-    <button class="btn-coin" id="btn-farm">Р В¤Р В°РЎР‚Р СР С‘РЎвЂљРЎРЉ Р СР С•Р Р…Р ВµРЎвЂљРЎвЂ№</button>
-    <button class="btn-egg" id="btn-egg">Р С›РЎвЂљР С”РЎР‚РЎвЂ№РЎвЂљРЎРЉ РЎРЏР в„–РЎвЂ Р С• (100)</button>
-    <button class="btn-sell" id="btn-sell">Р СџРЎР‚Р С•Р Т‘Р В°РЎвЂљРЎРЉ РЎвЂ¦РЎС“Р Т‘РЎв‚¬Р ВµР С–Р С•</button>
+    <button class="btn-coin" id="btn-farm">Фармить монеты</button>
+    <button class="btn-egg" id="btn-egg">Открыть яйцо (100)</button>
+    <button class="btn-sell" id="btn-sell">Продать худшего</button>
   </div>
   <div id="hatch-popup" id="popup"></div>
 
@@ -90,15 +90,15 @@
     egg.position.set(0, 1.4, 0); scene.add(egg);
 
     const PETS = [
-      { name: "Р С™Р С•РЎвЂљ", rarity: "common", color: 0xa3a3a3, value: 10 },
-      { name: "Р РЋР С•Р В±Р В°Р С”Р В°", rarity: "common", color: 0x92400e, value: 10 },
-      { name: "Р С™РЎР‚Р С•Р В»Р С‘Р С”", rarity: "common", color: 0xfecaca, value: 12 },
-      { name: "Р вЂєР С‘РЎРѓР В°", rarity: "rare", color: 0xf97316, value: 30 },
-      { name: "Р СџР В°Р Р…Р Т‘Р В°", rarity: "rare", color: 0x1f2937, value: 35 },
-      { name: "Р вЂќРЎР‚Р В°Р С”Р С•Р Р…", rarity: "epic", color: 0x7c3aed, value: 80 },
-      { name: "Р вЂўР Т‘Р С‘Р Р…Р С•РЎР‚Р С•Р С–", rarity: "epic", color: 0xf9a8d4, value: 90 },
-      { name: "Р В¤Р ВµР Р…Р С‘Р С”РЎРѓ", rarity: "legendary", color: 0xfbbf24, value: 200 },
-      { name: "Р СћРЎвЂР СР Р…РЎвЂ№Р в„– Р вЂќРЎР‚Р В°Р С”Р С•Р Р…", rarity: "legendary", color: 0x1f1f1f, value: 300 },
+      { name: "Кот", rarity: "common", color: 0xa3a3a3, value: 10 },
+      { name: "Собака", rarity: "common", color: 0x92400e, value: 10 },
+      { name: "Кролик", rarity: "common", color: 0xfecaca, value: 12 },
+      { name: "Лиса", rarity: "rare", color: 0xf97316, value: 30 },
+      { name: "Панда", rarity: "rare", color: 0x1f2937, value: 35 },
+      { name: "Дракон", rarity: "epic", color: 0x7c3aed, value: 80 },
+      { name: "Единорог", rarity: "epic", color: 0xf9a8d4, value: 90 },
+      { name: "Феникс", rarity: "legendary", color: 0xfbbf24, value: 200 },
+      { name: "Тёмный Дракон", rarity: "legendary", color: 0x1f1f1f, value: 300 },
     ];
 
     const RARITY_CHANCE = { common: 0.55, rare: 0.3, epic: 0.12, legendary: 0.03 };
@@ -190,7 +190,7 @@
         btn.classList.toggle("owned", !!exclusiveOwned[key]);
         if (exclusiveOwned[key] && !btn.dataset.ownedLabel) {
           btn.dataset.ownedLabel = "1";
-          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " РІСљвЂњ";
+          btn.textContent = btn.textContent.replace(/\s*\(\$0\)/, "") + " вњ“";
         }
       });
     }
@@ -286,9 +286,9 @@
   })();
   </script>
   <script src="../shared/amal-owner-powers.js?v=20"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
   <script src="../shared/amal-owner-powers.js?v=20"></script>
-  <script src="../shared/amal-hub.js?v=42"></script>
+  <script src="../shared/amal-hub.js?v=44"></script>
   <script src="../shared/amal-3d-wip-lock.js?v=2" data-guard="1"></script>
 </body>
 </html>
