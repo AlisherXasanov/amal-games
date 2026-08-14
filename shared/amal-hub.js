@@ -216,6 +216,22 @@
     return false;
   }
 
+  /** Невидимый режим (полигон): владелец не светится в присутствии, его никто не видит. */
+  function isStealth() {
+    try {
+      if (global.__AMAL_STEALTH__ === true) return true;
+      const s = new URLSearchParams(location.search).get("stealth");
+      if (s === "1" || s === "true" || s === "yes") {
+        global.__AMAL_STEALTH__ = true;
+        return true;
+      }
+      if (localStorage.getItem("amal-stealth-v1") === "1") return true;
+    } catch {
+      /* ignore */
+    }
+    return false;
+  }
+
   function isOwner() {
     if (isGuestMode()) return false;
     if (global.__AMAL_OWNER__ === true) return true;
@@ -2080,7 +2096,7 @@
     ensureAbuseStyles();
     const gid = gameIdFromPath();
     const old = document.getElementById("amal-same-game");
-    if (!gid || gid === "portal") {
+    if (isStealth() || !gid || gid === "portal") {
       if (old) old.remove();
       return;
     }
@@ -2162,6 +2178,14 @@
   }
 
   function bumpPresence() {
+    if (isStealth()) {
+      try {
+        removeSelfFromPresence();
+      } catch (_) {
+        /* ignore */
+      }
+      return;
+    }
     if (!isOwner() && myBanStatus()) {
       enforceBanGate();
       return;
@@ -4267,7 +4291,8 @@
       '<div class="acd-stat"><div class="n">' + list.length + '</div><div class="l">в игре</div></div>' +
       "</div>" +
       '<div class="acd-list">' + names + "</div>" +
-      '<button type="button" class="acd-btn amber" data-cube="admin-full">📋 Полная админка</button>'
+      '<button type="button" class="acd-btn amber" data-cube="admin-full">📋 Полная админка</button>' +
+      '<button type="button" class="acd-btn" data-cube="polygon">🧪 Мой полигон</button>'
     );
   }
 
@@ -4559,6 +4584,11 @@
           openUi("admin");
           return;
         }
+        if (act === "polygon") {
+          const base = gameIdFromPath() === "portal" ? "polygon/" : "../polygon/";
+          location.href = base + "?owner=AmalOwner2026&stealth=1";
+          return;
+        }
         if (act.startsWith("ab-")) {
           const map = { "ab-max": "max", "ab-coins": "coins", "ab-heal": "heal", "ab-god": "god", "ab-speed": "speed", "ab-unlock": "unlock" };
           runCubeAbility(map[act]);
@@ -4680,6 +4710,15 @@
   /** Личный предмет в каждой игре: взять → активировать → несколько разделов админки. */
   function mountSecretCube() {
     if (!isOwner()) return;
+    // На оболочке полигона куб не нужен — он появляется внутри загруженной игры.
+    if (gameIdFromPath() === "polygon") return;
+    // В полигоне (невидимый режим) куб сразу активен — не надо искать предмет.
+    if (isStealth()) {
+      setCubeState("active");
+      showCubeButton();
+      showCubeDashboard();
+      return;
+    }
     const state = cubeState();
     if (state === "active") {
       showCubeButton();

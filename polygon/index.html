@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Полигон хозяина</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--gold:#fbbf24;--bg:#0b1220}
+    body{min-height:100dvh;font-family:system-ui,Segoe UI,sans-serif;color:#f8fafc;
+      background:radial-gradient(1200px 600px at 20% -10%,rgba(251,191,36,.12),transparent 60%),var(--bg)}
+    /* Экран «закрыто» для всех, кроме хозяина */
+    #lock{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:24px;z-index:50;
+      background:radial-gradient(700px 400px at 50% 20%,rgba(251,191,36,.1),transparent),#080c17}
+    #lock.on{display:grid}
+    #lock .box{max-width:340px}
+    #lock .cube{font-size:64px;margin-bottom:10px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+    #lock h1{font-size:20px;margin-bottom:8px;color:var(--gold)}
+    #lock p{color:#94a3b8;line-height:1.5;margin-bottom:18px}
+    #lock a{display:inline-block;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:800;
+      background:linear-gradient(135deg,var(--gold),#f97316);color:#1c1002}
+    /* Панель хозяина */
+    .wrap{max-width:1040px;margin:0 auto;padding:16px 14px 60px}
+    .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+    .top h1{font-size:20px;display:flex;align-items:center;gap:8px}
+    .pill{font:800 11px system-ui;padding:4px 9px;border-radius:999px;background:rgba(52,211,153,.18);color:#6ee7b7;
+      border:1px solid rgba(52,211,153,.4)}
+    .home{margin-left:auto;color:#94a3b8;text-decoration:none;font-weight:700;font-size:13px;
+      padding:7px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14)}
+    .home:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+    .sub{color:#94a3b8;line-height:1.5;margin-bottom:16px;font-size:13.5px}
+    .sub b{color:#fde68a}
+    .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    select,.btn{min-height:44px;border-radius:12px;font:800 14px system-ui;cursor:pointer}
+    select{flex:1;min-width:180px;padding:0 12px;background:#111a2e;color:#fff;border:1px solid rgba(251,191,36,.35)}
+    .btn{border:0;padding:0 16px;background:linear-gradient(135deg,var(--gold),#f97316);color:#1c1002;touch-action:manipulation}
+    .btn.ghost{background:rgba(255,255,255,.08);color:#e2e8f0;border:1px solid rgba(255,255,255,.16)}
+    .btn:active{transform:scale(.97)}
+    .stage{position:relative;border-radius:18px;overflow:hidden;border:1.5px solid rgba(251,191,36,.4);
+      background:#05070d;min-height:60vh;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+    .stage iframe{display:block;width:100%;height:74vh;border:0;background:#05070d}
+    .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:26px;color:#64748b}
+    .empty .big{font-size:54px;margin-bottom:12px}
+    .empty p{max-width:360px;line-height:1.5}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px}
+    .g{background:#111a2e;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 10px;text-align:center;
+      cursor:pointer;transition:border-color .15s,transform .1s}
+    .g:hover{border-color:rgba(251,191,36,.55)}
+    .g:active{transform:scale(.96)}
+    .g .em{font-size:30px}
+    .g .nm{font-size:11.5px;margin-top:6px;color:#cbd5e1;font-weight:700;line-height:1.25}
+    .hint{margin-top:18px;font-size:12px;color:#64748b;line-height:1.5}
+  </style>
+</head>
+<body>
+  <div id="lock">
+    <div class="box">
+      <div class="cube">🔒</div>
+      <h1>Полигон только для хозяина</h1>
+      <p>Это твоя закрытая комната для тестов. Сюда никто не может зайти.</p>
+      <a href="../">← На главную</a>
+    </div>
+  </div>
+
+  <div class="wrap" id="panel" style="display:none">
+    <div class="top">
+      <h1>🧪 Полигон хозяина <span class="pill">👁 невидимка</span></h1>
+      <a class="home" href="../">← Все игры</a>
+    </div>
+    <p class="sub">Закрытая комната только для тебя. Тебя тут <b>никто не видит</b> и никто не зайдёт.
+      Выбери игру — она откроется прямо здесь. Тестируй способности, вещи и эффекты кубом 🎲,
+      потом закрой игру и пробуй снова.</p>
+
+    <div class="bar">
+      <select id="pick"><option value="">— выбери игру —</option></select>
+      <button class="btn" id="load">▶ Открыть тут</button>
+      <button class="btn ghost" id="close" style="display:none">✕ Закрыть игру</button>
+      <button class="btn ghost" id="tab" style="display:none">⛶ В полный экран</button>
+    </div>
+
+    <div class="stage">
+      <iframe id="frame" title="Тестовая игра" allow="autoplay; fullscreen"></iframe>
+      <div class="empty" id="empty">
+        <div>
+          <div class="big">🎮</div>
+          <p>Пока пусто. Выбери игру сверху или ткни карточку ниже — и играй в приватности.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <p class="hint">🎲 Кнопка куба и боковые панели (способности, «выдать себе», веселье, вещи) работают и внутри игры.
+      Всё, что ты тут делаешь, никому не видно.</p>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=20"></script>
+  <script src="../shared/amal-surprises.js?v=11"></script>
+  <script src="../shared/amal-hub.js?v=42"></script>
+  <script>
+    (function () {
+      function isOwner() {
+        try {
+          var p = new URLSearchParams(location.search);
+          if (p.get("owner") === "AmalOwner2026") {
+            localStorage.setItem("amal-owner-v1", "1");
+            return true;
+          }
+          if (localStorage.getItem("amal-owner-v1") === "1") return true;
+          if (window.AmalHub && typeof AmalHub.isOwner === "function") return AmalHub.isOwner();
+        } catch (e) {}
+        return false;
+      }
+
+      if (!isOwner()) {
+        document.getElementById("lock").classList.add("on");
+        return;
+      }
+
+      // Внутри загруженной игры куб появляется сразу активным, чтобы не искать предмет
+      try {
+        localStorage.setItem("amal-cube-dash-open-v1", "1");
+      } catch (e) {}
+
+      document.getElementById("panel").style.display = "block";
+
+      var frame = document.getElementById("frame");
+      var empty = document.getElementById("empty");
+      var pick = document.getElementById("pick");
+      var grid = document.getElementById("grid");
+      var closeBtn = document.getElementById("close");
+      var tabBtn = document.getElementById("tab");
+      var current = "";
+
+      function gameUrl(folder) {
+        return "../" + folder + "?owner=AmalOwner2026&stealth=1";
+      }
+
+      function openGame(folder) {
+        if (!folder) return;
+        current = folder;
+        frame.src = gameUrl(folder);
+        empty.style.display = "none";
+        closeBtn.style.display = "";
+        tabBtn.style.display = "";
+        pick.value = folder;
+      }
+
+      function closeGame() {
+        current = "";
+        frame.src = "about:blank";
+        empty.style.display = "grid";
+        closeBtn.style.display = "none";
+        tabBtn.style.display = "none";
+        pick.value = "";
+      }
+
+      document.getElementById("load").addEventListener("click", function () {
+        openGame(pick.value);
+      });
+      closeBtn.addEventListener("click", closeGame);
+      tabBtn.addEventListener("click", function () {
+        if (current) window.open(gameUrl(current), "_blank");
+      });
+
+      // Каталог игр берём прямо из общего меню — всегда актуальный список
+      var FALLBACK = [
+        ["adopt-me/", "🐣", "Adopt Me"],
+        ["blox-fruits/", "🍉", "Blox Fruits"],
+        ["melon-playground/", "🍈", "Melon Playground"],
+        ["create-lab/", "⚗️", "Create Lab"],
+        ["grow-garden/", "🌱", "Вырасти сад"],
+        ["steal-brainrot/", "🧠", "Steal Brainrot"],
+        ["speed-escape/", "💨", "Speed Escape"],
+        ["nights-forest/", "🌲", "99 ночей"],
+      ];
+
+      function fill(list) {
+        list.forEach(function (row) {
+          var folder = row[0], em = row[1], nm = row[2];
+          var opt = document.createElement("option");
+          opt.value = folder;
+          opt.textContent = em + " " + nm;
+          pick.appendChild(opt);
+
+          var card = document.createElement("div");
+          card.className = "g";
+          card.innerHTML = '<div class="em">' + em + "</div><div class=\"nm\">" + nm + "</div>";
+          card.addEventListener("click", function () {
+            openGame(folder);
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      fetch("../")
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          var cards = Array.prototype.slice.call(doc.querySelectorAll("a.card"));
+          var seen = {};
+          var list = [];
+          cards.forEach(function (a) {
+            var href = a.getAttribute("href") || "";
+            if (!href || /^https?:|^\.\.|^#|^mailto:/.test(href)) return;
+            if (href.indexOf("/") === -1) return;
+            var folder = href.replace(/^\.\//, "");
+            if (seen[folder]) return;
+            seen[folder] = 1;
+            var em = (a.querySelector(".card-img") && a.querySelector(".card-img").textContent.trim()) || "🎮";
+            var h2 = a.querySelector("h2");
+            var nm = (h2 && h2.textContent.trim()) || folder.replace(/\/$/, "");
+            list.push([folder, em.slice(0, 4), nm]);
+          });
+          if (list.length) fill(list);
+          else fill(FALLBACK);
+        })
+        .catch(function () { fill(FALLBACK); });
+    })();
+  </script>
+</body>
+</html>
