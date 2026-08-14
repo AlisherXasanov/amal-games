@@ -290,9 +290,11 @@
     .menu-cube-stage {
       position: relative;
       width: 128px; height: 128px;
-      perspective: 560px;
+      perspective: 520px;
       display: grid;
       place-items: center;
+      /* тень здесь, а не на самом кубе — иначе filter «сплющивает» 3D */
+      filter: drop-shadow(0 12px 22px rgba(0,0,0,.32));
     }
     .menu-cube-rainbow {
       position: absolute;
@@ -309,27 +311,26 @@
       width: 76px; height: 76px;
       transform-style: preserve-3d;
       animation: menuCubeSpin 9s ease-in-out infinite;
-      filter: drop-shadow(0 12px 22px rgba(0,0,0,.28));
     }
-    /* Внешний куб — стеклянный, чтобы видеть маленький куб внутри */
+    /* Внешний куб — грани с разной подсветкой, чтобы форма читалась как 3D,
+       но чуть прозрачные, чтобы виден маленький куб внутри */
     .menu-cube .mf {
       position: absolute;
       width: 76px; height: 76px;
       display: grid;
       place-items: center;
       font-size: 30px;
-      border: 2px solid rgba(255,243,196,.85);
+      border: 2px solid rgba(255,243,196,.9);
       border-radius: 13px;
-      background: linear-gradient(160deg, rgba(253,230,138,.30), rgba(180,83,9,.30));
       box-shadow: 0 0 16px rgba(251,191,36,.45) inset;
       backface-visibility: hidden;
     }
-    .menu-cube .mf0 { transform: translateZ(38px); }
-    .menu-cube .mf1 { transform: rotateY(180deg) translateZ(38px); }
-    .menu-cube .mf2 { transform: rotateY(90deg) translateZ(38px); }
-    .menu-cube .mf3 { transform: rotateY(-90deg) translateZ(38px); }
-    .menu-cube .mf4 { transform: rotateX(90deg) translateZ(38px); }
-    .menu-cube .mf5 { transform: rotateX(-90deg) translateZ(38px); }
+    .menu-cube .mf0 { transform: translateZ(38px); background: linear-gradient(160deg, rgba(253,230,138,.62), rgba(180,83,9,.62)); }
+    .menu-cube .mf1 { transform: rotateY(180deg) translateZ(38px); background: linear-gradient(160deg, rgba(251,191,36,.62), rgba(146,64,14,.62)); }
+    .menu-cube .mf2 { transform: rotateY(90deg) translateZ(38px); background: linear-gradient(160deg, rgba(245,158,11,.55), rgba(120,53,15,.62)); }
+    .menu-cube .mf3 { transform: rotateY(-90deg) translateZ(38px); background: linear-gradient(160deg, rgba(245,158,11,.55), rgba(120,53,15,.62)); }
+    .menu-cube .mf4 { transform: rotateX(90deg) translateZ(38px); background: linear-gradient(160deg, rgba(254,243,199,.6), rgba(217,119,6,.6)); }
+    .menu-cube .mf5 { transform: rotateX(-90deg) translateZ(38px); background: linear-gradient(160deg, rgba(180,83,9,.6), rgba(69,26,3,.66)); }
     /* Другое вращение — кувырок по всем осям */
     @keyframes menuCubeSpin {
       0%   { transform: rotateX(-18deg) rotateY(0deg) rotateZ(0deg); }
