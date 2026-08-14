@@ -1421,17 +1421,28 @@
     };
   }
 
-  // ∞ монеты в этой игре — для всех. НЕ выдавать права хозяина сайта.
+  // ∞ монеты в этой игре — для всех. Секретные скины/админ — только хозяину.
   function forceInfinite() {
     meta.infCoins = true;
     meta.immortal = true;
     meta.coins = INF;
-    meta.unlocked = CLASSES.map((c) => c.id);
-    meta.skins = SKINS.map((s) => s.id);
+    const normalSkins = SKINS.filter((s) => !s.secret).map((s) => s.id);
+    const normalClasses = CLASSES.filter((c) => c.id !== "admin").map((c) => c.id);
     if (isOwner()) {
+      meta.unlocked = CLASSES.map((c) => c.id);
+      meta.skins = SKINS.map((s) => s.id);
       if (!meta.classId || meta.classId === "intern") meta.classId = "admin";
-    } else if (meta.classId === "admin") {
-      meta.classId = "intern";
+    } else {
+      meta.unlocked = normalClasses;
+      meta.skins = normalSkins;
+      if (!meta.classId || meta.classId === "admin" || !normalClasses.includes(meta.classId)) {
+        meta.classId = "intern";
+      }
+      if (meta.skinId && !normalSkins.includes(meta.skinId)) meta.skinId = "default";
+      if (meta.buddyId) {
+        const bud = BUDDIES.find((b) => b.id === meta.buddyId);
+        if (bud && bud.secret) meta.buddyId = "zubat";
+      }
     }
     if (!meta.skinId) meta.skinId = "default";
     storeSet(SAVE, meta);
@@ -1486,11 +1497,17 @@
     forceInfinite();
     return true;
   }
-  function hasClass(_id) {
-    return true;
+  function hasClass(id) {
+    if (id === "admin") return isOwner();
+    if (isOwner()) return true;
+    return Array.isArray(meta.unlocked) && meta.unlocked.includes(id);
   }
-  function hasSkin(_id) {
-    return true;
+  function hasSkin(id) {
+    const skin = SKINS.find((s) => s.id === id);
+    if (!skin) return false;
+    if (!skin.secret) return true;
+    if (isOwner()) return true;
+    return Array.isArray(meta.skins) && meta.skins.includes(id);
   }
 
   let selectedClass = CLASSES.find((c) => c.id === meta.classId && hasClass(c.id)) || CLASSES[0];
@@ -1517,21 +1534,35 @@
     if (mode === "pair") showEl(buddyField);
     else hideEl(buddyField);
 
-    classSelect.innerHTML = CLASSES.map(
-      (c) => `<option value="${c.id}" ${c.id === selectedClass.id ? "selected" : ""}>${c.name} — ${c.desc}</option>`
-    ).join("");
-    buddySelect.innerHTML = BUDDIES.map(
-      (b) => `<option value="${b.id}" ${b.id === selectedBuddy.id ? "selected" : ""}>${b.name} — ${b.desc}</option>`
-    ).join("");
+    classSelect.innerHTML = CLASSES.filter((c) => hasClass(c.id))
+      .map(
+        (c) => `<option value="${c.id}" ${c.id === selectedClass.id ? "selected" : ""}>${c.name} — ${c.desc}</option>`
+      )
+      .join("");
+    buddySelect.innerHTML = BUDDIES.filter((b) => !b.secret || isOwner())
+      .map(
+        (b) => `<option value="${b.id}" ${b.id === selectedBuddy.id ? "selected" : ""}>${b.name} — ${b.desc}</option>`
+      )
+      .join("");
     shiftSelect.innerHTML = visibleShifts()
       .map(
         (s) =>
           `<option value="${s.id}" ${s.id === selectedShift.id ? "selected" : ""}>${s.name} — ${s.tag}</option>`
       )
       .join("");
-    skinSelect.innerHTML = SKINS.map(
-      (s) => `<option value="${s.id}" ${s.id === selectedSkin.id ? "selected" : ""}>${s.name}</option>`
-    ).join("");
+    skinSelect.innerHTML = SKINS.filter((s) => hasSkin(s.id))
+      .map(
+        (s) => `<option value="${s.id}" ${s.id === selectedSkin.id ? "selected" : ""}>${s.name}</option>`
+      )
+      .join("");
+    if (selectedSkin && !hasSkin(selectedSkin.id)) {
+      selectedSkin = SKINS.find((s) => s.id === "default") || SKINS[0];
+      meta.skinId = selectedSkin.id;
+    }
+    if (selectedClass && !hasClass(selectedClass.id)) {
+      selectedClass = CLASSES.find((c) => c.id === "intern") || CLASSES[0];
+      meta.classId = selectedClass.id;
+    }
 
     const hint = document.getElementById("menuHints");
     if (hint) {
@@ -2086,17 +2117,21 @@
 
   function spinExchange() {
     forceInfinite();
-    const missingSecrets = SKINS.filter((s) => s.secret);
-    const rollClass = CLASSES.filter((c) => c.cost > 0);
+    const poolSkins = isOwner()
+      ? SKINS.filter((s) => s.secret)
+      : SKINS.filter((s) => !s.secret);
+    const rollClass = CLASSES.filter((c) => c.cost > 0 && (isOwner() || c.id !== "admin"));
     let msg = "";
-    if (Math.random() < 0.55) {
-      const skin = rand(missingSecrets);
+    if (poolSkins.length && Math.random() < 0.55) {
+      const skin = rand(poolSkins);
       selectedSkin = skin;
       msg = "Скин: " + skin.name;
-    } else {
+    } else if (rollClass.length) {
       const c = rand(rollClass);
       selectedClass = c;
       msg = "Класс: " + c.name;
+    } else {
+      msg = "Пока пусто";
     }
     persistLobby();
     exResult.textContent = msg;
@@ -2836,10 +2871,12 @@
       meta.dayDrinksUntil = g.players[0].dayDrinksUntil;
       coffeeCd = { coffee: 0, coffee2: 0 };
     }
-    // секретные халаты доступны, но скин/имя — только то, что выбрал в лобби
-    if (!meta.skins.includes("secret-lesha")) meta.skins.push("secret-lesha");
-    if (!meta.skins.includes("secret-here")) meta.skins.push("secret-here");
-    storeSet(SAVE, meta);
+    // секретные халаты — только хозяину
+    if (canUseSecretShifts()) {
+      if (!meta.skins.includes("secret-lesha")) meta.skins.push("secret-lesha");
+      if (!meta.skins.includes("secret-here")) meta.skins.push("secret-here");
+      storeSet(SAVE, meta);
+    }
     if (g.players[0] && selectedSkin && selectedSkin.tex) {
       g.players[0].tex = selectedSkin.tex;
       g.players[0].color = selectedSkin.color;
