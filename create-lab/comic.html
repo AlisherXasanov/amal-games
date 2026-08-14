@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Комикс · Create Lab</title>
+  <meta name="description" content="Маленький комикс: как на сайте Amal создать свою игру." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .comic-wrap { max-width: 520px; margin: 0 auto; }
+    .comic-stage {
+      background: #fff;
+      border: 2px solid var(--ink);
+      border-radius: 18px;
+      box-shadow: 6px 6px 0 rgba(26,36,32,.15);
+      overflow: hidden;
+      min-height: 320px;
+    }
+    .comic-panel { display: none; padding: 1.1rem 1rem 1.25rem; animation: pop .35s ease; }
+    .comic-panel.on { display: block; }
+    @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .comic-art {
+      height: 140px;
+      border-radius: 12px;
+      margin-bottom: 0.85rem;
+      display: grid;
+      place-items: center;
+      font-size: 3.2rem;
+      background: linear-gradient(145deg, #e4ebe4, #c9ddd6);
+      border: 1px dashed rgba(26,36,32,.18);
+    }
+    .comic-bubble {
+      position: relative;
+      background: #fff;
+      border: 2px solid var(--ink);
+      border-radius: 14px;
+      padding: 0.75rem 0.9rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .comic-bubble.ush { background: #fff8e8; border-color: var(--sun); }
+    .comic-bubble.ush::after {
+      content: "";
+      position: absolute;
+      left: 28px;
+      bottom: -12px;
+      border: 10px solid transparent;
+      border-top-color: var(--sun);
+    }
+    .comic-meta { margin-top: 0.5rem; font-size: 0.78rem; font-weight: 800; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.08em; }
+    .comic-nav { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+    .comic-dots { display: flex; gap: 6px; align-items: center; flex: 1; }
+    .comic-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(26,36,32,.2);
+    }
+    .comic-dots span.on { background: var(--teal); transform: scale(1.2); }
+  </style>
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <div class="shell comic-wrap">
+    <header class="topbar">
+      <a class="brand" href="../">Amal <span>Lab</span></a>
+      <nav class="nav">
+        <a href="./game.html">Создать игру</a>
+        <a class="is-active" href="./comic.html">Комикс</a>
+        <a href="../">Каталог</a>
+      </nav>
+    </header>
+
+    <p class="eyebrow">маленький комикс</p>
+    <h1 class="page-title" style="margin-bottom:0.75rem">Как родилась игра</h1>
+
+    <div class="comic-stage" id="stage">
+      <div class="comic-panel on" data-i="0">
+        <div class="comic-art">🌐</div>
+        <div class="comic-bubble">Это мой сайт Amal Lab. Хочу что-то <b>новое</b> — не видео, а своё.</div>
+        <p class="comic-meta">кадр 1 · Amal</p>
+      </div>
+      <div class="comic-panel" data-i="1">
+        <div class="comic-art">👂✨</div>
+        <div class="comic-bubble ush">Привет! Я Ушастик. Жми <b>«Создать игру»</b> — придумаем вместе.</div>
+        <p class="comic-meta">кадр 2 · Ушастик</p>
+      </div>
+      <div class="comic-panel" data-i="2">
+        <div class="comic-art">⌨️🐍</div>
+        <div class="comic-bubble">Пишу: «Зелёная змейка с яблоками»… или говорю в микрофон.</div>
+        <p class="comic-meta">кадр 3 · идея</p>
+      </div>
+      <div class="comic-panel" data-i="3">
+        <div class="comic-art">🎮💫</div>
+        <div class="comic-bubble ush">Готово! Игра живёт прямо в браузере. Можно сохранить и показать друзьям.</div>
+        <p class="comic-meta">кадр 4 · магия</p>
+      </div>
+      <div class="comic-panel" data-i="4">
+        <div class="comic-art">📖😄</div>
+        <div class="comic-bubble">А это — <b>маленький комикс</b> про то же. Ты его дочитал — теперь твоя очередь создавать.</div>
+        <p class="comic-meta">кадр 5 · финал</p>
+      </div>
+    </div>
+
+    <div class="comic-nav">
+      <div class="comic-dots" id="dots"></div>
+      <button type="button" class="btn" id="btn-prev" disabled>←</button>
+      <button type="button" class="btn primary" id="btn-next">Дальше →</button>
+    </div>
+
+    <div class="cta-row" style="margin-top:1.25rem">
+      <a class="btn primary" href="./game.html">✨ Создать игру</a>
+      <a class="btn" href="../">На главную сайта</a>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const panels = [...document.querySelectorAll(".comic-panel")];
+      const dotsEl = document.getElementById("dots");
+      const prev = document.getElementById("btn-prev");
+      const next = document.getElementById("btn-next");
+      let i = 0;
+
+      dotsEl.innerHTML = panels.map((_, j) => `<span data-j="${j}"></span>`).join("");
+
+      function paint() {
+        panels.forEach((p, j) => p.classList.toggle("on", j === i));
+        dotsEl.querySelectorAll("span").forEach((d, j) => d.classList.toggle("on", j === i));
+        prev.disabled = i <= 0;
+        next.textContent = i >= panels.length - 1 ? "Создать игру ✨" : "Дальше →";
+      }
+
+      prev.onclick = () => { if (i > 0) { i--; paint(); } };
+      next.onclick = () => {
+        if (i >= panels.length - 1) location.href = "./game.html";
+        else { i++; paint(); }
+      };
+      paint();
+    })();
+  </script>
+  <script src="../shared/amal-hub.js?v=33"></script>
+</body>
+</html>
