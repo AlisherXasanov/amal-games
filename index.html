@@ -328,9 +328,6 @@
       75% { opacity: .85; transform: translateX(-6px); top: 46%; }
       77%, 100% { opacity: 0; transform: translateX(0); top: 42%; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .menu-cube-stage, .menu-cube-stage::after { animation: none; }
-    }
     .menu-cube-rainbow {
       position: absolute;
       inset: -14px;
@@ -534,9 +531,6 @@
     .cube-morph.star { clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
     .cube-morph.hex { clip-path: polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
     .side-cube-frame.morphing .menu-cube-stage { opacity: 0; }
-    @media (prefers-reduced-motion: reduce) {
-      .cube-chains i, .cube-morph.show { animation: none; }
-    }
     .side-cube-count { font: 800 12px Space Grotesk, Nunito, sans-serif; color: var(--teal); }
     .side-cube-count strong { color: var(--coral); }
     .side-cube-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
@@ -1439,7 +1433,7 @@
       // Нестабильность: куб иногда превращается в странную фигуру и возвращается назад
       const frame = document.getElementById("sideCubeFrame");
       const morph = document.getElementById("cubeMorph");
-      if (frame && morph && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (frame && morph) {
         const shapes = [
           { cls: "tri", ic: "🔺" },
           { cls: "circle", ic: "⚪" },
@@ -1647,6 +1641,6 @@
 
   <script src="./owner-cheats.js"></script>
   <script src="./shared/amal-owner-powers.js?v=20"></script>
-  <script src="./shared/amal-hub.js?v=49"></script>
+  <script src="./shared/amal-hub.js?v=50"></script>
 </body>
 </html>

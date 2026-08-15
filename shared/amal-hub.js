@@ -4122,7 +4122,6 @@
       "72%,87%{opacity:0;transform:translateX(0);top:44%}" +
       "89%{opacity:.85;transform:translateX(6px);top:60%}" +
       "91%,100%{opacity:0;transform:translateX(0);top:38%}}" +
-      "@media(prefers-reduced-motion:reduce){#amal-cube-btn.cube-rgb,#amal-cube-btn.cube-rgb::before{animation:none}}" +
       "#amal-cube-btn::after{content:attr(data-label);position:absolute;top:66px;right:0;white-space:nowrap;padding:3px 7px;border-radius:7px;" +
       "background:rgba(15,23,42,.92);color:#fde68a;font:900 9px system-ui,sans-serif;max-width:130px;overflow:hidden;text-overflow:ellipsis}" +
       "@keyframes amalCubeSpin{0%{transform:rotateX(-22deg) rotateY(0)}100%{transform:rotateX(-22deg) rotateY(360deg)}}" +
