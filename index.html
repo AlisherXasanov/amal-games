@@ -295,7 +295,9 @@
       place-items: center;
       /* тень здесь, а не на самом кубе — иначе filter «сплющивает» 3D */
       filter: drop-shadow(0 12px 22px rgba(0,0,0,.32));
-      /* нестабильность: изредка куб дёргает и сдвигает цвет, будто он «живой» */
+    }
+    /* нестабильность включается только у «нестабильного» куба */
+    .side-cube-frame.unstable .menu-cube-stage {
       animation: menuCubeUnstable 8s ease-in-out infinite;
     }
     /* глитч: почти всегда куб спокойный, но раз в 8 сек — короткий разрыв цвета и дрожь */
@@ -306,8 +308,8 @@
       76% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(60deg) saturate(1.3); transform: translateX(-3px); }
       78%, 100% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(0deg) saturate(1); transform: translateX(0); }
     }
-    /* «разрыв» — узкая RGB-полоса сбоку изредка съезжает вбок */
-    .menu-cube-stage::after {
+    /* «разрыв» — узкая RGB-полоса сбоку изредка съезжает вбок (только нестабильный) */
+    .side-cube-frame.unstable .menu-cube-stage::after {
       content: "";
       position: absolute;
       left: -10px; right: -10px;
@@ -433,23 +435,43 @@
       flex-direction: column;
       align-items: center;
       gap: .5rem;
-      width: 158px;
+      width: 246px;
       padding: .7rem .6rem;
       border-radius: 18px;
       background: rgba(255,255,255,.92);
       border: 1px solid rgba(13,110,95,.2);
       box-shadow: 0 12px 30px rgba(16,40,32,.16);
     }
+    /* Два куба рядом: обычный и нестабильный */
+    .side-cube-duo {
+      display: flex;
+      gap: .5rem;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .side-cube-one {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .3rem;
+    }
+    .duo-label {
+      font: 800 10px Space Grotesk, Nunito, sans-serif;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+    .side-cube-one.wild .duo-label { color: var(--coral); }
     .side-cube-frame {
       position: relative;
-      width: 132px; height: 132px;
+      width: 104px; height: 104px;
       border-radius: 14px;
       display: grid;
       place-items: center;
       background: radial-gradient(circle at 50% 40%, #12463f, #0a2a28);
       box-shadow: inset 0 0 0 2px rgba(251,191,36,.55), inset 0 0 22px rgba(0,0,0,.5);
     }
-    .side-cube .menu-cube-stage { width: 118px; height: 118px; transition: opacity .16s ease; }
+    .side-cube .menu-cube-stage { width: 92px; height: 92px; transition: opacity .16s ease; }
     /* Клетка вокруг куба — прутья, куб «заперт» и не может выбраться */
     .cube-cage {
       position: absolute;
@@ -597,9 +619,11 @@
       font: 800 13px Nunito, sans-serif;
     }
     @media (max-width: 900px) {
-      .side-cube { left: 8px; width: 118px; padding: .5rem .4rem; gap: .4rem; }
-      .side-cube-frame { width: 104px; height: 104px; }
-      .side-cube .menu-cube-stage { width: 92px; height: 92px; }
+      .side-cube { left: 8px; width: 176px; padding: .5rem .4rem; gap: .4rem; }
+      .side-cube-duo { gap: .35rem; }
+      .side-cube-frame { width: 78px; height: 78px; }
+      .side-cube .menu-cube-stage { width: 68px; height: 68px; }
+      .cube-morph { width: 48px; height: 48px; font-size: 18px; }
       .side-cube-count { font-size: 11px; }
     }
     @media (max-width: 560px) {
@@ -788,29 +812,58 @@
 
   <aside class="side-cube" aria-label="Куб лаборатории">
     <div class="amal-sign side-cube-sign"><span class="by">автор</span>Amal ✍️</div>
-    <div class="side-cube-frame" id="sideCubeFrame">
-      <div class="menu-cube-stage" aria-hidden="true">
-        <div class="menu-cube-rainbow"></div>
-        <div class="menu-cube">
-          <span class="mf mf0">🎲</span>
-          <span class="mf mf1">🎮</span>
-          <span class="mf mf2">🧪</span>
-          <span class="mf mf3">⭐</span>
-          <span class="mf mf4">👑</span>
-          <span class="mf mf5">🌈</span>
-          <div class="menu-cube-inner">
-            <span class="mfi mfi0">💎</span>
-            <span class="mfi mfi1">🎲</span>
-            <span class="mfi mfi2">✨</span>
-            <span class="mfi mfi3">⭐</span>
-            <span class="mfi mfi4">🔥</span>
-            <span class="mfi mfi5">💚</span>
+    <div class="side-cube-duo">
+      <div class="side-cube-one">
+        <div class="side-cube-frame calm">
+          <div class="menu-cube-stage" aria-hidden="true">
+            <div class="menu-cube-rainbow"></div>
+            <div class="menu-cube">
+              <span class="mf mf0">🎲</span>
+              <span class="mf mf1">🎮</span>
+              <span class="mf mf2">🧪</span>
+              <span class="mf mf3">⭐</span>
+              <span class="mf mf4">👑</span>
+              <span class="mf mf5">🌈</span>
+              <div class="menu-cube-inner">
+                <span class="mfi mfi0">💎</span>
+                <span class="mfi mfi1">🎲</span>
+                <span class="mfi mfi2">✨</span>
+                <span class="mfi mfi3">⭐</span>
+                <span class="mfi mfi4">🔥</span>
+                <span class="mfi mfi5">💚</span>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="duo-label">Обычный</div>
       </div>
-      <div class="cube-morph" id="cubeMorph" aria-hidden="true"></div>
-      <div class="cube-cage" aria-hidden="true"></div>
-      <div class="cube-chains" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="side-cube-one wild">
+        <div class="side-cube-frame unstable" id="sideCubeFrame">
+          <div class="menu-cube-stage" aria-hidden="true">
+            <div class="menu-cube-rainbow"></div>
+            <div class="menu-cube">
+              <span class="mf mf0">🎲</span>
+              <span class="mf mf1">🎮</span>
+              <span class="mf mf2">🧪</span>
+              <span class="mf mf3">⭐</span>
+              <span class="mf mf4">👑</span>
+              <span class="mf mf5">🌈</span>
+              <div class="menu-cube-inner">
+                <span class="mfi mfi0">💎</span>
+                <span class="mfi mfi1">🎲</span>
+                <span class="mfi mfi2">✨</span>
+                <span class="mfi mfi3">⭐</span>
+                <span class="mfi mfi4">🔥</span>
+                <span class="mfi mfi5">💚</span>
+              </div>
+            </div>
+          </div>
+          <div class="cube-morph" id="cubeMorph" aria-hidden="true"></div>
+          <div class="cube-cage" aria-hidden="true"></div>
+          <div class="cube-chains" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+        <div class="duo-label">Нестабильный</div>
+      </div>
     </div>
     <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
     <div class="side-cube-icons" id="cubeIconPick" aria-label="Сменить иконку куба">
@@ -1411,9 +1464,9 @@
 
       // Смена иконки куба — выбор сохраняется в браузере
       const ICON_KEY = "amal-menu-cube-icon";
-      const front = document.querySelector(".side-cube .menu-cube .mf0");
+      const fronts = document.querySelectorAll(".side-cube .menu-cube .mf0");
       const pick = document.getElementById("cubeIconPick");
-      const applyIcon = (ic) => { if (front && ic) front.textContent = ic; };
+      const applyIcon = (ic) => { if (ic) fronts.forEach((f) => { f.textContent = ic; }); };
       let savedIcon = "🎲";
       try { savedIcon = localStorage.getItem(ICON_KEY) || "🎲"; } catch (_) { /* ignore */ }
       applyIcon(savedIcon);
