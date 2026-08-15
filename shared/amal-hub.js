@@ -5492,6 +5492,63 @@
     else showCubePickup();
   }
 
+  /* ── Призрак глитч-куба: редко на доли секунды мигает где-то на экране ── */
+  var glitchGhostStarted = false;
+  function ensureGlitchGhostStyles() {
+    if (document.getElementById("amal-glitch-ghost-style")) return;
+    var st = document.createElement("style");
+    st.id = "amal-glitch-ghost-style";
+    st.textContent =
+      "#amal-glitch-ghost{position:fixed;z-index:2147483040;width:46px;height:46px;pointer-events:none;" +
+      "display:grid;place-items:center;font-size:26px;border-radius:9px;" +
+      "background:linear-gradient(135deg,#ff004c,#7c3aed 45%,#00e5ff);" +
+      "box-shadow:0 0 18px rgba(0,229,255,.75);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);" +
+      "opacity:0;mix-blend-mode:screen;animation:amalGhostBlip .42s steps(3) forwards}" +
+      "@keyframes amalGhostBlip{0%{opacity:0;transform:translate(-3px,2px) scale(.8)}" +
+      "30%{opacity:.95;transform:translate(3px,-2px) scale(1.08)}" +
+      "60%{opacity:.7;transform:translate(-2px,1px) scale(.96)}" +
+      "100%{opacity:0;transform:translate(2px,-1px) scale(1.05)}}";
+    document.head.appendChild(st);
+  }
+  function flashGlitchGhost() {
+    try {
+      if (document.hidden) return;
+      ensureGlitchGhostStyles();
+      var el = document.createElement("div");
+      el.id = "amal-glitch-ghost";
+      var icons = ["🎲", "🔺", "🔷", "⬡", "⚡", "🌈"];
+      el.textContent = icons[Math.floor(Math.random() * icons.length)];
+      // где-то на экране, но не у самых краёв
+      var vw = global.innerWidth || 800;
+      var vh = global.innerHeight || 600;
+      el.style.left = Math.round(vw * (0.12 + Math.random() * 0.72)) + "px";
+      el.style.top = Math.round(vh * (0.14 + Math.random() * 0.66)) + "px";
+      document.body.appendChild(el);
+      setTimeout(function () {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }, 460);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  function startGlitchGhost() {
+    if (glitchGhostStarted) return;
+    glitchGhostStarted = true;
+    var loop = function () {
+      // редко: раз в 40–110 секунд
+      var wait = 40000 + Math.floor(Math.random() * 70000);
+      setTimeout(function () {
+        flashGlitchGhost();
+        loop();
+      }, wait);
+    };
+    // первый показ не сразу
+    setTimeout(function () {
+      flashGlitchGhost();
+      loop();
+    }, 12000 + Math.floor(Math.random() * 18000));
+  }
+
   function boot() {
     ensureStyles();
     try {
@@ -5531,6 +5588,11 @@
     if (abuse) showAdminAbuseFx(abuse);
     try {
       mountSecretCube();
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      startGlitchGhost();
     } catch (_) {
       /* ignore */
     }
