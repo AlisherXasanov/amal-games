@@ -717,8 +717,10 @@
     @media (max-width: 560px) {
       .cube-comic-frames { grid-template-columns: 1fr; }
     }
-    /* На телефонах/планшетах боковые кубы и маскот мешают списку игр — прячем их */
-    @media (max-width: 820px) {
+    /* На телефонах/планшетах боковые кубы и маскот перекрывают список игр.
+       Ширины 820px мало: планшеты и телефоны в альбомной ориентации шире,
+       поэтому дополнительно ловим любой сенсорный экран через pointer: coarse. */
+    @media (max-width: 1024px), (pointer: coarse) {
       .side-cube { display: none !important; }
       .amal-buddy { display: none !important; }
     }
