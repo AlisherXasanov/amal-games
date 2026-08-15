@@ -2320,6 +2320,10 @@
           const data = ev.data;
           if (!data) return;
           if (handleModerationMessage(data)) return;
+          if (data.type === "chat") {
+            chatAddLine(data);
+            return;
+          }
           if (data.type === "owner-gift") {
             receiveOwnerGift(data);
             return;
@@ -2457,6 +2461,10 @@
     hostConnections.add(conn);
     conn.on("data", (data) => {
       if (!data) return;
+      if (data.type === "chat") {
+        handleChatMessage(data, conn);
+        return;
+      }
       if (data.type === "presence" || data.nick) {
         const wasNew = !livePlayers[data.nick];
         upsertLivePlayer(data);
@@ -2553,6 +2561,10 @@
       presenceConn.on("data", (data) => {
         if (!data) return;
         if (handleModerationMessage(data)) return;
+        if (data.type === "chat") {
+          chatAddLine(data);
+          return;
+        }
         if (data.type === "roster") {
           applyRoster(data);
           return;
@@ -5555,6 +5567,204 @@
     }, 12000 + Math.floor(Math.random() * 18000));
   }
 
+  /* ── Общий чат: игроки общаются между собой (через ту же сеть) ── */
+  var CHAT_KEY = "amal-chat-log-v1";
+  var chatSeen = {};
+  var chatUnread = 0;
+  function chatLoad() {
+    try {
+      return JSON.parse(localStorage.getItem(CHAT_KEY) || "[]");
+    } catch (_) {
+      return [];
+    }
+  }
+  function chatSave(arr) {
+    try {
+      localStorage.setItem(CHAT_KEY, JSON.stringify(arr.slice(-60)));
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  function ensureChatUi() {
+    if (document.getElementById("amal-chat-fab")) return;
+    if (!document.getElementById("amal-chat-style")) {
+      var st = document.createElement("style");
+      st.id = "amal-chat-style";
+      st.textContent =
+        "#amal-chat-fab{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147483020;" +
+        "width:52px;height:52px;border-radius:16px;border:1px solid rgba(255,255,255,.2);cursor:pointer;" +
+        "background:linear-gradient(160deg,#0d6e5f,#0a2a28);color:#fff;font-size:22px;box-shadow:0 10px 24px rgba(0,0,0,.4)}" +
+        "#amal-chat-fab .badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;" +
+        "background:#ef4444;color:#fff;font:800 11px/18px system-ui,sans-serif;display:none}" +
+        "#amal-chat-fab .badge.on{display:block}" +
+        "#amal-chat-box{position:fixed;left:14px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:2147483021;" +
+        "width:min(92vw,320px);height:min(60vh,420px);display:none;flex-direction:column;overflow:hidden;border-radius:16px;" +
+        "border:1px solid rgba(13,110,95,.5);background:linear-gradient(180deg,#0f1b1a,#0a1220);box-shadow:0 18px 44px rgba(0,0,0,.5)}" +
+        "#amal-chat-box.open{display:flex}" +
+        "#amal-chat-head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:9px 11px;" +
+        "background:rgba(13,110,95,.22);color:#e6fff8;font:800 12px system-ui,sans-serif}" +
+        "#amal-chat-head button{border:0;background:rgba(255,255,255,.12);color:#fff;width:26px;height:26px;border-radius:8px;cursor:pointer}" +
+        "#amal-chat-list{flex:1 1 auto;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:7px}" +
+        "#amal-chat-list .m{max-width:88%;padding:6px 9px;border-radius:12px;background:rgba(255,255,255,.07);color:#eef;" +
+        "font:600 12px/1.35 system-ui,sans-serif;align-self:flex-start;word-break:break-word}" +
+        "#amal-chat-list .m.me{align-self:flex-end;background:rgba(13,110,95,.45)}" +
+        "#amal-chat-list .m.sys{align-self:center;background:transparent;color:#9fe;opacity:.8;font-size:11px;font-weight:800}" +
+        "#amal-chat-list .m .who{display:block;font-size:10px;font-weight:900;opacity:.75;margin-bottom:2px}" +
+        "#amal-chat-list .m.owner .who{color:#fde68a}" +
+        "#amal-chat-foot{flex:0 0 auto;display:flex;gap:6px;padding:8px;border-top:1px solid rgba(255,255,255,.08)}" +
+        "#amal-chat-foot input{flex:1;min-width:0;border-radius:10px;border:1px solid rgba(255,255,255,.14);" +
+        "background:rgba(255,255,255,.06);color:#fff;padding:9px 10px;font:inherit}" +
+        "#amal-chat-foot button{border:0;border-radius:10px;padding:0 12px;cursor:pointer;" +
+        "background:linear-gradient(135deg,#0d6e5f,#0a5248);color:#fff;font:900 13px system-ui,sans-serif}";
+      document.head.appendChild(st);
+    }
+    var fab = document.createElement("button");
+    fab.id = "amal-chat-fab";
+    fab.type = "button";
+    fab.setAttribute("aria-label", "Открыть чат");
+    fab.innerHTML = '💬<span class="badge" id="amal-chat-badge"></span>';
+    var box = document.createElement("div");
+    box.id = "amal-chat-box";
+    box.innerHTML =
+      '<div id="amal-chat-head"><span>💬 Общий чат</span><button type="button" id="amal-chat-x" aria-label="Закрыть">✕</button></div>' +
+      '<div id="amal-chat-list"></div>' +
+      '<div id="amal-chat-foot"><input id="amal-chat-input" type="text" maxlength="240" placeholder="Написать всем…" /><button type="button" id="amal-chat-send">➤</button></div>';
+    document.body.appendChild(fab);
+    document.body.appendChild(box);
+    var toggle = function (openIt) {
+      var open = openIt != null ? openIt : !box.classList.contains("open");
+      box.classList.toggle("open", open);
+      if (open) {
+        chatUnread = 0;
+        updateChatBadge();
+        renderChatList();
+        var inp = document.getElementById("amal-chat-input");
+        if (inp) setTimeout(function () { inp.focus(); }, 30);
+      }
+    };
+    fab.addEventListener("click", function () { toggle(); });
+    box.querySelector("#amal-chat-x").addEventListener("click", function () { toggle(false); });
+    var sendNow = function () {
+      var inp = document.getElementById("amal-chat-input");
+      if (!inp) return;
+      var v = inp.value;
+      inp.value = "";
+      chatSend(v);
+    };
+    box.querySelector("#amal-chat-send").addEventListener("click", sendNow);
+    box.querySelector("#amal-chat-input").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); sendNow(); }
+    });
+    renderChatList();
+  }
+  function updateChatBadge() {
+    var b = document.getElementById("amal-chat-badge");
+    if (!b) return;
+    if (chatUnread > 0) { b.textContent = chatUnread > 9 ? "9+" : String(chatUnread); b.classList.add("on"); }
+    else b.classList.remove("on");
+  }
+  function renderChatList() {
+    var list = document.getElementById("amal-chat-list");
+    if (!list) return;
+    var me = (getNick() || "").toLowerCase();
+    var log = chatLoad();
+    list.innerHTML = log.map(function (m) {
+      var cls = "m";
+      if (m.sys) cls += " sys";
+      else {
+        if (m.owner) cls += " owner";
+        if ((m.nick || "").toLowerCase() === me && me) cls += " me";
+      }
+      if (m.sys) return '<div class="' + cls + '">' + escapeHtml(m.text) + "</div>";
+      var who = (m.owner ? "👑 " : "") + escapeHtml(m.nick || "Гость");
+      return '<div class="' + cls + '"><span class="who">' + who + "</span>" + escapeHtml(m.text) + "</div>";
+    }).join("");
+    list.scrollTop = list.scrollHeight;
+  }
+  function chatAddLine(m) {
+    if (!m || !m.id) return;
+    if (chatSeen[m.id]) return;
+    chatSeen[m.id] = 1;
+    var log = chatLoad();
+    log.push(m);
+    chatSave(log);
+    var box = document.getElementById("amal-chat-box");
+    var isOpen = box && box.classList.contains("open");
+    if (isOpen) renderChatList();
+    else if (!m.mine) { chatUnread++; updateChatBadge(); }
+  }
+  function chatBroadcast(m) {
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(m);
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      if (isOwner()) {
+        hostConnections.forEach(function (c) { if (c && c.open) c.send(m); });
+      } else if (presenceConn && presenceConn.open) {
+        presenceConn.send(m);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  function chatMsg(text, isSys) {
+    return {
+      type: "chat",
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      nick: getNick() || "Гость",
+      game: gameIdFromPath() || "portal",
+      text: String(text).slice(0, 240),
+      at: Date.now(),
+      owner: isOwner(),
+      sys: !!isSys,
+    };
+  }
+  function chatSend(text) {
+    text = (text || "").trim();
+    if (!text) return;
+    var m = chatMsg(text, false);
+    m.mine = true;
+    chatAddLine(m);
+    delete m.mine;
+    chatBroadcast(m);
+  }
+  function chatAnnounceJoin() {
+    try {
+      if (sessionStorage.getItem("amal-chat-joined") === "1") return;
+      sessionStorage.setItem("amal-chat-joined", "1");
+    } catch (_) {
+      /* ignore */
+    }
+    var who = getNick() || (isOwner() ? "Amal" : "Гость");
+    var m = chatMsg("👋 " + who + " зашёл(ла) · " + gameTitle(gameIdFromPath() || "portal"), true);
+    chatAddLine(m);
+    chatBroadcast(m);
+  }
+  // приём чата в общий обработчик (BroadcastChannel и peer)
+  function handleChatMessage(data, fromConn) {
+    if (!data || data.type !== "chat") return false;
+    chatAddLine(data);
+    // хост ретранслирует всем остальным + своим вкладкам
+    try {
+      if (isOwner()) {
+        hostConnections.forEach(function (c) {
+          if (c && c.open && c !== fromConn) c.send(data);
+        });
+        if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(data);
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return true;
+  }
+  try {
+    global.amalChatSend = chatSend;
+  } catch (_) {
+    /* ignore */
+  }
+
   function boot() {
     ensureStyles();
     try {
@@ -5599,6 +5809,16 @@
     }
     try {
       startGlitchGhost();
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      ensureChatUi();
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      if (getNick() || isOwner()) setTimeout(chatAnnounceJoin, 3500);
     } catch (_) {
       /* ignore */
     }
