@@ -5,6 +5,22 @@
 (function (global) {
   "use strict";
 
+  /**
+   * Аварийный режим: ?lite=1 полностью выключает хаб и запоминает выбор.
+   * Нужен, если хаб на слабом устройстве вешает страницу. Вернуть: ?lite=0
+   */
+  try {
+    var _liteParam = new URLSearchParams(global.location.search).get("lite");
+    if (_liteParam === "0") localStorage.removeItem("amal-lite-mode");
+    else if (_liteParam === "1") localStorage.setItem("amal-lite-mode", "1");
+    if (localStorage.getItem("amal-lite-mode") === "1") {
+      global.AmalHub = { lite: true, isOwner: function () { return false; } };
+      return;
+    }
+  } catch (_) {
+    /* ignore */
+  }
+
   const KEYS = {
     nick: "amal-hub-nick-v1",
     notes: "amal-hub-notes-v1",
