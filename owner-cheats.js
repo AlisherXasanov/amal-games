@@ -12,8 +12,8 @@
   "use strict";
 
   const STORAGE_KEY = "amal-owner-v3";
-  // bump: force Pages refresh for easy codes
-  const SECRETS = ["amal", "1234", "buddy"];
+  // короткие коды + прежний длинный код (его ещё используют старые ссылки)
+  const SECRETS = ["amal", "1234", "buddy", "amalowner2026"];
   const OLD_KEYS = ["amal-owner-v1", "amal-owner-v2", "kick-buddy-admin"];
 
   function wipeOldTeamFlags() {
@@ -23,8 +23,6 @@
       /* ignore */
     }
   }
-
-  wipeOldTeamFlags();
 
   function isOwner() {
     try {
@@ -44,7 +42,6 @@
       return false;
     }
     try {
-      wipeOldTeamFlags();
       localStorage.setItem(STORAGE_KEY, "1");
     } catch (_) {
       /* ignore */
