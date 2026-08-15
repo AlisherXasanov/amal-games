@@ -5121,6 +5121,16 @@
           '<button type="button" class="acd-fx" data-cool="off" title="Выключить всё">🚫</button>' +
           "</div>",
       ) +
+      cubePanelHtml(
+        "super",
+        "🔥 СУПЕР-СИЛЫ",
+        '<button type="button" class="acd-btn max" data-cube="super-all">🔥 СУПЕР-НАБОР · ВСЁ СРАЗУ</button>' +
+          '<button type="button" class="acd-btn" data-cube="super-ghost">👻 Вызвать глитч-куб</button>' +
+          '<button type="button" class="acd-btn" data-cube="super-boss">🐲 Позвать доброго босса</button>' +
+          '<button type="button" class="acd-btn" data-cube="super-peace">🕊️ Мир · убрать врагов</button>' +
+          '<button type="button" class="acd-btn amber" data-cube="super-announce">📣 Объявление всем</button>' +
+          '<button type="button" class="acd-btn" data-cube="super-chatclear">🧹 Очистить чат</button>',
+      ) +
       "</div>";
     dash.addEventListener("click", (e) => {
       const fx = e.target.closest("[data-fx]");
@@ -5227,6 +5237,59 @@
         if (act === "ab-mega") {
           runCubeAbility("max");
           fxRgbOverload();
+          return;
+        }
+        if (act === "super-all") {
+          ["god", "heal", "max"].forEach(function (a) { runCubeAbility(a); });
+          fxRgbOverload();
+          showHubToast("🔥 Супер-набор: бессмертие + хилл + всё на макс");
+          return;
+        }
+        if (act === "super-ghost") {
+          try {
+            if (typeof global.amalGlitchGhost === "function") global.amalGlitchGhost();
+            else showHubToast("👻 Глитч-куб загружается");
+          } catch (_) {
+            /* ignore */
+          }
+          return;
+        }
+        if (act === "super-boss") {
+          try {
+            if (typeof global.amalGoodBoss === "function") {
+              global.amalGoodBoss();
+              showHubToast("🐲 Добрый босс идёт");
+            } else {
+              showHubToast("🐲 Добрый босс живёт в Пиксель-Террариуме");
+            }
+          } catch (_) {
+            /* ignore */
+          }
+          return;
+        }
+        if (act === "super-peace") {
+          try {
+            var tapi = global.__TERRARIUM__;
+            if (tapi && typeof tapi.enablePeaceful === "function") tapi.enablePeaceful();
+            else if (tapi && typeof tapi.clearHostiles === "function") tapi.clearHostiles();
+            showHubToast("🕊️ Мирный режим");
+          } catch (_) {
+            showHubToast("🕊️ Мир доступен не во всех играх");
+          }
+          return;
+        }
+        if (act === "super-announce") {
+          try {
+            var txt = (global.prompt && global.prompt("Объявление всем игрокам:")) || "";
+            txt = (txt || "").trim();
+            if (txt) chatSendAnnounce(txt);
+          } catch (_) {
+            /* ignore */
+          }
+          return;
+        }
+        if (act === "super-chatclear") {
+          try { chatClearAll(); } catch (_) { /* ignore */ }
           return;
         }
         if (act.startsWith("ab-")) {
