@@ -2324,6 +2324,10 @@
             chatAddLine(data);
             return;
           }
+          if (data.type === "chat-clear") {
+            chatClearLocal();
+            return;
+          }
           if (data.type === "owner-gift") {
             receiveOwnerGift(data);
             return;
@@ -2465,6 +2469,10 @@
         handleChatMessage(data, conn);
         return;
       }
+      if (data.type === "chat-clear") {
+        handleChatClear(data, conn);
+        return;
+      }
       if (data.type === "presence" || data.nick) {
         const wasNew = !livePlayers[data.nick];
         upsertLivePlayer(data);
@@ -2563,6 +2571,10 @@
         if (handleModerationMessage(data)) return;
         if (data.type === "chat") {
           chatAddLine(data);
+          return;
+        }
+        if (data.type === "chat-clear") {
+          chatClearLocal();
           return;
         }
         if (data.type === "roster") {
@@ -5625,8 +5637,13 @@
     fab.innerHTML = '💬<span class="badge" id="amal-chat-badge"></span>';
     var box = document.createElement("div");
     box.id = "amal-chat-box";
+    var ownerTools = isOwner()
+      ? '<button type="button" id="amal-chat-clear" aria-label="Очистить чат у всех" title="Очистить чат у всех">🧹</button>'
+      : "";
     box.innerHTML =
-      '<div id="amal-chat-head"><span>💬 Общий чат</span><button type="button" id="amal-chat-x" aria-label="Закрыть">✕</button></div>' +
+      '<div id="amal-chat-head"><span>💬 Общий чат</span><span style="display:flex;gap:6px">' +
+      ownerTools +
+      '<button type="button" id="amal-chat-x" aria-label="Закрыть">✕</button></span></div>' +
       '<div id="amal-chat-list"></div>' +
       '<div id="amal-chat-foot"><input id="amal-chat-input" type="text" maxlength="240" placeholder="Написать всем…" /><button type="button" id="amal-chat-send">➤</button></div>';
     document.body.appendChild(fab);
@@ -5655,7 +5672,44 @@
     box.querySelector("#amal-chat-input").addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); sendNow(); }
     });
+    var clearBtn = box.querySelector("#amal-chat-clear");
+    if (clearBtn) clearBtn.addEventListener("click", chatClearAll);
     renderChatList();
+  }
+  function chatClearLocal() {
+    chatSeen = {};
+    chatSave([]);
+    renderChatList();
+  }
+  function chatClearAll() {
+    if (!isOwner()) return;
+    chatClearLocal();
+    var m = { type: "chat-clear", id: Date.now() + "-clr", at: Date.now() };
+    try {
+      if (global.__amalPresenceBc) global.__amalPresenceBc.postMessage(m);
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      hostConnections.forEach(function (c) { if (c && c.open) c.send(m); });
+    } catch (_) {
+      /* ignore */
+    }
+    var note = chatMsg("🧹 Хозяин очистил чат", true);
+    chatAddLine(note);
+    chatBroadcast(note);
+  }
+  function handleChatClear(data, fromConn) {
+    if (!data || data.type !== "chat-clear") return false;
+    chatClearLocal();
+    try {
+      if (isOwner()) {
+        hostConnections.forEach(function (c) { if (c && c.open && c !== fromConn) c.send(data); });
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return true;
   }
   function updateChatBadge() {
     var b = document.getElementById("amal-chat-badge");
