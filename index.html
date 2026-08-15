@@ -332,9 +332,9 @@
       inset: -14px;
       border-radius: 50%;
       background: conic-gradient(from 0deg, #ff004c, #ff8a00, #ffe600, #00e676, #00b0ff, #7c4dff, #ff004c);
-      filter: blur(10px);
-      opacity: .6;
-      animation: menuCubeRing 6s linear infinite;
+      /* blur убран: постоянное размытие вращающегося слоя вешало слабые ПК */
+      opacity: .32;
+      animation: menuCubeRing 12s linear infinite;
     }
     @keyframes menuCubeRing { to { transform: rotate(360deg); } }
     .menu-cube {
@@ -559,11 +559,11 @@
       background: linear-gradient(135deg,#ff004c,#7c3aed 45%,#00e5ff);
       box-shadow: 0 0 20px rgba(0,229,255,.6);
     }
-    .cube-morph.show { opacity: .97; animation: cubeMorphJit .16s steps(2) infinite; }
+    .cube-morph.show { opacity: .97; animation: cubeMorphJit .4s steps(2) infinite; }
     @keyframes cubeMorphJit {
-      0% { transform: translate(0,0); filter: hue-rotate(0deg) saturate(1.6); }
-      50% { transform: translate(2px,-1px); filter: hue-rotate(140deg) saturate(2); }
-      100% { transform: translate(-2px,1px); filter: hue-rotate(280deg) saturate(1.6); }
+      0% { transform: translate(0,0); }
+      50% { transform: translate(2px,-1px); }
+      100% { transform: translate(-2px,1px); }
     }
     .cube-morph.tri { clip-path: polygon(50% 4%, 96% 96%, 4% 96%); }
     .cube-morph.circle { border-radius: 50%; }
@@ -1924,8 +1924,20 @@
     })();
   </script>
 
+  <script>
+    // Когда вкладка не видна — останавливаем все анимации, чтобы не грузить процессор
+    (() => {
+      const st = document.createElement("style");
+      st.textContent = "body.amal-paused *, body.amal-paused *::before, body.amal-paused *::after" +
+        "{animation-play-state:paused !important}";
+      document.head.appendChild(st);
+      const sync = () => document.body.classList.toggle("amal-paused", document.hidden);
+      document.addEventListener("visibilitychange", sync);
+      sync();
+    })();
+  </script>
   <script src="./owner-cheats.js" defer></script>
   <script src="./shared/amal-owner-powers.js?v=20" defer></script>
-  <script src="./shared/amal-hub.js?v=59" defer></script>
+  <script src="./shared/amal-hub.js?v=60" defer></script>
 </body>
 </html>
