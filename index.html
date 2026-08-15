@@ -462,6 +462,28 @@
       color: var(--teal);
     }
     .side-cube-one.wild .duo-label { color: var(--coral); }
+    .side-cube-one .side-cube-frame {
+      cursor: pointer;
+      outline: none;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .side-cube-one .side-cube-frame:hover,
+    .side-cube-one .side-cube-frame:focus-visible {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: inset 0 0 0 2px rgba(251,191,36,.8), 0 0 18px rgba(240,180,41,.5);
+    }
+    .side-cube-one.selected .side-cube-frame {
+      box-shadow: inset 0 0 0 3px #fff, 0 0 22px rgba(0,229,255,.75);
+    }
+    .side-cube-one.attacking .side-cube-frame {
+      animation: cubeAttack .55s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes cubeAttack {
+      0% { transform: translate(0,0) rotate(0); }
+      45% { transform: translate(54px,72px) scale(.72) rotate(18deg); }
+      62% { transform: translate(47px,65px) scale(.8) rotate(-12deg); }
+      100% { transform: translate(0,0) rotate(0); }
+    }
     .side-cube-frame {
       position: relative;
       width: 104px; height: 104px;
@@ -553,6 +575,75 @@
     .cube-morph.star { clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%); }
     .cube-morph.hex { clip-path: polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%); }
     .side-cube-frame.morphing .menu-cube-stage { opacity: 0; }
+    .cube-use {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 6px;
+      align-items: center;
+      padding: 6px;
+      border-radius: 13px;
+      background: rgba(8,42,40,.08);
+    }
+    .cube-chest {
+      position: relative;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      font-size: 38px;
+      cursor: pointer;
+      user-select: none;
+      filter: drop-shadow(0 5px 5px rgba(0,0,0,.25));
+      transition: transform .16s ease, filter .16s ease;
+    }
+    .cube-chest:hover { transform: scale(1.08); }
+    .cube-chest.hit {
+      animation: cubeChestBreak .65s steps(2);
+    }
+    .cube-chest.dent {
+      animation: cubeChestDent .32s ease;
+    }
+    @keyframes cubeChestDent {
+      0% { transform: translateX(0) rotate(0); }
+      25% { transform: translateX(-4px) rotate(-8deg); filter: brightness(1.5); }
+      55% { transform: translateX(4px) rotate(7deg); }
+      80% { transform: translateX(-2px) rotate(-3deg); }
+      100% { transform: translateX(0) rotate(0); }
+    }
+    @keyframes cubeChestBreak {
+      0% { transform: rotate(0) scale(1); }
+      25% { transform: rotate(-12deg) scale(1.12); filter: brightness(1.8) drop-shadow(-5px 0 #ff0050); }
+      50% { transform: rotate(11deg) scale(.9); filter: brightness(2) drop-shadow(6px 0 #00e5ff); }
+      75% { transform: rotate(-8deg) scale(1.2); opacity: .8; }
+      100% { transform: rotate(0) scale(.2); opacity: 0; }
+    }
+    .cube-use-actions {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+    .cube-use-status {
+      min-height: 28px;
+      color: var(--teal);
+      font: 800 10px/1.3 Nunito, sans-serif;
+    }
+    .cube-use-btn {
+      width: 100%;
+      padding: 6px 5px;
+      border: 0;
+      border-radius: 9px;
+      cursor: pointer;
+      background: linear-gradient(135deg,#7c3aed,#00a8c7);
+      color: #fff;
+      font: 900 10px Nunito, sans-serif;
+    }
+    .cube-use-btn.steel {
+      background: linear-gradient(135deg,#64748b,#334155);
+    }
+    .cube-power {
+      color: #b45309;
+      font: 900 10px Nunito, sans-serif;
+    }
     .side-cube-count { font: 800 12px Space Grotesk, Nunito, sans-serif; color: var(--teal); }
     .side-cube-count strong { color: var(--coral); }
     .side-cube-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
@@ -814,7 +905,7 @@
     <div class="amal-sign side-cube-sign"><span class="by">автор</span>Amal ✍️</div>
     <div class="side-cube-duo">
       <div class="side-cube-one">
-        <div class="side-cube-frame calm">
+        <div class="side-cube-frame calm" id="calmCubeUse" role="button" tabindex="0" aria-label="Использовать обычный куб">
           <div class="menu-cube-stage" aria-hidden="true">
             <div class="menu-cube-rainbow"></div>
             <div class="menu-cube">
@@ -838,7 +929,7 @@
         <div class="duo-label">Обычный</div>
       </div>
       <div class="side-cube-one wild">
-        <div class="side-cube-frame unstable" id="sideCubeFrame">
+        <div class="side-cube-frame unstable" id="sideCubeFrame" role="button" tabindex="0" aria-label="Использовать нестабильный куб">
           <div class="menu-cube-stage" aria-hidden="true">
             <div class="menu-cube-rainbow"></div>
             <div class="menu-cube">
@@ -863,6 +954,15 @@
           <div class="cube-chains" aria-hidden="true"><i></i><i></i><i></i></div>
         </div>
         <div class="duo-label">Нестабильный</div>
+      </div>
+    </div>
+    <div class="cube-use">
+      <div class="cube-chest" id="cubeChest" role="button" tabindex="0" aria-label="Сундук для кубов">🧰</div>
+      <div class="cube-use-actions">
+        <div class="cube-use-status" id="cubeUseStatus">Выбери куб и разбей сундук</div>
+        <button class="cube-use-btn" id="newCubeChest" type="button">🎁 Новый сундук</button>
+        <button class="cube-use-btn steel" id="steelCubeChest" type="button">🛡️ Стальной (крепкий)</button>
+        <div class="cube-power">⚡ Сила: <span id="cubePower">0</span></div>
       </div>
     </div>
     <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
@@ -1480,6 +1580,113 @@
             pick.querySelectorAll("button").forEach((x) => x.classList.remove("active"));
             b.classList.add("active");
           });
+        });
+      }
+
+      // Кубы можно использовать в любое время: каждый по-своему разбивает сундук
+      const calmUse = document.getElementById("calmCubeUse");
+      const wildUse = document.getElementById("sideCubeFrame");
+      const chest = document.getElementById("cubeChest");
+      const newChestBtn = document.getElementById("newCubeChest");
+      const useStatus = document.getElementById("cubeUseStatus");
+      const powerOut = document.getElementById("cubePower");
+      const steelChestBtn = document.getElementById("steelCubeChest");
+      const POWER_KEY = "amal-cube-power-v1";
+      const CHEST_KINDS = {
+        normal: { emoji: "🧰", hp: 1, name: "Сундук" },
+        steel: { emoji: "🛡️", hp: 8, name: "Стальной сундук" },
+      };
+      let chestKind = "normal";
+      let chestHp = CHEST_KINDS.normal.hp;
+      let chestBroken = false;
+      let cubeBusy = false;
+      let cubePower = 0;
+      try { cubePower = Math.max(0, Number(localStorage.getItem(POWER_KEY)) || 0); } catch (_) { /* ignore */ }
+      if (powerOut) powerOut.textContent = cubePower;
+
+      const spawnChest = (kind) => {
+        if (!chest || cubeBusy) return;
+        chestKind = CHEST_KINDS[kind] ? kind : "normal";
+        const info = CHEST_KINDS[chestKind];
+        chestHp = info.hp;
+        chestBroken = false;
+        chest.classList.remove("hit", "dent");
+        chest.textContent = info.emoji;
+        if (useStatus) {
+          useStatus.textContent = chestKind === "steel"
+            ? "🛡️ Стальной сундук — очень крепкий (" + chestHp + " ударов)"
+            : "Сундук готов — нажми любой куб";
+        }
+      };
+
+      const useCube = (cube, unstable) => {
+        if (!cube || !chest || cubeBusy) return;
+        if (chestBroken) {
+          if (useStatus) useStatus.textContent = "Вызови новый сундук";
+          return;
+        }
+        cubeBusy = true;
+        const owner = cube.closest(".side-cube-one");
+        document.querySelectorAll(".side-cube-one").forEach((x) => x.classList.remove("selected"));
+        if (owner) owner.classList.add("selected", "attacking");
+        const dmg = unstable ? 2 + Math.floor(Math.random() * 2) : 1;
+        setTimeout(() => {
+          chestHp -= dmg;
+          if (chestHp > 0) {
+            chest.classList.remove("dent");
+            void chest.offsetWidth;
+            chest.classList.add("dent");
+            setTimeout(() => chest.classList.remove("dent"), 320);
+            if (useStatus) {
+              useStatus.textContent = (unstable ? "⚡ Глитч-удар! " : "💥 Удар! ") + "прочность: " + chestHp;
+            }
+          } else {
+            chest.classList.add("hit");
+            chestBroken = true;
+            let reward;
+            if (chestKind === "steel") reward = 30 + Math.floor(Math.random() * 26);
+            else reward = unstable ? 9 + Math.floor(Math.random() * 10) : 4 + Math.floor(Math.random() * 6);
+            cubePower += reward;
+            try { localStorage.setItem(POWER_KEY, String(cubePower)); } catch (_) { /* ignore */ }
+            if (powerOut) powerOut.textContent = cubePower;
+            if (useStatus) {
+              useStatus.textContent = (chestKind === "steel"
+                ? "🔩 Стальной сундук разбит!"
+                : (unstable ? "⚡ Сундук стёрт глитчем!" : "💥 Сундук разбит!")) + " +" + reward + " силы";
+            }
+            setTimeout(() => {
+              chest.textContent = chestKind === "steel" ? "🏆" : (unstable ? "✨" : "💎");
+              chest.classList.remove("hit");
+            }, 620);
+          }
+        }, 260);
+        setTimeout(() => {
+          if (owner) owner.classList.remove("attacking");
+          cubeBusy = false;
+        }, 720);
+      };
+
+      const bindCubeUse = (cube, unstable) => {
+        if (!cube) return;
+        cube.addEventListener("click", () => useCube(cube, unstable));
+        cube.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            useCube(cube, unstable);
+          }
+        });
+      };
+      bindCubeUse(calmUse, false);
+      bindCubeUse(wildUse, true);
+      if (newChestBtn) newChestBtn.addEventListener("click", () => spawnChest("normal"));
+      if (steelChestBtn) steelChestBtn.addEventListener("click", () => spawnChest("steel"));
+      if (chest) {
+        chest.addEventListener("click", () => spawnChest(chestKind));
+        chest.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            spawnChest(chestKind);
+          }
         });
       }
 
