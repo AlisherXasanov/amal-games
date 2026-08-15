@@ -6,10 +6,7 @@
   <title>Amal's Lab · игры</title>
   <meta name="description" content="Лаборатория Amal: все браузерные игры в одном месте. Изучай, играй, открывай." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" /></noscript>
+  <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -294,20 +291,20 @@
       perspective: 520px;
       display: grid;
       place-items: center;
-      /* тень здесь, а не на самом кубе — иначе filter «сплющивает» 3D */
-      filter: drop-shadow(0 12px 22px rgba(0,0,0,.32));
+      /* без тяжёлых filter — на слабых ПК давали белый экран */
+      box-shadow: 0 12px 22px rgba(0,0,0,.28);
     }
     /* нестабильность включается только у «нестабильного» куба */
     .side-cube-frame.unstable .menu-cube-stage {
       animation: menuCubeUnstable 8s ease-in-out infinite;
     }
-    /* глитч: почти всегда куб спокойный, но раз в 8 сек — короткий разрыв цвета и дрожь */
+    /* глитч: почти всегда куб спокойный, но раз в 8 сек — короткая дрожь */
     @keyframes menuCubeUnstable {
-      0%, 70% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(0deg) saturate(1); transform: translateX(0); }
-      72% { filter: drop-shadow(0 0 14px rgba(0,229,255,.7)) hue-rotate(140deg) saturate(1.7); transform: translateX(-4px); }
-      74% { filter: drop-shadow(0 0 14px rgba(255,0,80,.7)) hue-rotate(300deg) saturate(1.7); transform: translateX(5px); }
-      76% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(60deg) saturate(1.3); transform: translateX(-3px); }
-      78%, 100% { filter: drop-shadow(0 12px 22px rgba(0,0,0,.32)) hue-rotate(0deg) saturate(1); transform: translateX(0); }
+      0%, 70% { transform: translateX(0); }
+      72% { transform: translateX(-4px); }
+      74% { transform: translateX(5px); }
+      76% { transform: translateX(-3px); }
+      78%, 100% { transform: translateX(0); }
     }
     /* «разрыв» — узкая RGB-полоса сбоку изредка съезжает вбок (только нестабильный) */
     .side-cube-frame.unstable .menu-cube-stage::after {
@@ -320,7 +317,6 @@
       pointer-events: none;
       border-radius: 3px;
       background: linear-gradient(90deg, rgba(255,0,80,.85), rgba(255,255,255,.6), rgba(0,229,255,.85));
-      mix-blend-mode: screen;
       opacity: 0;
       animation: menuCubeTear 8s ease-in-out infinite;
     }
@@ -871,6 +867,9 @@
   </style>
 </head>
 <body>
+  <div class="lab-top" style="gap:0.8rem;flex-wrap:wrap">
+    <a href="./play.html?owner=AmalOwner2026" style="color:#fde68a;font-weight:900;text-decoration:underline">⚡ Если экран белый — жми сюда</a>
+  </div>
   <div class="lab-top">
     <span class="dot" aria-hidden="true"></span>
     <span>🧪 AMAL LAB · все игры как в лаборатории</span>
@@ -1925,8 +1924,8 @@
     })();
   </script>
 
-  <script src="./owner-cheats.js"></script>
-  <script src="./shared/amal-owner-powers.js?v=20"></script>
-  <script src="./shared/amal-hub.js?v=58"></script>
+  <script src="./owner-cheats.js" defer></script>
+  <script src="./shared/amal-owner-powers.js?v=20" defer></script>
+  <script src="./shared/amal-hub.js?v=59" defer></script>
 </body>
 </html>
