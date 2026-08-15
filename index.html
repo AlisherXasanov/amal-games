@@ -976,6 +976,7 @@
       <button type="button" data-ic="👑" title="Корона">👑</button>
       <button type="button" data-ic="🧪" title="Пробирка">🧪</button>
     </div>
+    <button type="button" class="side-cube-comic" id="summonGhostBtn" style="background:linear-gradient(135deg,#7c3aed,#00a8c7)">👻 Вызвать глитч-куб</button>
     <button type="button" class="side-cube-comic" id="cubeComicBtn">📖 Комикс о кубе</button>
     <a class="side-cube-comic" id="signLink" hidden href="./sign.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
   </aside>
@@ -1690,6 +1691,40 @@
         });
       }
 
+      // Вызвать глитч-куб самому: он появится на случайном месте на долю секунды
+      const summonBtn = document.getElementById("summonGhostBtn");
+      const localGhost = () => {
+        const icons = ["🎲", "🔺", "🔷", "⬡", "⚡", "🌈"];
+        const el = document.createElement("div");
+        el.textContent = icons[Math.floor(Math.random() * icons.length)];
+        el.style.cssText =
+          "position:fixed;z-index:2147483040;width:46px;height:46px;pointer-events:none;" +
+          "display:grid;place-items:center;font-size:26px;border-radius:9px;color:#fff;" +
+          "background:linear-gradient(135deg,#ff004c,#7c3aed 45%,#00e5ff);" +
+          "box-shadow:0 0 18px rgba(0,229,255,.75);text-shadow:0 1px 3px rgba(0,0,0,.6);" +
+          "mix-blend-mode:screen;opacity:0;animation:menuGhostBlip .42s steps(3) forwards";
+        el.style.left = Math.round(innerWidth * (0.12 + Math.random() * 0.72)) + "px";
+        el.style.top = Math.round(innerHeight * (0.14 + Math.random() * 0.66)) + "px";
+        document.body.appendChild(el);
+        setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 460);
+      };
+      if (!document.getElementById("menuGhostBlipStyle")) {
+        const gs = document.createElement("style");
+        gs.id = "menuGhostBlipStyle";
+        gs.textContent =
+          "@keyframes menuGhostBlip{0%{opacity:0;transform:translate(-3px,2px) scale(.8)}" +
+          "30%{opacity:.95;transform:translate(3px,-2px) scale(1.08)}" +
+          "60%{opacity:.7;transform:translate(-2px,1px) scale(.96)}" +
+          "100%{opacity:0;transform:translate(2px,-1px) scale(1.05)}}";
+        document.head.appendChild(gs);
+      }
+      if (summonBtn) {
+        summonBtn.addEventListener("click", () => {
+          if (typeof window.amalGlitchGhost === "function") window.amalGlitchGhost();
+          else localGhost();
+        });
+      }
+
       // Нестабильность: куб иногда превращается в странную фигуру и возвращается назад
       const frame = document.getElementById("sideCubeFrame");
       const morph = document.getElementById("cubeMorph");
@@ -1901,6 +1936,6 @@
 
   <script src="./owner-cheats.js"></script>
   <script src="./shared/amal-owner-powers.js?v=20"></script>
-  <script src="./shared/amal-hub.js?v=51"></script>
+  <script src="./shared/amal-hub.js?v=52"></script>
 </body>
 </html>

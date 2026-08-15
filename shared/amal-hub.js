@@ -5531,6 +5531,12 @@
       /* ignore */
     }
   }
+  // Любой игрок может вызвать глитч-куб сам
+  try {
+    global.amalGlitchGhost = flashGlitchGhost;
+  } catch (_) {
+    /* ignore */
+  }
   function startGlitchGhost() {
     if (glitchGhostStarted) return;
     glitchGhostStarted = true;
