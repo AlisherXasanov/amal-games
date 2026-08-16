@@ -311,7 +311,8 @@
     hero.y = Math.max(120, (innerHeight || 600) * 0.62);
 
     document.getElementById("amal-world-fab").onclick = function () {
-      root.classList.toggle("open");
+      var dock = document.getElementById("amal-world-dock");
+      if (dock) dock.classList.toggle("open");
     };
     document.getElementById("amal-world-toggle").onclick = function () {
       state.visible = !state.visible;
