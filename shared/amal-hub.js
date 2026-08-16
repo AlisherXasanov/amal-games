@@ -84,6 +84,7 @@
     { id: "space-elevator", name: "Космический Лифт" },
     { id: "mantis-crab-arena", name: "Атака Рака-Богомола" },
     { id: "forest-network", name: "Лесной Интернет" },
+    { id: "tesla-arena", name: "Тесла-Арена" },
   ];
 
   const CHANGELOG = [
@@ -1305,6 +1306,7 @@
       "space-elevator": "Космический Лифт",
       "mantis-crab-arena": "Атака Рака-Богомола",
       "forest-network": "Лесной Интернет",
+      "tesla-arena": "Тесла-Арена",
     };
     return map[id] || id;
   }
