@@ -1851,7 +1851,14 @@
           setAb("⚡ Заряд! +" + gain + " силы");
         },
         teleport: () => {
-          const cards = Array.prototype.slice.call(document.querySelectorAll("a.card[href]"));
+          // Телепорт только в настоящие игры: одна папка вида "game/".
+          // Мета-страницы (create-lab, *.html, портал-3D, hideout) исключаем — они не открываются как игра.
+          const block = ["create-lab", "portal-3d", "hideout"];
+          const cards = Array.prototype.slice.call(document.querySelectorAll("a.card[href]"))
+            .filter((a) => {
+              const h = a.getAttribute("href") || "";
+              return /^[a-z0-9-]+\/$/i.test(h) && !block.some((x) => h.indexOf(x) >= 0);
+            });
           if (!cards.length) { setAb("🌀 Некуда телепортироваться"); return; }
           const dest = cards[Math.floor(Math.random() * cards.length)];
           let href = dest.getAttribute("href");
