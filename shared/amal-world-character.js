@@ -60,6 +60,12 @@
   var last = performance.now();
   var hospitalHooked = false;
 
+  // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
+  var portalGunArmed = false;
+  var pendingPortalTarget = "map"; // "map" — переход по экрану; иначе id игры
+  var portalShots = [];
+  var portals = [];
+
   function load() {
     try {
       var raw = localStorage.getItem(SAVE_KEY);
@@ -273,6 +279,8 @@
       '<div class="aw-row">' +
       '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
       '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
+      '<button type="button" class="primary" id="amal-world-portalgun">🔫 Портал-пушка</button>' +
+      '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
       '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ 20 сил</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
@@ -303,6 +311,16 @@
         window.__AMAL_WORLD_BEARD__ = state.beard;
       } catch (_) {}
       toast(state.beard ? "🧔 Борода надета" : "Борода снята");
+    };
+    document.getElementById("amal-world-portalgun").onclick = function () {
+      pendingPortalTarget = "map";
+      armPortalGun();
+    };
+    document.getElementById("amal-world-portalgame").onclick = function () {
+      ui.panel.classList.remove("open");
+      ui.teleport.classList.add("open");
+      renderTeleport("", true);
+      toast("Выбери игру — потом стреляй порталом");
     };
     document.getElementById("amal-world-tele-btn").onclick = function () {
       ui.panel.classList.remove("open");
@@ -426,8 +444,9 @@
     };
   }
 
-  function renderTeleport(filter) {
+  function renderTeleport(filter, portalMode) {
     if (!ui.teleport) return;
+    ui.teleport._portalMode = !!portalMode;
     var q = (filter || "").toLowerCase();
     var here = gameId();
     var items = gameList().filter(function (g) {
@@ -470,7 +489,14 @@
       }
       var btn = e.target.closest("[data-game]");
       if (!btn) return;
-      goToGame(btn.getAttribute("data-game"));
+      var gid = btn.getAttribute("data-game");
+      if (ui.teleport._portalMode) {
+        pendingPortalTarget = gid === "__portal" ? "portal" : gid;
+        ui.teleport.classList.remove("open");
+        armPortalGun();
+        return;
+      }
+      goToGame(gid);
     };
   }
 
@@ -571,6 +597,9 @@
     state.clone = false;
     clones = [];
     hero.localAim = false;
+    portalGunArmed = false;
+    portalShots = [];
+    portals = [];
     document.documentElement.style.filter = "";
     document.documentElement.style.animation = "";
     dispatch("timestop", { on: false });
@@ -762,6 +791,145 @@
     }
   }
 
+  function armPortalGun() {
+    if (!isOwner()) return;
+    if (ui.panel) ui.panel.classList.remove("open");
+    if (ui.teleport) ui.teleport.classList.remove("open");
+    portalGunArmed = true;
+    var where = pendingPortalTarget === "map" ? "по карте" : "в «" + titleOf(pendingPortalTarget) + "»";
+    toast("🔫 Портал-пушка готова · кликни куда выстрелить (" + where + ")");
+    onceFirePortal();
+  }
+
+  function onceFirePortal() {
+    function onClick(e) {
+      if (!portalGunArmed) return;
+      var t = e.target;
+      if (t && t.closest && t.closest("#amal-world-dock,#amal-world-panel,#amal-world-tele")) return;
+      portalGunArmed = false;
+      removeEventListener("pointerdown", onClick, true);
+      firePortal(e.clientX, e.clientY, pendingPortalTarget);
+    }
+    addEventListener("pointerdown", onClick, true);
+  }
+
+  function firePortal(tx, ty, target) {
+    if (!spend(15)) return;
+    var sx = hero.x;
+    var sy = hero.y - 12;
+    var ang = Math.atan2(ty - sy, tx - sx);
+    if (tx < hero.x) hero.facing = -1;
+    else hero.facing = 1;
+    portalShots.push({
+      x: sx,
+      y: sy,
+      tx: tx,
+      ty: ty,
+      vx: Math.cos(ang) * 900,
+      vy: Math.sin(ang) * 900,
+      target: target || "map",
+      life: 2.5,
+    });
+    flashBolts();
+  }
+
+  function openPortalAt(x, y, target) {
+    // максимум 2 портала — старые убираем
+    portals.push({ x: x, y: y, r: 4, target: target || "map", born: 0, ready: false });
+    while (portals.length > 2) portals.shift();
+    toast(target === "map" ? "🌀 Портал открыт · зайди в него" : "🌀 Портал в «" + titleOf(target) + "» · зайди в него");
+  }
+
+  function updatePortals(dt) {
+    portalShots = portalShots.filter(function (s) {
+      s.life -= dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      var reached = Math.hypot(s.x - s.tx, s.y - s.ty) < 24;
+      var edge = s.x < 0 || s.y < 0 || s.x > (innerWidth || 800) || s.y > (innerHeight || 600);
+      if (reached || edge || s.life <= 0) {
+        openPortalAt(s.tx, s.ty, s.target);
+        return false;
+      }
+      return true;
+    });
+    portals.forEach(function (p) {
+      p.born += dt;
+      if (p.r < 26) p.r += dt * 90;
+      if (p.born > 0.5) p.ready = true;
+    });
+    // вход героя в готовый портал
+    for (var i = 0; i < portals.length; i++) {
+      var p = portals[i];
+      if (!p.ready) continue;
+      if (Math.hypot(hero.x - p.x, hero.y - (hero.y > p.y ? p.y : p.y)) < p.r + 14 && Math.abs(hero.y - p.y) < p.r + 20) {
+        enterPortal(p);
+        break;
+      }
+    }
+  }
+
+  function enterPortal(p) {
+    if (p.target && p.target !== "map") {
+      portals = [];
+      goToGame(p.target);
+      return;
+    }
+    // карта: если есть второй портал — прыжок к нему, иначе просто отметка
+    var other = portals.find(function (q) {
+      return q !== p;
+    });
+    portals = portals.filter(function (q) {
+      return q !== p && q !== other;
+    });
+    if (other) {
+      hero.x = other.x;
+      hero.y = other.y;
+    }
+    hero.mode = "teleport";
+    portalFx("in");
+    dispatch("localTeleport", { x: hero.x, y: hero.y, screen: true });
+    toast("✨ Прошёл сквозь портал");
+    setTimeout(function () {
+      hero.mode = "idle";
+    }, 400);
+  }
+
+  function drawPortals(ctx) {
+    portalShots.forEach(function (s) {
+      ctx.save();
+      ctx.fillStyle = s.target === "map" ? "#38bdf8" : "#f59e0b";
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 16;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    });
+    portals.forEach(function (p) {
+      ctx.save();
+      var col = p.target === "map" ? "#38bdf8" : "#f59e0b";
+      ctx.strokeStyle = col;
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 20;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, p.r, p.r * 1.3, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = col;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      if (p.ready) {
+        ctx.fillStyle = "#fff";
+        ctx.font = "900 10px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(p.target === "map" ? "портал" : titleOf(p.target), p.x, p.y - p.r * 1.3 - 4);
+      }
+      ctx.restore();
+    });
+  }
+
   function onceLocalTeleport() {
     function onClick(e) {
       if (!hero.localAim) return;
@@ -916,6 +1084,7 @@
     });
     if (!clones.length) state.clone = false;
     if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
+    updatePortals(dt);
   }
 
   function drawFrame() {
@@ -923,11 +1092,15 @@
     var ctx = ui.canvas.getContext("2d");
     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
     if (!state.visible) return;
-    if (gameId() === "animal-hospital" && hospitalActive()) {
-      ui.root.classList.add("hospital-hide");
+    // Порталы рисуем всегда — даже если герой скрыт в больнице
+    var hideHero = gameId() === "animal-hospital" && hospitalActive();
+    if (hideHero) {
+      ui.root.classList.remove("hospital-hide");
+      drawPortals(ctx);
       return;
     }
     ui.root.classList.remove("hospital-hide");
+    drawPortals(ctx);
     drawHero(ctx, hero.x, hero.y, hero.facing, hero.phase, hero.mode, 1);
     clones.forEach(function (c) {
       drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
