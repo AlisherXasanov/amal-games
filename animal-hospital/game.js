@@ -3001,28 +3001,21 @@
         g.players[0].name = ch.name;
       }
     }
-    // Общий герой Амаль: человеческий облик хозяина, если нет другого tray-персонажа
+    // Главный герой Амаль: хозяин ВСЕГДА играет за своего персонажа (кроме явно
+    // выбранного tray-персонажа) — единый герой во всех играх, без «раздвоения».
     if (isOwner() && g.players[0] && !meta.trayTex) {
-      const preferAmal =
-        (selectedSkin && selectedSkin.tex === "amal") ||
-        !selectedSkin ||
-        !selectedSkin.tex ||
-        selectedSkin.id === "default" ||
-        selectedSkin.id === "mint" ||
-        selectedSkin.id === "night" ||
-        selectedSkin.id === "secret-amal";
-      if (preferAmal || (window.AmalWorld && selectedSkin && !selectedSkin.tex)) {
-        g.players[0].tex = "amal";
-        g.players[0].name = "Амаль";
-        g.players[0].color = "#5b8def";
-        if (!meta.skins.includes("secret-amal")) meta.skins.push("secret-amal");
-        meta.skinId = "secret-amal";
-        storeSet(SAVE, meta);
-      }
+      g.players[0].tex = "amal";
+      g.players[0].name = "Амаль";
+      g.players[0].color = "#5b8def";
+      if (!meta.skins.includes("secret-amal")) meta.skins.push("secret-amal");
+      meta.skinId = "secret-amal";
+      storeSet(SAVE, meta);
     }
     try {
+      // Пока идёт смена и есть управляемый персонаж — прячем оверлейного Амаля,
+      // чтобы не было двойника (играешь ровно одним героем).
       window.__AMAL_HOSPITAL_HERO__ = {
-        active: !!(g.players[0] && g.players[0].tex === "amal"),
+        active: !!g.players[0],
         getPlayer: () => (g && g.players && g.players[0]) || null,
       };
     } catch (_) {}

@@ -1346,6 +1346,13 @@
 
   function updateHero(dt) {
     if (!state.visible) return;
+    // В игре со своим персонажем (больница) оверлейный герой спрятан —
+    // не двигаем его и не крутим страницу, управляет только игровой персонаж.
+    if (gameId() === "animal-hospital" && hospitalActive()) {
+      updatePortals(dt);
+      if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
+      return;
+    }
     var speed = state.fly ? 380 : 240;
     if (hero.keys.shift) speed *= 1.8;
     var dx = 0;
