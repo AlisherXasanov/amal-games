@@ -641,6 +641,49 @@
       color: #b45309;
       font: 900 10px Nunito, sans-serif;
     }
+    /* Способности нестабильного куба */
+    .cube-abilities {
+      width: 100%;
+      padding: 6px;
+      border-radius: 13px;
+      background: rgba(124,58,237,.10);
+      border: 1px solid rgba(124,58,237,.25);
+    }
+    .cube-ab-title { font: 900 10px Nunito, sans-serif; color: #6d28d9; margin-bottom: 5px; text-align: center; }
+    .cube-ab-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .cube-ab-btn {
+      padding: 6px 4px;
+      border: 0;
+      border-radius: 9px;
+      cursor: pointer;
+      background: linear-gradient(135deg,#ff004c,#7c3aed 55%,#00e5ff);
+      color: #fff;
+      font: 900 10px Nunito, sans-serif;
+      text-shadow: 0 1px 2px rgba(0,0,0,.35);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .cube-ab-btn:hover, .cube-ab-btn:focus-visible { transform: translateY(-1px); filter: brightness(1.12); }
+    .cube-ab-btn:active { transform: scale(.94); }
+    .cube-ab-status {
+      margin-top: 5px;
+      min-height: 14px;
+      color: #6d28d9;
+      font: 800 10px/1.25 Nunito, sans-serif;
+      text-align: center;
+    }
+    /* Куб испаряется и тут же рождается заново */
+    .side-cube-frame.evaporate .menu-cube-stage { animation: cubeEvaporate .5s ease forwards; }
+    .side-cube-frame.respawn .menu-cube-stage { animation: cubeRespawn .5s cubic-bezier(.2,1.4,.5,1) forwards; }
+    @keyframes cubeEvaporate {
+      0% { opacity: 1; transform: scale(1) rotate(0); filter: blur(0); }
+      45% { opacity: .6; transform: scale(1.15) rotate(8deg); filter: blur(2px) brightness(1.6); }
+      100% { opacity: 0; transform: scale(.15) rotate(-24deg); filter: blur(6px) brightness(2); }
+    }
+    @keyframes cubeRespawn {
+      0% { opacity: 0; transform: scale(.2) rotate(20deg); filter: blur(5px) hue-rotate(120deg); }
+      60% { opacity: 1; transform: scale(1.12) rotate(-6deg); filter: blur(0) hue-rotate(0); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
     .side-cube-count { font: 800 12px Space Grotesk, Nunito, sans-serif; color: var(--teal); }
     .side-cube-count strong { color: var(--coral); }
     .side-cube-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
@@ -968,6 +1011,17 @@
         <button class="cube-use-btn steel" id="steelCubeChest" type="button">🛡️ Стальной (крепкий)</button>
         <div class="cube-power">⚡ Сила: <span id="cubePower">0</span></div>
       </div>
+    </div>
+    <div class="cube-abilities" aria-label="Способности нестабильного куба">
+      <div class="cube-ab-title">✨ Способности нестабильного куба</div>
+      <div class="cube-ab-grid">
+        <button type="button" class="cube-ab-btn" data-ab="rainbow">🌈 Радуга</button>
+        <button type="button" class="cube-ab-btn" data-ab="glitch">👻 Глитч</button>
+        <button type="button" class="cube-ab-btn" data-ab="boom">💥 Взрыв</button>
+        <button type="button" class="cube-ab-btn" data-ab="clone">🎲 Клон</button>
+        <button type="button" class="cube-ab-btn" data-ab="charge">⚡ Заряд</button>
+      </div>
+      <div class="cube-ab-status" id="cubeAbStatus">Нажми способность — куб применит её и переродится</div>
     </div>
     <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
     <button type="button" class="side-cube-comic" id="summonGhostBtn" style="background:linear-gradient(135deg,#7c3aed,#00a8c7)">👻 Вызвать глитч-куб</button>
@@ -1718,6 +1772,91 @@
           else localGhost();
         });
       }
+
+      // === Способности нестабильного куба ===
+      // Каждая способность делает эффект, потом куб «испаряется» и тут же рождается новый.
+      // Кнопки НИКОГДА не блокируются — способности не пропадают.
+      const abStatus = document.getElementById("cubeAbStatus");
+      const wildFrame = document.getElementById("sideCubeFrame");
+      const setAb = (t) => { if (abStatus) abStatus.textContent = t; };
+      const addPower = (n) => {
+        cubePower = Math.max(0, cubePower + n);
+        try { localStorage.setItem(POWER_KEY, String(cubePower)); } catch (_) { /* ignore */ }
+        if (powerOut) powerOut.textContent = cubePower;
+      };
+      const evaporateCube = () => {
+        if (!wildFrame) return;
+        wildFrame.classList.remove("respawn");
+        wildFrame.classList.add("evaporate");
+        setTimeout(() => {
+          wildFrame.classList.remove("evaporate");
+          wildFrame.classList.add("respawn");
+          setTimeout(() => wildFrame.classList.remove("respawn"), 520);
+        }, 500);
+      };
+      const fxRainbow = () => {
+        const o = document.createElement("div");
+        o.style.cssText = "position:fixed;inset:0;z-index:2147483040;pointer-events:none;" +
+          "background:conic-gradient(from 0deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);" +
+          "mix-blend-mode:screen;animation:menuGhostBlip .7s ease forwards";
+        document.body.appendChild(o);
+        setTimeout(() => { if (o.parentNode) o.remove(); }, 760);
+      };
+      const fxGlitch = () => {
+        const o = document.createElement("div");
+        o.style.cssText = "position:fixed;inset:0;z-index:2147483040;pointer-events:none;mix-blend-mode:screen;" +
+          "background:repeating-linear-gradient(0deg,rgba(255,0,80,.16),rgba(0,220,255,.16) 3px,transparent 6px)";
+        document.body.appendChild(o);
+        let n = 0;
+        const iv = setInterval(() => {
+          o.style.transform = "translate(" + (Math.random() * 12 - 6) + "px," + (Math.random() * 10 - 5) + "px)";
+          o.style.filter = "hue-rotate(" + Math.floor(Math.random() * 360) + "deg)";
+          if (++n > 8) { clearInterval(iv); if (o.parentNode) o.remove(); }
+        }, 90);
+      };
+      const spawnCloneCube = () => {
+        const el = document.createElement("div");
+        el.textContent = "🎲";
+        el.style.cssText = "position:fixed;z-index:2147483040;font-size:40px;pointer-events:none;" +
+          "left:" + Math.round(innerWidth * (0.2 + Math.random() * 0.6)) + "px;" +
+          "top:" + Math.round(innerHeight * (0.2 + Math.random() * 0.5)) + "px;" +
+          "filter:drop-shadow(0 0 12px #00e5ff);animation:cubeRespawn .6s ease forwards";
+        document.body.appendChild(el);
+        setTimeout(() => {
+          el.style.transition = "opacity .5s ease, transform .5s ease";
+          el.style.opacity = "0";
+          el.style.transform = "translateY(-30px) scale(.6)";
+        }, 1800);
+        setTimeout(() => { if (el.parentNode) el.remove(); }, 2400);
+      };
+      const cubeAbilities = {
+        rainbow: () => { fxRainbow(); addPower(1); setAb("🌈 Радуга! +1 силы"); },
+        glitch: () => { fxGlitch(); addPower(1); setAb("👻 Глитч по экрану! +1 силы"); },
+        boom: () => {
+          if (chest) {
+            chest.classList.remove("dent");
+            chest.classList.add("hit");
+            chestBroken = true;
+            setTimeout(() => { chest.textContent = "💎"; chest.classList.remove("hit"); }, 620);
+          }
+          const reward = 12 + Math.floor(Math.random() * 14);
+          addPower(reward);
+          setAb("💥 Взрыв! Сундук стёрт. +" + reward + " силы");
+        },
+        clone: () => { spawnCloneCube(); addPower(2); setAb("🎲 Клон куба создан! +2 силы"); },
+        charge: () => {
+          const gain = 6 + Math.floor(Math.random() * 12);
+          addPower(gain);
+          setAb("⚡ Заряд! +" + gain + " силы");
+        },
+      };
+      document.querySelectorAll(".cube-ab-btn").forEach((b) => {
+        b.addEventListener("click", () => {
+          const ab = b.getAttribute("data-ab");
+          if (cubeAbilities[ab]) cubeAbilities[ab]();
+          evaporateCube();
+        });
+      });
 
       // Нестабильность: куб иногда превращается в странную фигуру и возвращается назад
       const frame = document.getElementById("sideCubeFrame");
