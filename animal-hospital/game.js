@@ -2015,6 +2015,12 @@
       toast("🧃 Сок · только аномалиям (J / кнопка у окна)");
       return;
     }
+    if (itemId === "gun") {
+      grantInfiniteAmmo(p);
+      renderInv();
+      toast("🔫 Пистолет выдан · ∞ патроны (F — стрелять · R — зарядка)");
+      return;
+    }
     const def = ITEMS[itemId];
     if (!def) return;
     if (p.inv.length >= invMax(p) && !p.infiniteItems) {
@@ -2083,6 +2089,7 @@
       items.dataset.ready = "1";
       const pack = [
         { id: "coffee", label: "☕ Кофе" },
+        { id: "gun", label: "🔫 Пистолет" },
         { id: "juice", label: "🧃 Сок · ⚠" },
         { id: "medkit", label: "🧰 Аптечка" },
         { id: "bandage", label: "🩹 Бинт" },
