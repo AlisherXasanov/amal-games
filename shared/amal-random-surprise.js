@@ -31,15 +31,17 @@
     box = document.createElement("div");
     box.id = "amalSurpriseTimer";
     box.style.cssText =
-      "position:fixed;left:12px;bottom:12px;z-index:2147482000;" +
-      "padding:10px 14px;border-radius:14px;color:#fff;font:800 13px/1.25 system-ui,sans-serif;" +
+      "position:fixed;left:50%;transform:translateX(-50%);" +
+      "bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:2147482000;" +
+      "display:flex;align-items:center;gap:8px;white-space:nowrap;" +
+      "padding:9px 16px;border-radius:999px;color:#fff;font:800 13px/1.2 system-ui,sans-serif;" +
       "background:linear-gradient(135deg,#fb7185,#7c3aed 55%,#22d3ee);" +
-      "box-shadow:0 8px 24px rgba(124,58,237,.4);max-width:min(260px,80vw);cursor:default;" +
+      "box-shadow:0 8px 24px rgba(124,58,237,.4);max-width:92vw;cursor:default;" +
       "border:1px solid rgba(255,255,255,.35)";
     box.innerHTML =
-      '<div style="font-size:15px">🎁 Секретный подарок</div>' +
-      '<div id="amalSurpriseClock" style="font-size:18px;letter-spacing:.03em;margin-top:2px">--:--</div>' +
-      '<div style="opacity:.9;font-weight:700;font-size:11px;margin-top:2px">появится сам · не подглядывай</div>';
+      "<span>🎁 Секретный подарок</span>" +
+      '<span id="amalSurpriseClock" style="font-size:17px;letter-spacing:.04em;' +
+      'padding:2px 9px;border-radius:999px;background:rgba(0,0,0,.28)">--:--</span>';
     document.body.appendChild(box);
     return box;
   }
@@ -74,9 +76,7 @@
     if (box) {
       const clock = document.getElementById("amalSurpriseClock");
       if (clock) clock.textContent = "готово!";
-      box.innerHTML =
-        '<div style="font-size:15px">🎁 Подарок открылся!</div>' +
-        '<div style="opacity:.92;font-weight:700;font-size:12px;margin-top:2px">карточка уже в «Новых играх»</div>';
+      box.innerHTML = "<span>🎁 Подарок открылся! Карточка уже в «Новых играх»</span>";
       setTimeout(() => { if (box.parentNode) box.remove(); }, 8000);
     }
   }
