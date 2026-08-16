@@ -238,11 +238,16 @@
     st.textContent =
       "#amal-world-root{position:fixed;inset:0;z-index:2147483300;pointer-events:none;font-family:system-ui,Segoe UI,sans-serif}" +
       "#amal-world-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}" +
-      "#amal-world-dock{position:fixed;right:78px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147483302;pointer-events:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end;max-width:calc(100vw - 96px)}" +
-      "#amal-world-dock .aw-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}" +
-      "#amal-world-dock button{border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 11px;cursor:pointer;background:linear-gradient(160deg,#1e293b,#0f172a);color:#fff;font:800 12px system-ui;box-shadow:0 8px 20px rgba(0,0,0,.35)}" +
+      "#amal-world-dock{position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:2147483305;pointer-events:auto;display:flex;align-items:center;gap:8px}" +
+      "#amal-world-fab{width:54px;height:54px;flex:0 0 auto;border-radius:16px;border:1px solid rgba(167,139,250,.6);background:linear-gradient(160deg,#7c3aed,#2563eb);color:#fff;font-size:26px;cursor:pointer;box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 0 rgba(167,139,250,.6);animation:awFabPulse 2.4s ease-in-out infinite}" +
+      "@keyframes awFabPulse{0%,100%{box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 0 0 rgba(167,139,250,.5)}50%{box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 0 10px rgba(167,139,250,0)}}" +
+      "#amal-world-tools{display:none;flex-direction:column;gap:6px;align-items:stretch;padding:10px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(10,12,22,.9);backdrop-filter:blur(8px);box-shadow:0 16px 40px rgba(0,0,0,.55);max-height:88vh;overflow:auto;width:200px}" +
+      "#amal-world-dock.open #amal-world-tools{display:flex}" +
+      "#amal-world-dock .aw-row{display:flex;flex-direction:column;gap:6px}" +
+      "#amal-world-dock button{border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:9px 11px;cursor:pointer;background:linear-gradient(160deg,#1e293b,#0f172a);color:#fff;font:800 12px system-ui;box-shadow:0 8px 20px rgba(0,0,0,.35);text-align:left}" +
       "#amal-world-dock button.primary{background:linear-gradient(160deg,#7c3aed,#2563eb)}" +
-      "#amal-world-dock .aw-energy{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.88);border:1px solid rgba(103,232,249,.35);color:#a5f3fc;font:800 12px system-ui}" +
+      "#amal-world-dock button.heal{background:linear-gradient(135deg,#10b981,#059669)}" +
+      "#amal-world-dock .aw-energy{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.88);border:1px solid rgba(103,232,249,.35);color:#a5f3fc;font:800 12px system-ui;text-align:center}" +
       "#amal-world-dock .aw-energy.full{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}" +
       "#amal-world-msg{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:2147483310;max-width:88vw;padding:10px 14px;border-radius:14px;background:rgba(76,29,149,.92);color:#fff;font:900 14px system-ui;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}" +
       "#amal-world-msg.show{opacity:1}" +
@@ -265,7 +270,7 @@
       ".aw-portal-burst{position:fixed;left:50%;top:50%;width:min(70vw,420px);height:min(70vw,420px);margin:-35vmin;border-radius:50%;background:radial-gradient(circle,#a5f3fc,#7c3aed 45%,transparent 70%);animation:awPortalIn .85s ease forwards}" +
       ".aw-portal-veil{position:fixed;inset:0;background:radial-gradient(circle at 50% 50%,rgba(103,232,249,.55),rgba(15,23,42,.92));animation:awPortalOut .7s ease forwards}" +
       "#amal-world-root.hospital-hide #amal-world-canvas{opacity:0}" +
-      "@media(max-width:820px){#amal-world-dock{right:8px;left:8px;bottom:70px;max-width:none;align-items:center}#amal-world-dock button{font-size:11px;padding:7px 9px}}";
+      "@media(max-width:820px){#amal-world-dock{left:6px;top:auto;bottom:calc(70px + env(safe-area-inset-bottom,0px));transform:none}#amal-world-tools{width:min(72vw,220px);max-height:70vh}#amal-world-dock button{font-size:11px;padding:7px 9px}}";
     document.head.appendChild(st);
   }
 
@@ -278,17 +283,19 @@
       '<canvas id="amal-world-canvas"></canvas>' +
       '<div id="amal-world-msg"></div>' +
       '<div id="amal-world-dock">' +
+      '<button type="button" id="amal-world-fab" title="Силы Амаля">🦸</button>' +
+      '<div class="aw-tools" id="amal-world-tools">' +
       '<div class="aw-energy" id="amal-world-energy">⚡ 100%</div>' +
       '<div class="aw-row">' +
-      '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
-      '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
+      '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
       '<button type="button" class="primary" id="amal-world-portalgun">🔫 Портал-пушка</button>' +
       '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
-      '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
-      '<button type="button" id="amal-world-heal">💚 Супер-лечение</button>' +
-      '<button type="button" id="amal-world-powers-btn">⚡ 20 сил</button>' +
+      '<button type="button" class="heal" id="amal-world-heal">💚 Супер-лечение</button>' +
+      '<button type="button" id="amal-world-powers-btn">⚡ Силы</button>' +
+      '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
+      '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
-      "</div></div>" +
+      "</div></div></div>" +
       '<div id="amal-world-panel"></div>' +
       '<div id="amal-world-tele"></div>';
     document.body.appendChild(root);
@@ -303,6 +310,9 @@
     hero.x = Math.max(80, (innerWidth || 800) * 0.72);
     hero.y = Math.max(120, (innerHeight || 600) * 0.62);
 
+    document.getElementById("amal-world-fab").onclick = function () {
+      root.classList.toggle("open");
+    };
     document.getElementById("amal-world-toggle").onclick = function () {
       state.visible = !state.visible;
       save();
@@ -889,7 +899,7 @@
     for (var i = 0; i < portals.length; i++) {
       var p = portals[i];
       if (!p.ready) continue;
-      if (Math.hypot(hero.x - p.x, hero.y - (hero.y > p.y ? p.y : p.y)) < p.r + 14 && Math.abs(hero.y - p.y) < p.r + 20) {
+      if (Math.hypot(hero.x - p.x, hero.y - p.y) < p.r + 16) {
         enterPortal(p);
         break;
       }
@@ -1016,12 +1026,24 @@
       ctx.arc(0, -18 + bob, 28, 0, Math.PI * 2);
       ctx.stroke();
     }
-    var glow = ctx.createRadialGradient(0, -20 + bob, 4, 0, -20 + bob, 46);
-    glow.addColorStop(0, "rgba(167,139,250,.28)");
+    var intense = mode === "fly" || mode === "run" || mode === "teleport" || hero.teleporting;
+    if (intense) {
+      for (var tr = 1; tr <= 4; tr++) {
+        ctx.globalAlpha = (alpha == null ? 1 : alpha) * (0.16 - tr * 0.03);
+        ctx.fillStyle = mode === "teleport" || hero.teleporting ? "#67e8f9" : "#a78bfa";
+        ctx.beginPath();
+        ctx.ellipse(tr * 2.2 * -hero.facing, -18 + bob + tr * 1.5, 12, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+    }
+    var auraR = intense ? 54 : 46;
+    var glow = ctx.createRadialGradient(0, -20 + bob, 4, 0, -20 + bob, auraR);
+    glow.addColorStop(0, intense ? "rgba(103,232,249,.4)" : "rgba(167,139,250,.28)");
     glow.addColorStop(1, "rgba(167,139,250,0)");
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(0, -20 + bob, 46, 0, Math.PI * 2);
+    ctx.arc(0, -20 + bob, auraR, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = "rgba(0,0,0,.28)";
@@ -1135,11 +1157,33 @@
     ctx.arc(-3.4, -32 + bob, 1.3 * blink + 0.3, 0, Math.PI * 2);
     ctx.arc(5.2, -32 + bob, 1.3 * blink + 0.3, 0, Math.PI * 2);
     ctx.fill();
-    if (!state.beard) {
-      ctx.strokeStyle = "rgba(120,53,15,.75)";
-      ctx.lineWidth = 1.4;
+    var creepy = mode === "teleport" || hero.teleporting || state.creepy;
+    if (creepy) {
+      ctx.fillStyle = "rgba(239,68,68,.95)";
       ctx.beginPath();
-      ctx.arc(0.5, -28 + bob, 4, 0.25 * Math.PI, 0.75 * Math.PI);
+      ctx.arc(-3.4, -32 + bob, 2.1, 0, Math.PI * 2);
+      ctx.arc(5.2, -32 + bob, 2.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#0b0b0b";
+      ctx.beginPath();
+      ctx.moveTo(-6, -26 + bob);
+      ctx.quadraticCurveTo(0.5, -18 + bob, 7, -26 + bob);
+      ctx.quadraticCurveTo(0.5, -23 + bob, -6, -26 + bob);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.85)";
+      ctx.lineWidth = 0.7;
+      for (var ti = -4; ti <= 4; ti += 2) {
+        ctx.beginPath();
+        ctx.moveTo(ti, -25.5 + bob);
+        ctx.lineTo(ti, -22.5 + bob);
+        ctx.stroke();
+      }
+    } else if (!state.beard) {
+      ctx.strokeStyle = "rgba(120,53,15,.8)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0.5, -27 + bob, 4.2, 0.12 * Math.PI, 0.88 * Math.PI);
       ctx.stroke();
     }
 
@@ -1158,6 +1202,17 @@
     ctx.textAlign = "center";
     ctx.fillText(label, 0, -45 + bob);
     ctx.restore();
+
+    if (creepy) {
+      for (var gi = 0; gi < 3; gi++) {
+        var gy = -40 + bob + Math.random() * 56;
+        var gx = (Math.random() - 0.5) * 10;
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = gi % 2 ? "rgba(103,232,249,.6)" : "rgba(236,72,153,.6)";
+        ctx.fillRect(-14 + gx, gy, 28, 2 + Math.random() * 2);
+      }
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+    }
     ctx.restore();
   }
 

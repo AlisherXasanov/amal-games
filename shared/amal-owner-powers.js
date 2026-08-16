@@ -1096,7 +1096,7 @@
   }
 
   function ensureWorldCharacterLib() {
-    injectSharedScript("amal-world-character.js?v=7", "AmalWorld");
+    injectSharedScript("amal-world-character.js?v=8", "AmalWorld");
   }
 
   function boot() {
