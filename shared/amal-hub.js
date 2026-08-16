@@ -5610,7 +5610,23 @@
       "@keyframes amalGhostBlip{0%{opacity:0;transform:translate(-3px,2px) scale(.8)}" +
       "30%{opacity:.95;transform:translate(3px,-2px) scale(1.08)}" +
       "60%{opacity:.7;transform:translate(-2px,1px) scale(.96)}" +
-      "100%{opacity:0;transform:translate(2px,-1px) scale(1.05)}}";
+      "100%{opacity:0;transform:translate(2px,-1px) scale(1.05)}}" +
+      /* Ловимый глитч-куб: можно кликнуть и «поймать» */
+      "#amal-glitch-catch{position:fixed;z-index:2147483045;pointer-events:auto;cursor:pointer;" +
+      "display:flex;flex-direction:column;align-items:center;gap:4px;" +
+      "transition:left .3s ease,top .3s ease;animation:amalGcJit .5s steps(2) infinite}" +
+      "#amal-glitch-catch .amal-gc-face{width:56px;height:56px;display:grid;place-items:center;font-size:34px;border-radius:12px;" +
+      "background:linear-gradient(135deg,#ff004c,#7c3aed 45%,#00e5ff);box-shadow:0 0 24px rgba(0,229,255,.85);" +
+      "color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);mix-blend-mode:screen}" +
+      "#amal-glitch-catch .amal-gc-tag{font:900 11px Nunito,sans-serif;color:#fff;background:rgba(124,58,237,.9);" +
+      "padding:2px 8px;border-radius:8px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.45)}" +
+      "@keyframes amalGcJit{0%{filter:hue-rotate(0deg)}50%{transform:translate(2px,-1px);filter:hue-rotate(90deg)}" +
+      "100%{transform:translate(-2px,1px);filter:hue-rotate(0deg)}}" +
+      "#amal-glitch-toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:2147483046;" +
+      "pointer-events:none;font:900 13px Nunito,sans-serif;color:#fff;text-align:center;max-width:82vw;" +
+      "background:linear-gradient(135deg,#ff004c,#7c3aed);padding:8px 14px;border-radius:12px;" +
+      "box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transition:opacity .2s ease}" +
+      "#amal-glitch-toast.show{opacity:1}";
     document.head.appendChild(st);
   }
   function flashGlitchGhost() {
@@ -5634,9 +5650,93 @@
       /* ignore */
     }
   }
+  // Небольшое сообщение поверх экрана — видно всем игрокам, не только хозяину
+  function glitchToast(text) {
+    try {
+      var t = document.getElementById("amal-glitch-toast");
+      if (!t) {
+        ensureGlitchGhostStyles();
+        t = document.createElement("div");
+        t.id = "amal-glitch-toast";
+        document.body.appendChild(t);
+      }
+      t.textContent = String(text || "");
+      t.classList.add("show");
+      if (t._hide) clearTimeout(t._hide);
+      t._hide = setTimeout(function () { t.classList.remove("show"); }, 3600);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  function addCubePower(n) {
+    try {
+      var k = "amal-cube-power-v1";
+      var v = Math.max(0, (parseInt(localStorage.getItem(k), 10) || 0) + n);
+      localStorage.setItem(k, String(v));
+      return v;
+    } catch (_) {
+      return 0;
+    }
+  }
+  /* Ловимый глитч-куб: «ошибка» задерживается на экране, его можно поймать кликом */
+  function spawnCatchGlitchCube() {
+    try {
+      if (document.hidden) return;
+      if (document.getElementById("amal-glitch-catch")) return; // один за раз
+      ensureGlitchGhostStyles();
+      var wrap = document.createElement("div");
+      wrap.id = "amal-glitch-catch";
+      wrap.setAttribute("role", "button");
+      wrap.setAttribute("tabindex", "0");
+      wrap.setAttribute("aria-label", "Поймать глитч-куб");
+      var icons = ["🎲", "🔷", "⬡", "🧊", "🎲"];
+      var face = icons[Math.floor(Math.random() * icons.length)];
+      wrap.innerHTML =
+        '<span class="amal-gc-face">' + face + "</span>" +
+        '<span class="amal-gc-tag">⚠ ГЛИТЧ! Поймай куб</span>';
+      var vw = global.innerWidth || 800;
+      var vh = global.innerHeight || 600;
+      var place = function () {
+        wrap.style.left = Math.round(vw * (0.1 + Math.random() * 0.75)) + "px";
+        wrap.style.top = Math.round(vh * (0.14 + Math.random() * 0.62)) + "px";
+      };
+      place();
+      document.body.appendChild(wrap);
+      var jump = setInterval(place, 900); // куб «убегает»
+      var caught = false;
+      var life;
+      var done = function () {
+        clearInterval(jump);
+        if (life) clearTimeout(life);
+        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      };
+      var onCatch = function (e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        if (caught) return;
+        caught = true;
+        var reward = 15 + Math.floor(Math.random() * 21);
+        addCubePower(reward);
+        done();
+        glitchToast("🧊 Глитч-куб пойман! Это была ошибка — теперь он под твоим контролем. +" + reward + " силы");
+      };
+      wrap.addEventListener("click", onCatch);
+      wrap.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") onCatch(e);
+      });
+      life = setTimeout(function () {
+        if (caught) return;
+        done();
+        glitchToast("👻 Глитч исчез — куб ускользнул");
+      }, 4600);
+      glitchToast("⚠ Ошибка в игре: на экране глитч-куб! Успей поймать");
+    } catch (_) {
+      /* ignore */
+    }
+  }
   // Любой игрок может вызвать глитч-куб сам
   try {
     global.amalGlitchGhost = flashGlitchGhost;
+    global.amalGlitchCatch = spawnCatchGlitchCube;
   } catch (_) {
     /* ignore */
   }
@@ -5647,13 +5747,16 @@
       // редко: раз в 40–110 секунд
       var wait = 40000 + Math.floor(Math.random() * 70000);
       setTimeout(function () {
-        flashGlitchGhost();
+        // 40% — это «ошибка»: ловимый глитч-куб; иначе — короткая вспышка
+        if (Math.random() < 0.4) spawnCatchGlitchCube();
+        else flashGlitchGhost();
         loop();
       }, wait);
     };
     // первый показ не сразу
     setTimeout(function () {
-      flashGlitchGhost();
+      if (Math.random() < 0.4) spawnCatchGlitchCube();
+      else flashGlitchGhost();
       loop();
     }, 12000 + Math.floor(Math.random() * 18000));
   }
