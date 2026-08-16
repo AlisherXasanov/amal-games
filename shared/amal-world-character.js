@@ -32,6 +32,7 @@
     rainbow: false,
     clone: false,
     visible: true,
+    portalGun: false,
   };
 
   var ui = {
@@ -63,6 +64,8 @@
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
+  var portalGunEquipped = false; // предмет всегда в руках — стреляй сколько угодно
+  var portalClickHandler = null;
   var pendingPortalTarget = "map"; // "map" — переход по экрану; иначе id игры
   var portalShots = [];
   var portals = [];
@@ -95,6 +98,7 @@
           lastGame: state.lastGame,
           history: state.history.slice(0, HISTORY_MAX),
           visible: state.visible,
+          portalGun: state.portalGun,
         })
       );
     } catch (_) {}
@@ -247,6 +251,7 @@
       "#amal-world-dock button{border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:9px 11px;cursor:pointer;background:linear-gradient(160deg,#1e293b,#0f172a);color:#fff;font:800 12px system-ui;box-shadow:0 8px 20px rgba(0,0,0,.35);text-align:left}" +
       "#amal-world-dock button.primary{background:linear-gradient(160deg,#7c3aed,#2563eb)}" +
       "#amal-world-dock button.heal{background:linear-gradient(135deg,#10b981,#059669)}" +
+      "#amal-world-dock button.equipped{background:linear-gradient(135deg,#f59e0b,#dc2626);border-color:#fde68a;box-shadow:0 0 0 2px rgba(253,224,71,.5),0 8px 20px rgba(0,0,0,.35)}" +
       "#amal-world-dock .aw-energy{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.88);border:1px solid rgba(103,232,249,.35);color:#a5f3fc;font:800 12px system-ui;text-align:center}" +
       "#amal-world-dock .aw-energy.full{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}" +
       "#amal-world-msg{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:2147483310;max-width:88vw;padding:10px 14px;border-radius:14px;background:rgba(76,29,149,.92);color:#fff;font:900 14px system-ui;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}" +
@@ -328,8 +333,12 @@
       toast(state.beard ? "🧔 Борода надета" : "Борода снята");
     };
     document.getElementById("amal-world-portalgun").onclick = function () {
+      if (portalGunEquipped) {
+        equipPortalGun(false);
+        return;
+      }
       pendingPortalTarget = "map";
-      armPortalGun();
+      equipPortalGun(true);
     };
     document.getElementById("amal-world-portalgame").onclick = function () {
       ui.panel.classList.remove("open");
@@ -352,6 +361,12 @@
     };
     document.getElementById("amal-world-cancel").onclick = cancelModes;
 
+    if (state.portalGun) {
+      pendingPortalTarget = "map";
+      setTimeout(function () {
+        equipPortalGun(true);
+      }, 300);
+    }
     addEventListener("keydown", onKey);
     addEventListener("keyup", function (e) {
       hero.keys[e.key.toLowerCase()] = false;
@@ -626,7 +641,7 @@
     state.clone = false;
     clones = [];
     hero.localAim = false;
-    portalGunArmed = false;
+    equipPortalGun(false);
     portalShots = [];
     portals = [];
     document.documentElement.style.filter = "";
@@ -830,25 +845,43 @@
   }
 
   function armPortalGun() {
-    if (!isOwner()) return;
-    if (ui.panel) ui.panel.classList.remove("open");
-    if (ui.teleport) ui.teleport.classList.remove("open");
-    portalGunArmed = true;
-    var where = pendingPortalTarget === "map" ? "по карте" : "в «" + titleOf(pendingPortalTarget) + "»";
-    toast("🔫 Портал-пушка готова · кликни куда выстрелить (" + where + ")");
-    onceFirePortal();
+    // Теперь портал-пушка — постоянный предмет: включаем режим стрельбы.
+    equipPortalGun(true);
   }
 
-  function onceFirePortal() {
-    function onClick(e) {
-      if (!portalGunArmed) return;
-      var t = e.target;
-      if (t && t.closest && t.closest("#amal-world-dock,#amal-world-panel,#amal-world-tele")) return;
-      portalGunArmed = false;
-      removeEventListener("pointerdown", onClick, true);
-      firePortal(e.clientX, e.clientY, pendingPortalTarget);
+  function equipPortalGun(on) {
+    if (!isOwner()) return;
+    if (on == null) on = !portalGunEquipped;
+    portalGunEquipped = !!on;
+    portalGunArmed = portalGunEquipped;
+    state.portalGun = portalGunEquipped;
+    save();
+    var btn = document.getElementById("amal-world-portalgun");
+    if (btn) {
+      btn.classList.toggle("equipped", portalGunEquipped);
+      btn.textContent = portalGunEquipped ? "🔫 Пушка ВКЛ (стреляй)" : "🔫 Портал-пушка";
     }
-    addEventListener("pointerdown", onClick, true);
+    if (!portalGunEquipped) {
+      if (portalClickHandler) removeEventListener("pointerdown", portalClickHandler, true);
+      portalClickHandler = null;
+      toast("🔫 Портал-пушка убрана");
+      return;
+    }
+    if (ui.panel) ui.panel.classList.remove("open");
+    if (ui.teleport) ui.teleport.classList.remove("open");
+    var dock = document.getElementById("amal-world-dock");
+    if (dock) dock.classList.remove("open");
+    var where = pendingPortalTarget === "map" ? "по карте" : "в «" + titleOf(pendingPortalTarget) + "»";
+    toast("🔫 Пушка в руках · кликай куда угодно — стреляет порталами (" + where + ")");
+    if (!portalClickHandler) {
+      portalClickHandler = function (e) {
+        if (!portalGunEquipped) return;
+        var t = e.target;
+        if (t && t.closest && t.closest("#amal-world-dock,#amal-world-panel,#amal-world-tele,#amal-world-fab")) return;
+        firePortal(e.clientX, e.clientY, pendingPortalTarget);
+      };
+      addEventListener("pointerdown", portalClickHandler, true);
+    }
   }
 
   function firePortal(tx, ty, target) {
