@@ -1020,6 +1020,7 @@
         <button type="button" class="cube-ab-btn" data-ab="boom">💥 Взрыв</button>
         <button type="button" class="cube-ab-btn" data-ab="clone">🎲 Клон</button>
         <button type="button" class="cube-ab-btn" data-ab="charge">⚡ Заряд</button>
+        <button type="button" class="cube-ab-btn" data-ab="teleport">🌀 Телепорт</button>
       </div>
       <div class="cube-ab-status" id="cubeAbStatus">Нажми способность — куб применит её и переродится</div>
     </div>
@@ -1848,6 +1849,24 @@
           const gain = 6 + Math.floor(Math.random() * 12);
           addPower(gain);
           setAb("⚡ Заряд! +" + gain + " силы");
+        },
+        teleport: () => {
+          const cards = Array.prototype.slice.call(document.querySelectorAll("a.card[href]"));
+          if (!cards.length) { setAb("🌀 Некуда телепортироваться"); return; }
+          const dest = cards[Math.floor(Math.random() * cards.length)];
+          let href = dest.getAttribute("href");
+          const h2 = dest.querySelector("h2");
+          setAb("🌀 Телепорт → " + (h2 ? h2.textContent : "игра"));
+          fxRainbow();
+          try {
+            const isOwner = new URLSearchParams(location.search).get("owner") === "AmalOwner2026" ||
+              ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some((k) => localStorage.getItem(k) === "1");
+            if (isOwner && href.indexOf("owner=") < 0) {
+              href += (href.indexOf("?") >= 0 ? "&" : "?") + "owner=AmalOwner2026";
+            }
+          } catch (_) { /* ignore */ }
+          addPower(1);
+          setTimeout(() => { location.href = href; }, 700);
         },
       };
       document.querySelectorAll(".cube-ab-btn").forEach((b) => {
