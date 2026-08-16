@@ -4745,24 +4745,30 @@
       }
     }
 
-    g.eventCd -= dt;
-    if (g.eventCd <= 0 && g.shift.eventRate > 0) {
-      if (!(g.ownerQuiet || g.noAnomalies) && Math.random() < Math.min(0.55, g.shift.eventRate + 0.08)) {
-        spawnEvent();
+    // Тайм-Стоп Амаля: события не появляются, пока время остановлено
+    if (!g.amalTimeStop) {
+      g.eventCd -= dt;
+      if (g.eventCd <= 0 && g.shift.eventRate > 0) {
+        if (!(g.ownerQuiet || g.noAnomalies) && Math.random() < Math.min(0.55, g.shift.eventRate + 0.08)) {
+          spawnEvent();
+        }
+        // было: 14 - shift.id → на смене 33 eventCd=-19 → монстры каждый кадр
+        const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
+        g.eventCd = Math.max(11, 18 - pace * 0.55);
       }
-      // было: 14 - shift.id → на смене 33 eventCd=-19 → монстры каждый кадр
-      const pace = Math.min(10, Math.max(1, Number(g.shift.pace) || Math.min(Number(g.shift.id) || 1, 10)));
-      g.eventCd = Math.max(11, 18 - pace * 0.55);
     }
 
-    for (const m of g.monsters.slice()) {
-      m.t -= dt;
-      m.x += Math.sin(g.t * 2 + m.x * 0.01) * 40 * dt;
-      m.y += Math.cos(g.t * 1.5 + m.y * 0.01) * 20 * dt;
-      if (m.t <= 0) {
-        hurtSanity(12);
-        showEvent("Аномалия натворила дел…", 2.2);
-        g.monsters = g.monsters.filter((x) => x.id !== m.id);
+    // Тайм-Стоп: монстры замирают (не двигаются и не «срабатывают»)
+    if (!g.amalTimeStop) {
+      for (const m of g.monsters.slice()) {
+        m.t -= dt;
+        m.x += Math.sin(g.t * 2 + m.x * 0.01) * 40 * dt;
+        m.y += Math.cos(g.t * 1.5 + m.y * 0.01) * 20 * dt;
+        if (m.t <= 0) {
+          hurtSanity(12);
+          showEvent("Аномалия натворила дел…", 2.2);
+          g.monsters = g.monsters.filter((x) => x.id !== m.id);
+        }
       }
     }
     if (g.headBanger) {
@@ -5958,6 +5964,34 @@
     draw();
     requestAnimationFrame(frame);
   }
+
+  // Тесла-силы из админ-куба: хаб шлёт событие 'amal-power', игра выполняет по-настоящему
+  window.addEventListener("amal-power", (e) => {
+    try {
+      const d = (e && e.detail) || {};
+      if (d.type === "killAll") {
+        if (g && g.monsters) {
+          g.monsters = [];
+          g.headBanger = null;
+          g.coins = (g.coins || 0) + 50;
+        }
+        if (typeof eventBanner !== "undefined" && eventBanner) hideEl(eventBanner);
+        if (typeof toast === "function") toast("💥 BZZZ! Все аномалии уничтожены");
+      } else if (d.type === "timestop") {
+        if (g) g.amalTimeStop = !!d.on;
+      } else if (d.type === "invincible") {
+        if (g) g.amalInvincible = !!d.on;
+      } else if (d.type === "coinMult") {
+        if (g) {
+          const f = Number(d.factor) || 1000000;
+          g.coins = Math.max((g.coins || 0) * f, f);
+          if (typeof toast === "function") toast("🪙 Монеты ×" + f);
+        }
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  });
 
   document.getElementById("btnStart").addEventListener("click", startShift);
   const brandEl = document.querySelector(".brand");

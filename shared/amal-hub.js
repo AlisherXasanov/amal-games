@@ -4725,6 +4725,98 @@
     fxSound("laser");
   }
 
+  /* ── Тесла-силы Амаля: BZZZ, Тайм-стоп, Бессмертие, Дюп монет, X-Ray ──
+     Эффекты работают в любой игре, а сигнал через событие 'amal-power'
+     позволяет каждой игре сделать настоящее действие (убить врагов и т.п.). */
+  function amalDispatchPower(type, extra) {
+    try {
+      var detail = { type: type };
+      if (extra) for (var k in extra) detail[k] = extra[k];
+      global.dispatchEvent(new CustomEvent("amal-power", { detail: detail }));
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  function fxTeslaLightning() {
+    ensureFxLayer();
+    var flash = document.createElement("div");
+    flash.style.cssText =
+      "position:fixed;inset:0;z-index:2147483044;pointer-events:none;mix-blend-mode:screen;" +
+      "background:radial-gradient(circle at 50% 40%,rgba(180,240,255,.95),rgba(120,80,255,.35) 40%,transparent 70%);" +
+      "opacity:0;animation:amalBzzz .5s ease forwards";
+    document.body.appendChild(flash);
+    if (!document.getElementById("amal-bzzz-style")) {
+      var st = document.createElement("style");
+      st.id = "amal-bzzz-style";
+      st.textContent =
+        "@keyframes amalBzzz{0%{opacity:0}12%{opacity:1}25%{opacity:.2}40%{opacity:.9}100%{opacity:0}}" +
+        "@keyframes amalBolt{0%{opacity:0;transform:scaleY(0)}20%{opacity:1;transform:scaleY(1)}100%{opacity:0}}";
+      document.head.appendChild(st);
+    }
+    for (var i = 0; i < 6; i++) {
+      var bolt = document.createElement("div");
+      var x = Math.round((global.innerWidth || 800) * (0.1 + Math.random() * 0.8));
+      bolt.style.cssText =
+        "position:fixed;top:0;left:" + x + "px;width:3px;height:100vh;z-index:2147483044;pointer-events:none;" +
+        "background:linear-gradient(180deg,#eaffff,#7c4dff);box-shadow:0 0 14px #9be8ff;transform-origin:top;" +
+        "opacity:0;animation:amalBolt .4s ease " + (i * 0.03) + "s forwards";
+      document.body.appendChild(bolt);
+      (function (b) { setTimeout(function () { if (b.parentNode) b.remove(); }, 600); })(bolt);
+    }
+    setTimeout(function () { if (flash.parentNode) flash.remove(); }, 560);
+    try { fxSound("laser"); } catch (_) { /* ignore */ }
+  }
+  var amalTimeStopOn = false;
+  function fxTimeStop(force) {
+    amalTimeStopOn = typeof force === "boolean" ? force : !amalTimeStopOn;
+    var ex = document.getElementById("amal-timestop");
+    if (!amalTimeStopOn) {
+      if (ex) ex.remove();
+      return amalTimeStopOn;
+    }
+    if (!ex) {
+      ex = document.createElement("div");
+      ex.id = "amal-timestop";
+      ex.style.cssText =
+        "position:fixed;inset:0;z-index:2147483043;pointer-events:none;" +
+        "background:radial-gradient(circle at 50% 45%,rgba(120,220,255,.10),rgba(40,90,180,.22));" +
+        "backdrop-filter:hue-rotate(160deg) saturate(1.2);" +
+        "display:flex;align-items:flex-start;justify-content:center";
+      ex.innerHTML =
+        '<div style="margin-top:12%;font:900 16px Nunito,sans-serif;color:#eaffff;' +
+        'background:rgba(20,60,120,.7);padding:8px 16px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)">' +
+        "⏸ ВРЕМЯ ОСТАНОВЛЕНО</div>";
+      document.body.appendChild(ex);
+    }
+    return amalTimeStopOn;
+  }
+  function fxTeslaShield() {
+    ensureFxLayer();
+    var el = document.createElement("div");
+    el.style.cssText =
+      "position:fixed;inset:0;z-index:2147483043;pointer-events:none;border-radius:0;" +
+      "box-shadow:inset 0 0 80px 20px rgba(120,220,255,.65),inset 0 0 160px 40px rgba(124,77,255,.4);" +
+      "opacity:0;transition:opacity .25s ease";
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { el.style.opacity = "1"; });
+    setTimeout(function () { el.style.opacity = "0"; }, 900);
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 1200);
+  }
+  var amalXrayOn = false;
+  function fxXrayToggle(force) {
+    amalXrayOn = typeof force === "boolean" ? force : !amalXrayOn;
+    if (!document.getElementById("amal-xray-style")) {
+      var st = document.createElement("style");
+      st.id = "amal-xray-style";
+      st.textContent =
+        "html.amal-xray{filter:invert(1) hue-rotate(180deg) saturate(2.5) contrast(1.2)}" +
+        "html.amal-xray img,html.amal-xray canvas,html.amal-xray video{filter:invert(1) hue-rotate(180deg)}";
+      document.head.appendChild(st);
+    }
+    document.documentElement.classList.toggle("amal-xray", amalXrayOn);
+    return amalXrayOn;
+  }
+
   /* ── RGB · нестабильные эффекты: помехи, разрыв экрана, хрома, лаг ── */
   function fxOverlay(css, ms, tick) {
     ensureFxLayer();
@@ -5147,6 +5239,15 @@
           '<button type="button" class="acd-btn amber" data-cube="super-announce">📣 Объявление всем</button>' +
           '<button type="button" class="acd-btn" data-cube="super-chatclear">🧹 Очистить чат</button>',
       ) +
+      cubePanelHtml(
+        "tesla",
+        "⚡ ТЕСЛА-СИЛЫ АМАЛЯ",
+        '<button type="button" class="acd-btn max" data-cube="power-bzzz">💥 BZZZ · Аннигиляция врагов</button>' +
+          '<button type="button" class="acd-btn" data-cube="power-timestop">⏳ Тайм-Стоп · заморозить время</button>' +
+          '<button type="button" class="acd-btn" data-cube="power-immortal">🛡️ Бессмертный Тесла</button>' +
+          '<button type="button" class="acd-btn amber" data-cube="power-dupe">🪙 Дюп монет · ×1 000 000</button>' +
+          '<button type="button" class="acd-btn" data-cube="power-xray">👁️ Взгляд Робота · X-Ray</button>',
+      ) +
       "</div>";
     dash.addEventListener("click", (e) => {
       const fx = e.target.closest("[data-fx]");
@@ -5259,6 +5360,38 @@
           ["god", "heal", "max"].forEach(function (a) { runCubeAbility(a); });
           fxRgbOverload();
           showHubToast("🔥 Супер-набор: бессмертие + хилл + всё на макс");
+          return;
+        }
+        if (act === "power-bzzz") {
+          fxTeslaLightning();
+          amalDispatchPower("killAll");
+          showHubToast("💥 BZZZ! Молния Теслы — враги на уровне уничтожены");
+          return;
+        }
+        if (act === "power-timestop") {
+          var on = fxTimeStop();
+          amalDispatchPower("timestop", { on: on });
+          showHubToast(on ? "⏳ Время остановлено — собирай спокойно" : "▶️ Время снова идёт");
+          return;
+        }
+        if (act === "power-immortal") {
+          try { global.__amalInvincible = true; } catch (_) { /* ignore */ }
+          fxTeslaShield();
+          runCubeAbility("god");
+          amalDispatchPower("invincible", { on: true });
+          showHubToast("🛡️ Бессмертный Тесла: удары превращаются в искры");
+          return;
+        }
+        if (act === "power-dupe") {
+          amalDispatchPower("coinMult", { factor: 1000000 });
+          runCubeAbility("coins");
+          showHubToast("🪙 Дюп монет ×1 000 000!");
+          return;
+        }
+        if (act === "power-xray") {
+          var xr = fxXrayToggle();
+          amalDispatchPower("xray", { on: xr });
+          showHubToast(xr ? "👁️ Взгляд Робота: X-Ray включён" : "Взгляд Робота выключен");
           return;
         }
         if (act === "super-ghost") {
