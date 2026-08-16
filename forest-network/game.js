@@ -119,6 +119,7 @@
   }
 
   function winLevel() {
+    if (state !== "play") return;
     state = "end";
     if (level > best) { best = level; try { localStorage.setItem(SAVE, String(best)); } catch (_) {} }
     el("best").textContent = "Рекорд: " + best;
@@ -190,10 +191,6 @@
       }
     }
     trees.forEach((t) => { t.poison = Math.max(0, t.poison - dt); });
-    // win if networked and bugs dead or delayed check
-    const pct = trees.filter((t) => t.linked && t.hp > 0).length / trees.filter((t) => t.hp > 0).length;
-    if (pct >= 0.999 && bugs.every((b) => b.hp <= 0)) winLevel();
-    // passive sap
     sap = Math.min(99, sap + dt * 0.8 * coinMult);
     el("sap").textContent = "💧 Сок: " + Math.floor(sap);
   }
