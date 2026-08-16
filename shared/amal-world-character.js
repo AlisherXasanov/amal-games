@@ -33,6 +33,7 @@
     clone: false,
     visible: true,
     portalGun: false,
+    creepy: false,
   };
 
   var ui = {
@@ -99,6 +100,7 @@
           history: state.history.slice(0, HISTORY_MAX),
           visible: state.visible,
           portalGun: state.portalGun,
+          creepy: state.creepy,
         })
       );
     } catch (_) {}
@@ -297,7 +299,9 @@
       '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
       '<button type="button" class="heal" id="amal-world-heal">💚 Супер-лечение</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ Силы</button>' +
+      '<button type="button" id="amal-world-portalclear">🗑 Убрать порталы</button>' +
       '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
+      '<button type="button" id="amal-world-creepy">😈 Жуткая улыбка</button>' +
       '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
       "</div></div></div>" +
@@ -324,6 +328,18 @@
       save();
       toast(state.visible ? "Герой Амаль виден" : "Герой скрыт");
     };
+    document.getElementById("amal-world-creepy").onclick = function () {
+      state.creepy = !state.creepy;
+      save();
+      var b = document.getElementById("amal-world-creepy");
+      if (b) b.classList.toggle("equipped", state.creepy);
+      toast(state.creepy ? "😈 Жуткая улыбка всегда" : "Обычное лицо");
+    };
+    document.getElementById("amal-world-portalclear").onclick = function () {
+      portals = [];
+      portalShots = [];
+      toast("🗑 Порталы убраны");
+    };
     document.getElementById("amal-world-beard").onclick = function () {
       state.beard = !state.beard;
       save();
@@ -344,7 +360,7 @@
       ui.panel.classList.remove("open");
       ui.teleport.classList.add("open");
       renderTeleport("", true);
-      toast("Выбери игру — потом стреляй порталом");
+      toast("Выбери игру — портал откроется рядом с тобой, зайди в него");
     };
     document.getElementById("amal-world-tele-btn").onclick = function () {
       ui.panel.classList.remove("open");
@@ -361,6 +377,10 @@
     };
     document.getElementById("amal-world-cancel").onclick = cancelModes;
 
+    if (state.creepy) {
+      var cb = document.getElementById("amal-world-creepy");
+      if (cb) cb.classList.add("equipped");
+    }
     if (state.portalGun) {
       pendingPortalTarget = "map";
       setTimeout(function () {
@@ -532,9 +552,11 @@
       if (!btn) return;
       var gid = btn.getAttribute("data-game");
       if (ui.teleport._portalMode) {
-        pendingPortalTarget = gid === "__portal" ? "portal" : gid;
+        var tgt = gid === "__portal" ? "portal" : gid;
         ui.teleport.classList.remove("open");
-        armPortalGun();
+        var dock = document.getElementById("amal-world-dock");
+        if (dock) dock.classList.remove("open");
+        openPortalNear(tgt);
         return;
       }
       goToGame(gid);
@@ -902,6 +924,18 @@
       life: 2.5,
     });
     flashBolts();
+  }
+
+  function openPortalNear(target) {
+    // Портал появляется прямо рядом с героем — заходишь и попадаешь в игру.
+    var dir = hero.facing || 1;
+    var px = Math.max(60, Math.min((innerWidth || 800) - 60, hero.x + dir * 90));
+    var py = hero.y;
+    portals.push({ x: px, y: py, r: 4, target: target || "map", born: 0, ready: false });
+    while (portals.length > 2) portals.shift();
+    portalFx("in");
+    var name = target === "map" || target === "portal" ? "Каталог" : titleOf(target);
+    toast("🌀 Портал в «" + name + "» рядом с тобой · подойди и войди (или 🗑 убрать)");
   }
 
   function openPortalAt(x, y, target) {
