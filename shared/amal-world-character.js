@@ -93,18 +93,48 @@
     } catch (_) {}
   }
 
+  var OWNER_CODES = ["amalowner2026", "amal", "1234", "buddy"];
+
+  /**
+   * Хозяин определяется по ЛЮБОМУ источнику. Важно не доверять только хабу:
+   * в аварийном lite-режиме он подменяется заглушкой с isOwner() === false.
+   */
   function isOwner() {
     try {
-      if (global.AmalHub && typeof global.AmalHub.isOwner === "function") return !!global.AmalHub.isOwner();
+      var code = new URLSearchParams(location.search).get("owner");
+      if (code && OWNER_CODES.indexOf(String(code).trim().toLowerCase()) >= 0) {
+        try {
+          localStorage.setItem("amal-owner-v1", "1");
+          localStorage.setItem("amal-owner-v3", "1");
+        } catch (_) {}
+        global.__AMAL_OWNER__ = true;
+        return true;
+      }
     } catch (_) {}
     try {
       if (global.__AMAL_OWNER__ === true) return true;
-      return ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
-        return localStorage.getItem(k) === "1";
-      });
-    } catch (_) {
-      return false;
-    }
+    } catch (_) {}
+    try {
+      if (
+        ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
+          return localStorage.getItem(k) === "1";
+        })
+      ) {
+        return true;
+      }
+    } catch (_) {}
+    try {
+      if (global.AmalOwner && typeof global.AmalOwner.isOwner === "function" && global.AmalOwner.isOwner()) return true;
+    } catch (_) {}
+    try {
+      if (global.AmalPowers && typeof global.AmalPowers.isOwner === "function" && global.AmalPowers.isOwner()) return true;
+    } catch (_) {}
+    try {
+      if (global.AmalHub && !global.AmalHub.lite && typeof global.AmalHub.isOwner === "function" && global.AmalHub.isOwner()) {
+        return true;
+      }
+    } catch (_) {}
+    return false;
   }
 
   function gameId() {
