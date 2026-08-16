@@ -418,6 +418,11 @@
       ui.panel.classList.toggle("open");
       renderPowers();
     }
+    if (k === "f") {
+      state.fly = !state.fly;
+      dispatch("fly", { on: state.fly });
+      toast(state.fly ? "🕊️ Полёт вкл (F)" : "Полёт выкл (F)");
+    }
   }
 
   function renderPowers() {
@@ -1314,10 +1319,35 @@
     ctx.closePath();
   }
 
+  function getScrollY() {
+    try {
+      return window.scrollY != null ? window.scrollY : document.documentElement.scrollTop || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+  function getScrollX() {
+    try {
+      return window.scrollX != null ? window.scrollX : document.documentElement.scrollLeft || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+  function scrollByAmt(dx, dy) {
+    try {
+      window.scrollBy(dx, dy);
+    } catch (_) {
+      try {
+        document.documentElement.scrollTop += dy;
+        document.documentElement.scrollLeft += dx;
+      } catch (__) {}
+    }
+  }
+
   function updateHero(dt) {
     if (!state.visible) return;
-    var speed = state.fly ? 280 : 170;
-    if (hero.keys.shift) speed *= 1.55;
+    var speed = state.fly ? 380 : 240;
+    if (hero.keys.shift) speed *= 1.8;
     var dx = 0;
     var dy = 0;
     if (hero.keys.a || hero.keys.arrowleft) dx -= 1;
@@ -1337,8 +1367,35 @@
     }
     hero.x += hero.vx * dt;
     hero.y += hero.vy * dt;
-    hero.x = Math.max(24, Math.min((innerWidth || 800) - 24, hero.x));
-    hero.y = Math.max(40, Math.min((innerHeight || 600) - 24, hero.y));
+    // Камера: у края экрана страница прокручивается за героем (он ведёт «экран»).
+    var vw = innerWidth || 800;
+    var vh = innerHeight || 600;
+    var mY = 70;
+    if (hero.y < mY && hero.vy < 0) {
+      var upBy = mY - hero.y;
+      var beforeUp = getScrollY();
+      scrollByAmt(0, -upBy);
+      hero.y = getScrollY() === beforeUp ? Math.max(24, hero.y) : mY;
+    } else if (hero.y > vh - mY && hero.vy > 0) {
+      var downBy = hero.y - (vh - mY);
+      var beforeDn = getScrollY();
+      scrollByAmt(0, downBy);
+      hero.y = getScrollY() === beforeDn ? Math.min(hero.y, vh - 24) : vh - mY;
+    }
+    var mX = 60;
+    if (hero.x < mX && hero.vx < 0) {
+      var leftBy = mX - hero.x;
+      var beforeL = getScrollX();
+      scrollByAmt(-leftBy, 0);
+      hero.x = getScrollX() === beforeL ? Math.max(24, hero.x) : mX;
+    } else if (hero.x > vw - mX && hero.vx > 0) {
+      var rightBy = hero.x - (vw - mX);
+      var beforeR = getScrollX();
+      scrollByAmt(rightBy, 0);
+      hero.x = getScrollX() === beforeR ? Math.min(hero.x, vw - 24) : vw - mX;
+    }
+    hero.x = Math.max(24, Math.min(vw - 24, hero.x));
+    hero.y = Math.max(24, Math.min(vh - 24, hero.y));
     hero.phase += dt;
     clones = clones.filter(function (c) {
       c.life -= dt;
