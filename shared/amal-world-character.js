@@ -393,8 +393,8 @@
       {
         title: "ГЕРОЙ",
         items: [
+          { id: "superheal", label: "💚 Супер-лечение", cost: 0, tip: "всё по максимуму" },
           { id: "immortal", label: "Бессмертие", cost: 40, tip: "вкл/выкл" },
-          { id: "heal", label: "Лечение", cost: 25, tip: "восстановить" },
           { id: "shield", label: "Щит", cost: 30, tip: "защита" },
           { id: "fly", label: "Полёт", cost: 20, tip: "вверх/вниз" },
           { id: "clone", label: "Клон", cost: 50, tip: "двойник" },
@@ -575,7 +575,10 @@
       hero.teleporting = false;
       hero.mode = "idle";
     }, 800);
-    toast("✨ " + (data.name || "Амаль") + " прибыл из «" + titleOf(data.from) + "»");
+    toast("✨ " + (data.name || "Амаль") + " прибыл из «" + titleOf(data.from) + "» · 💚 супер-лечение");
+    setTimeout(function () {
+      superHeal(true);
+    }, 900);
   }
 
   function titleOf(id) {
@@ -709,10 +712,9 @@
         dispatch("invincible", { on: state.invincible });
         toast(state.invincible ? "🛡️ Бессмертие вкл" : "Бессмертие выкл");
         return;
-      case "heal":
-        if (!spend(25) || !onCd("heal", 1500)) return;
-        dispatch("heal", { amount: 999 });
-        toast("💚 Лечение");
+      case "superheal":
+        if (!onCd("superheal", 1200)) return;
+        superHeal();
         return;
       case "shield":
         if (!spend(30) || !onCd("shield", 1500)) return;
@@ -789,6 +791,16 @@
       default:
         return;
     }
+  }
+
+  function superHeal(silent) {
+    setEnergy(100);
+    state.shield = true;
+    dispatch("heal", { amount: 999999 });
+    dispatch("shield", { on: true });
+    dispatch("superheal", { on: true });
+    portalFx("in");
+    if (!silent) toast("💚 СУПЕР-ЛЕЧЕНИЕ · полное восстановление!");
   }
 
   function armPortalGun() {
@@ -889,7 +901,8 @@
     hero.mode = "teleport";
     portalFx("in");
     dispatch("localTeleport", { x: hero.x, y: hero.y, screen: true });
-    toast("✨ Прошёл сквозь портал");
+    superHeal(true);
+    toast("✨ Прошёл сквозь портал · 💚 супер-лечение");
     setTimeout(function () {
       hero.mode = "idle";
     }, 400);
@@ -944,7 +957,8 @@
       hero.mode = "teleport";
       portalFx("in");
       dispatch("localTeleport", { x: e.clientX, y: e.clientY, screen: true });
-      toast("✨ Скачок!");
+      superHeal(true);
+      toast("✨ Скачок! · 💚 супер-лечение");
       setTimeout(function () {
         hero.mode = "idle";
       }, 400);

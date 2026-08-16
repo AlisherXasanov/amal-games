@@ -6098,10 +6098,18 @@
         if (g) g.amalInvincible = !!d.on;
       } else if (d.type === "shield") {
         if (g) g.amalShield = !!d.on;
-      } else if (d.type === "heal") {
+      } else if (d.type === "heal" || d.type === "superheal") {
         if (g) {
           g.sanity = g.maxSanity;
-          if (typeof toast === "function") toast("💚 Рассудок полный");
+          if (d.type === "superheal") {
+            g.amalShield = true;
+            if (g.players && g.players[0]) {
+              const p0 = g.players[0];
+              p0.infiniteItems = true;
+              if (typeof grantInfiniteAmmo === "function") grantInfiniteAmmo(p0);
+            }
+          }
+          if (typeof toast === "function") toast(d.type === "superheal" ? "💚 Супер-лечение!" : "💚 Рассудок полный");
         }
       } else if (d.type === "coinMult") {
         if (g) {
