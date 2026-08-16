@@ -28,5 +28,18 @@ canvas{display:block;width:100%;height:100%;touch-action:none;background:radial-
 .panel .keys{font-size:13px;color:#c4b5fd;margin-bottom:14px;text-align:left;display:inline-block}
 .panel .keys b{color:#fde68a}
 .panel .btn{display:inline-block;margin:4px;min-width:150px;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;color:#2e1065;font:900 15px system-ui;background:linear-gradient(135deg,#fde68a,#f59e0b)}
+.shop-panel{max-width:min(760px,96vw);max-height:92vh;overflow:auto}
+.story-box{padding:10px 12px;margin:8px 0 12px;border-radius:12px;background:rgba(15,23,42,.5);color:#e0e7ff;font-size:13px;line-height:1.4}
+.progress-line{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;font:900 13px system-ui;color:#fde68a}
+.coil-shop{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin:10px 0}
+.coil-card{border:1px solid rgba(196,181,253,.35);border-radius:14px;padding:10px 8px;background:rgba(15,23,42,.55);color:#ede9fe;text-align:center}
+.coil-card.selected{border-color:#fde68a;box-shadow:0 0 16px rgba(253,230,138,.25)}
+.coil-card.locked{opacity:.58}
+.coil-card .coil-icon{display:block;font-size:30px;margin-bottom:4px}
+.coil-card b{display:block;font-size:13px;margin-bottom:3px}
+.coil-card small{display:block;min-height:32px;color:#c4b5fd;font-size:10px;line-height:1.25}
+.coil-card button{margin-top:7px;width:100%;border:0;border-radius:9px;padding:7px 5px;cursor:pointer;background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff;font:800 11px system-ui}
+.coil-card button:disabled{opacity:.55;cursor:default}
+.friends{position:fixed;right:10px;top:52px;z-index:31;background:rgba(30,16,60,.8);border:1px solid rgba(167,139,250,.35);border-radius:10px;padding:5px 8px;font:800 11px system-ui}
 .toast{position:fixed;top:16%;left:50%;transform:translateX(-50%);z-index:45;background:rgba(30,16,60,.94);border:1px solid #a78bfa;padding:10px 16px;border-radius:12px;font:800 14px system-ui;pointer-events:none;opacity:0;transition:opacity .2s;text-align:center;max-width:90vw}
 .toast.show{opacity:1}
