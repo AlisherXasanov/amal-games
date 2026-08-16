@@ -2001,7 +2001,7 @@
     const p = g.players[0];
     if (itemId === "coffee") {
       p.coffeeLeft = Math.max(p.coffeeLeft || 0, 9999);
-      if (!p.inv.includes("coffee_cup") && p.inv.length < invMax(p)) p.inv.push("coffee_cup");
+      if (!p.inv.includes("coffee_cup") && (p.infiniteItems || p.inv.length < invMax(p))) p.inv.push("coffee_cup");
       coffeeCd = { coffee: 0, coffee2: 0 };
       meta.coffee2 = true;
       storeSet(SAVE, meta);
@@ -2010,7 +2010,7 @@
       return;
     }
     if (itemId === "juice") {
-      if (!p.inv.includes("juice_cup") && p.inv.length < invMax(p)) p.inv.push("juice_cup");
+      if (!p.inv.includes("juice_cup") && (p.infiniteItems || p.inv.length < invMax(p))) p.inv.push("juice_cup");
       renderInv();
       toast("🧃 Сок · только аномалиям (J / кнопка у окна)");
       return;
@@ -3253,7 +3253,9 @@
   }
 
   function invMax(player) {
-    if (player && player.infiniteItems) return Math.max(player.inv.length, 1);
+    // Бесконечный режим: много слотов, чтобы кофе/сок/предметы можно было брать,
+    // даже когда предметов уже много (раньше возвращалась текущая длина — брать было нельзя).
+    if (player && player.infiniteItems) return 99;
     return player.cls.inv || INV_MAX;
   }
 
