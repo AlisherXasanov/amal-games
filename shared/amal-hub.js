@@ -79,9 +79,19 @@
     { id: "pet-simulator", name: "Pet Simulator" },
     { id: "flee-facility", name: "Flee the Facility" },
     { id: "build-boat", name: "Build a Boat" },
+    { id: "wardenclyffe-defense", name: "Защита Базы Ворденклиф" },
+    { id: "invisible-spy", name: "Симулятор Шпиона" },
+    { id: "space-elevator", name: "Космический Лифт" },
+    { id: "mantis-crab-arena", name: "Атака Рака-Богомола" },
+    { id: "forest-network", name: "Лесной Интернет" },
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-16-five-games",
+      title: "5 новых игр",
+      body: "Ворденклиф (TD), Шпион, Космический лифт, Рак-богомол, Лесной интернет — в каталоге и в списке выдачи админки.",
+    },
     {
       id: "2026-08-14-secret-cube",
       title: "Секретный кубик · твоя админка",
@@ -1290,6 +1300,11 @@
       "echo-postman": "Эхо-почтальон",
       "night-stitch": "Нить сна",
       "create-lab": "Create Lab",
+      "wardenclyffe-defense": "Защита Базы Ворденклиф",
+      "invisible-spy": "Симулятор Шпиона",
+      "space-elevator": "Космический Лифт",
+      "mantis-crab-arena": "Атака Рака-Богомола",
+      "forest-network": "Лесной Интернет",
     };
     return map[id] || id;
   }
