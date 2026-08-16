@@ -34,6 +34,7 @@
     visible: true,
     portalGun: false,
     creepy: true,
+    uiVer: 0,
   };
 
   var ui = {
@@ -102,6 +103,7 @@
           visible: state.visible,
           portalGun: state.portalGun,
           creepy: state.creepy,
+          uiVer: state.uiVer,
         })
       );
     } catch (_) {}
@@ -332,6 +334,9 @@
     document.getElementById("amal-world-creepy").onclick = function () {
       state.creepy = !state.creepy;
       save();
+      try {
+        window.__AMAL_WORLD_CREEPY__ = state.creepy;
+      } catch (_) {}
       var b = document.getElementById("amal-world-creepy");
       if (b) b.classList.toggle("equipped", state.creepy);
       toast(state.creepy ? "😈 Жуткая улыбка всегда" : "Обычное лицо");
@@ -1442,8 +1447,15 @@
     state.portalGun = false;
     portalGunEquipped = false;
     portalGunArmed = false;
+    // Разовая миграция: у старых сохранений creepy=false перекрывал новый умолчательный true.
+    if (state.uiVer !== 2) {
+      state.creepy = true;
+      state.uiVer = 2;
+      save();
+    }
     try {
       window.__AMAL_WORLD_BEARD__ = !!state.beard;
+      window.__AMAL_WORLD_CREEPY__ = !!state.creepy;
     } catch (_) {}
     ensureUi();
     exposeHubApi();

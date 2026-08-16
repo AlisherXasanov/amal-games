@@ -5193,11 +5193,45 @@
       ctx.beginPath();
       ctx.ellipse(pl.x, y0 - 34 + bob, 12, 7, 0, Math.PI, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#1f2937";
-      ctx.beginPath();
-      ctx.arc(pl.x - 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
-      ctx.arc(pl.x + 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
-      ctx.fill();
+      let wantCreepy = false;
+      try {
+        wantCreepy =
+          !!(window.AmalWorld && window.AmalWorld.getState && window.AmalWorld.getState().creepy) ||
+          window.__AMAL_WORLD_CREEPY__ === true;
+      } catch (_) {}
+      if (wantCreepy) {
+        ctx.save();
+        ctx.shadowColor = "rgba(239,68,68,.9)";
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = "#ef4444";
+        ctx.beginPath();
+        ctx.arc(pl.x - 4, y0 - 28 + bob, 2.6, 0, Math.PI * 2);
+        ctx.arc(pl.x + 4, y0 - 28 + bob, 2.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.moveTo(pl.x - 7.5, y0 - 23 + bob);
+        ctx.quadraticCurveTo(pl.x, y0 - 11 + bob, pl.x + 7.5, y0 - 23 + bob);
+        ctx.quadraticCurveTo(pl.x, y0 - 17 + bob, pl.x - 7.5, y0 - 23 + bob);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        for (let ti = -6; ti <= 6; ti += 2.4) {
+          ctx.beginPath();
+          ctx.moveTo(pl.x + ti, y0 - 22.5 + bob);
+          ctx.lineTo(pl.x + ti + 1.2, y0 - 22.5 + bob);
+          ctx.lineTo(pl.x + ti + 0.6, y0 - 18.5 + bob);
+          ctx.closePath();
+          ctx.fill();
+        }
+      } else {
+        ctx.fillStyle = "#1f2937";
+        ctx.beginPath();
+        ctx.arc(pl.x - 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
+        ctx.arc(pl.x + 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
       drawNamePlate(pl.x, y0 - 48 + bob, "Амаль", "#93c5fd");
       if (pl.inv.length) {
         ctx.font = "16px Nunito";
