@@ -5176,6 +5176,19 @@
       ctx.beginPath();
       ctx.arc(pl.x, y0 - 28 + bob, 11, 0, Math.PI * 2);
       ctx.fill();
+      let wantBeard = false;
+      try {
+        wantBeard = !!(window.AmalWorld && window.AmalWorld.getState && window.AmalWorld.getState().beard) || window.__AMAL_WORLD_BEARD__ === true;
+      } catch (_) {}
+      if (wantBeard) {
+        ctx.fillStyle = "#2b2118";
+        ctx.beginPath();
+        ctx.moveTo(pl.x - 9, y0 - 28 + bob);
+        ctx.quadraticCurveTo(pl.x, y0 - 14 + bob, pl.x + 9, y0 - 28 + bob);
+        ctx.quadraticCurveTo(pl.x + 7, y0 - 22 + bob, pl.x, y0 - 20 + bob);
+        ctx.quadraticCurveTo(pl.x - 7, y0 - 22 + bob, pl.x - 9, y0 - 28 + bob);
+        ctx.fill();
+      }
       ctx.fillStyle = "#2b2118";
       ctx.beginPath();
       ctx.ellipse(pl.x, y0 - 34 + bob, 12, 7, 0, Math.PI, Math.PI * 2);

@@ -19,6 +19,7 @@
     skin: "#e8b890",
     shirt: "#5b8def",
     pants: "#2f3d55",
+    beard: false,
     lastGame: "",
     history: [],
     fly: false,
@@ -83,6 +84,7 @@
           skin: state.skin,
           shirt: state.shirt,
           pants: state.pants,
+          beard: state.beard,
           lastGame: state.lastGame,
           history: state.history.slice(0, HISTORY_MAX),
           visible: state.visible,
@@ -240,6 +242,7 @@
       '<div class="aw-energy" id="amal-world-energy">⚡ 100%</div>' +
       '<div class="aw-row">' +
       '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
+      '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
       '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ 20 сил</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
@@ -262,6 +265,14 @@
       state.visible = !state.visible;
       save();
       toast(state.visible ? "Герой Амаль виден" : "Герой скрыт");
+    };
+    document.getElementById("amal-world-beard").onclick = function () {
+      state.beard = !state.beard;
+      save();
+      try {
+        window.__AMAL_WORLD_BEARD__ = state.beard;
+      } catch (_) {}
+      toast(state.beard ? "🧔 Борода надета" : "Борода снята");
     };
     document.getElementById("amal-world-tele-btn").onclick = function () {
       ui.panel.classList.remove("open");
@@ -453,7 +464,7 @@
   }
 
   function goToGame(id) {
-    if (!isOwner()) return;
+    if (!isOwner() && !ui.root) return;
     var target = id === "__portal" ? "portal" : id;
     if (!target) return;
     var from = gameId();
@@ -552,8 +563,10 @@
         return;
       case "local":
         if (!spend(15) || !onCd("local", 1200)) return;
+        if (ui.panel) ui.panel.classList.remove("open");
+        if (ui.teleport) ui.teleport.classList.remove("open");
         hero.localAim = true;
-        toast("Кликни, куда прыгнуть");
+        toast("Кликни на поле, куда прыгнуть");
         onceLocalTeleport();
         return;
       case "back":
@@ -722,6 +735,10 @@
   function onceLocalTeleport() {
     function onClick(e) {
       if (!hero.localAim) return;
+      var t = e.target;
+      if (t && t.closest && t.closest("#amal-world-dock,#amal-world-panel,#amal-world-tele")) {
+        return;
+      }
       hero.localAim = false;
       removeEventListener("pointerdown", onClick, true);
       hero.x = e.clientX;
@@ -800,6 +817,15 @@
     ctx.beginPath();
     ctx.arc(0, -30 + bob, 11, 0, Math.PI * 2);
     ctx.fill();
+    if (state.beard) {
+      ctx.fillStyle = state.hair;
+      ctx.beginPath();
+      ctx.moveTo(-9, -30 + bob);
+      ctx.quadraticCurveTo(0, -16 + bob, 9, -30 + bob);
+      ctx.quadraticCurveTo(7, -24 + bob, 0, -22 + bob);
+      ctx.quadraticCurveTo(-7, -24 + bob, -9, -30 + bob);
+      ctx.fill();
+    }
     ctx.fillStyle = state.hair;
     ctx.beginPath();
     ctx.ellipse(0, -36 + bob, 12, 7, 0, Math.PI, Math.PI * 2);
@@ -946,6 +972,9 @@
   function boot() {
     if (!isOwner()) return;
     load();
+    try {
+      window.__AMAL_WORLD_BEARD__ = !!state.beard;
+    } catch (_) {}
     ensureUi();
     exposeHubApi();
     tryCopyGrantable();
