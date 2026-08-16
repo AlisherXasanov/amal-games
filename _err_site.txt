@@ -1,1 +1,0 @@
-eturn r.then(t=>{for(let e of t||[])e.status===`rejected`&&i(e.reason);return e().catch(i)})},ne=(0,_.lazy)(()=>te(()=>import(`./SandboxGame-TreeFix2.js`),[],import.meta.url));function re(){return(0,x.jsx)(`main`,{children:(0,x.jsx)(_.Suspense,{fallback:(0,x.jsx)(`div`,{style:{display:`grid`,placeIt
