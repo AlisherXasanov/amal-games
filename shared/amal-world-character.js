@@ -1344,11 +1344,37 @@
     }
   }
 
+  // Игры со своим персонажем, где камера держит игрока в ЦЕНТРЕ экрана.
+  // Там прикрепляем жуткого Амаля к центру поверх встроенного игрока —
+  // остаётся один герой, а игра работает как обычно.
+  var CENTERED_GAMES = { terraverse: 0.54, minecraft: 0.5, "melon-playground": 0.5 };
+
+  function centeredGameFactor() {
+    var id = gameId();
+    return Object.prototype.hasOwnProperty.call(CENTERED_GAMES, id) ? CENTERED_GAMES[id] : null;
+  }
+
   function updateHero(dt) {
     if (!state.visible) return;
     // В игре со своим персонажем (больница) оверлейный герой спрятан —
     // не двигаем его и не крутим страницу, управляет только игровой персонаж.
     if (gameId() === "animal-hospital" && hospitalActive()) {
+      updatePortals(dt);
+      if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
+      return;
+    }
+    // Привязка к центру: Амаль сидит на встроенном игроке, движение — клавишами игры.
+    var cf = centeredGameFactor();
+    if (cf != null) {
+      var vwC = innerWidth || 800;
+      var vhC = innerHeight || 600;
+      hero.x = vwC / 2;
+      hero.y = vhC * cf;
+      var movingC = hero.keys.a || hero.keys.arrowleft || hero.keys.d || hero.keys.arrowright;
+      if (hero.keys.a || hero.keys.arrowleft) hero.facing = -1;
+      else if (hero.keys.d || hero.keys.arrowright) hero.facing = 1;
+      hero.mode = hero.teleporting ? "teleport" : movingC ? "walk" : "idle";
+      hero.phase += dt;
       updatePortals(dt);
       if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
       return;
