@@ -33,7 +33,7 @@
     clone: false,
     visible: true,
     portalGun: false,
-    creepy: false,
+    creepy: true,
   };
 
   var ui = {
@@ -70,6 +70,7 @@
   var pendingPortalTarget = "map"; // "map" — переход по экрану; иначе id игры
   var portalShots = [];
   var portals = [];
+  var portalCooldownUntil = 0;
 
   function load() {
     try {
@@ -957,7 +958,8 @@
       if (p.r < 26) p.r += dt * 90;
       if (p.born > 0.5) p.ready = true;
     });
-    // вход героя в готовый портал
+    // вход героя в готовый портал (с задержкой, чтобы не отбрасывало сразу назад)
+    if (portalCooldownUntil && Date.now() < portalCooldownUntil) return;
     for (var i = 0; i < portals.length; i++) {
       var p = portals[i];
       if (!p.ready) continue;
@@ -974,22 +976,22 @@
       goToGame(p.target);
       return;
     }
-    // карта: если есть второй портал — прыжок к нему, иначе просто отметка
+    // Карта: порталы ПОСТОЯННЫЕ — выходишь из парного и можешь ходить туда-обратно.
     var other = portals.find(function (q) {
       return q !== p;
     });
-    portals = portals.filter(function (q) {
-      return q !== p && q !== other;
-    });
     if (other) {
-      hero.x = other.x;
+      // выходим чуть в стороне от парного портала, чтобы не войти в него сразу же
+      hero.x = other.x + (other.r + 30) * (hero.facing || 1);
       hero.y = other.y;
+      hero.x = Math.max(24, Math.min((innerWidth || 800) - 24, hero.x));
     }
+    portalCooldownUntil = Date.now() + 1400;
     hero.mode = "teleport";
     portalFx("in");
     dispatch("localTeleport", { x: hero.x, y: hero.y, screen: true });
     superHeal(true);
-    toast("✨ Прошёл сквозь портал · 💚 супер-лечение");
+    toast(other ? "✨ Портал → портал · ходи туда-обратно · 💚" : "✨ Прошёл сквозь портал · 💚");
     setTimeout(function () {
       hero.mode = "idle";
     }, 400);
@@ -1221,25 +1223,30 @@
     ctx.fill();
     var creepy = mode === "teleport" || hero.teleporting || state.creepy;
     if (creepy) {
-      ctx.fillStyle = "rgba(239,68,68,.95)";
+      ctx.save();
+      ctx.shadowColor = "rgba(239,68,68,.9)";
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = "#ef4444";
       ctx.beginPath();
-      ctx.arc(-3.4, -32 + bob, 2.1, 0, Math.PI * 2);
-      ctx.arc(5.2, -32 + bob, 2.1, 0, Math.PI * 2);
+      ctx.arc(-3.6, -32 + bob, 2.6, 0, Math.PI * 2);
+      ctx.arc(5.4, -32 + bob, 2.6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#0b0b0b";
+      ctx.restore();
+      ctx.fillStyle = "#000";
       ctx.beginPath();
-      ctx.moveTo(-6, -26 + bob);
-      ctx.quadraticCurveTo(0.5, -18 + bob, 7, -26 + bob);
-      ctx.quadraticCurveTo(0.5, -23 + bob, -6, -26 + bob);
+      ctx.moveTo(-7.5, -26.5 + bob);
+      ctx.quadraticCurveTo(0.5, -15 + bob, 8.5, -26.5 + bob);
+      ctx.quadraticCurveTo(0.5, -21 + bob, -7.5, -26.5 + bob);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.85)";
-      ctx.lineWidth = 0.7;
-      for (var ti = -4; ti <= 4; ti += 2) {
+      ctx.fillStyle = "#fff";
+      for (var ti = -6; ti <= 6; ti += 2.4) {
         ctx.beginPath();
-        ctx.moveTo(ti, -25.5 + bob);
-        ctx.lineTo(ti, -22.5 + bob);
-        ctx.stroke();
+        ctx.moveTo(ti, -26 + bob);
+        ctx.lineTo(ti + 1.2, -26 + bob);
+        ctx.lineTo(ti + 0.6, -22 + bob);
+        ctx.closePath();
+        ctx.fill();
       }
     } else if (!state.beard) {
       ctx.strokeStyle = "rgba(120,53,15,.8)";
