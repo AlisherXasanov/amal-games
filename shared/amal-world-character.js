@@ -1,0 +1,968 @@
+/**
+ * Amal World Character — общий герой, телепортер и 20 способностей между играми.
+ * Подключается из amal-hub.js. Работает только для хозяина (owner).
+ */
+(function (global) {
+  "use strict";
+
+  if (global.AmalWorld) return;
+
+  var SAVE_KEY = "amal-world-hero-v1";
+  var ARRIVE_KEY = "amal-world-arrive-v1";
+  var BEACON_KEY = "amal-world-beacon-v1";
+  var HISTORY_MAX = 8;
+
+  var state = {
+    name: "Амаль",
+    energy: 100,
+    hair: "#2b2118",
+    skin: "#e8b890",
+    shirt: "#5b8def",
+    pants: "#2f3d55",
+    lastGame: "",
+    history: [],
+    fly: false,
+    shield: false,
+    invincible: false,
+    slow: false,
+    reward: false,
+    xray: false,
+    rainbow: false,
+    clone: false,
+    visible: true,
+  };
+
+  var ui = {
+    root: null,
+    canvas: null,
+    panel: null,
+    teleport: null,
+    energyEl: null,
+    msgEl: null,
+  };
+
+  var hero = {
+    x: 0,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    facing: 1,
+    phase: 0,
+    mode: "idle",
+    teleporting: false,
+    keys: Object.create(null),
+    localAim: false,
+  };
+
+  var cds = Object.create(null);
+  var clones = [];
+  var last = performance.now();
+  var hospitalHooked = false;
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== "object") return;
+      Object.keys(state).forEach(function (k) {
+        if (data[k] != null) state[k] = data[k];
+      });
+      if (!Array.isArray(state.history)) state.history = [];
+    } catch (_) {}
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(
+        SAVE_KEY,
+        JSON.stringify({
+          name: state.name,
+          energy: state.energy,
+          hair: state.hair,
+          skin: state.skin,
+          shirt: state.shirt,
+          pants: state.pants,
+          lastGame: state.lastGame,
+          history: state.history.slice(0, HISTORY_MAX),
+          visible: state.visible,
+        })
+      );
+    } catch (_) {}
+  }
+
+  function isOwner() {
+    try {
+      if (global.AmalHub && typeof global.AmalHub.isOwner === "function") return !!global.AmalHub.isOwner();
+    } catch (_) {}
+    try {
+      if (global.__AMAL_OWNER__ === true) return true;
+      return ["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
+        return localStorage.getItem(k) === "1";
+      });
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function gameId() {
+    try {
+      if (global.AmalHub && typeof global.AmalHub.gameId === "function") return global.AmalHub.gameId() || "portal";
+    } catch (_) {}
+    try {
+      var parts = (location.pathname || "").split("/").filter(Boolean);
+      var i = parts.indexOf("amal-games");
+      if (i >= 0) return parts[i + 1] || "portal";
+      return parts[parts.length - 1] || "portal";
+    } catch (_) {
+      return "portal";
+    }
+  }
+
+  function gameList() {
+    var list = [];
+    try {
+      if (global.AmalHub && Array.isArray(global.AmalHub.GRANTABLE_GAMES)) list = global.AmalHub.GRANTABLE_GAMES.slice();
+    } catch (_) {}
+    if (!list.length) {
+      list = [
+        { id: "animal-hospital", name: "Animal Hospital" },
+        { id: "tesla-arena", name: "Тесла-Арена" },
+        { id: "adopt-me", name: "Adopt Me" },
+        { id: "pet-simulator", name: "Pet Simulator" },
+        { id: "zombie-vs-plants", name: "Зомби vs растения" },
+        { id: "minecraft", name: "CraftWorld" },
+        { id: "obby", name: "Obby" },
+        { id: "joy-surprise", name: "Секретный подарок" },
+      ];
+    }
+    return list;
+  }
+
+  function gameHref(id) {
+    var here = gameId();
+    var base = here === "portal" ? "./" : "../";
+    if (!id || id === "__portal" || id === "portal") return base;
+    return base + id + "/";
+  }
+
+  function toast(text) {
+    if (!ui.msgEl) return;
+    ui.msgEl.textContent = text;
+    ui.msgEl.classList.add("show");
+    clearTimeout(ui.msgEl._t);
+    ui.msgEl._t = setTimeout(function () {
+      ui.msgEl.classList.remove("show");
+    }, 2200);
+  }
+
+  function setEnergy(n) {
+    state.energy = Math.max(0, Math.min(100, Math.floor(n)));
+    if (ui.energyEl) {
+      ui.energyEl.textContent = "⚡ " + state.energy + "%";
+      ui.energyEl.classList.toggle("full", state.energy >= 100);
+    }
+    save();
+  }
+
+  function spend(cost) {
+    if (state.energy < cost) {
+      toast("Нужно " + cost + "⚡");
+      return false;
+    }
+    setEnergy(state.energy - cost);
+    return true;
+  }
+
+  function onCd(id, ms) {
+    var now = Date.now();
+    if ((cds[id] || 0) > now) {
+      toast("Перезарядка…");
+      return false;
+    }
+    cds[id] = now + ms;
+    return true;
+  }
+
+  function dispatch(type, extra) {
+    try {
+      var detail = { type: type, source: "amal-world" };
+      if (extra) for (var k in extra) detail[k] = extra[k];
+      global.dispatchEvent(new CustomEvent("amal-power", { detail: detail }));
+    } catch (_) {}
+  }
+
+  function ensureStyle() {
+    if (document.getElementById("amal-world-style")) return;
+    var st = document.createElement("style");
+    st.id = "amal-world-style";
+    st.textContent =
+      "#amal-world-root{position:fixed;inset:0;z-index:2147482900;pointer-events:none;font-family:system-ui,Segoe UI,sans-serif}" +
+      "#amal-world-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}" +
+      "#amal-world-dock{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147482902;pointer-events:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end}" +
+      "#amal-world-dock .aw-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}" +
+      "#amal-world-dock button{border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 11px;cursor:pointer;background:linear-gradient(160deg,#1e293b,#0f172a);color:#fff;font:800 12px system-ui;box-shadow:0 8px 20px rgba(0,0,0,.35)}" +
+      "#amal-world-dock button.primary{background:linear-gradient(160deg,#7c3aed,#2563eb)}" +
+      "#amal-world-dock .aw-energy{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.88);border:1px solid rgba(103,232,249,.35);color:#a5f3fc;font:800 12px system-ui}" +
+      "#amal-world-dock .aw-energy.full{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}" +
+      "#amal-world-msg{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:2147482905;max-width:88vw;padding:10px 14px;border-radius:14px;background:rgba(76,29,149,.92);color:#fff;font:900 14px system-ui;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}" +
+      "#amal-world-msg.show{opacity:1}" +
+      "#amal-world-panel,#amal-world-tele{position:fixed;right:12px;bottom:76px;z-index:2147482904;width:min(340px,92vw);max-height:min(68vh,560px);overflow:auto;pointer-events:auto;display:none;border-radius:18px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(165deg,#1a1030f5,#0b1220f8);color:#fff;box-shadow:0 18px 48px rgba(0,0,0,.5);padding:12px}" +
+      "#amal-world-panel.open,#amal-world-tele.open{display:block}" +
+      "#amal-world-panel h3,#amal-world-tele h3{margin:0 0 8px;font:900 14px system-ui}" +
+      "#amal-world-panel .aw-g{margin:0 0 10px}" +
+      "#amal-world-panel .aw-g b{display:block;margin:0 0 6px;color:#c4b5fd;font-size:11px;letter-spacing:.04em}" +
+      "#amal-world-panel .aw-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}" +
+      "#amal-world-panel button,#amal-world-tele button{width:100%;text-align:left;border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:8px 9px;background:rgba(255,255,255,.06);color:#fff;font:800 11px/1.25 system-ui;cursor:pointer}" +
+      "#amal-world-panel button:hover,#amal-world-tele button:hover{background:rgba(124,58,237,.35)}" +
+      "#amal-world-panel button small,#amal-world-tele button small{display:block;opacity:.75;font-weight:700}" +
+      "#amal-world-tele input{width:100%;margin:0 0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff;padding:8px 10px;font:700 13px system-ui}" +
+      "#amal-world-tele .aw-list{display:flex;flex-direction:column;gap:5px;max-height:42vh;overflow:auto}" +
+      "#amal-world-fx{position:fixed;inset:0;z-index:2147483030;pointer-events:none}" +
+      "@keyframes awPortalIn{0%{opacity:0;transform:scale(.6)}40%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1.4)}}" +
+      "@keyframes awPortalOut{0%{opacity:0}20%{opacity:1}100%{opacity:1;filter:brightness(2)}}" +
+      ".aw-portal-burst{position:fixed;left:50%;top:50%;width:min(70vw,420px);height:min(70vw,420px);margin:-35vmin;border-radius:50%;background:radial-gradient(circle,#a5f3fc,#7c3aed 45%,transparent 70%);animation:awPortalIn .85s ease forwards}" +
+      ".aw-portal-veil{position:fixed;inset:0;background:radial-gradient(circle at 50% 50%,rgba(103,232,249,.55),rgba(15,23,42,.92));animation:awPortalOut .7s ease forwards}" +
+      "#amal-world-root.hospital-hide #amal-world-canvas{opacity:0}" +
+      "@media(max-width:820px){#amal-world-dock{right:8px;bottom:70px}#amal-world-panel,#amal-world-tele{right:8px;bottom:130px}}";
+    document.head.appendChild(st);
+  }
+
+  function ensureUi() {
+    if (ui.root) return;
+    ensureStyle();
+    var root = document.createElement("div");
+    root.id = "amal-world-root";
+    root.innerHTML =
+      '<canvas id="amal-world-canvas"></canvas>' +
+      '<div id="amal-world-msg"></div>' +
+      '<div id="amal-world-dock">' +
+      '<div class="aw-energy" id="amal-world-energy">⚡ 100%</div>' +
+      '<div class="aw-row">' +
+      '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
+      '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
+      '<button type="button" id="amal-world-powers-btn">⚡ 20 сил</button>' +
+      '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
+      "</div></div>" +
+      '<div id="amal-world-panel"></div>' +
+      '<div id="amal-world-tele"></div>';
+    document.body.appendChild(root);
+    ui.root = root;
+    ui.canvas = document.getElementById("amal-world-canvas");
+    ui.panel = document.getElementById("amal-world-panel");
+    ui.teleport = document.getElementById("amal-world-tele");
+    ui.energyEl = document.getElementById("amal-world-energy");
+    ui.msgEl = document.getElementById("amal-world-msg");
+    setEnergy(state.energy);
+
+    hero.x = Math.max(80, (innerWidth || 800) * 0.72);
+    hero.y = Math.max(120, (innerHeight || 600) * 0.62);
+
+    document.getElementById("amal-world-toggle").onclick = function () {
+      state.visible = !state.visible;
+      save();
+      toast(state.visible ? "Герой Амаль виден" : "Герой скрыт");
+    };
+    document.getElementById("amal-world-tele-btn").onclick = function () {
+      ui.panel.classList.remove("open");
+      ui.teleport.classList.toggle("open");
+      renderTeleport();
+    };
+    document.getElementById("amal-world-powers-btn").onclick = function () {
+      ui.teleport.classList.remove("open");
+      ui.panel.classList.toggle("open");
+      renderPowers();
+    };
+    document.getElementById("amal-world-cancel").onclick = cancelModes;
+
+    addEventListener("keydown", onKey);
+    addEventListener("keyup", function (e) {
+      hero.keys[e.key.toLowerCase()] = false;
+      if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
+        hero.keys[e.key] = false;
+      }
+    });
+    addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    renderPowers();
+    renderTeleport();
+  }
+
+  function resizeCanvas() {
+    if (!ui.canvas) return;
+    ui.canvas.width = innerWidth || 800;
+    ui.canvas.height = innerHeight || 600;
+  }
+
+  function onKey(e) {
+    if (!isOwner()) return;
+    var t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+    var k = e.key.toLowerCase();
+    hero.keys[k] = true;
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") hero.keys[e.key] = true;
+    if (k === "p" && e.altKey) {
+      e.preventDefault();
+      ui.panel.classList.toggle("open");
+      renderPowers();
+    }
+  }
+
+  function renderPowers() {
+    if (!ui.panel) return;
+    var groups = [
+      {
+        title: "ПОРТАЛЫ",
+        items: [
+          { id: "warp", label: "В любую игру", cost: 0, tip: "открыть список" },
+          { id: "local", label: "Локальный скачок", cost: 15, tip: "кликни точку" },
+          { id: "back", label: "Назад", cost: 10, tip: "прошлый мир" },
+          { id: "beacon", label: "Маяк", cost: 20, tip: "запомнить место" },
+          { id: "swap", label: "К маяку", cost: 25, tip: "прыжок к маяку" },
+        ],
+      },
+      {
+        title: "ТЕСЛА",
+        items: [
+          { id: "zap", label: "Цепная молния", cost: 30, tip: "BZZZ" },
+          { id: "magnet", label: "Магнит", cost: 35, tip: "притянуть" },
+          { id: "timestop", label: "Тайм-стоп", cost: 45, tip: "заморозка" },
+          { id: "nova", label: "Тесла-нова", cost: 70, tip: "вспышка" },
+          { id: "recharge", label: "Полный заряд", cost: 0, tip: "⚡100%" },
+        ],
+      },
+      {
+        title: "ГЕРОЙ",
+        items: [
+          { id: "immortal", label: "Бессмертие", cost: 40, tip: "вкл/выкл" },
+          { id: "heal", label: "Лечение", cost: 25, tip: "восстановить" },
+          { id: "shield", label: "Щит", cost: 30, tip: "защита" },
+          { id: "fly", label: "Полёт", cost: 20, tip: "вверх/вниз" },
+          { id: "clone", label: "Клон", cost: 50, tip: "двойник" },
+        ],
+      },
+      {
+        title: "МИР",
+        items: [
+          { id: "rainbow", label: "Радуга", cost: 35, tip: "цвет мира" },
+          { id: "xray", label: "X-Ray", cost: 30, tip: "взгляд" },
+          { id: "slow", label: "Замедление", cost: 35, tip: "slow-mo" },
+          { id: "reward", label: "×Награды", cost: 40, tip: "бонус" },
+          { id: "allin", label: "Всё сразу", cost: 90, tip: "комбо" },
+        ],
+      },
+    ];
+    ui.panel.innerHTML =
+      "<h3>⚡ 20 сил Амаля</h3>" +
+      groups
+        .map(function (g) {
+          return (
+            '<div class="aw-g"><b>' +
+            g.title +
+            '</b><div class="aw-grid">' +
+            g.items
+              .map(function (it) {
+                return (
+                  '<button type="button" data-aw="' +
+                  it.id +
+                  '">' +
+                  it.label +
+                  "<small>" +
+                  (it.cost ? it.cost + "⚡ · " : "") +
+                  it.tip +
+                  "</small></button>"
+                );
+              })
+              .join("") +
+            "</div></div>"
+          );
+        })
+        .join("");
+    ui.panel.onclick = function (e) {
+      var btn = e.target.closest("[data-aw]");
+      if (!btn) return;
+      usePower(btn.getAttribute("data-aw"));
+    };
+  }
+
+  function renderTeleport(filter) {
+    if (!ui.teleport) return;
+    var q = (filter || "").toLowerCase();
+    var here = gameId();
+    var items = gameList().filter(function (g) {
+      if (g.id === here) return false;
+      if (!q) return true;
+      return (g.name + " " + g.id).toLowerCase().indexOf(q) >= 0;
+    });
+    ui.teleport.innerHTML =
+      "<h3>🌀 Телепортер миров</h3>" +
+      '<input id="amal-world-tele-q" type="search" placeholder="Найти игру…" value="' +
+      (filter || "").replace(/"/g, "&quot;") +
+      '" />' +
+      '<div class="aw-list">' +
+      '<button type="button" data-game="__portal">🏠 Каталог</button>' +
+      '<button type="button" data-aw-act="back">↩ Назад</button>' +
+      items
+        .map(function (g) {
+          return '<button type="button" data-game="' + g.id + '">🎮 ' + (g.name || g.id) + "</button>";
+        })
+        .join("") +
+      "</div>";
+    var inp = document.getElementById("amal-world-tele-q");
+    if (inp) {
+      inp.oninput = function () {
+        renderTeleport(inp.value);
+        var n = document.getElementById("amal-world-tele-q");
+        if (n) {
+          n.focus();
+          try {
+            n.setSelectionRange(n.value.length, n.value.length);
+          } catch (_) {}
+        }
+      };
+    }
+    ui.teleport.onclick = function (e) {
+      var back = e.target.closest("[data-aw-act]");
+      if (back && back.getAttribute("data-aw-act") === "back") {
+        usePower("back");
+        return;
+      }
+      var btn = e.target.closest("[data-game]");
+      if (!btn) return;
+      goToGame(btn.getAttribute("data-game"));
+    };
+  }
+
+  function portalFx(kind) {
+    var layer = document.createElement("div");
+    layer.id = "amal-world-fx";
+    layer.innerHTML = kind === "out" ? '<div class="aw-portal-veil"></div><div class="aw-portal-burst"></div>' : '<div class="aw-portal-burst"></div>';
+    document.body.appendChild(layer);
+    setTimeout(function () {
+      if (layer.parentNode) layer.parentNode.removeChild(layer);
+    }, 900);
+  }
+
+  function pushHistory(fromId) {
+    if (!fromId) return;
+    state.history = [fromId].concat(state.history.filter(function (x) {
+      return x !== fromId;
+    })).slice(0, HISTORY_MAX);
+    state.lastGame = fromId;
+    save();
+  }
+
+  function goToGame(id) {
+    if (!isOwner()) return;
+    var target = id === "__portal" ? "portal" : id;
+    if (!target) return;
+    var from = gameId();
+    if (target === from || (target === "portal" && from === "portal")) {
+      toast("Ты уже здесь");
+      return;
+    }
+    pushHistory(from);
+    try {
+      localStorage.setItem(
+        ARRIVE_KEY,
+        JSON.stringify({ from: from, to: target, at: Date.now(), name: state.name })
+      );
+    } catch (_) {}
+    hero.teleporting = true;
+    hero.mode = "teleport";
+    portalFx("out");
+    toast("🌀 Телепорт…");
+    var href = gameHref(target);
+    try {
+      var u = new URL(href, location.href);
+      u.searchParams.set("owner", "AmalOwner2026");
+      u.searchParams.set("amalArrive", "1");
+      href = u.href;
+    } catch (_) {
+      href = href + (href.indexOf("?") >= 0 ? "&" : "?") + "owner=AmalOwner2026&amalArrive=1";
+    }
+    setTimeout(function () {
+      location.href = href;
+    }, 650);
+  }
+
+  function handleArrival() {
+    var data = null;
+    try {
+      data = JSON.parse(localStorage.getItem(ARRIVE_KEY) || "null");
+      localStorage.removeItem(ARRIVE_KEY);
+    } catch (_) {}
+    try {
+      var params = new URLSearchParams(location.search);
+      if (params.get("amalArrive") === "1") {
+        params.delete("amalArrive");
+        var clean = location.pathname + (params.toString() ? "?" + params.toString() : "") + location.hash;
+        history.replaceState(null, "", clean);
+      }
+    } catch (_) {}
+    if (!data || !data.from) return;
+    portalFx("in");
+    hero.mode = "teleport";
+    hero.teleporting = true;
+    setTimeout(function () {
+      hero.teleporting = false;
+      hero.mode = "idle";
+    }, 800);
+    toast("✨ " + (data.name || "Амаль") + " прибыл из «" + titleOf(data.from) + "»");
+  }
+
+  function titleOf(id) {
+    if (!id || id === "portal") return "Каталог";
+    var hit = gameList().find(function (g) {
+      return g.id === id;
+    });
+    return (hit && hit.name) || id;
+  }
+
+  function cancelModes() {
+    state.fly = false;
+    state.shield = false;
+    state.invincible = false;
+    state.slow = false;
+    state.reward = false;
+    state.xray = false;
+    state.rainbow = false;
+    state.clone = false;
+    clones = [];
+    hero.localAim = false;
+    document.documentElement.style.filter = "";
+    document.documentElement.style.animation = "";
+    dispatch("timestop", { on: false });
+    dispatch("invincible", { on: false });
+    dispatch("shield", { on: false });
+    dispatch("fly", { on: false });
+    dispatch("xray", { on: false });
+    dispatch("slow", { on: false });
+    dispatch("rewardBoost", { on: false });
+    toast("Режимы сняты");
+  }
+
+  function usePower(id) {
+    if (!isOwner()) return;
+    switch (id) {
+      case "warp":
+        ui.panel.classList.remove("open");
+        ui.teleport.classList.add("open");
+        renderTeleport();
+        return;
+      case "local":
+        if (!spend(15) || !onCd("local", 1200)) return;
+        hero.localAim = true;
+        toast("Кликни, куда прыгнуть");
+        onceLocalTeleport();
+        return;
+      case "back":
+        if (!spend(10)) return;
+        var prev = state.history[0];
+        if (!prev) {
+          setEnergy(state.energy + 10);
+          toast("Нет прошлого мира");
+          return;
+        }
+        goToGame(prev);
+        return;
+      case "beacon":
+        if (!spend(20) || !onCd("beacon", 1500)) return;
+        try {
+          localStorage.setItem(
+            BEACON_KEY,
+            JSON.stringify({ game: gameId(), x: hero.x, y: hero.y, at: Date.now() })
+          );
+        } catch (_) {}
+        toast("📍 Маяк поставлен");
+        return;
+      case "swap":
+        if (!spend(25) || !onCd("swap", 2000)) return;
+        var beacon = null;
+        try {
+          beacon = JSON.parse(localStorage.getItem(BEACON_KEY) || "null");
+        } catch (_) {}
+        if (!beacon || !beacon.game) {
+          setEnergy(state.energy + 25);
+          toast("Сначала поставь маяк");
+          return;
+        }
+        if (beacon.game === gameId()) {
+          hero.x = beacon.x;
+          hero.y = beacon.y;
+          portalFx("in");
+          dispatch("localTeleport", { x: beacon.x, y: beacon.y });
+          toast("К маяку!");
+        } else {
+          goToGame(beacon.game);
+        }
+        return;
+      case "zap":
+        if (!spend(30) || !onCd("zap", 1800)) return;
+        flashBolts();
+        dispatch("killAll");
+        toast("💥 Цепная молния!");
+        return;
+      case "magnet":
+        if (!spend(35) || !onCd("magnet", 2000)) return;
+        dispatch("magnet", { on: true, ms: 5000 });
+        toast("🧲 Магнит!");
+        return;
+      case "timestop":
+        if (!spend(45) || !onCd("timestop", 2500)) return;
+        state.slow = !state.slow;
+        dispatch("timestop", { on: true });
+        toast("⏳ Тайм-стоп");
+        setTimeout(function () {
+          dispatch("timestop", { on: false });
+          state.slow = false;
+        }, 6000);
+        return;
+      case "nova":
+        if (!spend(70) || !onCd("nova", 4000)) return;
+        portalFx("in");
+        flashBolts();
+        dispatch("killAll");
+        dispatch("nova");
+        toast("💥 Тесла-нова!");
+        return;
+      case "recharge":
+        if (!onCd("recharge", 8000)) return;
+        setEnergy(100);
+        toast("⚡ Катушка заряжена");
+        return;
+      case "immortal":
+        if (!spend(40) || !onCd("immortal", 1500)) return;
+        state.invincible = !state.invincible;
+        dispatch("invincible", { on: state.invincible });
+        toast(state.invincible ? "🛡️ Бессмертие вкл" : "Бессмертие выкл");
+        return;
+      case "heal":
+        if (!spend(25) || !onCd("heal", 1500)) return;
+        dispatch("heal", { amount: 999 });
+        toast("💚 Лечение");
+        return;
+      case "shield":
+        if (!spend(30) || !onCd("shield", 1500)) return;
+        state.shield = !state.shield;
+        dispatch("shield", { on: state.shield });
+        toast(state.shield ? "🛡️ Щит" : "Щит снят");
+        return;
+      case "fly":
+        if (!spend(20) || !onCd("fly", 1000)) return;
+        state.fly = !state.fly;
+        dispatch("fly", { on: state.fly });
+        toast(state.fly ? "🕊️ Полёт" : "Полёт выкл");
+        return;
+      case "clone":
+        if (!spend(50) || !onCd("clone", 3000)) return;
+        state.clone = true;
+        clones = [
+          { x: hero.x - 40, y: hero.y, life: 10, phase: 0 },
+          { x: hero.x + 40, y: hero.y, life: 10, phase: 1 },
+        ];
+        dispatch("clone", { count: 2 });
+        toast("👥 Клоны!");
+        return;
+      case "rainbow":
+        if (!spend(35) || !onCd("rainbow", 2000)) return;
+        state.rainbow = !state.rainbow;
+        document.documentElement.style.filter = state.rainbow ? "hue-rotate(90deg) saturate(1.35)" : "";
+        dispatch("rainbow", { on: state.rainbow });
+        toast(state.rainbow ? "🌈 Радуга" : "Радуга выкл");
+        return;
+      case "xray":
+        if (!spend(30) || !onCd("xray", 1500)) return;
+        state.xray = !state.xray;
+        document.documentElement.style.filter = state.xray ? "contrast(1.25) brightness(1.1)" : "";
+        dispatch("xray", { on: state.xray });
+        toast(state.xray ? "👁️ X-Ray" : "X-Ray выкл");
+        return;
+      case "slow":
+        if (!spend(35) || !onCd("slow", 2000)) return;
+        state.slow = true;
+        dispatch("slow", { on: true, factor: 0.4 });
+        toast("⏳ Замедление");
+        setTimeout(function () {
+          state.slow = false;
+          dispatch("slow", { on: false });
+        }, 6000);
+        return;
+      case "reward":
+        if (!spend(40) || !onCd("reward", 2500)) return;
+        state.reward = true;
+        dispatch("rewardBoost", { on: true, factor: 5 });
+        dispatch("coinMult", { factor: 5 });
+        toast("🎁 Награды ×5");
+        setTimeout(function () {
+          state.reward = false;
+          dispatch("rewardBoost", { on: false });
+        }, 12000);
+        return;
+      case "allin":
+        if (!spend(90) || !onCd("allin", 10000)) return;
+        state.invincible = true;
+        state.shield = true;
+        state.fly = true;
+        state.rainbow = true;
+        setEnergy(100);
+        document.documentElement.style.filter = "hue-rotate(40deg) saturate(1.3)";
+        dispatch("invincible", { on: true });
+        dispatch("killAll");
+        dispatch("heal", { amount: 999 });
+        dispatch("coinMult", { factor: 10 });
+        portalFx("in");
+        toast("🤝 Всё сразу!");
+        return;
+      default:
+        return;
+    }
+  }
+
+  function onceLocalTeleport() {
+    function onClick(e) {
+      if (!hero.localAim) return;
+      hero.localAim = false;
+      removeEventListener("pointerdown", onClick, true);
+      hero.x = e.clientX;
+      hero.y = e.clientY;
+      hero.mode = "teleport";
+      portalFx("in");
+      dispatch("localTeleport", { x: e.clientX, y: e.clientY, screen: true });
+      toast("✨ Скачок!");
+      setTimeout(function () {
+        hero.mode = "idle";
+      }, 400);
+    }
+    addEventListener("pointerdown", onClick, true);
+  }
+
+  function flashBolts() {
+    var layer = document.createElement("div");
+    layer.id = "amal-world-fx";
+    layer.style.cssText = "position:fixed;inset:0;z-index:2147483030;pointer-events:none;background:radial-gradient(circle at 50% 40%,rgba(180,240,255,.55),transparent 60%)";
+    document.body.appendChild(layer);
+    setTimeout(function () {
+      if (layer.parentNode) layer.parentNode.removeChild(layer);
+    }, 420);
+  }
+
+  function drawHero(ctx, x, y, facing, phase, mode, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
+    ctx.translate(x, y);
+    ctx.scale(facing, 1);
+    var bob = mode === "idle" ? Math.sin(phase) * 1.5 : Math.sin(phase * 2) * 2.5;
+    var leg = mode === "walk" || mode === "run" ? Math.sin(phase * (mode === "run" ? 10 : 7)) * (mode === "run" ? 10 : 7) : 0;
+    var arm = mode === "walk" || mode === "run" ? Math.sin(phase * (mode === "run" ? 10 : 7) + Math.PI) * (mode === "run" ? 9 : 6) : Math.sin(phase) * 2;
+    if (mode === "fly") {
+      bob = Math.sin(phase * 3) * 4 - 8;
+      arm = -18 + Math.sin(phase * 4) * 4;
+      leg = 4;
+    }
+    if (mode === "teleport") {
+      ctx.globalAlpha *= 0.35 + Math.abs(Math.sin(phase * 8)) * 0.65;
+      ctx.shadowColor = "#67e8f9";
+      ctx.shadowBlur = 24;
+    }
+    if (state.shield || state.invincible) {
+      ctx.strokeStyle = state.invincible ? "rgba(253,224,71,.7)" : "rgba(103,232,249,.65)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, -18 + bob, 28, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(0,0,0,.25)";
+    ctx.beginPath();
+    ctx.ellipse(0, 18, 14, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = state.pants;
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-5, 2 + bob);
+    ctx.lineTo(-6, 16 + bob + leg);
+    ctx.moveTo(5, 2 + bob);
+    ctx.lineTo(6, 16 + bob - leg);
+    ctx.stroke();
+    ctx.fillStyle = state.shirt;
+    roundRectPath(ctx, -11, -22 + bob, 22, 26, 7);
+    ctx.fill();
+    ctx.strokeStyle = state.skin;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(-11, -14 + bob);
+    ctx.lineTo(-18, -4 + bob + arm);
+    ctx.moveTo(11, -14 + bob);
+    ctx.lineTo(18, -4 + bob - arm);
+    ctx.stroke();
+    ctx.fillStyle = state.skin;
+    ctx.beginPath();
+    ctx.arc(0, -30 + bob, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = state.hair;
+    ctx.beginPath();
+    ctx.ellipse(0, -36 + bob, 12, 7, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1f2937";
+    ctx.beginPath();
+    ctx.arc(-4, -30 + bob, 1.8, 0, Math.PI * 2);
+    ctx.arc(4, -30 + bob, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = "900 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(state.name, 0, -46 + bob);
+    ctx.restore();
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function updateHero(dt) {
+    if (!state.visible) return;
+    var speed = state.fly ? 280 : 170;
+    if (hero.keys.shift) speed *= 1.55;
+    var dx = 0;
+    var dy = 0;
+    if (hero.keys.a || hero.keys.arrowleft) dx -= 1;
+    if (hero.keys.d || hero.keys.arrowright) dx += 1;
+    if (hero.keys.w || hero.keys.arrowup) dy -= 1;
+    if (hero.keys.s || hero.keys.arrowdown) dy += 1;
+    if (dx || dy) {
+      var len = Math.hypot(dx, dy) || 1;
+      hero.vx = (dx / len) * speed;
+      hero.vy = (dy / len) * speed;
+      if (dx) hero.facing = dx < 0 ? -1 : 1;
+      hero.mode = state.fly ? "fly" : hero.keys.shift ? "run" : "walk";
+    } else {
+      hero.vx *= 0.8;
+      hero.vy *= 0.8;
+      if (!hero.teleporting) hero.mode = state.fly ? "fly" : "idle";
+    }
+    hero.x += hero.vx * dt;
+    hero.y += hero.vy * dt;
+    hero.x = Math.max(24, Math.min((innerWidth || 800) - 24, hero.x));
+    hero.y = Math.max(40, Math.min((innerHeight || 600) - 24, hero.y));
+    hero.phase += dt;
+    clones = clones.filter(function (c) {
+      c.life -= dt;
+      c.phase += dt;
+      c.x += Math.sin(c.phase * 3) * 20 * dt;
+      return c.life > 0;
+    });
+    if (!clones.length) state.clone = false;
+    if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
+  }
+
+  function drawFrame() {
+    if (!ui.canvas) return;
+    var ctx = ui.canvas.getContext("2d");
+    ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+    if (!state.visible) return;
+    if (gameId() === "animal-hospital" && hospitalActive()) {
+      ui.root.classList.add("hospital-hide");
+      return;
+    }
+    ui.root.classList.remove("hospital-hide");
+    drawHero(ctx, hero.x, hero.y, hero.facing, hero.phase, hero.mode, 1);
+    clones.forEach(function (c) {
+      drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
+    });
+  }
+
+  function hospitalActive() {
+    try {
+      return !!(global.__AMAL_HOSPITAL_HERO__ && global.__AMAL_HOSPITAL_HERO__.active);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function loop(now) {
+    var dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (isOwner() && ui.root) {
+      updateHero(dt);
+      drawFrame();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function exposeHubApi() {
+    try {
+      if (!global.AmalHub) global.AmalHub = {};
+      global.AmalHub.goToGame = goToGame;
+      global.AmalHub.worldHero = api;
+      if (!global.AmalHub.GRANTABLE_GAMES) {
+        // filled lazily from closed hub scope if later assigned
+      }
+    } catch (_) {}
+  }
+
+  function tryCopyGrantable() {
+    try {
+      // GRANTABLE_GAMES is closed in hub IIFE; mirror via DOM game cards if needed
+      if (global.AmalHub && global.AmalHub.GRANTABLE_GAMES) return;
+      var cards = document.querySelectorAll("a.card[href]");
+      if (!cards.length) return;
+      var list = [];
+      cards.forEach(function (a) {
+        var href = a.getAttribute("href") || "";
+        if (href.indexOf(".html") >= 0) return;
+        var id = href.replace(/^\.\//, "").replace(/\/$/, "").split("/").filter(Boolean).pop();
+        if (!id || id === "shared" || id === "apps") return;
+        var name = (a.querySelector("h2") && a.querySelector("h2").textContent) || id;
+        if (!list.some(function (g) {
+          return g.id === id;
+        })) list.push({ id: id, name: name.trim() });
+      });
+      if (list.length && global.AmalHub) global.AmalHub.GRANTABLE_GAMES = list;
+    } catch (_) {}
+  }
+
+  var api = {
+    goToGame: goToGame,
+    usePower: usePower,
+    getState: function () {
+      return state;
+    },
+    getHero: function () {
+      return hero;
+    },
+    drawCanvasHero: drawHero,
+    isReady: function () {
+      return !!ui.root;
+    },
+  };
+
+  function boot() {
+    if (!isOwner()) return;
+    load();
+    ensureUi();
+    exposeHubApi();
+    tryCopyGrantable();
+    handleArrival();
+    state.lastGame = gameId();
+    save();
+    toast("👤 Герой Амаль готов · 🌀 телепорт · ⚡ 20 сил");
+  }
+
+  global.AmalWorld = api;
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () {
+      setTimeout(boot, 120);
+    });
+  } else {
+    setTimeout(boot, 120);
+  }
+  requestAnimationFrame(loop);
+})(typeof window !== "undefined" ? window : globalThis);

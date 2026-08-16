@@ -178,6 +178,7 @@
     { id: "secret-twinkle", name: "⭐ Халат мерцания", color: "#e8b4ff", secret: true, tex: "twinkle" },
     { id: "secret-truce", name: "⭐ Халат перемирия", color: "#c8a8ff", secret: true, tex: "truce" },
     { id: "secret-starlit", name: "⭐ Халат звёзд", color: "#ffe8c0", secret: true, tex: "starlit" },
+    { id: "secret-amal", name: "⭐ Герой Амаль", color: "#5b8def", secret: true, tex: "amal" },
   ];
 
   const WEAPONS = {
@@ -3000,6 +3001,31 @@
         g.players[0].name = ch.name;
       }
     }
+    // Общий герой Амаль: человеческий облик хозяина, если нет другого tray-персонажа
+    if (isOwner() && g.players[0] && !meta.trayTex) {
+      const preferAmal =
+        (selectedSkin && selectedSkin.tex === "amal") ||
+        !selectedSkin ||
+        !selectedSkin.tex ||
+        selectedSkin.id === "default" ||
+        selectedSkin.id === "mint" ||
+        selectedSkin.id === "night" ||
+        selectedSkin.id === "secret-amal";
+      if (preferAmal || (window.AmalWorld && selectedSkin && !selectedSkin.tex)) {
+        g.players[0].tex = "amal";
+        g.players[0].name = "Амаль";
+        g.players[0].color = "#5b8def";
+        if (!meta.skins.includes("secret-amal")) meta.skins.push("secret-amal");
+        meta.skinId = "secret-amal";
+        storeSet(SAVE, meta);
+      }
+    }
+    try {
+      window.__AMAL_HOSPITAL_HERO__ = {
+        active: !!(g.players[0] && g.players[0].tex === "amal"),
+        getPlayer: () => (g && g.players && g.players[0]) || null,
+      };
+    } catch (_) {}
     g.relaxMode = false;
     if (mode === "pair" && g.players[1] && selectedBuddy && selectedBuddy.tex) {
       g.players[1].tex = selectedBuddy.tex;
@@ -3228,6 +3254,9 @@
     g = null;
     deskPatient = null;
     focusPatient = null;
+    try {
+      window.__AMAL_HOSPITAL_HERO__ = { active: false, getPlayer: () => null };
+    } catch (_) {}
     syncAnimeWorldTheme();
     hideEl(hud);
     hideEl(touch);
@@ -4471,9 +4500,15 @@
     if (len > 0.08) {
       mx /= len;
       my /= len;
-      const sp = SPEED * (p.cls.speed || 1);
+      const sp = SPEED * (p.cls.speed || 1) * (g && g.amalFly ? 1.55 : 1);
       p.x = Math.max(30, Math.min(MW - 30, p.x + mx * sp * dt));
       p.y = Math.max(30, Math.min(MH - 30, p.y + my * sp * dt));
+      if (mx) p.facing = mx < 0 ? -1 : 1;
+      p.walkPhase = (p.walkPhase || 0) + dt * (g && g.amalFly ? 10 : 8);
+      p.moving = true;
+    } else {
+      p.moving = false;
+      p.walkPhase = (p.walkPhase || 0) + dt * 1.5;
     }
   }
 
@@ -5019,6 +5054,7 @@
     const isBuilder = tex === "builder";
     const isRainbow = tex === "rainbow";
     const isLilamint = tex === "lilamint";
+    const isAmal = tex === "amal";
     let body =
       theme === "gold" ? "#ffd76a" : theme === "diamond" ? "#c8f4ff" : pl.color;
     let sash =
@@ -5089,10 +5125,76 @@
       sash = "#3dcf8a";
       head = "#e8d0ff";
     }
+    if (isAmal) {
+      body = "#5b8def";
+      sash = "#93c5fd";
+      head = "#e8b890";
+    }
     ctx.fillStyle = "rgba(0,0,0,0.28)";
     ctx.beginPath();
     ctx.ellipse(pl.x, pl.y + 18, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
+    if (isAmal) {
+      const phase = pl.walkPhase || (g && g.t) || 0;
+      const moving = !!pl.moving;
+      const face = pl.facing < 0 ? -1 : 1;
+      const bob = moving ? Math.sin(phase * 2) * 2 : Math.sin(phase) * 1.2;
+      const leg = moving ? Math.sin(phase * 8) * 7 : 0;
+      const arm = moving ? Math.sin(phase * 8 + Math.PI) * 6 : Math.sin(phase) * 2;
+      const fly = !!(g && g.amalFly);
+      const y0 = pl.y + (fly ? -6 + Math.sin(phase * 3) * 3 : 0);
+      if (g && (g.amalShield || g.amalInvincible)) {
+        ctx.strokeStyle = g.amalInvincible ? "rgba(253,224,71,.75)" : "rgba(103,232,249,.7)";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(pl.x, y0 - 10 + bob, 26, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "#2f3d55";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(pl.x - 4, y0 + 2 + bob);
+      ctx.lineTo(pl.x - 5 * face, y0 + 16 + bob + leg);
+      ctx.moveTo(pl.x + 4, y0 + 2 + bob);
+      ctx.lineTo(pl.x + 5 * face, y0 + 16 + bob - leg);
+      ctx.stroke();
+      ctx.fillStyle = body;
+      roundRect(pl.x - 11, y0 - 20 + bob, 22, 26, 7);
+      ctx.fill();
+      ctx.fillStyle = sash;
+      ctx.fillRect(pl.x - 11, y0 - 2 + bob, 22, 5);
+      ctx.strokeStyle = head;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(pl.x - 10, y0 - 14 + bob);
+      ctx.lineTo(pl.x - 16 * face, y0 - 4 + bob + arm);
+      ctx.moveTo(pl.x + 10, y0 - 14 + bob);
+      ctx.lineTo(pl.x + 16 * face, y0 - 4 + bob - arm);
+      ctx.stroke();
+      ctx.fillStyle = head;
+      ctx.beginPath();
+      ctx.arc(pl.x, y0 - 28 + bob, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#2b2118";
+      ctx.beginPath();
+      ctx.ellipse(pl.x, y0 - 34 + bob, 12, 7, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1f2937";
+      ctx.beginPath();
+      ctx.arc(pl.x - 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
+      ctx.arc(pl.x + 4, y0 - 28 + bob, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      drawNamePlate(pl.x, y0 - 48 + bob, "Амаль", "#93c5fd");
+      if (pl.inv.length) {
+        ctx.font = "16px Nunito";
+        ctx.fillText(ITEMS[pl.inv[pl.inv.length - 1]].icon, pl.x + 14, y0 - 18 + bob);
+      } else if (pl.weapon) {
+        ctx.font = "16px Nunito";
+        ctx.fillText(pl.weapon.icon, pl.x + 14, y0 - 18 + bob);
+      }
+      return;
+    }
     if (isHere) {
       ctx.fillStyle = "rgba(120, 200, 255, 0.2)";
       ctx.beginPath();
@@ -5965,28 +6067,56 @@
     requestAnimationFrame(frame);
   }
 
-  // Тесла-силы из админ-куба: хаб шлёт событие 'amal-power', игра выполняет по-настоящему
+  // Тесла-силы / герой Амаля: хаб и world-character шлют 'amal-power'
   window.addEventListener("amal-power", (e) => {
     try {
       const d = (e && e.detail) || {};
-      if (d.type === "killAll") {
+      if (d.type === "killAll" || d.type === "nova") {
         if (g && g.monsters) {
           g.monsters = [];
           g.headBanger = null;
           g.coins = (g.coins || 0) + 50;
         }
         if (typeof eventBanner !== "undefined" && eventBanner) hideEl(eventBanner);
-        if (typeof toast === "function") toast("💥 BZZZ! Все аномалии уничтожены");
+        if (typeof toast === "function") toast(d.type === "nova" ? "💥 Тесла-нова!" : "💥 BZZZ! Все аномалии уничтожены");
       } else if (d.type === "timestop") {
         if (g) g.amalTimeStop = !!d.on;
       } else if (d.type === "invincible") {
         if (g) g.amalInvincible = !!d.on;
+      } else if (d.type === "shield") {
+        if (g) g.amalShield = !!d.on;
+      } else if (d.type === "heal") {
+        if (g) {
+          g.sanity = g.maxSanity;
+          if (typeof toast === "function") toast("💚 Рассудок полный");
+        }
       } else if (d.type === "coinMult") {
         if (g) {
           const f = Number(d.factor) || 1000000;
           g.coins = Math.max((g.coins || 0) * f, f);
           if (typeof toast === "function") toast("🪙 Монеты ×" + f);
         }
+      } else if (d.type === "rewardBoost") {
+        if (g) g.amalReward = !!d.on;
+      } else if (d.type === "localTeleport") {
+        if (g && g.players && g.players[0]) {
+          let wx = Number(d.x);
+          let wy = Number(d.y);
+          if (d.screen) {
+            const rect = canvas.getBoundingClientRect();
+            const sx = ((d.x - rect.left) / Math.max(1, rect.width)) * VW;
+            const sy = ((d.y - rect.top) / Math.max(1, rect.height)) * VH;
+            wx = cam.x + sx;
+            wy = cam.y + sy;
+          }
+          if (Number.isFinite(wx) && Number.isFinite(wy)) {
+            g.players[0].x = Math.max(30, Math.min(MW - 30, wx));
+            g.players[0].y = Math.max(30, Math.min(MH - 30, wy));
+            if (typeof toast === "function") toast("✨ Скачок по больнице");
+          }
+        }
+      } else if (d.type === "fly") {
+        if (g) g.amalFly = !!d.on;
       }
     } catch (_) {
       /* ignore */

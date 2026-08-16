@@ -1095,10 +1095,17 @@
     injectSharedScript("amal-site-faq.js?v=1", "AmalFaq");
   }
 
+  function ensureWorldCharacterLib() {
+    injectSharedScript("amal-world-character.js?v=1", "AmalWorld");
+  }
+
   function boot() {
     ensureSurprisesLib();
     ensureAdminThingsLib();
     ensureFaqLib();
+    try {
+      if (canUsePowers()) ensureWorldCharacterLib();
+    } catch (_) {}
     try {
       if (new URLSearchParams(location.search).get("owner")) unlockAll();
     } catch (_) {}
@@ -1109,6 +1116,7 @@
       global.__AMAL_SPEED__ = true;
       applyBoosts();
       ensureUi();
+      ensureWorldCharacterLib();
     };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startPowers);
     else startPowers();

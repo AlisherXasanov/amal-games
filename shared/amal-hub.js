@@ -6190,6 +6190,7 @@
       /* ignore */
     }
     if (isOwner()) ensureOwnerNick();
+    if (isOwner()) ensureWorldCharacterLib();
     if (enforceBanGate()) {
       return;
     }
@@ -6332,6 +6333,44 @@
     });
   }
 
+  function goToGame(id) {
+    try {
+      if (global.AmalWorld && typeof global.AmalWorld.goToGame === "function") {
+        global.AmalWorld.goToGame(id);
+        return;
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    try {
+      location.href = gameHref(id);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function ensureWorldCharacterLib() {
+    try {
+      if (global.AmalWorld) return;
+      if (document.querySelector('script[src*="amal-world-character.js"]')) return;
+      var s = document.createElement("script");
+      s.src = (function () {
+        try {
+          var p = location.pathname || "";
+          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=1";
+          if (/\/games\/?$/.test(p) || /\/games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=1";
+          return "../shared/amal-world-character.js?v=1";
+        } catch (e) {
+          return "../shared/amal-world-character.js?v=1";
+        }
+      })();
+      s.defer = true;
+      document.head.appendChild(s);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   global.AmalHub = {
     getNick,
     setNick,
@@ -6348,6 +6387,9 @@
     revokeGrant,
     open: openUi,
     gameId: gameIdFromPath,
+    goToGame,
+    gameHref,
+    GRANTABLE_GAMES,
     registerEverywhere,
     listRegistry,
     startAdminAbuse,
@@ -6367,6 +6409,12 @@
     reportActivity,
     CHANGELOG,
   };
+
+  try {
+    if (isOwner()) ensureWorldCharacterLib();
+  } catch (_) {
+    /* ignore */
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
