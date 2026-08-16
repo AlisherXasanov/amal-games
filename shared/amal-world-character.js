@@ -381,12 +381,6 @@
       var cb = document.getElementById("amal-world-creepy");
       if (cb) cb.classList.add("equipped");
     }
-    if (state.portalGun) {
-      pendingPortalTarget = "map";
-      setTimeout(function () {
-        equipPortalGun(true);
-      }, 300);
-    }
     addEventListener("keydown", onKey);
     addEventListener("keyup", function (e) {
       hero.keys[e.key.toLowerCase()] = false;
@@ -1437,6 +1431,10 @@
     if (!isOwner()) return;
     booted = true;
     load();
+    // Пушка никогда не «залипает» между входами — иначе она перехватывает все клики.
+    state.portalGun = false;
+    portalGunEquipped = false;
+    portalGunArmed = false;
     try {
       window.__AMAL_WORLD_BEARD__ = !!state.beard;
     } catch (_) {}
