@@ -15,16 +15,22 @@
       color: #0d6e5f; font-weight: 800; text-decoration: none;
     }
     a.game:hover { background: #dff3ea; }
-    .top { margin-bottom: 16px; }
-    .top a { color: #0d6e5f; font-weight: 700; }
+    .ok {
+      background: #d1fae5; border: 1px solid #34d399; color: #065f46;
+      padding: 10px 12px; border-radius: 10px; font-weight: 700; margin-bottom: 14px;
+    }
   </style>
+  <script>
+    try {
+      localStorage.setItem("amal-lite-mode", "1");
+      localStorage.removeItem("amal-full-portal");
+    } catch (e) {}
+  </script>
 </head>
 <body>
-  <div class="top">
-    <h1>⚡ Быстрый вход в игры</h1>
-    <p>Простая страница без тяжёлых эффектов. Если главная белая — заходи отсюда.</p>
-    <p><a href="./?owner=AmalOwner2026&fresh=816">← Вернуться на главную</a></p>
-  </div>
+  <h1>⚡ Быстрый вход в игры</h1>
+  <div class="ok">Лёгкая страница без кубов. Если главная была чёрной — заходи сюда.</div>
+  <p>Нажми игру. На телефоне ничего не закрывает экран.</p>
   <a class="game" href="zombie-vs-plants/?owner=AmalOwner2026">🧟 Zombie vs Plants</a>
   <a class="game" href="zombie-vs-plants-2/?owner=AmalOwner2026">🧟 Zombie vs Plants 2</a>
   <a class="game" href="terraverse/?owner=AmalOwner2026">🌍 Пиксель-Террариум</a>

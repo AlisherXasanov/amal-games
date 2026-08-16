@@ -6,6 +6,30 @@
   <title>Amal's Lab · игры</title>
   <meta name="description" content="Лаборатория Amal: все браузерные игры в одном месте. Изучай, играй, открывай." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <!-- Сразу на лёгкую страницу: тяжёлая главная вешала Chrome («не отвечает» / чёрный экран).
+       Полная версия: ?full=1  |  Вернуть лёгкую: ?lite=1 -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("lite") === "0" || q.get("full") === "1") {
+          localStorage.setItem("amal-full-portal", "1");
+          localStorage.removeItem("amal-lite-mode");
+          return;
+        }
+        if (q.get("lite") === "1") {
+          localStorage.setItem("amal-lite-mode", "1");
+          localStorage.removeItem("amal-full-portal");
+        }
+        var wantFull = localStorage.getItem("amal-full-portal") === "1";
+        var wantLite = localStorage.getItem("amal-lite-mode") === "1" || q.get("lite") === "1";
+        if (!wantFull || wantLite) {
+          var o = q.get("owner") || "AmalOwner2026";
+          location.replace("./play.html?owner=" + encodeURIComponent(o) + "&safe=1");
+        }
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -908,92 +932,7 @@
 
   </header>
 
-  <aside class="side-cube" aria-label="Куб лаборатории">
-    <div class="amal-sign side-cube-sign"><span class="by">автор</span>Amal ✍️</div>
-    <div class="side-cube-duo">
-      <div class="side-cube-one">
-        <div class="side-cube-frame calm" id="calmCubeUse" role="button" tabindex="0" aria-label="Использовать обычный куб">
-          <div class="menu-cube-stage" aria-hidden="true">
-            <div class="menu-cube-rainbow"></div>
-            <div class="menu-cube">
-              <span class="mf mf0">🎲</span>
-              <span class="mf mf1">🎮</span>
-              <span class="mf mf2">🧪</span>
-              <span class="mf mf3">⭐</span>
-              <span class="mf mf4">👑</span>
-              <span class="mf mf5">🌈</span>
-              <div class="menu-cube-inner">
-                <span class="mfi mfi0">💎</span>
-                <span class="mfi mfi1">🎲</span>
-                <span class="mfi mfi2">✨</span>
-                <span class="mfi mfi3">⭐</span>
-                <span class="mfi mfi4">🔥</span>
-                <span class="mfi mfi5">💚</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="duo-label">Обычный</div>
-      </div>
-      <div class="side-cube-one wild">
-        <div class="side-cube-frame unstable" id="sideCubeFrame" role="button" tabindex="0" aria-label="Использовать нестабильный куб">
-          <div class="menu-cube-stage" aria-hidden="true">
-            <div class="menu-cube-rainbow"></div>
-            <div class="menu-cube">
-              <span class="mf mf0">🎲</span>
-              <span class="mf mf1">🎮</span>
-              <span class="mf mf2">🧪</span>
-              <span class="mf mf3">⭐</span>
-              <span class="mf mf4">👑</span>
-              <span class="mf mf5">🌈</span>
-              <div class="menu-cube-inner">
-                <span class="mfi mfi0">💎</span>
-                <span class="mfi mfi1">🎲</span>
-                <span class="mfi mfi2">✨</span>
-                <span class="mfi mfi3">⭐</span>
-                <span class="mfi mfi4">🔥</span>
-                <span class="mfi mfi5">💚</span>
-              </div>
-            </div>
-          </div>
-          <div class="cube-morph" id="cubeMorph" aria-hidden="true"></div>
-          <div class="cube-cage" aria-hidden="true"></div>
-          <div class="cube-chains" aria-hidden="true"><i></i><i></i><i></i></div>
-        </div>
-        <div class="duo-label">Нестабильный</div>
-      </div>
-    </div>
-    <div class="cube-use">
-      <div class="cube-chest" id="cubeChest" role="button" tabindex="0" aria-label="Сундук для кубов">🧰</div>
-      <div class="cube-use-actions">
-        <div class="cube-use-status" id="cubeUseStatus">Выбери куб и разбей сундук</div>
-        <button class="cube-use-btn" id="newCubeChest" type="button">🎁 Новый сундук</button>
-        <button class="cube-use-btn steel" id="steelCubeChest" type="button">🛡️ Стальной (крепкий)</button>
-        <div class="cube-power">⚡ Сила: <span id="cubePower">0</span></div>
-      </div>
-    </div>
-    <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
-    <button type="button" class="side-cube-comic" id="summonGhostBtn" style="background:linear-gradient(135deg,#7c3aed,#00a8c7)">👻 Вызвать глитч-куб</button>
-    <button type="button" class="side-cube-comic" id="cubeComicBtn">📖 Комикс о кубе</button>
-    <a class="side-cube-comic" id="signLink" hidden href="./sign.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
-  </aside>
-
-  <div class="amal-buddy" id="buddy" role="button" tabindex="0" aria-label="Ушастик — поздороваться">
-    <div class="buddy-bubble" id="buddyBubble"></div>
-    <div class="buddy-body">
-      <div class="buddy-char">
-        <span class="buddy-ear l"></span>
-        <span class="buddy-ear r"></span>
-        <div class="buddy-face">
-          <span class="buddy-eye l"></span>
-          <span class="buddy-eye r"></span>
-          <span class="buddy-cheek l"></span>
-          <span class="buddy-cheek r"></span>
-          <span class="buddy-mouth"></span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Боковые кубы и Ушастик убраны: на телефоне закрывали список игр и вешали браузер -->
 
   <div class="cube-comic-back" id="cubeComicBack" role="dialog" aria-modal="true" aria-label="Комикс о кубе">
     <div class="cube-comic">
@@ -1942,8 +1881,7 @@
       sync();
     })();
   </script>
+  <!-- Хаб и супер-панели на главной отключены: они вешали страницу. В играх они по-прежнему есть. -->
   <script src="./owner-cheats.js" defer></script>
-  <script src="./shared/amal-owner-powers.js?v=20" defer></script>
-  <script src="./shared/amal-hub.js?v=61" defer></script>
 </body>
 </html>
