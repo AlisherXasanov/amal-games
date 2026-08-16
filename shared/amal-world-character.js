@@ -969,8 +969,12 @@
     },
   };
 
+  var booted = false;
+
   function boot() {
+    if (booted) return;
     if (!isOwner()) return;
+    booted = true;
     load();
     try {
       window.__AMAL_WORLD_BEARD__ = !!state.beard;
@@ -983,6 +987,28 @@
     save();
     toast("👤 Герой Амаль готов · 🌀 телепорт · ⚡ 20 сил");
   }
+
+  // Повторяем попытку запуска: owner-режим может включиться чуть позже
+  // (гонка загрузки owner-cheats / hub / owner-powers, ?owner в URL и т.п.).
+  var bootTries = 0;
+  var bootTimer = setInterval(function () {
+    bootTries++;
+    if (booted || bootTries > 40) {
+      clearInterval(bootTimer);
+      return;
+    }
+    boot();
+    if (booted) clearInterval(bootTimer);
+  }, 500);
+
+  try {
+    global.addEventListener("amal-owner-changed", function () {
+      boot();
+    });
+    global.addEventListener("amal-powers-applied", function () {
+      boot();
+    });
+  } catch (_) {}
 
   global.AmalWorld = api;
 
