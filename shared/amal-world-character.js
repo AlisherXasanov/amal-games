@@ -11,6 +11,7 @@
   var ARRIVE_KEY = "amal-world-arrive-v1";
   var BEACON_KEY = "amal-world-beacon-v1";
   var HISTORY_MAX = 8;
+  var HERO_SCALE = 1.35;
 
   var state = {
     name: "Амаль",
@@ -235,34 +236,36 @@
     var st = document.createElement("style");
     st.id = "amal-world-style";
     st.textContent =
-      "#amal-world-root{position:fixed;inset:0;z-index:2147482900;pointer-events:none;font-family:system-ui,Segoe UI,sans-serif}" +
+      "#amal-world-root{position:fixed;inset:0;z-index:2147483300;pointer-events:none;font-family:system-ui,Segoe UI,sans-serif}" +
       "#amal-world-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}" +
-      "#amal-world-dock{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147482902;pointer-events:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end}" +
+      "#amal-world-dock{position:fixed;right:78px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2147483302;pointer-events:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end;max-width:calc(100vw - 96px)}" +
       "#amal-world-dock .aw-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}" +
       "#amal-world-dock button{border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:8px 11px;cursor:pointer;background:linear-gradient(160deg,#1e293b,#0f172a);color:#fff;font:800 12px system-ui;box-shadow:0 8px 20px rgba(0,0,0,.35)}" +
       "#amal-world-dock button.primary{background:linear-gradient(160deg,#7c3aed,#2563eb)}" +
       "#amal-world-dock .aw-energy{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.88);border:1px solid rgba(103,232,249,.35);color:#a5f3fc;font:800 12px system-ui}" +
       "#amal-world-dock .aw-energy.full{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff}" +
-      "#amal-world-msg{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:2147482905;max-width:88vw;padding:10px 14px;border-radius:14px;background:rgba(76,29,149,.92);color:#fff;font:900 14px system-ui;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}" +
+      "#amal-world-msg{position:fixed;left:50%;top:12%;transform:translateX(-50%);z-index:2147483310;max-width:88vw;padding:10px 14px;border-radius:14px;background:rgba(76,29,149,.92);color:#fff;font:900 14px system-ui;opacity:0;transition:opacity .2s;pointer-events:none;text-align:center}" +
       "#amal-world-msg.show{opacity:1}" +
-      "#amal-world-panel,#amal-world-tele{position:fixed;right:12px;bottom:76px;z-index:2147482904;width:min(340px,92vw);max-height:min(68vh,560px);overflow:auto;pointer-events:auto;display:none;border-radius:18px;border:1px solid rgba(255,255,255,.2);background:linear-gradient(165deg,#1a1030f5,#0b1220f8);color:#fff;box-shadow:0 18px 48px rgba(0,0,0,.5);padding:12px}" +
+      "#amal-world-panel,#amal-world-tele{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2147483320;width:min(420px,94vw);max-height:min(80vh,620px);overflow:auto;pointer-events:auto;display:none;border-radius:20px;border:1px solid rgba(167,139,250,.5);background:linear-gradient(165deg,#1a1030fa,#0b1220fc);color:#fff;box-shadow:0 24px 70px rgba(0,0,0,.7),0 0 0 9999px rgba(4,6,14,.55);padding:14px}" +
       "#amal-world-panel.open,#amal-world-tele.open{display:block}" +
-      "#amal-world-panel h3,#amal-world-tele h3{margin:0 0 8px;font:900 14px system-ui}" +
+      "#amal-world-panel h3,#amal-world-tele h3{margin:0 0 10px;font:900 16px system-ui;display:flex;align-items:center;justify-content:space-between;gap:8px}" +
+      "#amal-world-panel h3 .aw-x,#amal-world-tele h3 .aw-x{width:30px;height:30px;flex:0 0 auto;border-radius:9px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font:900 14px system-ui;cursor:pointer;padding:0;text-align:center}" +
       "#amal-world-panel .aw-g{margin:0 0 10px}" +
       "#amal-world-panel .aw-g b{display:block;margin:0 0 6px;color:#c4b5fd;font-size:11px;letter-spacing:.04em}" +
       "#amal-world-panel .aw-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}" +
-      "#amal-world-panel button,#amal-world-tele button{width:100%;text-align:left;border:1px solid rgba(255,255,255,.14);border-radius:11px;padding:8px 9px;background:rgba(255,255,255,.06);color:#fff;font:800 11px/1.25 system-ui;cursor:pointer}" +
+      "#amal-world-panel button,#amal-world-tele button{width:100%;text-align:left;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:10px 11px;background:rgba(255,255,255,.07);color:#fff;font:800 12px/1.3 system-ui;cursor:pointer}" +
+      "#amal-world-panel button[data-aw=superheal]{background:linear-gradient(135deg,#10b981,#059669);border-color:rgba(167,243,208,.6);grid-column:1/-1;font-size:13px}" +
       "#amal-world-panel button:hover,#amal-world-tele button:hover{background:rgba(124,58,237,.35)}" +
       "#amal-world-panel button small,#amal-world-tele button small{display:block;opacity:.75;font-weight:700}" +
       "#amal-world-tele input{width:100%;margin:0 0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:#fff;padding:8px 10px;font:700 13px system-ui}" +
-      "#amal-world-tele .aw-list{display:flex;flex-direction:column;gap:5px;max-height:42vh;overflow:auto}" +
+      "#amal-world-tele .aw-list{display:flex;flex-direction:column;gap:5px;max-height:52vh;overflow:auto}" +
       "#amal-world-fx{position:fixed;inset:0;z-index:2147483030;pointer-events:none}" +
       "@keyframes awPortalIn{0%{opacity:0;transform:scale(.6)}40%{opacity:1;transform:scale(1.08)}100%{opacity:0;transform:scale(1.4)}}" +
       "@keyframes awPortalOut{0%{opacity:0}20%{opacity:1}100%{opacity:1;filter:brightness(2)}}" +
       ".aw-portal-burst{position:fixed;left:50%;top:50%;width:min(70vw,420px);height:min(70vw,420px);margin:-35vmin;border-radius:50%;background:radial-gradient(circle,#a5f3fc,#7c3aed 45%,transparent 70%);animation:awPortalIn .85s ease forwards}" +
       ".aw-portal-veil{position:fixed;inset:0;background:radial-gradient(circle at 50% 50%,rgba(103,232,249,.55),rgba(15,23,42,.92));animation:awPortalOut .7s ease forwards}" +
       "#amal-world-root.hospital-hide #amal-world-canvas{opacity:0}" +
-      "@media(max-width:820px){#amal-world-dock{right:8px;bottom:70px}#amal-world-panel,#amal-world-tele{right:8px;bottom:130px}}";
+      "@media(max-width:820px){#amal-world-dock{right:8px;left:8px;bottom:70px;max-width:none;align-items:center}#amal-world-dock button{font-size:11px;padding:7px 9px}}";
     document.head.appendChild(st);
   }
 
@@ -282,6 +285,7 @@
       '<button type="button" class="primary" id="amal-world-portalgun">🔫 Портал-пушка</button>' +
       '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
       '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
+      '<button type="button" id="amal-world-heal">💚 Супер-лечение</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ 20 сил</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
       "</div></div>" +
@@ -331,6 +335,9 @@
       ui.teleport.classList.remove("open");
       ui.panel.classList.toggle("open");
       renderPowers();
+    };
+    document.getElementById("amal-world-heal").onclick = function () {
+      superHeal();
     };
     document.getElementById("amal-world-cancel").onclick = cancelModes;
 
@@ -412,7 +419,7 @@
       },
     ];
     ui.panel.innerHTML =
-      "<h3>⚡ 20 сил Амаля</h3>" +
+      '<h3><span>⚡ Силы Амаля</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
       groups
         .map(function (g) {
           return (
@@ -438,6 +445,10 @@
         })
         .join("");
     ui.panel.onclick = function (e) {
+      if (e.target.closest("[data-aw-close]")) {
+        ui.panel.classList.remove("open");
+        return;
+      }
       var btn = e.target.closest("[data-aw]");
       if (!btn) return;
       usePower(btn.getAttribute("data-aw"));
@@ -455,7 +466,7 @@
       return (g.name + " " + g.id).toLowerCase().indexOf(q) >= 0;
     });
     ui.teleport.innerHTML =
-      "<h3>🌀 Телепортер миров</h3>" +
+      '<h3><span>🌀 Телепортер миров</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
       '<input id="amal-world-tele-q" type="search" placeholder="Найти игру…" value="' +
       (filter || "").replace(/"/g, "&quot;") +
       '" />' +
@@ -482,6 +493,10 @@
       };
     }
     ui.teleport.onclick = function (e) {
+      if (e.target.closest("[data-aw-close]")) {
+        ui.teleport.classList.remove("open");
+        return;
+      }
       var back = e.target.closest("[data-aw-act]");
       if (back && back.getAttribute("data-aw-act") === "back") {
         usePower("back");
@@ -980,7 +995,7 @@
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.translate(x, y);
-    ctx.scale(facing, 1);
+    ctx.scale(facing * HERO_SCALE, HERO_SCALE);
     var bob = mode === "idle" ? Math.sin(phase) * 1.5 : Math.sin(phase * 2) * 2.5;
     var leg = mode === "walk" || mode === "run" ? Math.sin(phase * (mode === "run" ? 10 : 7)) * (mode === "run" ? 10 : 7) : 0;
     var arm = mode === "walk" || mode === "run" ? Math.sin(phase * (mode === "run" ? 10 : 7) + Math.PI) * (mode === "run" ? 9 : 6) : Math.sin(phase) * 2;
@@ -1001,57 +1016,163 @@
       ctx.arc(0, -18 + bob, 28, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.fillStyle = "rgba(0,0,0,.25)";
+    var glow = ctx.createRadialGradient(0, -20 + bob, 4, 0, -20 + bob, 46);
+    glow.addColorStop(0, "rgba(167,139,250,.28)");
+    glow.addColorStop(1, "rgba(167,139,250,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.ellipse(0, 18, 14, 5, 0, 0, Math.PI * 2);
+    ctx.arc(0, -20 + bob, 46, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    ctx.beginPath();
+    ctx.ellipse(0, 22, 15 - Math.abs(bob) * 0.4, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var capeSwing = Math.sin(phase * (mode === "run" ? 8 : 3)) * (mode === "fly" ? 12 : 5);
+    var cape = ctx.createLinearGradient(0, -30, 0, 20);
+    cape.addColorStop(0, "#7c3aed");
+    cape.addColorStop(1, "#2563eb");
+    ctx.fillStyle = cape;
+    ctx.beginPath();
+    ctx.moveTo(-9, -26 + bob);
+    ctx.quadraticCurveTo(-22 - capeSwing, -4 + bob, -13 - capeSwing, 20 + bob);
+    ctx.lineTo(9 - capeSwing * 0.3, 18 + bob);
+    ctx.quadraticCurveTo(12, -6 + bob, 9, -26 + bob);
+    ctx.closePath();
+    ctx.fill();
+
     ctx.strokeStyle = state.pants;
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 7;
     ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(-5, 2 + bob);
-    ctx.lineTo(-6, 16 + bob + leg);
+    ctx.lineTo(-6, 15 + bob + leg);
     ctx.moveTo(5, 2 + bob);
-    ctx.lineTo(6, 16 + bob - leg);
+    ctx.lineTo(6, 15 + bob - leg);
     ctx.stroke();
-    ctx.fillStyle = state.shirt;
-    roundRectPath(ctx, -11, -22 + bob, 22, 26, 7);
-    ctx.fill();
-    ctx.strokeStyle = state.skin;
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(-11, -14 + bob);
+    ctx.moveTo(-6, 16 + bob + leg);
+    ctx.lineTo(-9, 18 + bob + leg);
+    ctx.moveTo(6, 16 + bob - leg);
+    ctx.lineTo(9, 18 + bob - leg);
+    ctx.stroke();
+
+    var torso = ctx.createLinearGradient(-11, -24 + bob, 11, 6 + bob);
+    torso.addColorStop(0, lighten(state.shirt, 26));
+    torso.addColorStop(1, state.shirt);
+    ctx.fillStyle = torso;
+    roundRectPath(ctx, -12, -23 + bob, 24, 27, 9);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.35)";
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(253,224,71,.9)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-11, -12 + bob);
+    ctx.lineTo(9, -2 + bob);
+    ctx.stroke();
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "900 9px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("A", 0, -10 + bob);
+
+    ctx.strokeStyle = state.skin;
+    ctx.lineWidth = 5.5;
+    ctx.beginPath();
+    ctx.moveTo(-11, -15 + bob);
     ctx.lineTo(-18, -4 + bob + arm);
-    ctx.moveTo(11, -14 + bob);
+    ctx.moveTo(11, -15 + bob);
     ctx.lineTo(18, -4 + bob - arm);
     ctx.stroke();
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.arc(-18, -4 + bob + arm, 3.2, 0, Math.PI * 2);
+    ctx.arc(18, -4 + bob - arm, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.fillStyle = state.skin;
     ctx.beginPath();
-    ctx.arc(0, -30 + bob, 11, 0, Math.PI * 2);
+    ctx.arc(0, -31 + bob, 11.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.fillStyle = "rgba(0,0,0,.08)";
+    ctx.beginPath();
+    ctx.arc(3, -31 + bob, 11.5, -Math.PI / 2, Math.PI / 2);
+    ctx.fill();
+
     if (state.beard) {
       ctx.fillStyle = state.hair;
       ctx.beginPath();
-      ctx.moveTo(-9, -30 + bob);
-      ctx.quadraticCurveTo(0, -16 + bob, 9, -30 + bob);
-      ctx.quadraticCurveTo(7, -24 + bob, 0, -22 + bob);
-      ctx.quadraticCurveTo(-7, -24 + bob, -9, -30 + bob);
+      ctx.moveTo(-10, -31 + bob);
+      ctx.quadraticCurveTo(0, -14 + bob, 10, -31 + bob);
+      ctx.quadraticCurveTo(7, -25 + bob, 0, -23 + bob);
+      ctx.quadraticCurveTo(-7, -25 + bob, -10, -31 + bob);
       ctx.fill();
     }
+
     ctx.fillStyle = state.hair;
     ctx.beginPath();
-    ctx.ellipse(0, -36 + bob, 12, 7, 0, Math.PI, Math.PI * 2);
+    ctx.ellipse(0, -37 + bob, 12.5, 8, 0, Math.PI, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-12, -36 + bob);
+    ctx.quadraticCurveTo(-6, -44 + bob, 4, -41 + bob);
+    ctx.quadraticCurveTo(11, -39 + bob, 12, -34 + bob);
+    ctx.quadraticCurveTo(4, -39 + bob, -12, -36 + bob);
+    ctx.fill();
+
+    var blink = Math.sin(phase * 0.7) > 0.985 ? 0.25 : 1;
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(-4, -32 + bob, 2.6, 2.6 * blink, 0, 0, Math.PI * 2);
+    ctx.ellipse(4.5, -32 + bob, 2.6, 2.6 * blink, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#1f2937";
     ctx.beginPath();
-    ctx.arc(-4, -30 + bob, 1.8, 0, Math.PI * 2);
-    ctx.arc(4, -30 + bob, 1.8, 0, Math.PI * 2);
+    ctx.arc(-3.4, -32 + bob, 1.3 * blink + 0.3, 0, Math.PI * 2);
+    ctx.arc(5.2, -32 + bob, 1.3 * blink + 0.3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#fff";
+    if (!state.beard) {
+      ctx.strokeStyle = "rgba(120,53,15,.75)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(0.5, -28 + bob, 4, 0.25 * Math.PI, 0.75 * Math.PI);
+      ctx.stroke();
+    }
+
+    ctx.save();
+    ctx.scale(facing, 1);
+    ctx.fillStyle = "rgba(15,23,42,.85)";
+    ctx.strokeStyle = "rgba(167,139,250,.7)";
+    ctx.lineWidth = 1.2;
+    var label = state.name || "Амаль";
     ctx.font = "900 11px system-ui";
+    var w = ctx.measureText(label).width + 14;
+    roundRectPath(ctx, -w / 2, -56 + bob, w, 16, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#e9d5ff";
     ctx.textAlign = "center";
-    ctx.fillText(state.name, 0, -46 + bob);
+    ctx.fillText(label, 0, -45 + bob);
     ctx.restore();
+    ctx.restore();
+  }
+
+  function lighten(hex, amt) {
+    try {
+      var h = String(hex).replace("#", "");
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      var n = parseInt(h, 16);
+      var r = Math.min(255, ((n >> 16) & 255) + amt);
+      var g = Math.min(255, ((n >> 8) & 255) + amt);
+      var b = Math.min(255, (n & 255) + amt);
+      return "rgb(" + r + "," + g + "," + b + ")";
+    } catch (_) {
+      return hex;
+    }
   }
 
   function roundRectPath(ctx, x, y, w, h, r) {

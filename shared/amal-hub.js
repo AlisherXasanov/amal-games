@@ -6357,11 +6357,11 @@
       s.src = (function () {
         try {
           var p = location.pathname || "";
-          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=6";
-          if (/\/games\/?$/.test(p) || /\/games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=6";
-          return "../shared/amal-world-character.js?v=6";
+          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=7";
+          if (/\/games\/?$/.test(p) || /\/games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=7";
+          return "../shared/amal-world-character.js?v=7";
         } catch (e) {
-          return "../shared/amal-world-character.js?v=6";
+          return "../shared/amal-world-character.js?v=7";
         }
       })();
       s.defer = true;
