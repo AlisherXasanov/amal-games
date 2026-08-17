@@ -84,6 +84,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
+  var AW_VERSION = "v31";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -1200,6 +1201,33 @@
       toast("🌀 Нужен второй портал — выстрели ещё раз");
       return;
     }
+    // В играх, где я играю ОДНИМ персонажем по центру (Terraverse и т.п.),
+    // двигать надо самого игрока игры — иначе телепорт оверлея перезатрётся.
+    var ref = null;
+    try {
+      ref = window.__AMAL_NATIVE_REF__;
+    } catch (_) {}
+    var centerLock =
+      Object.prototype.hasOwnProperty.call(CENTER_LOCK_GAMES, gameId()) && !freeRoamHere;
+    if (ref && centerLock && other.world) {
+      ref.x = other.wx;
+      ref.y = other.wy;
+      if (ref.vx != null) ref.vx = 0;
+      if (ref.vy != null) ref.vy = 0;
+      other.canEnter = false;
+      other.lockUntil = Date.now() + 650;
+      p.canEnter = false;
+      p.lockUntil = Date.now() + 650;
+      portalCooldownUntil = Date.now() + 650;
+      hero.mode = "teleport";
+      portalFx("in");
+      superHeal(true);
+      toast("✨ Прыжок игрока сквозь портал · 💚");
+      setTimeout(function () {
+        hero.mode = "idle";
+      }, 400);
+      return;
+    }
     var op = portalPos(other);
     var w = innerWidth || 800;
     var h = innerHeight || 600;
@@ -1950,6 +1978,7 @@
     if (!ui.canvas) return;
     var ctx = ui.canvas.getContext("2d");
     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
+    drawVersionTag(ctx);
     if (!state.visible) return;
     // Прячем оверлейного Амаля только в больнице (там свой игровой Амаль).
     var hideHero = gameId() === "animal-hospital" && hospitalActive();
@@ -1964,6 +1993,18 @@
     clones.forEach(function (c) {
       drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
     });
+  }
+
+  function drawVersionTag(ctx) {
+    try {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.font = "700 10px system-ui";
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#a78bfa";
+      ctx.fillText("Amal " + AW_VERSION, (ui.canvas.width || 800) - 8, 14);
+      ctx.restore();
+    } catch (_) {}
   }
 
   function hospitalActive() {
