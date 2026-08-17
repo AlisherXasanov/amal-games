@@ -33,6 +33,7 @@
     clone: false,
     visible: true,
     portalGun: false,
+    ammo: "map",
     creepy: true,
     uiVer: 0,
   };
@@ -72,6 +73,7 @@
   var portalShots = [];
   var portals = [];
   var portalCooldownUntil = 0;
+  var portalTime = 0; // общее время для анимации воронки
 
   function load() {
     try {
@@ -102,6 +104,7 @@
           history: state.history.slice(0, HISTORY_MAX),
           visible: state.visible,
           portalGun: state.portalGun,
+          ammo: state.ammo,
           creepy: state.creepy,
           uiVer: state.uiVer,
         })
@@ -299,6 +302,7 @@
       '<div class="aw-row">' +
       '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
       '<button type="button" class="primary" id="amal-world-portalgun">🔫 Портал-пушка</button>' +
+      '<button type="button" id="amal-world-portalammo">🎯 Заряд: карта</button>' +
       '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
       '<button type="button" class="heal" id="amal-world-heal">💚 Супер-лечение</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ Силы</button>' +
@@ -371,8 +375,14 @@
         equipPortalGun(false);
         return;
       }
-      pendingPortalTarget = "map";
+      pendingPortalTarget = state.ammo || "map";
       equipPortalGun(true);
+    };
+    document.getElementById("amal-world-portalammo").onclick = function () {
+      ui.panel.classList.remove("open");
+      ui.teleport.classList.add("open");
+      renderTeleport("", "ammo");
+      toast("🎯 Выбери, куда будет вести портал — пушка зарядится этой игрой");
     };
     document.getElementById("amal-world-portalgame").onclick = function () {
       ui.panel.classList.remove("open");
@@ -518,9 +528,10 @@
     };
   }
 
-  function renderTeleport(filter, portalMode) {
+  function renderTeleport(filter, mode) {
     if (!ui.teleport) return;
-    ui.teleport._portalMode = !!portalMode;
+    // mode: undefined — обычный телепорт, "portal"/true — портал рядом, "ammo" — зарядить пушку
+    ui.teleport._mode = mode === true ? "portal" : mode || "";
     var q = (filter || "").toLowerCase();
     var here = gameId();
     var items = gameList().filter(function (g) {
@@ -528,14 +539,23 @@
       if (!q) return true;
       return (g.name + " " + g.id).toLowerCase().indexOf(q) >= 0;
     });
+    var head =
+      ui.teleport._mode === "ammo"
+        ? "🎯 Чем зарядить пушку"
+        : ui.teleport._mode === "portal"
+        ? "🌀 Портал рядом со мной"
+        : "🌀 Телепортер миров";
     ui.teleport.innerHTML =
-      '<h3><span>🌀 Телепортер миров</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
+      '<h3><span>' + head + '</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
       '<input id="amal-world-tele-q" type="search" placeholder="Найти игру…" value="' +
       (filter || "").replace(/"/g, "&quot;") +
       '" />' +
       '<div class="aw-list">' +
+      (ui.teleport._mode === "ammo"
+        ? '<button type="button" data-game="__map">🗺 По карте (прыжок по экрану)</button>'
+        : "") +
       '<button type="button" data-game="__portal">🏠 Каталог</button>' +
-      '<button type="button" data-aw-act="back">↩ Назад</button>' +
+      (ui.teleport._mode === "ammo" ? "" : '<button type="button" data-aw-act="back">↩ Назад</button>') +
       items
         .map(function (g) {
           return '<button type="button" data-game="' + g.id + '">🎮 ' + (g.name || g.id) + "</button>";
@@ -545,7 +565,7 @@
     var inp = document.getElementById("amal-world-tele-q");
     if (inp) {
       inp.oninput = function () {
-        renderTeleport(inp.value);
+        renderTeleport(inp.value, ui.teleport._mode);
         var n = document.getElementById("amal-world-tele-q");
         if (n) {
           n.focus();
@@ -568,7 +588,18 @@
       var btn = e.target.closest("[data-game]");
       if (!btn) return;
       var gid = btn.getAttribute("data-game");
-      if (ui.teleport._portalMode) {
+      var mode = ui.teleport._mode;
+      if (mode === "ammo") {
+        var ammo = gid === "__map" ? "map" : gid === "__portal" ? "portal" : gid;
+        state.ammo = ammo;
+        pendingPortalTarget = ammo;
+        save();
+        updateAmmoBtn();
+        ui.teleport.classList.remove("open");
+        equipPortalGun(true);
+        return;
+      }
+      if (mode === "portal") {
         var tgt = gid === "__portal" ? "portal" : gid;
         ui.teleport.classList.remove("open");
         var dock = document.getElementById("amal-world-dock");
@@ -578,6 +609,18 @@
       }
       goToGame(gid);
     };
+  }
+
+  function ammoLabel() {
+    var a = state.ammo || "map";
+    if (a === "map") return "карта";
+    if (a === "portal") return "Каталог";
+    return titleOf(a);
+  }
+
+  function updateAmmoBtn() {
+    var b = document.getElementById("amal-world-portalammo");
+    if (b) b.textContent = "🎯 Заряд: " + ammoLabel();
   }
 
   function portalFx(kind) {
@@ -658,6 +701,7 @@
     toast("✨ " + (data.name || "Амаль") + " прибыл из «" + titleOf(data.from) + "» · 💚 супер-лечение");
     setTimeout(function () {
       superHeal(true);
+      openReturnPortal(data.from);
     }, 900);
   }
 
@@ -894,12 +938,14 @@
     portalGunEquipped = !!on;
     portalGunArmed = portalGunEquipped;
     state.portalGun = portalGunEquipped;
+    if (portalGunEquipped) pendingPortalTarget = state.ammo || "map";
     save();
     var btn = document.getElementById("amal-world-portalgun");
     if (btn) {
       btn.classList.toggle("equipped", portalGunEquipped);
       btn.textContent = portalGunEquipped ? "🔫 Пушка ВКЛ (стреляй)" : "🔫 Портал-пушка";
     }
+    updateAmmoBtn();
     if (!portalGunEquipped) {
       if (portalClickHandler) removeEventListener("pointerdown", portalClickHandler, true);
       portalClickHandler = null;
@@ -910,8 +956,8 @@
     if (ui.teleport) ui.teleport.classList.remove("open");
     var dock = document.getElementById("amal-world-dock");
     if (dock) dock.classList.remove("open");
-    var where = pendingPortalTarget === "map" ? "по карте" : "в «" + titleOf(pendingPortalTarget) + "»";
-    toast("🔫 Пушка в руках · кликай куда угодно — стреляет порталами (" + where + ")");
+    var where = pendingPortalTarget === "map" ? "по карте" : "в «" + ammoLabel() + "»";
+    toast("🔫 Пушка заряжена: " + where + " · кликай куда угодно — стреляй порталами");
     if (!portalClickHandler) {
       portalClickHandler = function (e) {
         if (!portalGunEquipped) return;
@@ -943,26 +989,44 @@
     flashBolts();
   }
 
+  function pushPortal(p) {
+    portals.push(p);
+    // держим не больше 3 порталов; обратный портал убираем последним
+    while (portals.length > 3) {
+      var idx = portals.findIndex(function (q) {
+        return !q.back;
+      });
+      portals.splice(idx >= 0 ? idx : 0, 1);
+    }
+  }
+
   function openPortalNear(target) {
     // Портал появляется прямо рядом с героем — заходишь и попадаешь в игру.
     var dir = hero.facing || 1;
     var px = Math.max(60, Math.min((innerWidth || 800) - 60, hero.x + dir * 90));
     var py = hero.y;
-    portals.push({ x: px, y: py, r: 4, target: target || "map", born: 0, ready: false });
-    while (portals.length > 2) portals.shift();
+    pushPortal({ x: px, y: py, r: 4, target: target || "map", born: 0, ready: false });
     portalFx("in");
     var name = target === "map" || target === "portal" ? "Каталог" : titleOf(target);
     toast("🌀 Портал в «" + name + "» рядом с тобой · подойди и войди (или 🗑 убрать)");
   }
 
+  function openReturnPortal(fromId) {
+    // Обратный портал: появляется за спиной героя и ведёт туда, откуда пришёл.
+    var dir = -(hero.facing || 1);
+    var px = Math.max(60, Math.min((innerWidth || 800) - 60, hero.x + dir * 110));
+    var py = hero.y;
+    pushPortal({ x: px, y: py, r: 4, target: fromId, born: 0, ready: false, back: true });
+    toast("↩ Обратный портал в «" + titleOf(fromId) + "» открыт рядом — можно вернуться");
+  }
+
   function openPortalAt(x, y, target) {
-    // максимум 2 портала — старые убираем
-    portals.push({ x: x, y: y, r: 4, target: target || "map", born: 0, ready: false });
-    while (portals.length > 2) portals.shift();
+    pushPortal({ x: x, y: y, r: 4, target: target || "map", born: 0, ready: false });
     toast(target === "map" ? "🌀 Портал открыт · зайди в него" : "🌀 Портал в «" + titleOf(target) + "» · зайди в него");
   }
 
   function updatePortals(dt) {
+    portalTime += dt;
     portalShots = portalShots.filter(function (s) {
       s.life -= dt;
       s.x += s.vx * dt;
@@ -1019,38 +1083,125 @@
     }, 400);
   }
 
+  function portalColors(p) {
+    if (p.back) return { a: "#34d399", b: "#059669", glow: "#6ee7b7" };
+    if (p.target === "map") return { a: "#67e8f9", b: "#2563eb", glow: "#a5f3fc" };
+    return { a: "#fcd34d", b: "#a855f7", glow: "#fde68a" };
+  }
+
   function drawPortals(ctx) {
     portalShots.forEach(function (s) {
       ctx.save();
-      ctx.fillStyle = s.target === "map" ? "#38bdf8" : "#f59e0b";
-      ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 16;
+      var c = portalColors({ target: s.target });
+      // хвост-комета
+      for (var i = 1; i <= 6; i++) {
+        ctx.globalAlpha = 0.14 * (7 - i);
+        ctx.fillStyle = c.a;
+        ctx.beginPath();
+        ctx.arc(s.x - (s.vx / 60) * i * 0.5, s.y - (s.vy / 60) * i * 0.5, 6 - i * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#fff";
+      ctx.shadowColor = c.glow;
+      ctx.shadowBlur = 18;
       ctx.beginPath();
-      ctx.arc(s.x, s.y, 6, 0, Math.PI * 2);
+      ctx.arc(s.x, s.y, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     });
+
     portals.forEach(function (p) {
+      var c = portalColors(p);
+      var rx = p.r;
+      var ry = p.r * 1.35;
+      var t = portalTime;
+      var pulse = 1 + Math.sin(t * 3 + p.x * 0.01) * 0.05;
       ctx.save();
-      var col = p.target === "map" ? "#38bdf8" : "#f59e0b";
-      ctx.strokeStyle = col;
-      ctx.shadowColor = col;
-      ctx.shadowBlur = 20;
+      ctx.translate(p.x, p.y);
+      ctx.scale(pulse, pulse);
+
+      // тёмная воронка внутри
+      var grad = ctx.createRadialGradient(0, 0, 2, 0, 0, ry);
+      grad.addColorStop(0, "rgba(8,6,20,.96)");
+      grad.addColorStop(0.55, c.b);
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // закрученные рукава вихря
+      ctx.globalCompositeOperation = "lighter";
+      for (var arm = 0; arm < 3; arm++) {
+        ctx.beginPath();
+        ctx.strokeStyle = arm % 2 ? c.a : c.glow;
+        ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 2;
+        for (var k = 0; k <= 26; k++) {
+          var f = k / 26;
+          var ang = t * 2.2 + arm * ((Math.PI * 2) / 3) + f * Math.PI * 2.1;
+          var rr = f * rx;
+          var px = Math.cos(ang) * rr;
+          var py = Math.sin(ang) * rr * 1.35;
+          if (k === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.globalCompositeOperation = "source-over";
+      ctx.globalAlpha = 1;
+
+      // светящееся кольцо
+      ctx.strokeStyle = c.a;
+      ctx.shadowColor = c.glow;
+      ctx.shadowBlur = 22;
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.ellipse(p.x, p.y, p.r, p.r * 1.3, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.globalAlpha = 0.25;
-      ctx.fillStyle = col;
-      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx + 6, ry + 6, 0, 0, Math.PI * 2);
+      ctx.stroke();
       ctx.globalAlpha = 1;
-      if (p.ready) {
-        ctx.fillStyle = "#fff";
-        ctx.font = "900 10px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText(p.target === "map" ? "портал" : titleOf(p.target), p.x, p.y - p.r * 1.3 - 4);
+
+      // искры по орбите
+      for (var s2 = 0; s2 < 7; s2++) {
+        var sa = t * 1.6 + (s2 * Math.PI * 2) / 7;
+        var sr = rx + 10 + Math.sin(t * 4 + s2) * 4;
+        ctx.fillStyle = s2 % 2 ? c.glow : "#fff";
+        ctx.globalAlpha = 0.5 + 0.5 * Math.abs(Math.sin(t * 3 + s2));
+        ctx.beginPath();
+        ctx.arc(Math.cos(sa) * sr, Math.sin(sa) * sr * 1.2, 2, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.restore();
+
+      // подпись-табличка
+      if (p.ready) {
+        var label = p.back ? "↩ " + titleOf(p.target) : p.target === "map" ? "портал" : titleOf(p.target);
+        ctx.save();
+        ctx.font = "900 11px system-ui";
+        ctx.textAlign = "center";
+        var w = ctx.measureText(label).width + 14;
+        var ly = p.y - ry - 16;
+        ctx.fillStyle = "rgba(10,10,20,.8)";
+        ctx.strokeStyle = c.a;
+        ctx.lineWidth = 1.5;
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(p.x - w / 2, ly - 11, w, 18, 9);
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          ctx.fillRect(p.x - w / 2, ly - 11, w, 18);
+        }
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, p.x, ly + 2);
+        ctx.restore();
+      }
     });
   }
 
@@ -1598,6 +1749,8 @@
         Object.prototype.hasOwnProperty.call(CENTER_LOCK_GAMES, gameId()) && !freeRoamHere;
     } catch (_) {}
     ensureUi();
+    updateAmmoBtn();
+    pendingPortalTarget = state.ammo || "map";
     exposeHubApi();
     tryCopyGrantable();
     handleArrival();
