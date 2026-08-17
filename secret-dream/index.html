@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <title>???</title>
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <a class="back" href="../">← Все игры</a>
+  <canvas id="game"></canvas>
+  <div id="hud">
+    <span id="stage">Комната 1</span>
+    <span id="fragments">✦ 0/3</span>
+    <span id="lives">♥♥♥</span>
+  </div>
+  <div id="message"></div>
+  <div id="screen">
+    <div class="panel">
+      <div class="sigil">◈</div>
+      <h1>Игра, которой раньше не было</h1>
+      <p>Каждая комната меняет одно правило. Собери три осколка и найди дверь. Управление: WASD или стрелки.</p>
+      <button id="start">ВОЙТИ</button>
+    </div>
+  </div>
+  <script src="./game.js?v=1"></script>
+  <script src="../shared/amal-owner-powers.js?v=21"></script>
+  <script src="../shared/amal-hub.js?v=66"></script>
+  <script src="../shared/amal-world-character.js?v=25"></script>
+</body>
+</html>
