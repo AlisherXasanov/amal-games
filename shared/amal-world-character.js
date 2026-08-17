@@ -327,7 +327,7 @@
       '<div class="aw-tools" id="amal-world-tools">' +
       '<div class="aw-energy" id="amal-world-energy">⚡ 100%</div>' +
       '<div class="aw-row">' +
-      '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Телепорт</button>' +
+      '<button type="button" class="primary" id="amal-world-tele-btn">🌀 Портал в игру</button>' +
       '<button type="button" class="primary" id="amal-world-portalgun">🔫 Портал-пушка</button>' +
       '<button type="button" id="amal-world-portalammo">🎯 Заряд: карта</button>' +
       '<button type="button" id="amal-world-portalgame">🎮 Портал в игру</button>' +
@@ -606,8 +606,9 @@
 
   function renderTeleport(filter, mode) {
     if (!ui.teleport) return;
-    // mode: undefined — обычный телепорт, "portal"/true — портал рядом, "ammo" — зарядить пушку
-    ui.teleport._mode = mode === true ? "portal" : mode || "";
+    // mode: "ammo" — зарядить пушку; иначе всегда открываем портал рядом
+    // (мгновенных переносов больше нет — только через вход в портал)
+    ui.teleport._mode = mode === "ammo" ? "ammo" : "portal";
     var q = (filter || "").toLowerCase();
     var here = gameId();
     var items = gameList().filter(function (g) {
@@ -616,11 +617,7 @@
       return (g.name + " " + g.id).toLowerCase().indexOf(q) >= 0;
     });
     var head =
-      ui.teleport._mode === "ammo"
-        ? "🎯 Чем зарядить пушку"
-        : ui.teleport._mode === "portal"
-        ? "🌀 Портал рядом со мной"
-        : "🌀 Телепортер миров";
+      ui.teleport._mode === "ammo" ? "🎯 Чем зарядить пушку" : "🌀 Портал рядом со мной";
     ui.teleport.innerHTML =
       '<h3><span>' + head + '</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
       '<input id="amal-world-tele-q" type="search" placeholder="Найти игру…" value="' +
@@ -675,15 +672,11 @@
         equipPortalGun(true);
         return;
       }
-      if (mode === "portal") {
-        var tgt = gid === "__portal" ? "portal" : gid;
-        ui.teleport.classList.remove("open");
-        var dock = document.getElementById("amal-world-dock");
-        if (dock) dock.classList.remove("open");
-        openPortalNear(tgt);
-        return;
-      }
-      goToGame(gid);
+      var tgt = gid === "__portal" ? "portal" : gid;
+      ui.teleport.classList.remove("open");
+      var dock = document.getElementById("amal-world-dock");
+      if (dock) dock.classList.remove("open");
+      openPortalNear(tgt);
     };
   }
 
@@ -839,7 +832,7 @@
           toast("Нет прошлого мира");
           return;
         }
-        goToGame(prev);
+        openPortalNear(prev);
         return;
       case "beacon":
         if (!spend(20) || !onCd("beacon", 1500)) return;
@@ -869,7 +862,7 @@
           dispatch("localTeleport", { x: beacon.x, y: beacon.y });
           toast("К маяку!");
         } else {
-          goToGame(beacon.game);
+          openPortalNear(beacon.game);
         }
         return;
       case "zap":
