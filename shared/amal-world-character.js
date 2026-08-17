@@ -89,7 +89,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v36";
+  var AW_VERSION = "v37";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -1339,11 +1339,11 @@
     var btn = document.getElementById("amal-world-portalgun");
     if (btn) {
       btn.classList.toggle("equipped", portalGunEquipped);
-      btn.textContent = portalGunEquipped ? "🔫 Пушка ВКЛ (стреляй)" : "🔫 Портал-пушка";
+      btn.textContent = portalGunEquipped ? "🔫 Пушка ВКЛ (ПКМ)" : "🔫 Портал-пушка";
     }
     updateAmmoBtn();
     if (!portalGunEquipped) {
-      if (portalClickHandler) removeEventListener("pointerdown", portalClickHandler, true);
+      if (portalClickHandler) removeEventListener("contextmenu", portalClickHandler, true);
       portalClickHandler = null;
       toast("🔫 Портал-пушка убрана");
       return;
@@ -1353,15 +1353,18 @@
     var dock = document.getElementById("amal-world-dock");
     if (dock) dock.classList.remove("open");
     var where = pendingPortalTarget === "map" ? "по карте" : "в «" + ammoLabel() + "»";
-    toast("🔫 Пушка заряжена: " + where + " · кликай куда угодно — стреляй порталами");
+    toast("🔫 Пушка заряжена: " + where + " · ЛКМ — играй/копай · ПКМ — стреляй порталом");
+    // Стреляем ТОЛЬКО по правой кнопке — левый клик остаётся игре (копать/ходить).
+    // Пушка держится заряженной всю игру: стреляй сколько угодно, без переактивации.
     if (!portalClickHandler) {
       portalClickHandler = function (e) {
         if (!portalGunEquipped) return;
         var t = e.target;
         if (t && t.closest && t.closest("#amal-world-dock,#amal-world-panel,#amal-world-tele,#amal-world-fab")) return;
+        e.preventDefault();
         firePortal(e.clientX, e.clientY, pendingPortalTarget);
       };
-      addEventListener("pointerdown", portalClickHandler, true);
+      addEventListener("contextmenu", portalClickHandler, true);
     }
   }
 
