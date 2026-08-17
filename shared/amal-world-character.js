@@ -1083,12 +1083,36 @@
       p.wx = p.x + cam.x;
       p.wy = p.y + cam.y;
     }
+    if (p.target === "map") {
+      // Порталы по карте живут парой: синий и оранжевый.
+      var mapPortals = portals.filter(function (q) {
+        return q.target === "map";
+      });
+      var prev = mapPortals[mapPortals.length - 1];
+      p.slot = prev && prev.slot === "a" ? "b" : "a";
+      // третий выстрел вытесняет самый старый портал пары
+      while (mapPortals.length >= 2) {
+        var dead = mapPortals.shift();
+        portals.splice(portals.indexOf(dead), 1);
+      }
+      var mate = portals.filter(function (q) {
+        return q.target === "map";
+      })[0];
+      if (mate) {
+        p.pair = mate;
+        mate.pair = p;
+      }
+    }
     portals.push(p);
-    // держим не больше 3 порталов; обратный портал убираем последним
     while (portals.length > 3) {
       var idx = portals.findIndex(function (q) {
-        return !q.back;
+        return !q.back && q.target !== "map";
       });
+      if (idx < 0) {
+        idx = portals.findIndex(function (q) {
+          return !q.back;
+        });
+      }
       portals.splice(idx >= 0 ? idx : 0, 1);
     }
   }
@@ -1139,7 +1163,7 @@
       // Портал засасывает, только если герой сначала ВЫШЕЛ из него, а потом зашёл.
       // Иначе свежесозданный у ног портал телепортировал бы мгновенно.
       var pp = portalPos(p);
-      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + 48) p.canEnter = true;
+      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + 60) p.canEnter = true;
     });
     // вход героя в готовый портал (нужно реально зайти в него, встав рядом)
     if (portalCooldownUntil && Date.now() < portalCooldownUntil) return;
@@ -1161,22 +1185,32 @@
       return;
     }
     // Карта: порталы ПОСТОЯННЫЕ — выходишь из парного и можешь ходить туда-обратно.
-    var other = portals.find(function (q) {
-      return q !== p;
-    });
-    if (other) {
-      // выходим чуть в стороне от парного портала, чтобы не войти в него сразу же
-      var op = portalPos(other);
-      hero.x = op.x + (other.r + 30) * (hero.facing || 1);
-      hero.y = op.y;
-      hero.x = Math.max(24, Math.min((innerWidth || 800) - 24, hero.x));
+    var other =
+      p.pair && portals.indexOf(p.pair) >= 0
+        ? p.pair
+        : portals.find(function (q) {
+            return q !== p && q.target === "map";
+          });
+    if (!other) {
+      toast("🌀 Нужен второй портал — выстрели ещё раз");
+      return;
     }
-    portalCooldownUntil = Date.now() + 1400;
+    var op = portalPos(other);
+    var w = innerWidth || 800;
+    // выходим сбоку от кольца, выбирая сторону, где есть место на экране
+    var gap = other.r + 80;
+    var side = op.x + gap > w - 40 ? -1 : op.x - gap < 40 ? 1 : hero.facing || 1;
+    hero.x = Math.max(24, Math.min(w - 24, op.x + gap * side));
+    hero.y = op.y;
+    // приёмник не засасывает обратно, пока герой сам от него не отойдёт
+    other.canEnter = false;
+    p.canEnter = false;
+    portalCooldownUntil = Date.now() + 900;
     hero.mode = "teleport";
     portalFx("in");
     dispatch("localTeleport", { x: hero.x, y: hero.y, screen: true });
     superHeal(true);
-    toast(other ? "✨ Портал → портал · ходи туда-обратно · 💚" : "✨ Прошёл сквозь портал · 💚");
+    toast("✨ Портал → портал · отойди и заходи снова · 💚");
     setTimeout(function () {
       hero.mode = "idle";
     }, 400);
@@ -1184,7 +1218,11 @@
 
   function portalColors(p) {
     if (p.back) return { a: "#34d399", b: "#059669", glow: "#6ee7b7" };
-    if (p.target === "map") return { a: "#67e8f9", b: "#2563eb", glow: "#a5f3fc" };
+    if (p.target === "map") {
+      return p.slot === "b"
+        ? { a: "#fdba74", b: "#ea580c", glow: "#fed7aa" }
+        : { a: "#67e8f9", b: "#2563eb", glow: "#a5f3fc" };
+    }
     return { a: "#fcd34d", b: "#a855f7", glow: "#fde68a" };
   }
 
@@ -1281,7 +1319,11 @@
 
       // подпись-табличка
       if (p.ready) {
-        var label = p.back ? "↩ " + titleOf(p.target) : p.target === "map" ? "портал" : titleOf(p.target);
+        var label = p.back
+          ? "↩ " + titleOf(p.target)
+          : p.target === "map"
+          ? (p.slot === "b" ? "оранжевый" : "синий") + (p.canEnter ? "" : " · отойди")
+          : titleOf(p.target);
         ctx.save();
         ctx.font = "900 11px system-ui";
         ctx.textAlign = "center";
