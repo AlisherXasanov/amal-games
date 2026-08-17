@@ -95,6 +95,10 @@
   var portals = [];
   var portalCooldownUntil = 0;
   var portalTime = 0; // общее время для анимации воронки
+  // Добрый босс-гигант: владелец сам решает, когда вызвать, и раздаёт дары.
+  var bossActive = false;
+  var boss = { x: 0, y: 0, tx: 0, ty: 0, phase: 0, scale: 3.4 };
+  var bossGifts = []; // падающие подарки при раздаче
   // Куда ставим героя при выходе из парного портала (дальше кольца, чтобы не
   // засчиталось повторным входом). Возврат назад — обычным заходом в кольцо.
   var EXIT_DIST = 110;
@@ -487,6 +491,14 @@
   function renderPowers() {
     if (!ui.panel) return;
     var groups = [
+      {
+        title: "ДОБРЫЙ БОСС",
+        items: [
+          { id: "boss", label: "🦁 Вызвать босса-гиганта", cost: 0, tip: "вкл/выкл · встаёт за спиной" },
+          { id: "bossgift", label: "🎁 Босс раздаёт дары", cost: 0, tip: "всем награды + лечение" },
+          { id: "bosscome", label: "🕹 Босс, ко мне", cost: 0, tip: "поставить рядом" },
+        ],
+      },
       {
         title: "ПОРТАЛЫ",
         items: [
@@ -985,9 +997,95 @@
         portalFx("in");
         toast("🤝 Всё сразу!");
         return;
+      case "boss":
+        bossActive = !bossActive;
+        if (bossActive) {
+          bossSummonAt();
+          portalFx("in");
+          toast("🦁 Добрый босс-гигант с тобой · он за спиной");
+        } else {
+          toast("Босс ушёл отдыхать");
+        }
+        return;
+      case "bosscome":
+        if (!bossActive) {
+          bossActive = true;
+          toast("🦁 Босс пришёл");
+        }
+        bossSummonAt(true);
+        return;
+      case "bossgift":
+        if (!bossActive) {
+          toast("Сначала вызови босса 🦁");
+          return;
+        }
+        bossGiveGifts();
+        return;
       default:
         return;
     }
+  }
+
+  function bossSummonAt(instant) {
+    var behind = -(hero.facing || 1);
+    boss.tx = hero.x + behind * 96;
+    boss.ty = hero.y;
+    if (instant || (!boss.x && !boss.y)) {
+      boss.x = boss.tx;
+      boss.y = boss.ty;
+    }
+  }
+
+  function bossGiveGifts() {
+    // Гигант осыпает всех дарами: награды, лечение, монеты + дождь подарков.
+    var icons = ["🎁", "💎", "👑", "⭐", "🍬", "💰", "❤️"];
+    var W = (ui.canvas && ui.canvas.width) || innerWidth || 800;
+    for (var i = 0; i < 26; i++) {
+      bossGifts.push({
+        x: Math.random() * W,
+        y: -20 - Math.random() * 160,
+        vy: 90 + Math.random() * 130,
+        vx: (Math.random() - 0.5) * 40,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 4,
+        icon: icons[(Math.random() * icons.length) | 0],
+        life: 5,
+      });
+    }
+    superHeal(true);
+    dispatch("rewardBoost", { on: true, factor: 5 });
+    dispatch("coinMult", { factor: 5 });
+    dispatch("heal", { amount: 999 });
+    try {
+      if (global.AmalHub && global.AmalHub.broadcastGift) global.AmalHub.broadcastGift("boss");
+    } catch (_) {}
+    portalFx("in");
+    toast("🎁 Босс раздаёт дары всем! +награды +лечение");
+    setTimeout(function () {
+      dispatch("rewardBoost", { on: false });
+    }, 12000);
+  }
+
+  function updateBoss(dt) {
+    if (bossActive) bossSummonAt();
+    boss.phase += dt;
+    boss.x += (boss.tx - boss.x) * Math.min(1, dt * 6);
+    boss.y += (boss.ty - boss.y) * Math.min(1, dt * 6);
+    var W = (ui.canvas && ui.canvas.width) || innerWidth || 800;
+    var H = (ui.canvas && ui.canvas.height) || innerHeight || 600;
+    bossGifts = bossGifts.filter(function (g) {
+      g.life -= dt;
+      g.vy += dt * 60;
+      g.x += g.vx * dt;
+      g.y += g.vy * dt;
+      g.rot += g.vr * dt;
+      if (g.y > H - 8) {
+        g.y = H - 8;
+        g.vy *= -0.35;
+        g.vx *= 0.6;
+      }
+      return g.life > 0 && g.x > -40 && g.x < W + 40;
+    });
   }
 
   function superHeal(silent) {
@@ -1599,14 +1697,41 @@
       }
       ctx.globalAlpha = alpha == null ? 1 : alpha;
     }
-    var auraR = intense ? 54 : 46;
+    var pulse = 1 + Math.sin(phase * 2.2) * (royal ? 0.1 : 0.05);
+    var auraR = (intense ? 58 : royal ? 52 : 46) * pulse;
     var glow = ctx.createRadialGradient(0, -20 + bob, 4, 0, -20 + bob, auraR);
-    glow.addColorStop(0, intense ? "rgba(103,232,249,.4)" : hexA(fit.aura, royal ? 0.36 : 0.28));
+    if (intense) {
+      glow.addColorStop(0, "rgba(103,232,249,.42)");
+      glow.addColorStop(0.55, "rgba(103,232,249,.14)");
+    } else {
+      glow.addColorStop(0, hexA(fit.aura, royal ? 0.42 : 0.28));
+      glow.addColorStop(0.55, hexA(fit.aura, royal ? 0.16 : 0.1));
+    }
     glow.addColorStop(1, hexA(fit.aura, 0));
     ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(0, -20 + bob, auraR, 0, Math.PI * 2);
     ctx.fill();
+    if (royal) {
+      // корона света: мягкое кольцо + орбитальные искры вокруг царственного скина
+      ctx.save();
+      ctx.globalAlpha = (alpha == null ? 1 : alpha) * 0.7;
+      ctx.strokeStyle = hexA(fit.trim, 0.5);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(0, -20 + bob, auraR * 0.82, 0, Math.PI * 2);
+      ctx.stroke();
+      for (var sp = 0; sp < 6; sp++) {
+        var sa = phase * 1.3 + (sp / 6) * Math.PI * 2;
+        var sr = auraR * 0.9;
+        ctx.fillStyle = sp % 2 ? fit.trim : fit.aura;
+        ctx.beginPath();
+        ctx.arc(Math.cos(sa) * sr, -20 + bob + Math.sin(sa) * sr * 0.6, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.globalAlpha = alpha == null ? 1 : alpha;
+    }
 
     ctx.fillStyle = "rgba(0,0,0,.28)";
     ctx.beginPath();
@@ -1979,6 +2104,8 @@
     var ctx = ui.canvas.getContext("2d");
     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
     drawVersionTag(ctx);
+    if (bossActive) drawBoss(ctx);
+    drawGifts(ctx);
     if (!state.visible) return;
     // Прячем оверлейного Амаля только в больнице (там свой игровой Амаль).
     var hideHero = gameId() === "animal-hospital" && hospitalActive();
@@ -1993,6 +2120,130 @@
     clones.forEach(function (c) {
       drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
     });
+  }
+
+  function drawGifts(ctx) {
+    if (!bossGifts.length) return;
+    ctx.save();
+    ctx.font = "22px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    bossGifts.forEach(function (g) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, g.life);
+      ctx.translate(g.x, g.y);
+      ctx.rotate(g.rot);
+      ctx.fillText(g.icon, 0, 0);
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  function drawBoss(ctx) {
+    var fit = outfit();
+    var ph = boss.phase;
+    var bob = Math.sin(ph * 1.4) * 6;
+    ctx.save();
+    ctx.translate(boss.x, boss.y + bob);
+    var s = boss.scale;
+    // огромная тёплая аура доброго босса
+    var R = 150 * (s / 3.4);
+    var gr = ctx.createRadialGradient(0, -70, 20, 0, -70, R);
+    gr.addColorStop(0, hexA(fit.aura, 0.5));
+    gr.addColorStop(0.5, hexA(fit.aura, 0.18));
+    gr.addColorStop(1, hexA(fit.aura, 0));
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(0, -70, R, 0, Math.PI * 2);
+    ctx.fill();
+    // орбитальные искры-звёзды вокруг гиганта
+    for (var i = 0; i < 10; i++) {
+      var a = ph * 1.1 + (i / 10) * Math.PI * 2;
+      var rr = 90 + Math.sin(ph * 2 + i) * 12;
+      ctx.globalAlpha = 0.8;
+      ctx.fillStyle = i % 2 ? fit.trim : fit.aura;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a) * rr, -70 + Math.sin(a) * rr * 0.7, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // тень
+    ctx.fillStyle = "rgba(0,0,0,.3)";
+    ctx.beginPath();
+    ctx.ellipse(0, 6, 54 * (s / 3.4), 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.scale(s, s);
+    // плащ-мантия
+    var cape = ctx.createLinearGradient(0, -34, 0, 8);
+    cape.addColorStop(0, fit.cape[0]);
+    cape.addColorStop(1, fit.cape[1]);
+    ctx.fillStyle = cape;
+    var sw = Math.sin(ph * 1.6) * 4;
+    ctx.beginPath();
+    ctx.moveTo(-12, -30);
+    ctx.quadraticCurveTo(-26 - sw, -2, -16 - sw, 8);
+    ctx.lineTo(16 - sw * 0.4, 8);
+    ctx.quadraticCurveTo(16, -4, 12, -30);
+    ctx.closePath();
+    ctx.fill();
+    // ноги
+    ctx.strokeStyle = fit.pants;
+    ctx.lineWidth = 8;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-6, 0);
+    ctx.lineTo(-7, 10);
+    ctx.moveTo(6, 0);
+    ctx.lineTo(7, 10);
+    ctx.stroke();
+    // торс
+    var torso = ctx.createLinearGradient(-14, -30, 14, 2);
+    torso.addColorStop(0, lighten(fit.shirt, 26));
+    torso.addColorStop(1, fit.shirt);
+    ctx.fillStyle = torso;
+    roundRectPath(ctx, -14, -30, 28, 32, 10);
+    ctx.fill();
+    ctx.fillStyle = hexA(fit.trim, 0.9);
+    ctx.fillRect(-2.5, -30, 5, 32);
+    // огромная раскрытая рука-«дарящая» (машет)
+    ctx.strokeStyle = "#f2c9a0";
+    ctx.lineWidth = 7;
+    var wave = Math.sin(ph * 3) * 6;
+    ctx.beginPath();
+    ctx.moveTo(12, -22);
+    ctx.lineTo(24, -30 - wave);
+    ctx.moveTo(-12, -22);
+    ctx.lineTo(-22, -16 + wave);
+    ctx.stroke();
+    // голова
+    ctx.fillStyle = "#f6d3ad";
+    ctx.beginPath();
+    ctx.arc(0, -40, 9, 0, Math.PI * 2);
+    ctx.fill();
+    // добрые глаза + улыбка
+    ctx.fillStyle = "#1f2937";
+    ctx.beginPath();
+    ctx.arc(-3.2, -41, 1.3, 0, Math.PI * 2);
+    ctx.arc(3.2, -41, 1.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#1f2937";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(0, -38, 3.4, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+    // корона гиганта
+    drawCrown(ctx, fit, -49, ph);
+    ctx.restore();
+    // подпись
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.font = "900 12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillStyle = fit.trim;
+    ctx.shadowColor = hexA(fit.aura, 0.9);
+    ctx.shadowBlur = 8;
+    ctx.fillText("🦁 Добрый босс", boss.x, boss.y - 150 * (s / 3.4) + 40);
+    ctx.restore();
   }
 
   function drawVersionTag(ctx) {
@@ -2021,6 +2272,7 @@
     try {
       if (isOwner() && ui.root) {
         updateHero(dt);
+        updateBoss(dt);
         drawFrame();
       }
     } catch (err) {
