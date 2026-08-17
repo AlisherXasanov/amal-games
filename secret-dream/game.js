@@ -1,5 +1,33 @@
 (() => {
   "use strict";
+  const UNLOCK_KEY = "amal-secret-dream-unlock-v1";
+  const MIN_WAIT = 2 * 60 * 1000;
+  const MAX_WAIT = 18 * 60 * 1000;
+
+  function getUnlockAt() {
+    let at = 0;
+    try { at = Number(localStorage.getItem(UNLOCK_KEY)) || 0; } catch (_) {}
+    if (!at) {
+      at = Date.now() + MIN_WAIT + Math.floor(Math.random() * (MAX_WAIT - MIN_WAIT));
+      try { localStorage.setItem(UNLOCK_KEY, String(at)); } catch (_) {}
+    }
+    return at;
+  }
+
+  const unlockAt = getUnlockAt();
+  if (Date.now() < unlockAt) {
+    document.body.innerHTML =
+      '<a class="back" href="../" style="position:fixed;z-index:20;left:10px;top:10px;padding:8px 12px;border:1px solid #ffffff30;border-radius:10px;background:#080514cc;color:#fff;text-decoration:none;font-weight:800">← Все игры</a>' +
+      '<div style="min-height:100vh;display:grid;place-items:center;background:#05030d;color:#fff;font-family:system-ui,sans-serif;text-align:center;padding:24px">' +
+      '<div style="max-width:420px;padding:28px;border:1px solid #ffffff33;border-radius:24px;background:#0b061ce8;box-shadow:0 0 60px #7c3aed55">' +
+      '<div style="font-size:64px">◈🔒</div>' +
+      "<h1 style=\"margin:12px 0\">Ещё рано</h1>" +
+      "<p style=\"color:#d8b4fe;line-height:1.55\">Эта игра сама решит, когда открыться. Вернись на главную — там будет таймер.</p>" +
+      '<a href="../" style="display:inline-block;margin-top:14px;padding:11px 22px;border-radius:999px;background:linear-gradient(135deg,#22d3ee,#8b5cf6);color:#fff;text-decoration:none;font-weight:900">На главную</a>' +
+      "</div></div>";
+    return;
+  }
+
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
   const stageEl = document.getElementById("stage");

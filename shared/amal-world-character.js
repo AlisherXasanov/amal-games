@@ -208,6 +208,12 @@
         { id: "joy-surprise", name: "Секретный подарок" },
       ];
     }
+    try {
+      var dreamAt = Number(localStorage.getItem("amal-secret-dream-unlock-v1")) || 0;
+      if (dreamAt && Date.now() >= dreamAt && !list.some(function (g) { return g.id === "secret-dream"; })) {
+        list.unshift({ id: "secret-dream", name: "???" });
+      }
+    } catch (_) {}
     return list;
   }
 
