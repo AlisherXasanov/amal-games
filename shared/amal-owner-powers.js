@@ -954,6 +954,9 @@
 #amal-powers-quick button{border:0;border-radius:14px;padding:10px 11px;font:800 12px/1 system-ui,sans-serif;cursor:pointer;color:#111;background:linear-gradient(135deg,#fde68a,#f59e0b);white-space:nowrap}
 #amal-powers-quick button:nth-child(1){background:linear-gradient(135deg,#6ee7b7,#10b981)}
 #amal-powers-quick button:nth-child(2){background:linear-gradient(135deg,#93c5fd,#3b82f6);color:#eff6ff}
+@media (max-width:820px),(pointer:coarse){
+  #amal-powers-quick,#amal-powers-fab,#amal-powers-panel{display:none!important}
+}
 #amal-powers-tag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:rgba(251,191,36,.2);color:#fde68a;font-size:10px}
 #amal-powers-give{grid-column:1/-1;margin:4px 0 8px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
 #amal-powers-give .give-title{font-size:12px;margin-bottom:6px;opacity:.9}
@@ -1084,7 +1087,7 @@
   }
 
   function ensureSurprisesLib() {
-    injectSharedScript("amal-surprises.js?v=10", "AmalSurprises");
+    injectSharedScript("amal-surprises.js?v=11", "AmalSurprises");
   }
 
   function ensureAdminThingsLib() {

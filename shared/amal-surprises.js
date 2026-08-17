@@ -655,7 +655,9 @@
       "#amal-egg-lesha{background:rgba(255,200,90,.88);color:#1a1208}" +
       "#amal-egg-me{background:rgba(120,190,255,.82);color:#061018}" +
       "#amal-us-eggs.pulse button{animation:amalEggPulse 1.2s ease 2}" +
-      "@keyframes amalEggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}";
+      "@keyframes amalEggPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}" +
+      /* На телефоне кнопки Лёши мешают игре — прячем их и тост */
+      "@media (max-width:820px),(pointer:coarse){#amal-us-eggs,#amal-us-toast{display:none!important}}";
     document.head.appendChild(s);
   }
 
@@ -699,10 +701,26 @@
     } catch (_) {}
   }
 
+  function isPhoneUi() {
+    try {
+      return (
+        (window.matchMedia &&
+          (window.matchMedia("(max-width:820px)").matches ||
+            window.matchMedia("(pointer:coarse)").matches)) ||
+        "ontouchstart" in window ||
+        (navigator.maxTouchPoints || 0) > 0
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
   function bootUsEggs() {
     if (typeof document === "undefined") return;
     if (document.getElementById("amal-us-eggs")) return;
     ensureUsEggsStyle();
+    // На телефоне кнопки Лёши закрывают игру — не создаём UI.
+    if (isPhoneUi()) return;
     const wrap = document.createElement("div");
     wrap.id = "amal-us-eggs";
     wrap.innerHTML =

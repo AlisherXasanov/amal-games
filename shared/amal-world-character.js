@@ -89,7 +89,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v35";
+  var AW_VERSION = "v36";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -527,7 +527,8 @@
   function heroHidden() {
     if (state.hidePref === "hide") return true;
     if (state.hidePref === "show") return false;
-    return isTouch(); // "auto": на сенсорных экранах прячем по умолчанию
+    // "auto": на телефоне/таче прячем всегда (фигура + кнопки мешают играть)
+    return isTouch();
   }
 
   function applyHidden() {
