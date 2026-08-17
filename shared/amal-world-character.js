@@ -88,7 +88,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v33";
+  var AW_VERSION = "v34";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -405,7 +405,7 @@
     document.getElementById("amal-world-portalclear").onclick = function () {
       portals = [];
       portalShots = [];
-      toast("🗑 Порталы убраны");
+      toast("🗑 Порталы убраны · заряд пушки сохранён: " + ammoLabel());
     };
     document.getElementById("amal-world-beard").onclick = function () {
       state.beard = !state.beard;
@@ -708,6 +708,14 @@
         return;
       }
       var tgt = gid === "__portal" ? "portal" : gid;
+      // Любая выбранная игра одновременно становится постоянным зарядом пушки.
+      // Закрытие самого портала этот выбор не сбрасывает.
+      if (gid !== "__portal") {
+        state.ammo = gid;
+        pendingPortalTarget = gid;
+        save();
+        updateAmmoBtn();
+      }
       ui.teleport.classList.remove("open");
       var dock = document.getElementById("amal-world-dock");
       if (dock) dock.classList.remove("open");
