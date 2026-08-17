@@ -1594,6 +1594,8 @@
     try {
       window.__AMAL_WORLD_BEARD__ = !!state.beard;
       window.__AMAL_WORLD_CREEPY__ = !!state.creepy;
+      window.__AMAL_HIDE_NATIVE__ =
+        Object.prototype.hasOwnProperty.call(CENTER_LOCK_GAMES, gameId()) && !freeRoamHere;
     } catch (_) {}
     ensureUi();
     exposeHubApi();
