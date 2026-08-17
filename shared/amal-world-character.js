@@ -94,10 +94,9 @@
   var portals = [];
   var portalCooldownUntil = 0;
   var portalTime = 0; // общее время для анимации воронки
-  // Выход из портала ставит героя на EXIT_DIST, а взводится портал только с
-  // REARM_DIST — зазор между ними и не даёт качелям синий↔оранжевый.
+  // Куда ставим героя при выходе из парного портала (дальше кольца, чтобы не
+  // засчиталось повторным входом). Возврат назад — обычным заходом в кольцо.
   var EXIT_DIST = 110;
-  var REARM_DIST = 170;
 
   function load() {
     try {
@@ -1164,12 +1163,10 @@
       p.born += dt;
       if (p.r < 26) p.r += dt * 90;
       if (p.born > 0.5) p.ready = true;
-      // Портал взводится, только когда герой ушёл заметно дальше, чем точка выхода
-      // из него. Иначе после прибытия он тут же засасывал бы обратно.
+      // Портал снова «живой», как только герой вышел из его кольца.
+      // От мгновенного засасывания защищает не расстояние, а таймер lockUntil.
       var pp = portalPos(p);
-      // паре по карте нужен большой зазор (иначе качели), порталам в игру хватает малого
-      var rearm = p.target === "map" ? REARM_DIST : 60;
-      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + rearm) p.canEnter = true;
+      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + 45) p.canEnter = true;
     });
     // вход героя в готовый портал (нужно реально зайти в него, встав рядом)
     if (portalCooldownUntil && Date.now() < portalCooldownUntil) return;
@@ -1215,12 +1212,13 @@
     if (Math.abs(hero.x - op.x) < other.r + 70) {
       hero.y = op.y - 120 > 60 ? op.y - 120 : Math.min(h - 60, op.y + 120);
     }
-    // ни приёмник, ни исходный портал не срабатывают, пока герой сам не отойдёт
+    // короткая пауза, чтобы момент прибытия не засчитался как вход;
+    // осознанный проход назад (ты сам идёшь в кольцо) сработает сразу после неё
     other.canEnter = false;
-    other.lockUntil = Date.now() + 1500;
+    other.lockUntil = Date.now() + 650;
     p.canEnter = false;
-    p.lockUntil = Date.now() + 1500;
-    portalCooldownUntil = Date.now() + 900;
+    p.lockUntil = Date.now() + 650;
+    portalCooldownUntil = Date.now() + 650;
     hero.mode = "teleport";
     portalFx("in");
     dispatch("localTeleport", { x: hero.x, y: hero.y, screen: true });
