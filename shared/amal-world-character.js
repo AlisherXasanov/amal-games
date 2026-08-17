@@ -94,6 +94,10 @@
   var portals = [];
   var portalCooldownUntil = 0;
   var portalTime = 0; // общее время для анимации воронки
+  // Выход из портала ставит героя на EXIT_DIST, а взводится портал только с
+  // REARM_DIST — зазор между ними и не даёт качелям синий↔оранжевый.
+  var EXIT_DIST = 110;
+  var REARM_DIST = 170;
 
   function load() {
     try {
@@ -1160,16 +1164,20 @@
       p.born += dt;
       if (p.r < 26) p.r += dt * 90;
       if (p.born > 0.5) p.ready = true;
-      // Портал засасывает, только если герой сначала ВЫШЕЛ из него, а потом зашёл.
-      // Иначе свежесозданный у ног портал телепортировал бы мгновенно.
+      // Портал взводится, только когда герой ушёл заметно дальше, чем точка выхода
+      // из него. Иначе после прибытия он тут же засасывал бы обратно.
       var pp = portalPos(p);
-      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + 60) p.canEnter = true;
+      // паре по карте нужен большой зазор (иначе качели), порталам в игру хватает малого
+      var rearm = p.target === "map" ? REARM_DIST : 60;
+      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + rearm) p.canEnter = true;
     });
     // вход героя в готовый портал (нужно реально зайти в него, встав рядом)
     if (portalCooldownUntil && Date.now() < portalCooldownUntil) return;
+    var now = Date.now();
     for (var i = 0; i < portals.length; i++) {
       var p = portals[i];
       if (!p.ready || !p.canEnter) continue;
+      if (p.lockUntil && now < p.lockUntil) continue;
       var pos = portalPos(p);
       if (Math.hypot(hero.x - pos.x, hero.y - pos.y) < p.r + 12) {
         enterPortal(p);
@@ -1197,14 +1205,21 @@
     }
     var op = portalPos(other);
     var w = innerWidth || 800;
-    // выходим сбоку от кольца, выбирая сторону, где есть место на экране
-    var gap = other.r + 80;
+    var h = innerHeight || 600;
+    // выходим далеко от кольца, выбирая сторону, где есть место на экране
+    var gap = other.r + EXIT_DIST;
     var side = op.x + gap > w - 40 ? -1 : op.x - gap < 40 ? 1 : hero.facing || 1;
     hero.x = Math.max(24, Math.min(w - 24, op.x + gap * side));
     hero.y = op.y;
-    // приёмник не засасывает обратно, пока герой сам от него не отойдёт
+    // на узком экране бок мог обрезаться — тогда отходим по вертикали
+    if (Math.abs(hero.x - op.x) < other.r + 70) {
+      hero.y = op.y - 120 > 60 ? op.y - 120 : Math.min(h - 60, op.y + 120);
+    }
+    // ни приёмник, ни исходный портал не срабатывают, пока герой сам не отойдёт
     other.canEnter = false;
+    other.lockUntil = Date.now() + 1500;
     p.canEnter = false;
+    p.lockUntil = Date.now() + 1500;
     portalCooldownUntil = Date.now() + 900;
     hero.mode = "teleport";
     portalFx("in");
