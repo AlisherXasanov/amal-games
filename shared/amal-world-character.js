@@ -41,6 +41,7 @@
     mirror: false,
     beauty: false,
     leaves: false,
+    hidePref: "auto", // "auto" — прятать на телефоне; "hide" — всегда прятать; "show" — всегда показывать
   };
 
   var OUTFITS = {
@@ -88,7 +89,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v34";
+  var AW_VERSION = "v35";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -145,6 +146,7 @@
           mirror: state.mirror,
           beauty: state.beauty,
           leaves: state.leaves,
+          hidePref: state.hidePref,
         })
       );
     } catch (_) {}
@@ -327,6 +329,9 @@
       ".aw-portal-burst{position:fixed;left:50%;top:50%;width:min(70vw,420px);height:min(70vw,420px);margin:-35vmin;border-radius:50%;background:radial-gradient(circle,#a5f3fc,#7c3aed 45%,transparent 70%);animation:awPortalIn .85s ease forwards}" +
       ".aw-portal-veil{position:fixed;inset:0;background:radial-gradient(circle at 50% 50%,rgba(103,232,249,.55),rgba(15,23,42,.92));animation:awPortalOut .7s ease forwards}" +
       "#amal-world-root.hospital-hide #amal-world-canvas{opacity:0}" +
+      "#amal-world-root.aw-hidden{display:none!important}" +
+      "#amal-world-showpill{position:fixed;left:6px;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:2147483340;width:40px;height:40px;border-radius:12px;border:1px solid rgba(167,139,250,.55);background:rgba(10,12,22,.72);color:#fff;font-size:18px;cursor:pointer;display:none;padding:0;box-shadow:0 8px 20px rgba(0,0,0,.4)}" +
+      "#amal-world-showpill.on{display:block}" +
       "@media(max-width:820px){#amal-world-dock{left:6px;top:auto;bottom:calc(70px + env(safe-area-inset-bottom,0px));transform:none}#amal-world-tools{width:min(72vw,220px);max-height:70vh}#amal-world-dock button{font-size:11px;padding:7px 9px}}";
     document.head.appendChild(st);
   }
@@ -355,6 +360,7 @@
       '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
       '<button type="button" id="amal-world-creepy">😈 Жуткая улыбка</button>' +
       '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
+      '<button type="button" id="amal-world-hide">🙈 Скрыть на телефоне</button>' +
       '<button type="button" id="amal-world-cancel">⏹ Стоп</button>' +
       "</div></div></div>" +
       '<div id="amal-world-panel"></div>' +
@@ -454,6 +460,29 @@
       superHeal();
     };
     document.getElementById("amal-world-cancel").onclick = cancelModes;
+    document.getElementById("amal-world-hide").onclick = function () {
+      state.hidePref = "hide";
+      save();
+      applyHidden();
+      toast("🙈 Герой скрыт · нажми фиолетовую кнопку слева, чтобы вернуть");
+    };
+
+    var pill = document.getElementById("amal-world-showpill");
+    if (!pill) {
+      pill = document.createElement("button");
+      pill.type = "button";
+      pill.id = "amal-world-showpill";
+      pill.title = "Показать героя Амаля";
+      pill.textContent = "🦸";
+      pill.onclick = function () {
+        state.hidePref = "show";
+        save();
+        applyHidden();
+        toast("🦸 Герой Амаль снова тут");
+      };
+      document.body.appendChild(pill);
+    }
+    applyHidden();
 
     if (state.creepy) {
       var cb = document.getElementById("amal-world-creepy");
@@ -466,7 +495,10 @@
         hero.keys[e.key] = false;
       }
     });
-    addEventListener("resize", resizeCanvas);
+    addEventListener("resize", function () {
+      resizeCanvas();
+      applyHidden();
+    });
     resizeCanvas();
     renderPowers();
     renderTeleport();
@@ -476,6 +508,33 @@
     if (!ui.canvas) return;
     ui.canvas.width = innerWidth || 800;
     ui.canvas.height = innerHeight || 600;
+  }
+
+  function isTouch() {
+    try {
+      return (
+        (window.matchMedia && window.matchMedia("(pointer:coarse)").matches) ||
+        "ontouchstart" in window ||
+        (navigator.maxTouchPoints || 0) > 0 ||
+        (innerWidth || 9999) <= 820
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Скрываем фигуру героя и его кнопки, чтобы не мешали игре на телефоне.
+  function heroHidden() {
+    if (state.hidePref === "hide") return true;
+    if (state.hidePref === "show") return false;
+    return isTouch(); // "auto": на сенсорных экранах прячем по умолчанию
+  }
+
+  function applyHidden() {
+    var hidden = heroHidden();
+    if (ui.root) ui.root.classList.toggle("aw-hidden", hidden);
+    var pill = document.getElementById("amal-world-showpill");
+    if (pill) pill.classList.toggle("on", hidden);
   }
 
   function onKey(e) {
