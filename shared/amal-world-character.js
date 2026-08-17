@@ -34,9 +34,29 @@
     visible: true,
     portalGun: false,
     ammo: "map",
+    outfit: "classic",
     creepy: true,
     uiVer: 0,
   };
+
+  var OUTFITS = {
+    classic: { name: "Обычный Амаль", icon: "👤", shirt: "#5b8def", pants: "#2f3d55", cape: ["#7c3aed", "#2563eb"], crown: null, aura: "#a78bfa", trim: "#fde68a" },
+    king: { name: "Король", icon: "👑", shirt: "#facc15", pants: "#7c2d12", cape: ["#dc2626", "#7f1d1d"], crown: "gold", aura: "#fde047", trim: "#fff7ae" },
+    emperor: { name: "Император", icon: "🏛", shirt: "#f8fafc", pants: "#b45309", cape: ["#f59e0b", "#b45309"], crown: "imperial", aura: "#fcd34d", trim: "#fde68a" },
+    diamond: { name: "Алмазный принц", icon: "💎", shirt: "#a5f3fc", pants: "#0e7490", cape: ["#67e8f9", "#0891b2"], crown: "diamond", aura: "#a5f3fc", trim: "#ecfeff" },
+    shadow: { name: "Тёмный лорд", icon: "🖤", shirt: "#1f2937", pants: "#111827", cape: ["#6d28d9", "#111827"], crown: "spiked", aura: "#a855f7", trim: "#c4b5fd" },
+    dragon: { name: "Драконий король", icon: "🐉", shirt: "#15803d", pants: "#14532d", cape: ["#22c55e", "#065f46"], crown: "horns", aura: "#4ade80", trim: "#bbf7d0" },
+    phoenix: { name: "Царь-Феникс", icon: "🔥", shirt: "#f97316", pants: "#7c2d12", cape: ["#fbbf24", "#dc2626"], crown: "flame", aura: "#fb923c", trim: "#fed7aa" },
+    galaxy: { name: "Галактический царь", icon: "🌌", shirt: "#312e81", pants: "#1e1b4b", cape: ["#8b5cf6", "#0f172a"], crown: "star", aura: "#818cf8", trim: "#c7d2fe" },
+  };
+
+  function outfit() {
+    return OUTFITS[state.outfit] || OUTFITS.classic;
+  }
+
+  function isRoyal() {
+    return !!(state.outfit && state.outfit !== "classic");
+  }
 
   var ui = {
     root: null,
@@ -105,6 +125,7 @@
           visible: state.visible,
           portalGun: state.portalGun,
           ammo: state.ammo,
+          outfit: state.outfit,
           creepy: state.creepy,
           uiVer: state.uiVer,
         })
@@ -307,6 +328,7 @@
       '<button type="button" class="heal" id="amal-world-heal">💚 Супер-лечение</button>' +
       '<button type="button" id="amal-world-powers-btn">⚡ Силы</button>' +
       '<button type="button" id="amal-world-portalclear">🗑 Убрать порталы</button>' +
+      '<button type="button" id="amal-world-skins">👑 Скины</button>' +
       '<button type="button" id="amal-world-toggle">👤 Амаль</button>' +
       '<button type="button" id="amal-world-creepy">😈 Жуткая улыбка</button>' +
       '<button type="button" id="amal-world-beard">🧔 Борода</button>' +
@@ -399,6 +421,11 @@
       ui.teleport.classList.remove("open");
       ui.panel.classList.toggle("open");
       renderPowers();
+    };
+    document.getElementById("amal-world-skins").onclick = function () {
+      ui.teleport.classList.remove("open");
+      ui.panel.classList.add("open");
+      renderSkins();
     };
     document.getElementById("amal-world-heal").onclick = function () {
       superHeal();
@@ -525,6 +552,49 @@
       var btn = e.target.closest("[data-aw]");
       if (!btn) return;
       usePower(btn.getAttribute("data-aw"));
+    };
+  }
+
+  function renderSkins() {
+    if (!ui.panel) return;
+    var cur = state.outfit || "classic";
+    ui.panel.innerHTML =
+      '<h3><span>👑 Королевские скины</span><button type="button" class="aw-x" data-aw-close="1">✕</button></h3>' +
+      '<div class="aw-list">' +
+      Object.keys(OUTFITS)
+        .map(function (id) {
+          var o = OUTFITS[id];
+          return (
+            '<button type="button" data-aw-skin="' +
+            id +
+            '"' +
+            (id === cur ? ' class="equipped"' : "") +
+            ">" +
+            o.icon +
+            " " +
+            o.name +
+            (id === cur ? " ✓" : "") +
+            "</button>"
+          );
+        })
+        .join("") +
+      "</div>";
+    ui.panel.onclick = function (e) {
+      if (e.target.closest("[data-aw-close]")) {
+        ui.panel.classList.remove("open");
+        return;
+      }
+      var b = e.target.closest("[data-aw-skin]");
+      if (!b) return;
+      var id = b.getAttribute("data-aw-skin");
+      state.outfit = id;
+      save();
+      try {
+        window.__AMAL_WORLD_OUTFIT__ = id;
+      } catch (_) {}
+      renderSkins();
+      var o = OUTFITS[id];
+      toast(o.icon + " Надет скин: " + o.name);
     };
   }
 
@@ -989,7 +1059,31 @@
     flashBolts();
   }
 
+  function worldCam() {
+    // Игра сообщает положение камеры — значит портал можно «прибить» к миру,
+    // и он перестанет ездить за героем по экрану.
+    try {
+      var c = window.__AMAL_NATIVE_CAM__;
+      if (c && Date.now() - c.t < 900) return c;
+    } catch (_) {}
+    return null;
+  }
+
+  function portalPos(p) {
+    if (p.world) {
+      var cam = worldCam();
+      if (cam) return { x: p.wx - cam.x, y: p.wy - cam.y };
+    }
+    return { x: p.x, y: p.y };
+  }
+
   function pushPortal(p) {
+    var cam = worldCam();
+    if (cam) {
+      p.world = true;
+      p.wx = p.x + cam.x;
+      p.wy = p.y + cam.y;
+    }
     portals.push(p);
     // держим не больше 3 порталов; обратный портал убираем последним
     while (portals.length > 3) {
@@ -1049,7 +1143,8 @@
     for (var i = 0; i < portals.length; i++) {
       var p = portals[i];
       if (!p.ready) continue;
-      if (Math.hypot(hero.x - p.x, hero.y - p.y) < p.r + 16) {
+      var pos = portalPos(p);
+      if (Math.hypot(hero.x - pos.x, hero.y - pos.y) < p.r + 16) {
         enterPortal(p);
         break;
       }
@@ -1068,8 +1163,9 @@
     });
     if (other) {
       // выходим чуть в стороне от парного портала, чтобы не войти в него сразу же
-      hero.x = other.x + (other.r + 30) * (hero.facing || 1);
-      hero.y = other.y;
+      var op = portalPos(other);
+      hero.x = op.x + (other.r + 30) * (hero.facing || 1);
+      hero.y = op.y;
       hero.x = Math.max(24, Math.min((innerWidth || 800) - 24, hero.x));
     }
     portalCooldownUntil = Date.now() + 1400;
@@ -1113,12 +1209,13 @@
 
     portals.forEach(function (p) {
       var c = portalColors(p);
+      var pos = portalPos(p);
       var rx = p.r;
       var ry = p.r * 1.35;
       var t = portalTime;
-      var pulse = 1 + Math.sin(t * 3 + p.x * 0.01) * 0.05;
+      var pulse = 1 + Math.sin(t * 3 + pos.x * 0.01) * 0.05;
       ctx.save();
-      ctx.translate(p.x, p.y);
+      ctx.translate(pos.x, pos.y);
       ctx.scale(pulse, pulse);
 
       // тёмная воронка внутри
@@ -1186,20 +1283,20 @@
         ctx.font = "900 11px system-ui";
         ctx.textAlign = "center";
         var w = ctx.measureText(label).width + 14;
-        var ly = p.y - ry - 16;
+        var ly = pos.y - ry - 16;
         ctx.fillStyle = "rgba(10,10,20,.8)";
         ctx.strokeStyle = c.a;
         ctx.lineWidth = 1.5;
         if (ctx.roundRect) {
           ctx.beginPath();
-          ctx.roundRect(p.x - w / 2, ly - 11, w, 18, 9);
+          ctx.roundRect(pos.x - w / 2, ly - 11, w, 18, 9);
           ctx.fill();
           ctx.stroke();
         } else {
-          ctx.fillRect(p.x - w / 2, ly - 11, w, 18);
+          ctx.fillRect(pos.x - w / 2, ly - 11, w, 18);
         }
         ctx.fillStyle = "#fff";
-        ctx.fillText(label, p.x, ly + 2);
+        ctx.fillText(label, pos.x, ly + 2);
         ctx.restore();
       }
     });
@@ -1238,7 +1335,149 @@
     }, 420);
   }
 
+  function hexA(hex, a) {
+    try {
+      var h = String(hex).replace("#", "");
+      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      var n = parseInt(h, 16);
+      return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
+    } catch (_) {
+      return "rgba(167,139,250," + a + ")";
+    }
+  }
+
+  function drawCrown(ctx, fit, top, phase) {
+    var kind = fit.crown;
+    var gold = ctx.createLinearGradient(0, top - 12, 0, top + 6);
+    gold.addColorStop(0, "#fff7ae");
+    gold.addColorStop(0.5, "#facc15");
+    gold.addColorStop(1, "#b45309");
+    ctx.save();
+    ctx.shadowColor = hexA(fit.aura, 0.9);
+    ctx.shadowBlur = 12;
+
+    if (kind === "horns") {
+      ctx.fillStyle = "#e5e7eb";
+      [-1, 1].forEach(function (s) {
+        ctx.beginPath();
+        ctx.moveTo(s * 7, top + 5);
+        ctx.quadraticCurveTo(s * 17, top - 2, s * 13, top - 14);
+        ctx.quadraticCurveTo(s * 11, top - 3, s * 5, top + 5);
+        ctx.fill();
+      });
+      ctx.restore();
+      return;
+    }
+
+    if (kind === "flame") {
+      for (var f = -1; f <= 1; f++) {
+        var hgt = 13 + Math.sin(phase * 9 + f) * 4;
+        var g = ctx.createLinearGradient(0, top + 4, 0, top - hgt);
+        g.addColorStop(0, "#dc2626");
+        g.addColorStop(0.5, "#f97316");
+        g.addColorStop(1, "#fde68a");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(f * 7 - 4, top + 4);
+        ctx.quadraticCurveTo(f * 7, top - hgt, f * 7 + 4, top + 4);
+        ctx.fill();
+      }
+      ctx.restore();
+      return;
+    }
+
+    // общая золотая лента
+    ctx.fillStyle = gold;
+    roundRectPath(ctx, -12, top, 24, 6, 2);
+    ctx.fill();
+
+    if (kind === "diamond") {
+      ctx.fillStyle = "#a5f3fc";
+      [-8, 0, 8].forEach(function (px, i) {
+        var h = i === 1 ? 14 : 10;
+        ctx.beginPath();
+        ctx.moveTo(px, top - h);
+        ctx.lineTo(px + 4, top);
+        ctx.lineTo(px, top + 2);
+        ctx.lineTo(px - 4, top);
+        ctx.closePath();
+        ctx.fill();
+      });
+    } else if (kind === "spiked") {
+      ctx.fillStyle = "#111827";
+      ctx.strokeStyle = "#a855f7";
+      ctx.lineWidth = 1.4;
+      [-9, -3, 3, 9].forEach(function (px) {
+        ctx.beginPath();
+        ctx.moveTo(px - 3, top);
+        ctx.lineTo(px, top - 13);
+        ctx.lineTo(px + 3, top);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      });
+    } else if (kind === "star") {
+      ctx.fillStyle = "#c7d2fe";
+      for (var s2 = -1; s2 <= 1; s2++) {
+        var cx = s2 * 8;
+        var cy = top - 9;
+        var rr = s2 === 0 ? 6 : 4.5;
+        ctx.beginPath();
+        for (var k = 0; k < 10; k++) {
+          var ang = (Math.PI / 5) * k - Math.PI / 2;
+          var rad = k % 2 ? rr * 0.45 : rr;
+          var xx = cx + Math.cos(ang) * rad;
+          var yy = cy + Math.sin(ang) * rad;
+          if (k === 0) ctx.moveTo(xx, yy);
+          else ctx.lineTo(xx, yy);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+    } else if (kind === "imperial") {
+      ctx.fillStyle = gold;
+      ctx.beginPath();
+      ctx.moveTo(-11, top);
+      ctx.quadraticCurveTo(0, top - 18, 11, top);
+      ctx.lineTo(8, top);
+      ctx.quadraticCurveTo(0, top - 12, -8, top);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, top - 16, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#dc2626";
+      ctx.beginPath();
+      ctx.arc(0, top + 3, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // gold — классические зубцы
+      ctx.fillStyle = gold;
+      ctx.beginPath();
+      ctx.moveTo(-12, top);
+      ctx.lineTo(-8, top - 12);
+      ctx.lineTo(-4, top - 3);
+      ctx.lineTo(0, top - 15);
+      ctx.lineTo(4, top - 3);
+      ctx.lineTo(8, top - 12);
+      ctx.lineTo(12, top);
+      ctx.closePath();
+      ctx.fill();
+      ["#ef4444", "#22d3ee", "#a855f7"].forEach(function (col, i) {
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(-8 + i * 8, top + 3, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    ctx.restore();
+  }
+
   function drawHero(ctx, x, y, facing, phase, mode, alpha) {
+    var fit = outfit();
+    var royal = isRoyal();
+    var shirtCol = royal ? fit.shirt : state.shirt;
+    var pantsCol = royal ? fit.pants : state.pants;
     ctx.save();
     ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.translate(x, y);
@@ -1276,8 +1515,8 @@
     }
     var auraR = intense ? 54 : 46;
     var glow = ctx.createRadialGradient(0, -20 + bob, 4, 0, -20 + bob, auraR);
-    glow.addColorStop(0, intense ? "rgba(103,232,249,.4)" : "rgba(167,139,250,.28)");
-    glow.addColorStop(1, "rgba(167,139,250,0)");
+    glow.addColorStop(0, intense ? "rgba(103,232,249,.4)" : hexA(fit.aura, royal ? 0.36 : 0.28));
+    glow.addColorStop(1, hexA(fit.aura, 0));
     ctx.fillStyle = glow;
     ctx.beginPath();
     ctx.arc(0, -20 + bob, auraR, 0, Math.PI * 2);
@@ -1290,8 +1529,8 @@
 
     var capeSwing = Math.sin(phase * (mode === "run" ? 8 : 3)) * (mode === "fly" ? 12 : 5);
     var cape = ctx.createLinearGradient(0, -30, 0, 20);
-    cape.addColorStop(0, "#7c3aed");
-    cape.addColorStop(1, "#2563eb");
+    cape.addColorStop(0, fit.cape[0]);
+    cape.addColorStop(1, fit.cape[1]);
     ctx.fillStyle = cape;
     ctx.beginPath();
     ctx.moveTo(-9, -26 + bob);
@@ -1300,8 +1539,15 @@
     ctx.quadraticCurveTo(12, -6 + bob, 9, -26 + bob);
     ctx.closePath();
     ctx.fill();
+    if (royal) {
+      // меховая оторочка мантии
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      ctx.beginPath();
+      ctx.ellipse(-2, -25 + bob, 12, 3.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
-    ctx.strokeStyle = state.pants;
+    ctx.strokeStyle = pantsCol;
     ctx.lineWidth = 7;
     ctx.lineCap = "round";
     ctx.beginPath();
@@ -1320,21 +1566,21 @@
     ctx.stroke();
 
     var torso = ctx.createLinearGradient(-11, -24 + bob, 11, 6 + bob);
-    torso.addColorStop(0, lighten(state.shirt, 26));
-    torso.addColorStop(1, state.shirt);
+    torso.addColorStop(0, lighten(shirtCol, 26));
+    torso.addColorStop(1, shirtCol);
     ctx.fillStyle = torso;
     roundRectPath(ctx, -12, -23 + bob, 24, 27, 9);
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,.35)";
     ctx.lineWidth = 1.4;
     ctx.stroke();
-    ctx.strokeStyle = "rgba(253,224,71,.9)";
+    ctx.strokeStyle = hexA(fit.trim, 0.9);
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(-11, -12 + bob);
     ctx.lineTo(9, -2 + bob);
     ctx.stroke();
-    ctx.fillStyle = "#fde68a";
+    ctx.fillStyle = fit.trim;
     ctx.font = "900 9px system-ui";
     ctx.textAlign = "center";
     ctx.fillText("A", 0, -10 + bob);
@@ -1382,6 +1628,8 @@
     ctx.quadraticCurveTo(11, -39 + bob, 12, -34 + bob);
     ctx.quadraticCurveTo(4, -39 + bob, -12, -36 + bob);
     ctx.fill();
+
+    if (fit.crown) drawCrown(ctx, fit, -44 + bob, phase);
 
     var blink = Math.sin(phase * 0.7) > 0.985 ? 0.25 : 1;
     ctx.fillStyle = "#fff";
