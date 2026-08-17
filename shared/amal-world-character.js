@@ -327,18 +327,13 @@
       if (dock) dock.classList.toggle("open");
     };
     document.getElementById("amal-world-toggle").onclick = function () {
-      // В играх со своим персонажем кнопка сначала принудительно показывает Амаля,
-      // иначе просто прячет/показывает героя.
-      if (!forceShowHere && NATIVE_HERO_GAMES.indexOf(gameId()) >= 0) {
-        forceShowHere = true;
+      // В играх с привязкой к центру кнопка переключает режим:
+      // «играю за Амаля по центру» ↔ «свободный герой (бегает где хочу)».
+      if (Object.prototype.hasOwnProperty.call(CENTER_LOCK_GAMES, gameId())) {
+        freeRoamHere = !freeRoamHere;
         state.visible = true;
         save();
-        toast("👤 Амаль показан поверх игры (второй персонаж)");
-        return;
-      }
-      if (forceShowHere) {
-        forceShowHere = false;
-        toast("👤 Амаль скрыт · остался один персонаж игры");
+        toast(freeRoamHere ? "🕹 Свободный Амаль (WASD/стрелки)" : "🎮 Играю за Амаля (по центру)");
         return;
       }
       state.visible = !state.visible;
@@ -1358,34 +1353,36 @@
     }
   }
 
-  // Игры, где уже есть свой ходячий персонаж. Там оверлейного Амаля прячем,
-  // чтобы не было двойника: играешь ровно одним героем.
-  var NATIVE_HERO_GAMES = [
-    "terraverse",
-    "minecraft",
-    "melon-playground",
-    "obby",
-    "ladder-climb",
-    "speed-escape",
-    "flee-facility",
-    "murder-mystery",
-    "brookhaven-rp",
-    "adopt-me",
-    "steal-brainrot",
-    "hideout",
-    "roof-house",
-    "nights-forest",
-    "night-stitch",
-    "ghost-lesson",
-    "blox-fruits",
-    "pet-simulator",
-    "grow-garden",
-  ];
-  var forceShowHere = false;
+  // Игры со своим персонажем, где камера держит игрока в ЦЕНТРЕ экрана.
+  // Там сажаем Амаля в центр поверх встроенного игрока: ты играешь ЗА Амаля,
+  // чужой человечек скрыт под ним. Значение = доля высоты экрана для ног.
+  var CENTER_LOCK_GAMES = {
+    terraverse: 0.5,
+    minecraft: 0.5,
+    "melon-playground": 0.5,
+    obby: 0.5,
+    "ladder-climb": 0.5,
+    "speed-escape": 0.5,
+    "flee-facility": 0.5,
+    "murder-mystery": 0.5,
+    "brookhaven-rp": 0.5,
+    "adopt-me": 0.5,
+    "steal-brainrot": 0.5,
+    hideout: 0.5,
+    "roof-house": 0.5,
+    "nights-forest": 0.5,
+    "night-stitch": 0.5,
+    "ghost-lesson": 0.5,
+    "blox-fruits": 0.5,
+    "pet-simulator": 0.5,
+    "grow-garden": 0.5,
+  };
+  var freeRoamHere = false; // кнопка 👤 переключает: свободный герой ↔ по центру
 
-  function hasNativeHero() {
-    if (forceShowHere) return false;
-    return NATIVE_HERO_GAMES.indexOf(gameId()) >= 0;
+  function centerLockFactor() {
+    if (freeRoamHere) return null;
+    var id = gameId();
+    return Object.prototype.hasOwnProperty.call(CENTER_LOCK_GAMES, id) ? CENTER_LOCK_GAMES[id] : null;
   }
 
   function updateHero(dt) {
@@ -1397,9 +1394,19 @@
       if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
       return;
     }
-    // В игре есть свой ходячий персонаж — оверлейный Амаль спит (не двигается,
-    // не крутит страницу), чтобы управление шло только игровым персонажем.
-    if (hasNativeHero()) {
+    // Играешь ЗА Амаля: он сидит в центре поверх встроенного игрока,
+    // движение идёт клавишами игры (native ходит — камера центрирует — Амаль на месте).
+    var lf = centerLockFactor();
+    if (lf != null) {
+      var vwC = innerWidth || 800;
+      var vhC = innerHeight || 600;
+      hero.x = vwC / 2;
+      hero.y = vhC * lf;
+      var movingC = hero.keys.a || hero.keys.arrowleft || hero.keys.d || hero.keys.arrowright;
+      if (hero.keys.a || hero.keys.arrowleft) hero.facing = -1;
+      else if (hero.keys.d || hero.keys.arrowright) hero.facing = 1;
+      hero.mode = hero.teleporting ? "teleport" : movingC ? "walk" : "idle";
+      hero.phase += dt;
       updatePortals(dt);
       if (state.energy < 100) setEnergy(state.energy + dt * 1.2);
       return;
@@ -1471,8 +1478,8 @@
     var ctx = ui.canvas.getContext("2d");
     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
     if (!state.visible) return;
-    // Порталы рисуем всегда — даже если герой скрыт (один персонаж в игре)
-    var hideHero = (gameId() === "animal-hospital" && hospitalActive()) || hasNativeHero();
+    // Прячем оверлейного Амаля только в больнице (там свой игровой Амаль).
+    var hideHero = gameId() === "animal-hospital" && hospitalActive();
     if (hideHero) {
       ui.root.classList.remove("hospital-hide");
       drawPortals(ctx);
