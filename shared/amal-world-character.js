@@ -1137,14 +1137,18 @@
       p.born += dt;
       if (p.r < 26) p.r += dt * 90;
       if (p.born > 0.5) p.ready = true;
+      // Портал засасывает, только если герой сначала ВЫШЕЛ из него, а потом зашёл.
+      // Иначе свежесозданный у ног портал телепортировал бы мгновенно.
+      var pp = portalPos(p);
+      if (Math.hypot(hero.x - pp.x, hero.y - pp.y) > p.r + 48) p.canEnter = true;
     });
-    // вход героя в готовый портал (с задержкой, чтобы не отбрасывало сразу назад)
+    // вход героя в готовый портал (нужно реально зайти в него, встав рядом)
     if (portalCooldownUntil && Date.now() < portalCooldownUntil) return;
     for (var i = 0; i < portals.length; i++) {
       var p = portals[i];
-      if (!p.ready) continue;
+      if (!p.ready || !p.canEnter) continue;
       var pos = portalPos(p);
-      if (Math.hypot(hero.x - pos.x, hero.y - pos.y) < p.r + 16) {
+      if (Math.hypot(hero.x - pos.x, hero.y - pos.y) < p.r + 12) {
         enterPortal(p);
         break;
       }
@@ -1919,9 +1923,18 @@
   function loop(now) {
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if (isOwner() && ui.root) {
-      updateHero(dt);
-      drawFrame();
+    try {
+      if (isOwner() && ui.root) {
+        updateHero(dt);
+        drawFrame();
+      }
+    } catch (err) {
+      try {
+        if (!loop._warned) {
+          console.warn("[amal-world] draw error (skipped):", err);
+          loop._warned = true;
+        }
+      } catch (_) {}
     }
     requestAnimationFrame(loop);
   }
