@@ -37,6 +37,10 @@
     outfit: "classic",
     creepy: true,
     uiVer: 0,
+    bossOn: false,
+    mirror: false,
+    beauty: false,
+    leaves: false,
   };
 
   var OUTFITS = {
@@ -84,7 +88,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v32";
+  var AW_VERSION = "v33";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -99,6 +103,7 @@
   var bossActive = false;
   var boss = { x: 0, y: 0, tx: 0, ty: 0, phase: 0, scale: 3.4 };
   var bossGifts = []; // падающие подарки при раздаче
+  var leaves = []; // ambient листопад
   // Куда ставим героя при выходе из парного портала (дальше кольца, чтобы не
   // засчиталось повторным входом). Возврат назад — обычным заходом в кольцо.
   var EXIT_DIST = 110;
@@ -136,6 +141,10 @@
           outfit: state.outfit,
           creepy: state.creepy,
           uiVer: state.uiVer,
+          bossOn: state.bossOn,
+          mirror: state.mirror,
+          beauty: state.beauty,
+          leaves: state.leaves,
         })
       );
     } catch (_) {}
@@ -494,9 +503,19 @@
       {
         title: "ДОБРЫЙ БОСС",
         items: [
-          { id: "boss", label: "🦁 Вызвать босса-гиганта", cost: 0, tip: "вкл/выкл · встаёт за спиной" },
+          { id: "boss", label: "🦁 Вызвать босса-гиганта", cost: 0, tip: "вкл/выкл · встаёт за спиной · запомнит" },
           { id: "bossgift", label: "🎁 Босс раздаёт дары", cost: 0, tip: "всем награды + лечение" },
+          { id: "bossrain", label: "🌈 Щедрый ливень", cost: 0, tip: "море подарков" },
+          { id: "bossfreeze", label: "❄️ Босс защищает", cost: 0, tip: "заморозить врагов" },
           { id: "bosscome", label: "🕹 Босс, ко мне", cost: 0, tip: "поставить рядом" },
+        ],
+      },
+      {
+        title: "КРАСОТА МИРА",
+        items: [
+          { id: "mirror", label: "🪞 Зеркальный двойник", cost: 0, tip: "уникальное отражение · запомнит" },
+          { id: "beauty", label: "🎨 Красивый мир", cost: 0, tip: "свет, тени, сочность · запомнит" },
+          { id: "leaves", label: "🌿 Листопад", cost: 0, tip: "падающие листья · запомнит" },
         ],
       },
       {
@@ -999,10 +1018,12 @@
         return;
       case "boss":
         bossActive = !bossActive;
+        state.bossOn = bossActive;
+        save();
         if (bossActive) {
           bossSummonAt();
           portalFx("in");
-          toast("🦁 Добрый босс-гигант с тобой · он за спиной");
+          toast("🦁 Добрый босс-гигант с тобой · он за спиной · запомню");
         } else {
           toast("Босс ушёл отдыхать");
         }
@@ -1010,6 +1031,8 @@
       case "bosscome":
         if (!bossActive) {
           bossActive = true;
+          state.bossOn = true;
+          save();
           toast("🦁 Босс пришёл");
         }
         bossSummonAt(true);
@@ -1021,9 +1044,143 @@
         }
         bossGiveGifts();
         return;
+      case "bossrain":
+        if (!bossActive) {
+          toast("Сначала вызови босса 🦁");
+          return;
+        }
+        bossGiveGifts();
+        setTimeout(bossGiveGifts, 400);
+        setTimeout(bossGiveGifts, 900);
+        toast("🌈 Щедрый ливень даров!");
+        return;
+      case "bossfreeze":
+        if (!bossActive) {
+          toast("Сначала вызови босса 🦁");
+          return;
+        }
+        dispatch("killAll");
+        dispatch("timestop", { ms: 4000 });
+        flashBolts();
+        toast("❄️ Босс заморозил врагов и защитил всех");
+        return;
+      case "mirror":
+        state.mirror = !state.mirror;
+        save();
+        if (state.mirror) {
+          spawnMirror();
+          toast("🪞 Зеркальный двойник с тобой · запомню");
+        } else {
+          clones = clones.filter(function (c) {
+            return !c.mirror;
+          });
+          if (!clones.length) state.clone = false;
+          toast("Зеркало убрано");
+        }
+        return;
+      case "beauty":
+        state.beauty = !state.beauty;
+        save();
+        applyBeauty();
+        toast(state.beauty ? "🎨 Красивый мир включён · запомню" : "Обычный вид");
+        return;
+      case "leaves":
+        state.leaves = !state.leaves;
+        save();
+        if (!state.leaves) leaves = [];
+        toast(state.leaves ? "🌿 Листопад включён · запомню" : "Листопад выключен");
+        return;
       default:
         return;
     }
+  }
+
+  function spawnMirror() {
+    // Уникальное зеркало: полупрозрачный двойник, отражённый по горизонтали,
+    // повторяет позу героя с задержкой и лёгким мерцанием.
+    clones = clones.filter(function (c) {
+      return !c.mirror;
+    });
+    clones.push({ x: hero.x, y: hero.y, life: 1e9, phase: 0, mirror: true });
+    state.clone = true;
+  }
+
+  function applyBeauty() {
+    try {
+      var id = "amal-beauty-style";
+      var el = document.getElementById(id);
+      if (state.beauty) {
+        if (!el) {
+          el = document.createElement("style");
+          el.id = id;
+          document.head.appendChild(el);
+        }
+        // Мягкая цветокоррекция + виньетка поверх любой игры — безопасно, без движка.
+        el.textContent =
+          "html{filter:saturate(1.18) contrast(1.06) brightness(1.03)!important;}" +
+          "#amal-beauty-vignette{position:fixed;inset:0;pointer-events:none;z-index:2147483000;" +
+          "background:radial-gradient(120% 120% at 50% 38%,transparent 55%,rgba(10,10,30,.34) 100%);" +
+          "mix-blend-mode:multiply;}" +
+          "#amal-beauty-sun{position:fixed;inset:0;pointer-events:none;z-index:2147483000;" +
+          "background:radial-gradient(60% 45% at 72% 8%,rgba(255,241,190,.28),transparent 60%);}";
+        if (!document.getElementById("amal-beauty-vignette")) {
+          var v = document.createElement("div");
+          v.id = "amal-beauty-vignette";
+          document.body.appendChild(v);
+          var sun = document.createElement("div");
+          sun.id = "amal-beauty-sun";
+          document.body.appendChild(sun);
+        }
+      } else {
+        if (el) el.remove();
+        var vv = document.getElementById("amal-beauty-vignette");
+        if (vv) vv.remove();
+        var ss = document.getElementById("amal-beauty-sun");
+        if (ss) ss.remove();
+      }
+    } catch (_) {}
+  }
+
+  function updateLeaves(dt) {
+    var W = (ui.canvas && ui.canvas.width) || innerWidth || 800;
+    var H = (ui.canvas && ui.canvas.height) || innerHeight || 600;
+    if (state.leaves && Math.random() < dt * 6) {
+      leaves.push({
+        x: Math.random() * W,
+        y: -10,
+        vy: 20 + Math.random() * 40,
+        vx: (Math.random() - 0.5) * 30,
+        rot: Math.random() * 6,
+        vr: (Math.random() - 0.5) * 2,
+        sway: Math.random() * 6,
+        icon: Math.random() < 0.5 ? "🍃" : Math.random() < 0.5 ? "🍂" : "🌿",
+        life: 12,
+      });
+    }
+    leaves = leaves.filter(function (l) {
+      l.life -= dt;
+      l.x += (l.vx + Math.sin((l.life + l.sway) * 2) * 14) * dt;
+      l.y += l.vy * dt;
+      l.rot += l.vr * dt;
+      return l.life > 0 && l.y < H + 20;
+    });
+  }
+
+  function drawLeaves(ctx) {
+    if (!leaves.length) return;
+    ctx.save();
+    ctx.font = "18px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    leaves.forEach(function (l) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.9, l.life / 3);
+      ctx.translate(l.x, l.y);
+      ctx.rotate(l.rot);
+      ctx.fillText(l.icon, 0, 0);
+      ctx.restore();
+    });
+    ctx.restore();
   }
 
   function bossSummonAt(instant) {
@@ -2091,7 +2248,14 @@
     clones = clones.filter(function (c) {
       c.life -= dt;
       c.phase += dt;
-      c.x += Math.sin(c.phase * 3) * 20 * dt;
+      if (c.mirror) {
+        // зеркало держится рядом, отражая героя с мягкой задержкой
+        var mx = hero.x - (hero.facing || 1) * 46;
+        c.x += (mx - c.x) * Math.min(1, dt * 8);
+        c.y += (hero.y - c.y) * Math.min(1, dt * 8);
+      } else {
+        c.x += Math.sin(c.phase * 3) * 20 * dt;
+      }
       return c.life > 0;
     });
     if (!clones.length) state.clone = false;
@@ -2104,6 +2268,7 @@
     var ctx = ui.canvas.getContext("2d");
     ctx.clearRect(0, 0, ui.canvas.width, ui.canvas.height);
     drawVersionTag(ctx);
+    drawLeaves(ctx);
     if (bossActive) drawBoss(ctx);
     drawGifts(ctx);
     if (!state.visible) return;
@@ -2118,7 +2283,13 @@
     drawPortals(ctx);
     drawHero(ctx, hero.x, hero.y, hero.facing, hero.phase, hero.mode, 1);
     clones.forEach(function (c) {
-      drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
+      if (c.mirror) {
+        // отражение: смотрит в другую сторону, полупрозрачное, слегка мерцает
+        var a = 0.4 + Math.abs(Math.sin(c.phase * 3)) * 0.2;
+        drawHero(ctx, c.x, c.y, -(hero.facing || 1), c.phase, hero.mode, a);
+      } else {
+        drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
+      }
     });
   }
 
@@ -2273,6 +2444,7 @@
       if (isOwner() && ui.root) {
         updateHero(dt);
         updateBoss(dt);
+        updateLeaves(dt);
         drawFrame();
       }
     } catch (err) {
@@ -2362,6 +2534,15 @@
     exposeHubApi();
     tryCopyGrantable();
     handleArrival();
+    // Память: восстанавливаем то, что владелец включал раньше.
+    try {
+      if (state.bossOn) {
+        bossActive = true;
+        bossSummonAt(true);
+      }
+      if (state.mirror) spawnMirror();
+      if (state.beauty) applyBeauty();
+    } catch (_) {}
     state.lastGame = gameId();
     save();
     toast("👤 Герой Амаль готов · 🌀 телепорт · ⚡ 20 сил");
