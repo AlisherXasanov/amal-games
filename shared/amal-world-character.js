@@ -84,7 +84,7 @@
   var clones = [];
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v31";
+  var AW_VERSION = "v32";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
