@@ -333,7 +333,10 @@
         freeRoamHere = !freeRoamHere;
         state.visible = true;
         save();
-        toast(freeRoamHere ? "🕹 Свободный Амаль (WASD/стрелки)" : "🎮 Играю за Амаля (по центру)");
+        try {
+          window.__AMAL_HIDE_NATIVE__ = !freeRoamHere;
+        } catch (_) {}
+        toast(freeRoamHere ? "🕹 Свободный Амаль (виден игрок игры)" : "🎮 Играю за Амаля (один персонаж)");
         return;
       }
       state.visible = !state.visible;
@@ -1400,10 +1403,23 @@
     if (lf != null) {
       var vwC = innerWidth || 800;
       var vhC = innerHeight || 600;
-      hero.x = vwC / 2;
-      hero.y = vhC * lf;
+      // Игра сообщает экранную позицию своего человечка — прячем его и встаём ровно на него.
+      var np = null;
+      try {
+        np = window.__AMAL_NATIVE_PLAYER__;
+        if (np && Date.now() - np.t > 900) np = null;
+        window.__AMAL_HIDE_NATIVE__ = true;
+      } catch (_) {}
+      if (np) {
+        hero.x = np.x;
+        hero.y = np.y - 24;
+      } else {
+        hero.x = vwC / 2;
+        hero.y = vhC * lf;
+      }
       var movingC = hero.keys.a || hero.keys.arrowleft || hero.keys.d || hero.keys.arrowright;
-      if (hero.keys.a || hero.keys.arrowleft) hero.facing = -1;
+      if (np && np.face) hero.facing = np.face < 0 ? -1 : 1;
+      else if (hero.keys.a || hero.keys.arrowleft) hero.facing = -1;
       else if (hero.keys.d || hero.keys.arrowright) hero.facing = 1;
       hero.mode = hero.teleporting ? "teleport" : movingC ? "walk" : "idle";
       hero.phase += dt;
