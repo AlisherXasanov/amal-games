@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Нить сна · Амаль и Сашка · сборка 9</title>
+  <title>Нить сна · только Амаль · сборка 11</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <link rel="stylesheet" href="./style.css?v=9" />
@@ -25,7 +25,7 @@
 </head>
 <body>
   <a class="portal-back" href="../index.html?v=821">&larr; Все игры</a>
-  <div class="build-tag">сборка 9 · Амаль + Сашка</div>
+      <div class="build-tag">сборка 11 · один Амаль · тень не берёт</div>
 
   <div id="app">
     <canvas id="game" width="960" height="540" tabindex="0"></canvas>
@@ -38,7 +38,7 @@
       <div class="panel">
         <h1 id="title">Нить сна</h1>
         <p id="blurb">
-          На поле только <strong>Амаль</strong> (телепорт) и <strong>Сашка</strong>.<br />
+          На поле только оригинальный <strong>Амаль</strong> с телепортом.<br />
           Собери нити, коснись <strong>УТРО</strong>. От тени — <strong>РЫВОК</strong>.
         </p>
         <button type="button" id="start-btn" class="btn big">НАЧАТЬ</button>
@@ -57,8 +57,17 @@
     </div>
   </div>
 
-  <script src="./game.js?v=9"></script>
-  <script src="../shared/amal-world-character.js?v=38"></script>
+  <script>
+    try {
+      if (["amal-owner-v1","amal-owner-v2","amal-owner-v3"].some(function(k){ return localStorage.getItem(k)==="1"; })) {
+        window.__AMAL_OWNER__ = true;
+        window.__AMAL_GOD__ = true;
+        window.__AMAL_LEGEND__ = true;
+      }
+    } catch (e) {}
+  </script>
+  <script src="./game.js?v=11"></script>
+  <script src="../shared/amal-world-character.js?v=40"></script>
   <script>
     (function () {
       var junk = [

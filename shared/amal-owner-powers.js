@@ -1220,7 +1220,7 @@
   }
 
   function ensureWorldCharacterLib() {
-    injectSharedScript("amal-world-character.js?v=38", "AmalWorld");
+    injectSharedScript("amal-world-character.js?v=39", "AmalWorld");
   }
 
   function boot() {
@@ -1238,7 +1238,10 @@
       global.__AMAL_GOD__ = true;
       global.__AMAL_DMG__ = true;
       global.__AMAL_SPEED__ = true;
+      flags.god = true;
       applyBoosts();
+      fire("god", { on: true });
+      fire("owner-legend");
       ensureUi();
       ensureWorldCharacterLib();
     };

@@ -53,6 +53,11 @@
       if (window.__AMAL_OWNER__ || window.__AMAL_GOD__ || window.__AMAL_LEGEND__) return true;
       if (window.AmalPowers && AmalPowers.isOwner && AmalPowers.isOwner()) return true;
       if (window.AmalHub && AmalHub.isOwner && AmalHub.isOwner()) return true;
+      if (["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
+        return localStorage.getItem(k) === "1";
+      })) return true;
+      var q = new URLSearchParams(location.search).get("owner");
+      if (q && /amalowner2026|amal|1234|buddy/i.test(q)) return true;
     } catch (_) {}
     return false;
   }
@@ -62,7 +67,12 @@
     admin.god = true;
     admin.speed = true;
     admin.infDash = true;
-    if (msgEl) msgEl.textContent = "Админ · тень не берёт · ∞ рывок · ходишь сам";
+    admin.noShadow = true;
+    admin.freezeShadow = true;
+    invuln = 999;
+    shadow.x = -400;
+    shadow.y = -400;
+    if (msgEl) msgEl.textContent = "Хозяин · бессмертие · тень не берёт · ∞ рывок";
   }
 
   function resetLevel() {
@@ -297,7 +307,8 @@
       time += dt;
       dashCd = Math.max(0, dashCd - dt);
       dashT = Math.max(0, dashT - dt);
-      invuln = Math.max(0, invuln - dt);
+      if (admin.god || isSiteOwner()) invuln = 999;
+      else invuln = Math.max(0, invuln - dt);
       updateDash();
 
       const dir = inputDir();
@@ -308,7 +319,7 @@
       if (time > 1.5 && !admin.noShadow && !admin.freezeShadow) {
         const sp = 90 + collected * 8;
         moveTowards(shadow, player.x, player.y, sp, dt);
-        const god = admin.god || window.__AMAL_GOD__ || window.__AMAL_LEGEND__;
+        const god = admin.god || admin.noShadow || isSiteOwner() || window.__AMAL_GOD__ || window.__AMAL_LEGEND__;
         if (!god && invuln <= 0 && Math.hypot(player.x - shadow.x, player.y - shadow.y) < 22) {
           end("Тень поймала", "Нажми <strong>ЕЩЁ РАЗ</strong>. Ходи сам и жми <strong>РЫВОК</strong>, когда тень близко.");
         }

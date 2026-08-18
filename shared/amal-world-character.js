@@ -87,11 +87,9 @@
 
   var cds = Object.create(null);
   var clones = [];
-  var sashka = { x: 0, y: 0 };
-  var sashkaReady = false;
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v38";
+  var AW_VERSION = "v40";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -2355,15 +2353,6 @@
     ui.root.classList.remove("hospital-hide");
     drawPortals(ctx);
     drawHero(ctx, hero.x, hero.y, hero.facing, hero.phase, hero.mode, 1);
-    // Только оригинальный Амаль и Сашка — без клонов/двойников.
-    if (!sashkaReady) {
-      sashka.x = hero.x - 40;
-      sashka.y = hero.y;
-      sashkaReady = true;
-    }
-    sashka.x += (hero.x - (hero.facing || 1) * 44 - sashka.x) * 0.14;
-    sashka.y += (hero.y + 6 - sashka.y) * 0.14;
-    drawHero(ctx, sashka.x, sashka.y, hero.facing, hero.phase + 0.8, hero.mode === "teleport" ? "walk" : hero.mode, 1, "Сашка");
   }
 
   function drawGifts(ctx) {
