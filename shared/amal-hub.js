@@ -79,26 +79,14 @@
     { id: "pet-simulator", name: "Pet Simulator" },
     { id: "flee-facility", name: "Flee the Facility" },
     { id: "build-boat", name: "Build a Boat" },
-    { id: "wardenclyffe-defense", name: "Защита Базы Ворденклиф" },
-    { id: "invisible-spy", name: "Симулятор Шпиона" },
-    { id: "space-elevator", name: "Космический Лифт" },
-    { id: "mantis-crab-arena", name: "Атака Рака-Богомола" },
-    { id: "forest-network", name: "Лесной Интернет" },
-    { id: "tesla-arena", name: "Тесла-Арена" },
-    { id: "ten-pack", name: "10 мини-игр" },
-    { id: "catastrophe-gen", name: "Генератор катастроф" },
-    { id: "beetle-evo", name: "Эволюция жука" },
-    { id: "tesla-planet", name: "Не взорви планету" },
-    { id: "spice-scale", name: "Шкала остроты" },
-    { id: "folder-doors", name: "Выбивание дверей" },
-    { id: "bug-audio", name: "Жук по звуку" },
-    { id: "office-smash", name: "Разрушитель офиса" },
-    { id: "blind-zone", name: "Слепая зона" },
-    { id: "spicy-debate", name: "Острый спор" },
-    { id: "tesla-wires", name: "Электросеть" },
   ];
 
   const CHANGELOG = [
+    {
+      id: "2026-08-18-hide-confusing",
+      title: "Скрыли запутанные игры",
+      body: "Мини-игры, Тесла-арена, Ворденклиф, шпион, лифт, рак-богомол, лесной интернет и секретный подарок пока убраны с сайта. Файлы сохранены — вернём, когда будут понятнее.",
+    },
     {
       id: "2026-08-18-ten-pack",
       title: "10 мини-игр + способности хозяина",

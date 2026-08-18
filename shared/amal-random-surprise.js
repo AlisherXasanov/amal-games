@@ -15,6 +15,9 @@
     return at;
   }
 
+  /* Пока прячем с сайта: таймер «???» / секретный подарок слишком путает. */
+  return;
+
   const at = unlockAt();
 
   function refreshCount() {
