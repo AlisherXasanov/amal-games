@@ -2,48 +2,25 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Amal Arcade — 10 игр в одном приложении</title>
-  <meta name="description" content="Одно приложение: десять мини-игр внутри. Сова, жук, Тесла, острота, двери, звук, офис, лабиринт, спор, электросеть." />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <style>
-    /* Это отдельное приложение — хаб-кнопки и герой Амаля не нужны */
-    #amal-world-root, #amal-world-showpill, #amal-world-dock,
-    #amal-powers-quick, #amal-powers-fab, #amal-powers-panel,
-    #amal-us-eggs, #amal-us-toast, #amal-cube-btn, #amal-cube-dash,
-    #amal-cube-pickup, #amal-chat-fab, #amal-chat-box, #amal-faq-fab,
-    #amal-good-boss, #amal-hub-root, #amal-watch-panel, .portal-back {
-      display: none !important;
-    }
-  </style>
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>10 новых игр</title>
+  <meta http-equiv="refresh" content="0; url=../index.html?fresh=820#newGamesGrid" />
+  <link rel="stylesheet" href="../shared/mini-game.css?v=820" />
 </head>
 <body>
-  <div id="arcade">
-    <header class="arc-head">
-      <a class="arc-home-link" href="../" title="На сайт">⌂</a>
-      <div class="arc-brand">
-        <strong>AMAL ARCADE</strong>
-        <span id="arcSub">10 игр · одно приложение</span>
-      </div>
-      <button type="button" class="arc-pwr" id="pwrBtn" hidden>⚡</button>
-    </header>
-    <main id="stage"></main>
-    <nav class="arc-nav" id="arcNav">
-      <button type="button" id="navHome" class="on">🎮 Все 10 игр</button>
-    </nav>
+  <div class="wrap">
+    <h1>10 игр на сайте</h1>
+    <p class="sub">Каждая игра — отдельная страница.</p>
+    <p><a href="../catastrophe-gen/">🦉 Генератор катастроф</a></p>
+    <p><a href="../beetle-evo/">🪲 Эволюция жука</a></p>
+    <p><a href="../tesla-planet/">⚡ Не взорви планету</a></p>
+    <p><a href="../spice-scale/">🌶️ Шкала остроты</a></p>
+    <p><a href="../folder-doors/">🚪 Выбивание дверей</a></p>
+    <p><a href="../bug-audio/">🎧 Жук по звуку</a></p>
+    <p><a href="../office-smash/">💥 Разрушитель офиса</a></p>
+    <p><a href="../blind-zone/">🌑 Слепая зона</a></p>
+    <p><a href="../spicy-debate/">🔥 Острый спор</a></p>
+    <p><a href="../tesla-wires/">🔌 Электросеть</a></p>
   </div>
-  <div class="owl" id="owlFx">🦉</div>
-  <div class="toast" id="tenToast"></div>
-  <aside class="pwr-sheet" id="pwrSheet" hidden>
-    <b>Силы хозяина</b>
-    <div class="pwr-grid" id="pwrGrid"></div>
-    <div class="console open" id="devCon">
-      <input id="devCmd" placeholder="MONEY / GOD / WIN / OWL" />
-      <button type="button" id="devGo">↵</button>
-    </div>
-  </aside>
-  <script src="../shared/amal-owner-powers.js?v=21"></script>
-  <script src="./games.js?v=2"></script>
 </body>
 </html>

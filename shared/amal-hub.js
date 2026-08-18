@@ -86,6 +86,16 @@
     { id: "forest-network", name: "Лесной Интернет" },
     { id: "tesla-arena", name: "Тесла-Арена" },
     { id: "ten-pack", name: "10 мини-игр" },
+    { id: "catastrophe-gen", name: "Генератор катастроф" },
+    { id: "beetle-evo", name: "Эволюция жука" },
+    { id: "tesla-planet", name: "Не взорви планету" },
+    { id: "spice-scale", name: "Шкала остроты" },
+    { id: "folder-doors", name: "Выбивание дверей" },
+    { id: "bug-audio", name: "Жук по звуку" },
+    { id: "office-smash", name: "Разрушитель офиса" },
+    { id: "blind-zone", name: "Слепая зона" },
+    { id: "spicy-debate", name: "Острый спор" },
+    { id: "tesla-wires", name: "Электросеть" },
   ];
 
   const CHANGELOG = [
@@ -1314,6 +1324,16 @@
       "forest-network": "Лесной Интернет",
       "tesla-arena": "Тесла-Арена",
       "ten-pack": "10 мини-игр",
+      "catastrophe-gen": "Генератор катастроф",
+      "beetle-evo": "Эволюция жука",
+      "tesla-planet": "Не взорви планету",
+      "spice-scale": "Шкала остроты",
+      "folder-doors": "Выбивание дверей",
+      "bug-audio": "Жук по звуку",
+      "office-smash": "Разрушитель офиса",
+      "blind-zone": "Слепая зона",
+      "spicy-debate": "Острый спор",
+      "tesla-wires": "Электросеть",
     };
     return map[id] || id;
   }
