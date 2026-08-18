@@ -584,6 +584,21 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if ((d.type === "ta-owl" || d.type === "ta-hammer" || d.type === "ta-tesla") && state === "play") {
+      spawnQ = [];
+      enemies.slice().forEach((en) => hurtEnemy(en, 9999, "#fde68a"));
+      toast(d.type === "ta-owl" ? "🦉 Сова глушит роботов" : "⚡ Волна зачищена");
+      finishWave();
+    }
+    if (d.type === "ta-lag") { timeStop = true; toast("🐢 Роботы зависли"); }
+    if (d.type === "ta-xray") toast("🩻 Пути роботов видны хозяину");
+    if (d.type === "ta-spawn" || d.type === "ta-rewind") {
+      progress.credits = Math.max(progress.credits, 999999);
+      if (gen) gen.hp = gen.max;
+      saveProgress();
+      toast("✨ Энергия и генератор на максимум");
+    }
+    if (d.type === "god") invincibleAdmin = true;
     if (d.type === "killAll" && state === "play") {
       spawnQ = [];
       enemies.slice().forEach((en) => hurtEnemy(en, 9999, "#fde68a"));

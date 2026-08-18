@@ -201,6 +201,11 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if (d.type === "se-tesla" || d.type === "coinMult") { coinMult = 1000; energy = Math.max(energy, 1e6); toast("⚡ Миллион энергии"); refreshShop(); }
+    if (d.type === "se-rewind" || d.type === "killAll") { heat = 0; toast("⏪ Перегрев сброшен"); }
+    if (d.type === "se-spawn") { energy += 50000; toast("✨ Бонус-жизни / энергия"); refreshShop(); }
+    if (d.type === "se-owl") { heat = 0; toast("🦉 Сова ведёт кабину"); }
+    if (d.type === "god") { heat = 0; toast("🛡 Перегрев не страшен"); }
     if (d.type === "killAll") { heat = 0; toast("💥 Перегрев сброшен"); }
     if (d.type === "timestop") timeStop = !!d.on;
     if (d.type === "invincible") { heat = 0; toast("🛡️ Перегрев не страшен"); }

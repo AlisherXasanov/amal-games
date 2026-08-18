@@ -254,6 +254,9 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if ((d.type === "mc-hammer" || d.type === "mc-owl" || d.type === "mc-tesla" || d.type === "killAll") && foe) { foe.hp = 0; winRound(); toast("🔨 Соперник забанен"); }
+    if (d.type === "mc-lag") { timeStop = true; toast("🐢 Враг завис"); }
+    if (d.type === "god") invincible = true;
     if (d.type === "killAll" && foe) { foe.hp = 0; winRound(); toast("💥 BZZZ!"); }
     if (d.type === "timestop") timeStop = !!d.on;
     if (d.type === "invincible") invincible = !!d.on;

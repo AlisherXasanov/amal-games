@@ -364,6 +364,10 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if (d.type === "is-xray") toast("🩻 Все камеры подсвечены");
+    if (d.type === "is-lag") { timeStop = true; toast("🐢 Охрана зависла"); }
+    if (d.type === "is-archive" || d.type === "is-owl" || d.type === "killAll") { guards = []; cameras = []; toast("🦉 Камеры и охрана сняты"); }
+    if (d.type === "god") invincible = true;
     if (d.type === "killAll") { guards = []; cameras = []; toast("💥 Камеры и охрана отключены"); }
     if (d.type === "timestop") timeStop = !!d.on;
     if (d.type === "invincible") invincible = !!d.on;

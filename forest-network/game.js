@@ -281,6 +281,11 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if (d.type === "fn-archive" || d.type === "fn-owl" || d.type === "killAll") { bugs.forEach((b) => { b.hp = 0; }); toast("🗂 Жуки в корзине"); recompute(); }
+    if (d.type === "fn-tesla") { sap = Math.max(sap, 999); toast("⚡ Сеть связана"); }
+    if (d.type === "fn-xray") toast("🩻 Жуки подсвечены");
+    if (d.type === "fn-lag") { timeStop = true; toast("🐢 Вредители заморожены"); }
+    if (d.type === "god") invincible = true;
     if (d.type === "killAll") { bugs.forEach((b) => { b.hp = 0; }); toast("💥 Жуки уничтожены"); recompute(); }
     if (d.type === "timestop") timeStop = !!d.on;
     if (d.type === "invincible") invincible = !!d.on;

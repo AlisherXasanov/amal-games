@@ -328,6 +328,12 @@
 
   window.addEventListener("amal-power", (e) => {
     const d = (e && e.detail) || {};
+    if (d.type === "wd-tesla" || d.type === "wd-hammer" || d.type === "wd-archive") {
+      enemies.forEach((en) => { coins += 10; }); enemies = []; spawnQ = []; toast("⚡ Ворденклиф зачищен"); if (state === "play") setTimeout(nextWave, 500);
+    }
+    if (d.type === "wd-lag") { timeStop = true; toast("🐢 Роботы заморожены"); }
+    if (d.type === "wd-spawn") { coins += 500; toast("✨ Запас катушек"); }
+    if (d.type === "god") invincible = true;
     if (d.type === "killAll") { enemies.forEach((en) => { coins += 10; }); enemies = []; spawnQ = []; toast("💥 BZZZ! Враги уничтожены"); if (state === "play") setTimeout(nextWave, 500); }
     if (d.type === "timestop") timeStop = !!d.on;
     if (d.type === "invincible") invincible = !!d.on;
