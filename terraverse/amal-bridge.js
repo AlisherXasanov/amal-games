@@ -214,6 +214,8 @@
 
     ensureHost();
 
+    enableImmortal();
+
     let n = 0;
 
     const tick = setInterval(() => {
@@ -231,6 +233,34 @@
       if (n > 40) clearInterval(tick);
 
     }, 400);
+
+  }
+
+
+
+  // Первый клик — сразу Creative, чтобы блоки ломались быстро.
+
+  if (!isGuestMode() && isOwner()) {
+
+    const kickCreative = () => {
+
+      enableImmortal();
+
+      try {
+
+        if (window.__TERRARIUM__ && typeof window.__TERRARIUM__.enableCreative === "function") {
+
+          window.__TERRARIUM__.enableCreative();
+
+        }
+
+      } catch (_) {}
+
+    };
+
+    document.addEventListener("pointerdown", kickCreative, { capture: true, once: true });
+
+    setTimeout(kickCreative, 800);
 
   }
 
