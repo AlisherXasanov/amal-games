@@ -409,7 +409,7 @@
       };
       window.__AMAL_HIDE_NATIVE__ = true;
     } catch (_) {}
-    if (!window.AmalWorld) {
+    if (!(window.AmalWorld && typeof window.AmalWorld.isReady === "function" && window.AmalWorld.isReady())) {
       ctx.beginPath();
       ctx.arc(player.x, player.y, 12, 0, Math.PI * 2);
       ctx.fillStyle = invuln > 0 ? "#ffe08a" : "#dcc8ff";

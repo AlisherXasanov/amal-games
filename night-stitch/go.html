@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Нить сна · Амаль и Сашка · сборка 9</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="./style.css?v=9" />
+  <style>
+    /* Без хаба: куб, чат, Леша, FAQ, админ-полоски */
+    #amal-powers-quick, #amal-powers-fab, #amal-powers-panel, #amal-admin-things,
+    #amal-us-eggs, #amal-us-toast, #amal-cube-btn, #amal-cube-dash, #amal-cube-pickup,
+    #amal-chat-fab, #amal-chat-box, #amal-faq-fab, #amal-good-boss, #amal-hub-root,
+    #amal-watch-panel, #amal-world-dock, #amal-world-showpill, #amal-world-panel,
+    #amal-world-tele, #amal-world-fab, #amal-world-tools {
+      display: none !important;
+    }
+    .build-tag {
+      position: fixed; top: 8px; right: 8px; z-index: 50;
+      font: 800 11px Manrope, system-ui; color: #c4b5fd;
+      background: rgba(10,8,20,.7); padding: 4px 8px; border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <a class="portal-back" href="../index.html?v=821">&larr; Все игры</a>
+  <div class="build-tag">сборка 9 · Амаль + Сашка</div>
+
+  <div id="app">
+    <canvas id="game" width="960" height="540" tabindex="0"></canvas>
+    <div id="hud" class="hud hidden">
+      <span id="stitches">Нити: 0/5</span>
+      <span id="msg">Ты управляешь · стрелки / WASD / клик</span>
+      <button type="button" id="menu-btn" class="menu-btn">Меню</button>
+    </div>
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <h1 id="title">Нить сна</h1>
+        <p id="blurb">
+          На поле только <strong>Амаль</strong> (телепорт) и <strong>Сашка</strong>.<br />
+          Собери нити, коснись <strong>УТРО</strong>. От тени — <strong>РЫВОК</strong>.
+        </p>
+        <button type="button" id="start-btn" class="btn big">НАЧАТЬ</button>
+      </div>
+    </div>
+    <div id="controls" class="controls hidden">
+      <div class="pad">
+        <button type="button" data-dir="up">↑</button>
+        <div class="row">
+          <button type="button" data-dir="left">←</button>
+          <button type="button" data-dir="down">↓</button>
+          <button type="button" data-dir="right">→</button>
+        </div>
+      </div>
+      <button type="button" id="dash-btn" class="dash-btn">РЫВОК</button>
+    </div>
+  </div>
+
+  <script src="./game.js?v=9"></script>
+  <script src="../shared/amal-world-character.js?v=38"></script>
+  <script>
+    (function () {
+      var junk = [
+        "amal-cube-btn", "amal-cube-dash", "amal-cube-pickup", "amal-chat-fab", "amal-chat-box",
+        "amal-faq-fab", "amal-us-eggs", "amal-powers-quick", "amal-powers-fab", "amal-admin-things",
+        "amal-hub-root", "amal-world-dock", "amal-world-showpill"
+      ];
+      function scrub() {
+        junk.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
+      }
+      scrub();
+      setInterval(scrub, 400);
+    })();
+  </script>
+</body>
+</html>
