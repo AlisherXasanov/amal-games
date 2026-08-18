@@ -41,7 +41,6 @@ canvas { width: 100%; height: auto; display: block; border-radius: 12px; backgro
   opacity: 0; transition: opacity .2s; pointer-events: none;
 }
 .toast.show { opacity: 1; }
-#amal-world-root, #amal-world-showpill, #amal-world-dock,
-#amal-powers-quick, #amal-powers-fab, #amal-powers-panel,
+#amal-powers-quick, #amal-powers-fab, #amal-powers-panel, #amal-admin-things,
 #amal-us-eggs, #amal-cube-btn, #amal-cube-dash, #amal-cube-pickup,
 #amal-chat-fab, #amal-faq-fab, #amal-hub-root { display: none !important; }

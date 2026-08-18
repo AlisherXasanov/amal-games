@@ -399,10 +399,22 @@
       ctx.stroke();
     }
 
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = invuln > 0 ? "#ffe08a" : "#dcc8ff";
-    ctx.fill();
+    try {
+      const r = canvas.getBoundingClientRect();
+      window.__AMAL_NATIVE_PLAYER__ = {
+        x: r.left + player.x * (r.width / W),
+        y: r.top + player.y * (r.height / H),
+        face: hold.left ? -1 : hold.right ? 1 : 0,
+        t: Date.now(),
+      };
+      window.__AMAL_HIDE_NATIVE__ = true;
+    } catch (_) {}
+    if (!window.AmalWorld) {
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 12, 0, Math.PI * 2);
+      ctx.fillStyle = invuln > 0 ? "#ffe08a" : "#dcc8ff";
+      ctx.fill();
+    }
 
     for (const p of particles) {
       ctx.globalAlpha = Math.max(0, p.life * 2);

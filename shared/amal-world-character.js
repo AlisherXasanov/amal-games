@@ -87,9 +87,11 @@
 
   var cds = Object.create(null);
   var clones = [];
+  var sashka = { x: 0, y: 0 };
+  var sashkaReady = false;
   var last = performance.now();
   var hospitalHooked = false;
-  var AW_VERSION = "v37";
+  var AW_VERSION = "v38";
 
   // Портал-пушка: снаряды летят, открывают портал; вход в портал = телепорт.
   var portalGunArmed = false;
@@ -1885,7 +1887,7 @@
     ctx.restore();
   }
 
-  function drawHero(ctx, x, y, facing, phase, mode, alpha) {
+  function drawHero(ctx, x, y, facing, phase, mode, alpha, tagName) {
     var fit = outfit();
     var royal = isRoyal();
     var shirtCol = royal ? fit.shirt : state.shirt;
@@ -2121,7 +2123,7 @@
     ctx.fillStyle = "rgba(15,23,42,.85)";
     ctx.strokeStyle = "rgba(167,139,250,.7)";
     ctx.lineWidth = 1.2;
-    var label = state.name || "Амаль";
+    var label = tagName || state.name || "Амаль";
     ctx.font = "900 11px system-ui";
     var w = ctx.measureText(label).width + 14;
     roundRectPath(ctx, -w / 2, -56 + bob, w, 16, 8);
@@ -2353,15 +2355,15 @@
     ui.root.classList.remove("hospital-hide");
     drawPortals(ctx);
     drawHero(ctx, hero.x, hero.y, hero.facing, hero.phase, hero.mode, 1);
-    clones.forEach(function (c) {
-      if (c.mirror) {
-        // отражение: смотрит в другую сторону, полупрозрачное, слегка мерцает
-        var a = 0.4 + Math.abs(Math.sin(c.phase * 3)) * 0.2;
-        drawHero(ctx, c.x, c.y, -(hero.facing || 1), c.phase, hero.mode, a);
-      } else {
-        drawHero(ctx, c.x, c.y, hero.facing, c.phase, "walk", 0.55);
-      }
-    });
+    // Только оригинальный Амаль и Сашка — без клонов/двойников.
+    if (!sashkaReady) {
+      sashka.x = hero.x - 40;
+      sashka.y = hero.y;
+      sashkaReady = true;
+    }
+    sashka.x += (hero.x - (hero.facing || 1) * 44 - sashka.x) * 0.14;
+    sashka.y += (hero.y + 6 - sashka.y) * 0.14;
+    drawHero(ctx, sashka.x, sashka.y, hero.facing, hero.phase + 0.8, hero.mode === "teleport" ? "walk" : hero.mode, 1, "Сашка");
   }
 
   function drawGifts(ctx) {
