@@ -3,18 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>10 игр · пак Амаля</title>
-  <meta name="description" content="Десять мини-игр: сова, жук, Тесла, острота, двери, звук, офис, лабиринт, спор, электросеть." />
+  <title>Amal Arcade — 10 игр в одном приложении</title>
+  <meta name="description" content="Одно приложение: десять мини-игр внутри. Сова, жук, Тесла, острота, двери, звук, офис, лабиринт, спор, электросеть." />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <style>
+    /* Это отдельное приложение — хаб-кнопки и герой Амаля не нужны */
+    #amal-world-root, #amal-world-showpill, #amal-world-dock,
+    #amal-powers-quick, #amal-powers-fab, #amal-powers-panel,
+    #amal-us-eggs, #amal-us-toast, #amal-cube-btn, #amal-cube-dash,
+    #amal-cube-pickup, #amal-chat-fab, #amal-chat-box, #amal-faq-fab,
+    #amal-good-boss, #amal-hub-root, #amal-watch-panel, .portal-back {
+      display: none !important;
+    }
+  </style>
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Все игры</a>
-  <div id="app"></div>
+  <div id="arcade">
+    <header class="arc-head">
+      <a class="arc-home-link" href="../" title="На сайт">⌂</a>
+      <div class="arc-brand">
+        <strong>AMAL ARCADE</strong>
+        <span id="arcSub">10 игр · одно приложение</span>
+      </div>
+      <button type="button" class="arc-pwr" id="pwrBtn" hidden>⚡</button>
+    </header>
+    <main id="stage"></main>
+    <nav class="arc-nav" id="arcNav">
+      <button type="button" id="navHome" class="on">🎮 Все 10 игр</button>
+    </nav>
+  </div>
   <div class="owl" id="owlFx">🦉</div>
   <div class="toast" id="tenToast"></div>
+  <aside class="pwr-sheet" id="pwrSheet" hidden>
+    <b>Силы хозяина</b>
+    <div class="pwr-grid" id="pwrGrid"></div>
+    <div class="console open" id="devCon">
+      <input id="devCmd" placeholder="MONEY / GOD / WIN / OWL" />
+      <button type="button" id="devGo">↵</button>
+    </div>
+  </aside>
   <script src="../shared/amal-owner-powers.js?v=21"></script>
-  <script src="./games.js?v=1"></script>
-  <script src="../shared/amal-hub.js?v=66"></script>
+  <script src="./games.js?v=2"></script>
 </body>
 </html>
