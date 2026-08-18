@@ -353,6 +353,12 @@
     const loot = lootFor(gid);
     if (!loot.length) return;
 
+    // Один «посох»: вещи только в кубе, нижнюю полоску не рисуем.
+    const leftover = document.getElementById("amal-admin-things");
+    if (leftover) leftover.remove();
+    restoreStickers(gid);
+    return;
+
     ensureStyles();
     let bar = document.getElementById("amal-admin-things");
     if (!bar) {

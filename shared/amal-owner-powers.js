@@ -1081,7 +1081,7 @@
 #amal-powers-panel button.wide{grid-column:1/-1;background:rgba(255,255,255,.08);text-align:center}
 #amal-powers-toast{position:fixed;left:50%;top:16%;transform:translateX(-50%) translateY(-8px);z-index:2147483000;padding:10px 16px;border-radius:14px;background:rgba(0,0,0,.85);color:#fff;font:800 14px/1 system-ui,sans-serif;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:90vw}
 #amal-powers-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#amal-powers-quick{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2147482985;display:flex;gap:7px;padding:8px;border-radius:18px;background:rgba(8,6,4,.82);backdrop-filter:blur(8px);box-shadow:0 10px 28px rgba(0,0,0,.4);max-width:96vw}
+#amal-powers-quick,#amal-admin-things{display:none!important}
 #amal-powers-quick button{border:0;border-radius:14px;padding:10px 11px;font:800 12px/1 system-ui,sans-serif;cursor:pointer;color:#111;background:linear-gradient(135deg,#fde68a,#f59e0b);white-space:nowrap}
 #amal-powers-quick button:nth-child(1){background:linear-gradient(135deg,#6ee7b7,#10b981)}
 #amal-powers-quick button:nth-child(2){background:linear-gradient(135deg,#93c5fd,#3b82f6);color:#eff6ff}
@@ -1174,18 +1174,8 @@
       btn.onclick = () => giveAmount(btn.getAttribute("data-give"));
     });
 
-    let quick = document.getElementById("amal-powers-quick");
-    if (!quick) {
-      quick = document.createElement("div");
-      quick.id = "amal-powers-quick";
-      document.body.appendChild(quick);
-    }
-    quick.innerHTML = (pack.quick || [])
-      .map((q) => `<button type="button" data-aq="${q.id}">${q.label}</button>`)
-      .join("");
-    quick.querySelectorAll("[data-aq]").forEach((btn) => {
-      btn.onclick = () => runAbility(btn.getAttribute("data-aq"));
-    });
+    const leftoverQuick = document.getElementById("amal-powers-quick");
+    if (leftoverQuick) leftoverQuick.remove();
 
     syncUi();
   }
@@ -1222,7 +1212,7 @@
   }
 
   function ensureAdminThingsLib() {
-    injectSharedScript("amal-admin-things.js?v=1", "AmalAdminThings");
+    injectSharedScript("amal-admin-things.js?v=2", "AmalAdminThings");
   }
 
   function ensureFaqLib() {
