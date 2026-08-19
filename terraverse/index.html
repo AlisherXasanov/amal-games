@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
@@ -22,7 +22,8 @@
       }
       .portal-back:hover { background: rgba(0, 0, 0, .85); }
       #root { min-height: 100dvh; }
-      /* Террариум: оверлеи перекрывают мир и дают чёрный экран — прячем кнопки. */
+      /* Террариум: полноэкранный оверлей даёт чёрный экран — прячем его. */
+      #amal-world-root, #amal-world-showpill, #amal-world-dock,
       #amal-powers-quick, #amal-powers-fab, #amal-powers-panel,
       #amal-us-eggs, #amal-us-toast, #amal-cube-btn, #amal-cube-dash,
       #amal-cube-pickup, #amal-chat-fab, #amal-chat-box, #amal-faq-fab,
@@ -37,7 +38,5 @@
     <a class="portal-back" href="../">&larr; Все игры</a>
     <div id="root"></div>
     <script src="./amal-bridge.js?v=6"></script>
-    <script src="../shared/amal-owner-powers.js?v=23"></script>
-    <script src="../shared/amal-hub.js?v=68"></script>
   </body>
 </html>
