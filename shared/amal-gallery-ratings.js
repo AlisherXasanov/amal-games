@@ -5,6 +5,21 @@
   const RATINGS_KEY = "amal-hub-game-ratings-v1";
   const LIKES_KEY = "amal-gallery-likes-v1";
   const BC = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel("amal-gallery-ratings") : null;
+  let starClickBound = false;
+
+  function toast(msg) {
+    ensureCss();
+    let t = document.getElementById("amal-gr-toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "amal-gr-toast";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._h);
+    toast._h = setTimeout(() => t.classList.remove("show"), 2200);
+  }
 
   function storeGet(k, fb) {
     try {
@@ -194,9 +209,9 @@
       .amal-star.pick:hover{transform:scale(1.15)}
       .amal-rating-label{font:800 11px Nunito,sans-serif;color:#0d6e5f}
       .amal-rating-count{font:700 10px Nunito,sans-serif;color:#5a6a62}
-      .amal-rating-owner{font:800 9px Nunito,sans-serif;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em}
-      .amal-rating-panel{position:fixed;inset:0;z-index:99990;display:grid;place-items:center;background:rgba(8,32,24,.55);padding:1rem}
-      .amal-rating-box{width:min(420px,96vw);max-height:80vh;overflow:auto;background:#fffef8;border-radius:18px;padding:1rem;border:2px solid rgba(13,110,95,.2);box-shadow:0 22px 50px rgba(0,0,0,.28)}
+      .amal-rating-owner{font:800 9px Nunito,sans-serif;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;border:0;background:rgba(124,58,237,.1);border-radius:8px;padding:3px 7px;cursor:pointer}
+      .amal-rating-panel{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:rgba(8,32,24,.62);padding:1rem;cursor:default}
+      .amal-rating-box{width:min(420px,96vw);max-height:80vh;overflow:auto;background:#fffef8;border-radius:18px;padding:1rem;border:2px solid rgba(13,110,95,.2);box-shadow:0 22px 50px rgba(0,0,0,.45);cursor:default;position:relative;z-index:1}
       .amal-rating-box h3{margin:0 0 .6rem;font:700 1.05rem Fredoka,Nunito,sans-serif;color:#0d6e5f}
       .amal-rating-vote{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;padding:.45rem 0;border-top:1px dashed rgba(13,110,95,.15)}
       .amal-rating-vote b{font:800 12px Nunito,sans-serif;color:#102018;min-width:4rem}
@@ -205,6 +220,8 @@
       .amal-rating-vote .edit button{border:0;border-radius:6px;padding:2px 6px;font:800 11px Nunito,sans-serif;cursor:pointer;background:rgba(13,110,95,.1);color:#0d6e5f}
       .amal-rating-vote .edit button.cur{background:#f0b429;color:#1a1400}
       .amal-rating-close{margin-top:.75rem;width:100%;border:0;border-radius:12px;padding:.65rem;font:800 14px Nunito,sans-serif;cursor:pointer;background:linear-gradient(135deg,#0d6e5f,#0a5248);color:#f3efe6}
+      #amal-gr-toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:2147483647;padding:10px 16px;border-radius:14px;background:rgba(13,110,95,.95);color:#f3efe6;font:800 14px Nunito,sans-serif;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+      #amal-gr-toast.show{opacity:1}
     `;
     document.head.appendChild(s);
   }
@@ -215,7 +232,7 @@
     const items = loadGallery();
     if (!items.length) {
       host.innerHTML =
-        '<p class="amal-rating-label" style="text-align:center;padding:.5rem">Пока нет рисунков — хозяин может нарисовать в «Галерея ✏️».</p>';
+        '<p class="amal-rating-label" style="text-align:center;padding:.5rem">Пока нет рисунков. Хозяин может нарисовать: кнопка «Галерея» или «Нарисовать» сбоку.</p>';
       return;
     }
     host.innerHTML =
@@ -296,7 +313,16 @@
         body.appendChild(note);
       }
     });
-    document.addEventListener("click", onStarClick, true);
+    if (!starClickBound) {
+      starClickBound = true;
+      document.addEventListener("click", onStarClick, true);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const p = document.getElementById("amal-rating-panel");
+          if (p) p.remove();
+        }
+      });
+    }
   }
 
   function onStarClick(e) {
@@ -304,11 +330,12 @@
     if (star) {
       e.preventDefault();
       e.stopPropagation();
-      const gid = star.getAttribute("data-game") || star.closest("[data-game-id]")?.getAttribute("data-game-id");
+      const gid = star.getAttribute("data-game") || (star.closest("[data-game-id]") && star.closest("[data-game-id]").getAttribute("data-game-id"));
       if (!gid) return;
       const s = parseInt(star.getAttribute("data-star"), 10);
       rateGame(gid, s);
       refreshCard(gid);
+      toast("Спасибо! Ты поставил " + s + " ★");
       return;
     }
     const admin = e.target.closest("[data-admin-rating]");
@@ -337,6 +364,8 @@
 
   function openOwnerPanel(gameId) {
     ensureCss();
+    const sov = document.getElementById("amal-throne-sovereign");
+    if (sov) sov.classList.remove("on");
     const old = document.getElementById("amal-rating-panel");
     if (old) old.remove();
     const st = statsForGame(gameId);
@@ -387,7 +416,12 @@
       votesHtml +
       '<button type="button" class="amal-rating-close">Закрыть</button></div>';
     el.addEventListener("click", (ev) => {
-      if (ev.target === el || ev.target.classList.contains("amal-rating-close")) el.remove();
+      if (ev.target === el || ev.target.classList.contains("amal-rating-close")) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        el.remove();
+        return;
+      }
       const set = ev.target.closest("[data-set]");
       if (set) {
         const voteEl = set.closest("[data-vote]");
@@ -437,7 +471,11 @@
     renderGallery,
   };
 
-  const boot = () => mount();
+  const boot = () => {
+    mount();
+    if (window.AmalHub) return;
+    setTimeout(mount, 400);
+  };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
