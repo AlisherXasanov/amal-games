@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Галерея рисунков · Amal Games</title>
+  <meta name="description" content="Нарисуй картинку — гости увидят на главной и смогут оценить." />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --teal:#0d6e5f; --amber:#f0b429; --coral:#e25a3c; --ink:#102018; --muted:#5a6a62; }
+    body {
+      font-family: Nunito, system-ui, sans-serif; color: var(--ink);
+      min-height: 100dvh; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: .85rem;
+      background: linear-gradient(165deg, #e8f4ef, #d5e4dc);
+    }
+    [hidden] { display: none !important; }
+    h1 { font-family: Fredoka, Nunito, sans-serif; color: var(--teal); font-size: clamp(1.4rem, 4vw, 2rem); text-align: center; }
+    .sub { text-align: center; color: var(--muted); font-weight: 700; font-size: .92rem; max-width: 34rem; }
+    .pad-wrap { width: min(680px, 100%); background: #fffef8; border-radius: 18px; padding: .8rem; border: 1px solid rgba(13,110,95,.2); box-shadow: 0 12px 30px rgba(16,40,32,.1); }
+    .title-in { width: 100%; margin-bottom: .55rem; min-height: 42px; border: 1px solid rgba(13,110,95,.25); border-radius: 12px; padding: 0 .75rem; font: 700 15px Nunito, sans-serif; }
+    .pad { position: relative; width: 100%; aspect-ratio: 4/3; border: 2px dashed rgba(13,110,95,.35); border-radius: 12px; overflow: hidden; touch-action: none; background: #fff; }
+    .pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
+    .pad .hint { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(13,110,95,.35); font: 700 1.4rem Nunito, sans-serif; pointer-events: none; }
+    .pad.drawn .hint { opacity: 0; }
+    .tools { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-top: .65rem; }
+    .colors button, .sizes button { border-radius: 50%; width: 30px; height: 30px; border: 2px solid rgba(0,0,0,.12); cursor: pointer; }
+    .sizes button { border-radius: 9px; width: auto; min-width: 34px; font-weight: 800; color: var(--teal); background: #fff; }
+    .colors button.active, .sizes button.active { box-shadow: 0 0 0 3px rgba(13,110,95,.25); }
+    .actions { display: flex; flex-wrap: wrap; gap: .5rem; width: min(680px, 100%); }
+    .actions button, .actions a { flex: 1 1 auto; min-height: 48px; border: 0; border-radius: 13px; font: 800 14px Nunito, sans-serif; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .btn-save { background: linear-gradient(135deg, var(--teal), #0a5248); color: #f3efe6; }
+    .btn-clear { background: #fff; color: var(--coral); border: 1px solid rgba(226,90,60,.35); }
+    .btn-back { background: rgba(255,255,255,.9); color: var(--teal); border: 1px solid rgba(13,110,95,.2); }
+    .saved-list { width: min(680px, 100%); display: grid; gap: .5rem; }
+    .saved-item { display: flex; align-items: center; gap: .65rem; background: rgba(255,255,255,.85); border-radius: 12px; padding: .45rem .55rem; border: 1px solid rgba(13,110,95,.15); }
+    .saved-item img { width: 72px; height: 54px; object-fit: contain; background: #fff; border-radius: 8px; }
+    .saved-item span { flex: 1; font: 700 13px Nunito, sans-serif; }
+    .saved-item button { border: 0; background: rgba(226,90,60,.12); color: var(--coral); border-radius: 8px; padding: 6px 10px; font: 800 11px Nunito, sans-serif; cursor: pointer; }
+    .lock { display: grid; place-items: center; flex: 1; width: min(420px, 100%); }
+    .lock-card { background: #fffef8; border-radius: 18px; padding: 1.5rem; text-align: center; display: flex; flex-direction: column; gap: .65rem; border: 1px solid rgba(13,110,95,.2); }
+    .lock-card input { min-height: 44px; border-radius: 12px; border: 1px solid rgba(13,110,95,.3); padding: 0 .75rem; font: 700 15px Nunito, sans-serif; text-align: center; }
+    .lock-card button { min-height: 44px; border: 0; border-radius: 12px; background: linear-gradient(135deg, var(--teal), #0a5248); color: #f3efe6; font: 800 15px Nunito, sans-serif; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="lock" id="lock" hidden>
+    <div class="lock-card">
+      <div style="font-size:2.5rem">🎨🔒</div>
+      <h2>Только для Амаля</h2>
+      <p>Рисовать в галерею может только хозяин.</p>
+      <input id="lockCode" type="password" placeholder="код хозяина" autocomplete="off" />
+      <button type="button" id="lockGo">Войти</button>
+      <a href="./index.html" style="color:var(--teal);font-weight:800">← На сайт</a>
+    </div>
+  </div>
+
+  <div id="app" hidden style="display:contents">
+    <h1>🎨 Галерея рисунков</h1>
+    <p class="sub">Нарисуй немного — картинка появится на главной. Гости смотрят и ставят ❤️.</p>
+
+    <div class="pad-wrap">
+      <input class="title-in" id="titleIn" type="text" maxlength="40" placeholder="Название (необязательно)" />
+      <div class="pad" id="pad">
+        <canvas id="cv"></canvas>
+        <div class="hint">рисуй здесь</div>
+      </div>
+      <div class="tools">
+        <div class="colors" id="colors">
+          <button data-color="#102018" style="background:#102018" class="active"></button>
+          <button data-color="#0d6e5f" style="background:#0d6e5f"></button>
+          <button data-color="#e25a3c" style="background:#e25a3c"></button>
+          <button data-color="#2563eb" style="background:#2563eb"></button>
+          <button data-color="#f0b429" style="background:#f0b429"></button>
+          <button data-color="#7c3aed" style="background:#7c3aed"></button>
+        </div>
+        <div class="sizes" id="sizes">
+          <button data-size="3">•</button>
+          <button data-size="6" class="active">●</button>
+          <button data-size="12">⬤</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-clear" id="btnClear">🧹 Стереть</button>
+      <button type="button" class="btn-save" id="btnSave">✅ Показать на сайте</button>
+      <a class="btn-back" href="./index.html">← На сайт</a>
+    </div>
+
+    <div class="saved-list" id="savedList"></div>
+  </div>
+
+  <script src="./shared/amal-gallery-ratings.js?v=1"></script>
+  <script>
+    (() => {
+      const OWNER_CODE = "AmalOwner2026";
+      function isOwner() {
+        return window.AmalGalleryRatings && AmalGalleryRatings.isOwner();
+      }
+      const lock = document.getElementById("lock");
+      const app = document.getElementById("app");
+      if (!isOwner()) {
+        lock.hidden = false;
+        const code = document.getElementById("lockCode");
+        document.getElementById("lockGo").addEventListener("click", () => {
+          if (code.value.trim() === OWNER_CODE) {
+            localStorage.setItem("amal-owner-v1", "1");
+            location.reload();
+          } else code.value = "";
+        });
+        code.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("lockGo").click(); });
+        return;
+      }
+      app.hidden = false;
+
+      const pad = document.getElementById("pad");
+      const cv = document.getElementById("cv");
+      const ctx = cv.getContext("2d", { willReadFrequently: true });
+      let color = "#102018", size = 6, drawing = false, last = null, dirty = false;
+      const dpr = Math.max(1, Math.min(3, devicePixelRatio || 1));
+
+      function resize() {
+        const prev = dirty ? cv.toDataURL() : null;
+        const rect = pad.getBoundingClientRect();
+        cv.width = Math.round(rect.width * dpr);
+        cv.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.lineJoin = ctx.lineCap = "round";
+        if (prev) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height); img.src = prev; }
+      }
+      window.addEventListener("resize", resize);
+
+      function pos(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+      function dot(p) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(p.x, p.y, size / 2, 0, Math.PI * 2); ctx.fill(); }
+      cv.addEventListener("pointerdown", (e) => { drawing = true; last = pos(e); dot(last); if (!dirty) { dirty = true; pad.classList.add("drawn"); } e.preventDefault(); });
+      cv.addEventListener("pointermove", (e) => {
+        if (!drawing) return;
+        const p = pos(e);
+        ctx.strokeStyle = color; ctx.lineWidth = size;
+        ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+        last = p; e.preventDefault();
+      });
+      window.addEventListener("pointerup", () => { drawing = false; last = null; });
+
+      document.getElementById("colors").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-color]"); if (!b) return;
+        color = b.getAttribute("data-color");
+        document.querySelectorAll("#colors button").forEach((x) => x.classList.toggle("active", x === b));
+      });
+      document.getElementById("sizes").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-size]"); if (!b) return;
+        size = parseInt(b.getAttribute("data-size"), 10);
+        document.querySelectorAll("#sizes button").forEach((x) => x.classList.toggle("active", x === b));
+      });
+      document.getElementById("btnClear").addEventListener("click", () => {
+        ctx.clearRect(0, 0, cv.width, cv.height); dirty = false; pad.classList.remove("drawn");
+      });
+
+      function trimmedPng() {
+        const w = cv.width, h = cv.height;
+        const data = ctx.getImageData(0, 0, w, h).data;
+        let minX = w, minY = h, maxX = -1, maxY = -1;
+        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+          if (data[(y * w + x) * 4 + 3] > 8) {
+            if (x < minX) minX = x; if (x > maxX) maxX = x;
+            if (y < minY) minY = y; if (y > maxY) maxY = y;
+          }
+        }
+        if (maxX < 0) return null;
+        const p = Math.round(8 * dpr);
+        minX = Math.max(0, minX - p); minY = Math.max(0, minY - p);
+        maxX = Math.min(w - 1, maxX + p); maxY = Math.min(h - 1, maxY + p);
+        const ow = maxX - minX + 1, oh = maxY - minY + 1;
+        const out = document.createElement("canvas");
+        out.width = ow; out.height = oh;
+        out.getContext("2d").drawImage(cv, minX, minY, ow, oh, 0, 0, ow, oh);
+        return out.toDataURL("image/png");
+      }
+
+      function renderList() {
+        const host = document.getElementById("savedList");
+        const items = AmalGalleryRatings.loadGallery();
+        if (!items.length) { host.innerHTML = ""; return; }
+        host.innerHTML = "<p style='font:800 12px Nunito,sans-serif;color:#0d6e5f;text-align:center'>На сайте сейчас:</p>" +
+          items.map((it) =>
+            '<div class="saved-item"><img src="' + it.png + '" alt="" /><span>' + (it.title || "Рисунок") +
+            '</span><button type="button" data-del="' + it.id + '">Убрать</button></div>'
+          ).join("");
+        host.querySelectorAll("[data-del]").forEach((b) => {
+          b.addEventListener("click", () => {
+            AmalGalleryRatings.deleteGalleryItem(b.getAttribute("data-del"));
+            renderList();
+          });
+        });
+      }
+
+      document.getElementById("btnSave").addEventListener("click", () => {
+        if (!dirty) { alert("Сначала нарисуй 🙂"); return; }
+        const png = trimmedPng();
+        if (!png) { alert("Холст пустой"); return; }
+        AmalGalleryRatings.saveGalleryItem({
+          png,
+          title: document.getElementById("titleIn").value.trim() || "Рисунок Amal",
+        });
+        alert("✅ На главной! Гости увидят и смогут поставить ❤️");
+        location.href = "./index.html";
+      });
+
+      resize();
+      renderList();
+    })();
+  </script>
+</body>
+</html>

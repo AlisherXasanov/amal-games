@@ -1043,6 +1043,7 @@
       <a class="primary" href="create-lab/game.html">✨ Создать игру</a>
       <a href="create-lab/comic.html">📖 Комикс</a>
       <a href="create-lab/">Create Lab</a>
+      <a href="gallery.html" id="galleryLinkTop" hidden>🎨 Галерея</a>
       <a href="apps/#faq">Приложения 🔒</a>
     </div>
     <p class="hint">Новое: <strong>своя игра</strong> за минуту · маленький комикс · ник 📝 в любой игре.</p>
@@ -1061,6 +1062,11 @@
   </section>
 
   </header>
+
+  <p class="section-title">Галерея Amal · смотри и оцени</p>
+  <div class="amal-gallery-wrap">
+    <div id="amal-gallery-grid"></div>
+  </div>
 
   <aside class="side-cube" aria-label="Куб лаборатории">
     <div class="amal-sign side-cube-sign"><span class="by">автор</span>Amal ✍️</div>
@@ -1141,6 +1147,7 @@
     <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
     <button type="button" class="side-cube-comic" id="summonGhostBtn" style="background:linear-gradient(135deg,#7c3aed,#00a8c7)">👻 Вызвать глитч-куб</button>
     <button type="button" class="side-cube-comic" id="cubeComicBtn">📖 Комикс о кубе</button>
+    <a class="side-cube-comic" id="galleryLink" hidden href="./gallery.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff">🎨 Нарисовать</a>
     <a class="side-cube-comic" id="signLink" hidden href="./sign.html" style="text-align:center;text-decoration:none;background:linear-gradient(135deg,#f0b429,#e25a3c);color:#1a1400">✍️ Моя подпись</a>
   </aside>
 
@@ -2016,7 +2023,11 @@
         } catch (_) { return false; }
       })();
       const signLink = document.getElementById("signLink");
+      const galleryLink = document.getElementById("galleryLink");
+      const galleryLinkTop = document.getElementById("galleryLinkTop");
       if (signLink && owner) { signLink.hidden = false; signLink.style.display = "block"; }
+      if (galleryLink && owner) { galleryLink.hidden = false; galleryLink.style.display = "block"; }
+      if (galleryLinkTop && owner) { galleryLinkTop.hidden = false; galleryLinkTop.style.display = ""; }
 
       let sign = null;
       try { sign = JSON.parse(localStorage.getItem(SIGN_KEY) || "null"); } catch (_) { /* ignore */ }
@@ -2198,6 +2209,7 @@
   <script src="./shared/amal-random-surprise.js?v=4" defer></script>
   <script src="./shared/amal-secret-dream.js?v=2" defer></script>
   <script src="./shared/amal-hub.js?v=68" defer></script>
+  <script src="./shared/amal-gallery-ratings.js?v=1" defer></script>
   <script src="./shared/amal-world-character.js?v=37" defer></script>
 </body>
 </html>
