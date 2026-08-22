@@ -1271,6 +1271,8 @@
     giveAmount,
     packFor,
     flags,
+    /** Обычный max куба/панели НЕ включает Трон — только AmalThrone. */
+    throneActive: () => !!(global.__AMAL_THRONE__ || (global.AmalThrone && AmalThrone.active && AmalThrone.active())),
   };
   boot();
 })(typeof window !== "undefined" ? window : globalThis);

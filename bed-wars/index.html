@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Bed Wars — 3D команда онлайн | Amal Games</title>
+  <meta name="description" content="Bed Wars на Amal Games: 3D команда, магазин, стены и кровать. Играй бесплатно в браузере без скачивания." />
+  <meta name="keywords" content="Bed Wars, Amal Games, браузерная игра, 3D игра онлайн" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/bed-wars/" />
+  <meta property="og:title" content="Bed Wars — Amal Games" />
+  <meta property="og:description" content="3D Bed Wars в браузере: команда, магазин, защита кровати." />
+  <meta property="og:url" content="https://alisherxasanov.github.io/amal-games/bed-wars/" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=12" />
+  <style>
+    #amal-world-root,#amal-world-canvas,#amal-world-dock{display:none!important}
+    #amal-hub-root,#amal-cube-dash,#amal-cube-btn,#amal-throne-sovereign,#amal-throne-fab{display:none!important}
+    #amal-powers-fab,#amal-powers-panel,#amal-powers-give{display:none!important}
+    body.amal-throne-absolute::before,body.amal-throne-rewrite::before{display:none!important}
+  </style>
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+  <div id="app"></div>
+  <script>window.__AMAL_THRONE_QUIET__ = true;</script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script src="../shared/amal-owner-powers.js?v=23"></script>
+  <script src="../shared/amal-throne.js?v=4"></script>
+  <script type="module">
+    import("./game.js?v=16").catch((e) => {
+      const app = document.getElementById("app");
+      const msg = e && e.message ? e.message : String(e);
+      if (app) app.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100dvh;padding:24px;text-align:center;font:800 16px/1.5 Nunito,sans-serif;color:#fff;background:linear-gradient(180deg,#6ec8ef,#2563eb)">' +
+        '<div><h1 style="font-size:2rem;margin:0 0 12px">Bed Wars</h1><p>3D не загрузилось (нет интернета для Three.js?).</p>' +
+        '<p style="opacity:.85;margin-top:12px">' + msg + '</p></div></div>';
+      console.error(e);
+    });
+  </script>
+</body>
+</html>

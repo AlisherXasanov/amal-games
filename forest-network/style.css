@@ -1,0 +1,20 @@
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0a1a10;color:#ecfdf5;font-family:system-ui,Segoe UI,sans-serif;user-select:none;-webkit-tap-highlight-color:transparent}
+.portal-back{position:fixed;top:10px;right:10px;z-index:50;padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.55);color:#fff;text-decoration:none;font:800 13px/1 system-ui,sans-serif}
+#app{position:fixed;inset:0}
+canvas{display:block;width:100%;height:100%;touch-action:none;background:#07140c}
+.hud{position:fixed;top:10px;left:10px;z-index:30;display:flex;flex-wrap:wrap;gap:6px;max-width:min(420px,70vw)}
+.hud .chip{background:rgba(6,28,16,.88);border:1px solid rgba(134,239,172,.45);border-radius:10px;padding:6px 10px;font:800 12px/1.2 system-ui,sans-serif}
+.shop{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:35;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:96vw}
+.shop button,.overlay .btn{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font:800 13px/1.15 system-ui,sans-serif;color:#052e16;background:linear-gradient(135deg,#86efac,#22c55e);box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.shop button:disabled{opacity:.45}
+.shop button.active{outline:2px solid #fde68a}
+.overlay{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;background:rgba(4,16,8,.82);padding:16px}
+.overlay.hidden{display:none}
+.panel{background:linear-gradient(160deg,#052e16,#166534);border:1px solid rgba(134,239,172,.5);border-radius:18px;padding:22px 20px;max-width:min(440px,94vw);text-align:center}
+.panel h1{font-size:clamp(20px,4vw,28px);margin-bottom:8px}
+.panel p{color:#bbf7d0;font-size:14px;line-height:1.45;margin-bottom:14px}
+.panel .btn{display:inline-block;margin:4px;min-width:140px}
+.toast{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:45;background:rgba(6,28,16,.92);border:1px solid #86efac;padding:10px 16px;border-radius:12px;font:800 14px system-ui,sans-serif;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.hint{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:32;font:800 12px system-ui,sans-serif;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:10px;pointer-events:none;max-width:92vw;text-align:center}
