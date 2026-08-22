@@ -6366,6 +6366,7 @@
 
   function ensureWorldCharacterLib() {
     try {
+      if (global.__AMAL_NO_WORLD__) return;
       if (global.AmalWorld) return;
       if (document.querySelector('script[src*="amal-world-character.js"]')) return;
       var s = document.createElement("script");

@@ -210,6 +210,17 @@
     }
   }
 
+  function isCatalogPage() {
+    var id = gameId();
+    return !id || id === "portal";
+  }
+
+  function shouldRunWorld() {
+    if (global.__AMAL_NO_WORLD__) return false;
+    if (isCatalogPage()) return false;
+    return isOwner();
+  }
+
   function gameList() {
     var list = [];
     try {
@@ -2503,11 +2514,13 @@
     var dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     try {
-      if (isOwner() && ui.root) {
+      if (shouldRunWorld() && ui.root) {
         updateHero(dt);
         updateBoss(dt);
         updateLeaves(dt);
         drawFrame();
+      } else if (ui.root) {
+        ui.root.style.display = "none";
       }
     } catch (err) {
       try {
@@ -2571,7 +2584,7 @@
 
   function boot() {
     if (booted) return;
-    if (!isOwner()) return;
+    if (!shouldRunWorld()) return;
     booted = true;
     load();
     // Пушка никогда не «залипает» между входами — иначе она перехватывает все клики.
@@ -2598,9 +2611,11 @@
     handleArrival();
     // Память: восстанавливаем то, что владелец включал раньше.
     try {
-      if (state.bossOn) {
+      if (state.bossOn && !isCatalogPage()) {
         bossActive = true;
         bossSummonAt(true);
+      } else {
+        bossActive = false;
       }
       if (state.mirror) spawnMirror();
       if (state.beauty) applyBeauty();
