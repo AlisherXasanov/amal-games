@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Шторм Разломов — новая арена · Amal Games</title>
+  <meta name="description" content="Шторм Разломов: арена с 4 способностями, комбо-взрывы и волны монстров из разлома. Не зомби, не площадка — новая игра." />
+  <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/rift-storm/" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+  <div id="app">
+    <canvas id="c"></canvas>
+    <div class="hud" id="hud" hidden>
+      <div class="hud-top">
+        <span class="hud-pill" id="hpPill">❤️ 100</span>
+        <span class="hud-pill" id="wavePill">🌊 Волна 1</span>
+        <span class="hud-pill" id="scorePill">⚡ 0</span>
+        <span class="hud-pill warn" id="comboPill">Комбо ×0</span>
+      </div>
+    </div>
+    <div class="combo-flash" id="comboFlash"></div>
+    <div class="abilities" id="abilities" hidden>
+      <button type="button" class="ab pulse" data-ab="pulse"><span class="key">Space</span>💥</button>
+      <button type="button" class="ab chain" data-ab="chain"><span class="key">E</span>⚡</button>
+      <button type="button" class="ab blink" data-ab="blink"><span class="key">Q</span>🌀</button>
+      <button type="button" class="ab bubble" data-ab="bubble"><span class="key">R</span>🫧</button>
+    </div>
+    <div class="overlay" id="menu">
+      <div class="panel">
+        <h1>🌌 Шторм Разломов</h1>
+        <p class="tag">Новая арена · 4 способности · комбо · волны<br>Это не зомби и не площадка — совсем другой бой.</p>
+        <ul>
+          <li><b>WASD</b> — бег · <b>мышь</b> — стрелять лучом</li>
+          <li><b>Space</b> 💥 Импульс — отбрасывает всех вокруг</li>
+          <li><b>E</b> ⚡ Цепь — молния прыгает по врагам</li>
+          <li><b>Q</b> 🌀 Шаг — телепорт + взрыв на старом месте</li>
+          <li><b>R</b> 🫧 Пузырь — замедляет врагов в круге</li>
+          <li>Комбо: <b>Цепь → Импульс</b> = мега-взрыв ⚡💥</li>
+        </ul>
+        <button type="button" id="btnStart">▶ Играть</button>
+      </div>
+    </div>
+    <div class="overlay hidden" id="upgrade">
+      <div class="panel">
+        <h1>⬆ Усиление</h1>
+        <p class="tag">Волна пройдена! Выбери одно улучшение:</p>
+        <div class="upgrade-row" id="upgradeRow"></div>
+      </div>
+    </div>
+    <div class="overlay hidden" id="gameover">
+      <div class="panel">
+        <h1>Разлом поглотил...</h1>
+        <p class="tag" id="goText">Счёт: 0 · Волна: 1</p>
+        <button type="button" id="btnRetry">🔄 Ещё раз</button>
+        <button type="button" class="ghost" id="btnMenu">← Меню</button>
+      </div>
+    </div>
+  </div>
+  <script>window.__AMAL_THRONE_QUIET__ = true;</script>
+  <script src="../shared/amal-owner-powers.js?v=23"></script>
+  <script src="../shared/amal-throne.js?v=4"></script>
+  <script src="./game.js?v=1"></script>
+  <script src="../shared/amal-hub.js?v=68"></script>
+</body>
+</html>
