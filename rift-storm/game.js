@@ -480,6 +480,11 @@
     running = true;
     paused = false;
     resetRun();
+    const hint = document.getElementById("playHint");
+    if (hint) {
+      hint.classList.remove("hide");
+      setTimeout(() => hint.classList.add("hide"), 9000);
+    }
   }
 
   function endGame() {
