@@ -242,12 +242,11 @@
 body.amal-throne-cubes-down #amal-cube-dash,
 body.amal-throne-cubes-down #amal-cube-btn,
 body.amal-throne-cubes-down #amal-cube-pickup,
-body.amal-throne-cubes-down .side-cube,
-body.amal-throne-cubes-down .side-cube-duo,
 body.amal-throne-cubes-down #amal-glitch-ghost,
 body.amal-throne-cubes-down #amal-glitch-catch{
   display:none !important;visibility:hidden !important;pointer-events:none !important;
 }
+/* Куб на главном меню (.side-cube) НЕ прячем — там клон, быстрые игры и сила */
 body.amal-throne-rewrite,body.amal-throne-absolute{
   filter:saturate(1.4) contrast(1.1);
 }
@@ -341,12 +340,26 @@ body.amal-throne-absolute::after{
     }
   }
 
+  function isHubPage() {
+    try {
+      const p = String(location.pathname || "").replace(/\\/g, "/");
+      if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/i.test(p)) return true;
+      if (/\/games\/?$/.test(p) || /\/games\/index\.html$/i.test(p)) return true;
+      if (p === "/" || p === "/index.html") return true;
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   function setCubesSuppressed(on) {
     try {
       localStorage.setItem(STORAGE_SUPPRESS, on ? "1" : "0");
     } catch (_) {}
-    document.body.classList.toggle("amal-throne-cubes-down", !!on);
-    if (on) {
+    // На главной куб меню всегда виден (клон, быстрые игры). Подавление — только в играх.
+    const hide = !!on && !isHubPage();
+    document.body.classList.toggle("amal-throne-cubes-down", hide);
+    if (hide) {
       ["amal-cube-dash", "amal-cube-btn", "amal-glitch-catch", "amal-glitch-ghost"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = "none";
@@ -498,7 +511,7 @@ body.amal-throne-absolute::after{
       state.rewrite = true;
       document.body.classList.add("amal-throne-rewrite");
       banner(id === "throne-absolute" ? "☀ АБСОЛЮТ АМАЛЯ · ×" + ABSOLUTE_MULT : "☀ ВОЗНЕСЕНИЕ");
-      toast("Сила, которую нельзя купить · кубы ниже тебя");
+      toast("Сила, которую нельзя купить · абсолют активен");
       emit({
         ascend: true,
         absolute: true,

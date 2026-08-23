@@ -1,67 +1,67 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Шторм Разломов — новая арена · Amal Games</title>
-  <meta name="description" content="Шторм Разломов: арена с 4 способностями, комбо-взрывы и волны монстров из разлома. Не зомби, не площадка — новая игра." />
+  <title>РЁС‚РѕСЂРј Р Р°Р·Р»РѕРјРѕРІ вЂ” РЅРѕРІР°СЏ Р°СЂРµРЅР° В· Amal Games</title>
+  <meta name="description" content="РЁС‚РѕСЂРј Р Р°Р·Р»РѕРјРѕРІ: Р°СЂРµРЅР° СЃ 4 СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЏРјРё, РєРѕРјР±Рѕ-РІР·СЂС‹РІС‹ Рё РІРѕР»РЅС‹ РјРѕРЅСЃС‚СЂРѕРІ РёР· СЂР°Р·Р»РѕРјР°. РќРµ Р·РѕРјР±Рё, РЅРµ РїР»РѕС‰Р°РґРєР° вЂ” РЅРѕРІР°СЏ РёРіСЂР°." />
   <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/rift-storm/" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css?v=1" />
 </head>
 <body>
-  <a class="portal-back" href="../">&larr; Все игры</a>
+  <a class="portal-back" href="../">&larr; Р’СЃРµ РёРіСЂС‹</a>
   <div id="app">
     <canvas id="c"></canvas>
     <div class="hud" id="hud" hidden>
       <div class="hud-top">
-        <span class="hud-pill" id="hpPill">❤️ 100</span>
-        <span class="hud-pill" id="wavePill">🌊 Волна 1</span>
-        <span class="hud-pill" id="scorePill">⚡ 0</span>
-        <span class="hud-pill warn" id="comboPill">Комбо ×0</span>
+        <span class="hud-pill" id="hpPill">вќ¤пёЏ 100</span>
+        <span class="hud-pill" id="wavePill">рџЊЉ Р’РѕР»РЅР° 1</span>
+        <span class="hud-pill" id="scorePill">вљЎ 0</span>
+        <span class="hud-pill warn" id="comboPill">РљРѕРјР±Рѕ Г—0</span>
       </div>
     </div>
     <div class="combo-flash" id="comboFlash"></div>
-    <div class="play-hint" id="playHint">WASD — бег · мышь — стрельба · кнопки снизу — силы</div>
+    <div class="play-hint" id="playHint">WASD вЂ” Р±РµРі В· РјС‹С€СЊ вЂ” СЃС‚СЂРµР»СЊР±Р° В· РєРЅРѕРїРєРё СЃРЅРёР·Сѓ вЂ” СЃРёР»С‹</div>
     <div class="abilities" id="abilities" hidden>
-      <button type="button" class="ab pulse" data-ab="pulse"><span class="key">Space</span>💥</button>
-      <button type="button" class="ab chain" data-ab="chain"><span class="key">E</span>⚡</button>
-      <button type="button" class="ab blink" data-ab="blink"><span class="key">Q</span>🌀</button>
-      <button type="button" class="ab bubble" data-ab="bubble"><span class="key">R</span>🫧</button>
+      <button type="button" class="ab pulse" data-ab="pulse"><span class="key">Space</span>рџ’Ґ</button>
+      <button type="button" class="ab chain" data-ab="chain"><span class="key">E</span>вљЎ</button>
+      <button type="button" class="ab blink" data-ab="blink"><span class="key">Q</span>рџЊЂ</button>
+      <button type="button" class="ab bubble" data-ab="bubble"><span class="key">R</span>рџ«§</button>
     </div>
     <div class="overlay" id="menu">
       <div class="panel">
-        <h1>🌌 Шторм Разломов</h1>
-        <p class="tag"><b>Новая игра</b> — не зомби, не площадка, не Reimu.<br>Один герой. Четыре супер-силы. Волны монстров.</p>
+        <h1>рџЊЊ РЁС‚РѕСЂРј Р Р°Р·Р»РѕРјРѕРІ</h1>
+        <p class="tag"><b>РќРѕРІР°СЏ РёРіСЂР°</b> вЂ” РЅРµ Р·РѕРјР±Рё, РЅРµ РїР»РѕС‰Р°РґРєР°, РЅРµ Reimu.<br>РћРґРёРЅ РіРµСЂРѕР№. Р§РµС‚С‹СЂРµ СЃСѓРїРµСЂ-СЃРёР»С‹. Р’РѕР»РЅС‹ РјРѕРЅСЃС‚СЂРѕРІ.</p>
         <ul>
-          <li><b>1.</b> WASD — бегай по арене</li>
-          <li><b>2.</b> Мышь — стреляешь сам (луч идёт к курсору)</li>
-          <li><b>3.</b> Кнопки снизу или Space E Q R — супер-способности</li>
-          <li><b>4.</b> Убей всех → выбери усиление → следующая волна</li>
-          <li><b>Комбо:</b> E потом Space = большой взрыв 💥</li>
+          <li><b>1.</b> WASD вЂ” Р±РµРіР°Р№ РїРѕ Р°СЂРµРЅРµ</li>
+          <li><b>2.</b> РњС‹С€СЊ вЂ” СЃС‚СЂРµР»СЏРµС€СЊ СЃР°Рј (Р»СѓС‡ РёРґС‘С‚ Рє РєСѓСЂСЃРѕСЂСѓ)</li>
+          <li><b>3.</b> РљРЅРѕРїРєРё СЃРЅРёР·Сѓ РёР»Рё Space E Q R вЂ” СЃСѓРїРµСЂ-СЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё</li>
+          <li><b>4.</b> РЈР±РµР№ РІСЃРµС… в†’ РІС‹Р±РµСЂРё СѓСЃРёР»РµРЅРёРµ в†’ СЃР»РµРґСѓСЋС‰Р°СЏ РІРѕР»РЅР°</li>
+          <li><b>РљРѕРјР±Рѕ:</b> E РїРѕС‚РѕРј Space = Р±РѕР»СЊС€РѕР№ РІР·СЂС‹РІ рџ’Ґ</li>
         </ul>
-        <button type="button" id="btnStart">▶ Начать — волна 1</button>
+        <button type="button" id="btnStart">в–¶ РќР°С‡Р°С‚СЊ вЂ” РІРѕР»РЅР° 1</button>
       </div>
     </div>
     <div class="overlay hidden" id="upgrade">
       <div class="panel">
-        <h1>⬆ Усиление</h1>
-        <p class="tag">Волна пройдена! Выбери одно улучшение:</p>
+        <h1>в¬† РЈСЃРёР»РµРЅРёРµ</h1>
+        <p class="tag">Р’РѕР»РЅР° РїСЂРѕР№РґРµРЅР°! Р’С‹Р±РµСЂРё РѕРґРЅРѕ СѓР»СѓС‡С€РµРЅРёРµ:</p>
         <div class="upgrade-row" id="upgradeRow"></div>
       </div>
     </div>
     <div class="overlay hidden" id="gameover">
       <div class="panel">
-        <h1>Разлом поглотил...</h1>
-        <p class="tag" id="goText">Счёт: 0 · Волна: 1</p>
-        <button type="button" id="btnRetry">🔄 Ещё раз</button>
-        <button type="button" class="ghost" id="btnMenu">← Меню</button>
+        <h1>Р Р°Р·Р»РѕРј РїРѕРіР»РѕС‚РёР»...</h1>
+        <p class="tag" id="goText">РЎС‡С‘С‚: 0 В· Р’РѕР»РЅР°: 1</p>
+        <button type="button" id="btnRetry">рџ”„ Р•С‰С‘ СЂР°Р·</button>
+        <button type="button" class="ghost" id="btnMenu">в†ђ РњРµРЅСЋ</button>
       </div>
     </div>
   </div>
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
-  <script src="../shared/amal-throne.js?v=4"></script>
+  <script src="../shared/amal-throne.js?v=5"></script>
   <script src="./game.js?v=2"></script>
 </body>
 </html>
