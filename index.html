@@ -217,13 +217,16 @@
       color: var(--muted);
     }
     .card.guest-locked { position: relative; }
+    /* Замок только на картинке — название и описание остаются видны */
+    .card.guest-locked .card-img { position: relative; filter: grayscale(.35) brightness(.9); }
     .card.guest-locked .guest-lock-veil {
       position: absolute; inset: 0; z-index: 2;
       display: grid; place-items: center;
-      background: rgba(15,23,42,.42);
-      font-size: 1.35rem; letter-spacing: .25em;
-      pointer-events: none; border-radius: inherit;
+      background: rgba(15,23,42,.38);
+      font-size: 1.25rem; letter-spacing: .2em;
+      pointer-events: none;
     }
+    .card.guest-locked .play-btn { background: #64748b !important; color: #fff !important; }
     .lab-links {
       margin-top: 0.9rem;
       display: flex;
@@ -1493,7 +1496,10 @@
     </a>
   </div>
 
-  
+  <p class="section-title">3D и черновики · под замком (карточки на месте)</p>
+  <p style="text-align:center;margin:-0.35rem 0 0.7rem;font:600 13px Nunito,sans-serif;color:var(--muted)">Не удалены — просто закрыты для гостей. Хозяин открывает свободно.</p>
+  <div class="grid" id="locked3d" style="margin-bottom:1.2rem"></div>
+
   <p class="section-title">Приложения · под замком для гостей</p>
   <div class="grid" id="lockedApps" style="margin-bottom:1.2rem"></div>
 
@@ -1903,18 +1909,25 @@
           card.classList.toggle("guest-locked", shouldLock);
           let veil = card.querySelector(".guest-lock-veil");
           if (shouldLock) {
-            if (!veil) {
+            const img = card.querySelector(".card-img");
+            if (!veil && img) {
               veil = document.createElement("div");
               veil.className = "guest-lock-veil";
               veil.setAttribute("aria-hidden", "true");
               veil.textContent = "⛓ 🔒 ⛓";
-              card.appendChild(veil);
+              img.appendChild(veil);
             }
             const badge = card.querySelector(".badge");
             if (badge && !badge.dataset.lockBadge) {
               badge.dataset.lockBadge = "1";
               badge.dataset.prevBadge = badge.textContent;
               badge.textContent = "LOCKED";
+            }
+            const btn = card.querySelector(".play-btn");
+            if (btn && !btn.dataset.lockBtn) {
+              btn.dataset.lockBtn = "1";
+              btn.dataset.prevBtn = btn.textContent;
+              btn.textContent = "🔒 Закрыто";
             }
             if (!card.dataset.lockWired) {
               card.dataset.lockWired = "1";
@@ -1926,8 +1939,20 @@
                 }
               });
             }
-          } else if (veil) {
-            veil.remove();
+          } else {
+            if (veil) veil.remove();
+            const badge = card.querySelector(".badge");
+            if (badge && badge.dataset.lockBadge) {
+              badge.textContent = badge.dataset.prevBadge || "Новое";
+              delete badge.dataset.lockBadge;
+              delete badge.dataset.prevBadge;
+            }
+            const btn = card.querySelector(".play-btn");
+            if (btn && btn.dataset.lockBtn) {
+              btn.textContent = btn.dataset.prevBtn || "Играть";
+              delete btn.dataset.lockBtn;
+              delete btn.dataset.prevBtn;
+            }
           }
         });
       }
@@ -2347,11 +2372,24 @@
   <script>
     (() => {
       const games = [
-        { href: "portal-3d/", icon: "⬡", title: "Вся полка 3D", desc: "Obby, Tycoon, Murder Mystery, CraftWorld и черновики — клик: замок или вход для админа.", thumb: "linear-gradient(135deg,#334155,#0d6e5f)" },
-        { href: "obby/", icon: "🏃", title: "Obby", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
-        { href: "tycoon/", icon: "🍕", title: "Pizza Tycoon", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
-        { href: "minecraft/", icon: "⛏️", title: "CraftWorld", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
-        { href: "murder-mystery/", icon: "🔪", title: "Murder Mystery", desc: "Временно недоступна.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
+        { href: "portal-3d/", icon: "⬡", title: "Вся полка 3D", desc: "Все 3D на одной полке. Гостю — замок, хозяину — вход.", thumb: "linear-gradient(135deg,#334155,#0d6e5f)" },
+        { href: "obby/", icon: "🏃", title: "Obby", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#4ade80,#3b82f6)" },
+        { href: "tycoon/", icon: "🍕", title: "Pizza Tycoon", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#fbbf24,#ef4444)" },
+        { href: "minecraft/", icon: "⛏️", title: "CraftWorld", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#3d6ea8,#5a9e3a)" },
+        { href: "murder-mystery/", icon: "🔪", title: "Murder Mystery", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#1a1a2e,#e11d48)" },
+        { href: "tower-defense/", icon: "🏰", title: "Tower Defense", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#16a34a,#1e3a5f)" },
+        { href: "pet-simulator/", icon: "🥚", title: "Pet Simulator", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#d8b4fe,#7dd3fc)" },
+        { href: "flee-facility/", icon: "🏃‍♂️", title: "Flee the Facility", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#111118,#e11d48)" },
+        { href: "build-boat/", icon: "🚢", title: "Build a Boat", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#0ea5e9,#0284c7)" },
+        { href: "hideout/", icon: "🔦", title: "Укрытие", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#334155,#f0b429)" },
+        { href: "adopt-me/", icon: "🐣", title: "Adopt Me Lite", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#f9a8d4,#7dd3fc)" },
+        { href: "blox-fruits/", icon: "🍉", title: "Blox Fruits", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#22c55e,#0ea5e9)" },
+        { href: "brookhaven-rp/", icon: "🏘️", title: "Брукхейвен RP", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#94a3b8,#38bdf8)" },
+        { href: "nights-forest/", icon: "🌲", title: "99 ночей в лесу", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#0f172a,#166534)" },
+        { href: "rivals-arena/", icon: "⚔️", title: "RIVALS Арена", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#ef4444,#7c3aed)" },
+        { href: "grow-garden/", icon: "🌱", title: "Вырасти сад", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#86efac,#65a30d)" },
+        { href: "speed-escape/", icon: "💨", title: "+1 Speed Escape", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#f97316,#eab308)" },
+        { href: "steal-brainrot/", icon: "🧠", title: "Steal a Brainrot", desc: "На месте, под замком для гостей.", thumb: "linear-gradient(135deg,#a855f7,#ec4899)" },
       ];
       const admin = window.Amal3dLock && Amal3dLock.canEnter();
       const host = document.getElementById("locked3d");
@@ -2387,6 +2425,7 @@
         );
       }).join("");
       Amal3dLock.wire(host);
+      if (typeof window.__amalRefreshCatalogStats === "function") window.__amalRefreshCatalogStats();
     })();
   </script>
 
