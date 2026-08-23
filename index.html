@@ -162,16 +162,68 @@
     }
     .games-count {
       display: inline-flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 0.45rem;
+      justify-content: center;
+      gap: 0.35rem 0.75rem;
       margin-top: 1rem;
-      padding: 0.4rem 0.95rem;
-      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      border-radius: 16px;
       background: var(--ink);
       color: var(--mint);
-      font: 800 0.9rem Space Grotesk, Nunito, sans-serif;
+      font: 800 0.88rem Space Grotesk, Nunito, sans-serif;
+      max-width: min(560px, 94vw);
     }
     .games-count strong { color: var(--amber); font-size: 1.05rem; }
+    .games-count .stat-open strong { color: #7ed9b8; }
+    .games-count .stat-lock strong { color: #f0b429; }
+    .games-count .stat-sep { opacity: 0.45; font-weight: 600; }
+    .hub-quick {
+      margin: 0.85rem auto 0;
+      max-width: min(720px, 94vw);
+      padding: 0.7rem 0.85rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(126,217,184,.22), rgba(112,200,240,.18));
+      border: 1px solid rgba(13,110,95,.2);
+      text-align: center;
+    }
+    .hub-quick-title {
+      font: 800 0.72rem Space Grotesk, Nunito, sans-serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.45rem;
+    }
+    .hub-quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: center;
+    }
+    .hub-quick-links a {
+      display: inline-block;
+      padding: 0.4rem 0.75rem;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--ink);
+      font: 800 12px Nunito, sans-serif;
+      text-decoration: none;
+      border: 1px solid rgba(13,110,95,.16);
+    }
+    .hub-quick-links a:hover { background: var(--mint); }
+    .hub-quick-note {
+      margin: 0.45rem 0 0;
+      font: 600 12px/1.35 Nunito, sans-serif;
+      color: var(--muted);
+    }
+    .card.guest-locked { position: relative; }
+    .card.guest-locked .guest-lock-veil {
+      position: absolute; inset: 0; z-index: 2;
+      display: grid; place-items: center;
+      background: rgba(15,23,42,.42);
+      font-size: 1.35rem; letter-spacing: .25em;
+      pointer-events: none; border-radius: inherit;
+    }
     .lab-links {
       margin-top: 0.9rem;
       display: flex;
@@ -775,8 +827,14 @@
       60% { opacity: 1; transform: scale(1.12) rotate(-6deg); filter: blur(0) hue-rotate(0); }
       100% { opacity: 1; transform: scale(1) rotate(0); }
     }
-    .side-cube-count { font: 800 12px Space Grotesk, Nunito, sans-serif; color: var(--teal); }
+    .side-cube-count {
+      font: 800 11px/1.35 Space Grotesk, Nunito, sans-serif;
+      color: var(--teal);
+      text-align: center;
+    }
     .side-cube-count strong { color: var(--coral); }
+    .side-cube-count .open-n { color: #0d6e5f; }
+    .side-cube-count .lock-n { color: #b45309; }
     .side-cube-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
     .side-cube-icons button {
       width: 27px; height: 27px;
@@ -1065,7 +1123,27 @@
     <h1>Amal Games</h1>
     <div class="amal-sign amal-sign-top"><span class="by">автор</span><span class="name">Amal ✍️</span></div>
     <p class="sub">Не просто список игр — лаборатория. Здесь всё, что ты разработал: изучай, запускай, открывай.</p>
-    <p class="games-count" id="games-count">образцов в каталоге: <strong>—</strong></p>
+    <p class="games-count" id="games-count" aria-live="polite">
+      <span class="stat-open">можно играть: <strong id="stat-open">—</strong></span>
+      <span class="stat-sep">·</span>
+      <span class="stat-lock">под замком: <strong id="stat-lock">—</strong></span>
+      <span class="stat-sep">·</span>
+      <span>всего: <strong id="stat-total">—</strong></span>
+    </p>
+    <div class="hub-quick" aria-label="Быстрый вход для всех игроков">
+      <div class="hub-quick-title">⚡ Быстрый вход · для всех игроков</div>
+      <div class="hub-quick-links" id="hubQuickLinks">
+        <a href="rift-storm/">🌌 Шторм Разломов</a>
+        <a href="bed-wars/">🛏️ Bed Wars</a>
+        <a href="animal-hospital/">🐾 Animal Hospital</a>
+        <a href="zombie-vs-plants/">🧟 Зомби vs растения</a>
+        <a href="snake-game/">🐍 Snake</a>
+        <a href="kick-buddy/">🥊 Kick Buddy</a>
+        <a href="create-lab/game.html">✨ Создать игру</a>
+        <a href="create-lab/lab3d.html">🧊 3D Lab</a>
+      </div>
+      <p class="hub-quick-note">Это открытые игры — заходить может любой. Ниже в каталоге видно, сколько ещё под замком.</p>
+    </div>
     <div class="lab-links">
       <a class="primary" href="create-lab/game.html">✨ Создать игру</a>
       <a href="create-lab/comic.html">📖 Комикс</a>
@@ -1171,13 +1249,19 @@
       </div>
       <div class="cube-ab-status" id="cubeAbStatus">Нажми способность — куб применит её и переродится</div>
     </div>
-    <div class="side-cube-count">🎮 Игр: <strong id="menu-games-n">—</strong></div>
-    <div class="side-cube-quick" aria-label="Быстрые игры">
-      <div class="side-cube-quick-title">⚡ Быстрые игры</div>
+    <div class="side-cube-count" id="sideCubeStats">
+      🎮 можно: <strong class="open-n" id="menu-games-open">—</strong>
+      · 🔒 замок: <strong class="lock-n" id="menu-games-lock">—</strong>
+      · всего: <strong id="menu-games-n">—</strong>
+    </div>
+    <div class="side-cube-quick" aria-label="Быстрые игры для всех">
+      <div class="side-cube-quick-title">⚡ Быстрые · для всех</div>
       <a href="rift-storm/">🌌 Шторм Разломов</a>
       <a href="bed-wars/">🛏️ Bed Wars</a>
       <a href="animal-hospital/">🐾 Animal Hospital</a>
       <a href="zombie-vs-plants/">🧟 Зомби vs растения</a>
+      <a href="snake-game/">🐍 Snake</a>
+      <a href="kick-buddy/">🥊 Kick Buddy</a>
       <a href="create-lab/game.html">✨ Создать игру</a>
     </div>
     <button type="button" class="side-cube-comic" id="summonGhostBtn" style="background:linear-gradient(135deg,#7c3aed,#00a8c7)">👻 Вызвать глитч-куб</button>
@@ -1410,7 +1494,7 @@
   </div>
 
   
-  <p class="section-title">Приложения · под замком (тебе открыто)</p>
+  <p class="section-title">Приложения · под замком для гостей</p>
   <div class="grid" id="lockedApps" style="margin-bottom:1.2rem"></div>
 
 
@@ -1748,11 +1832,110 @@
   <footer>&copy; 2026 Amal Games · играй · открывай</footer>
   <script>
     (() => {
-      const n = document.querySelectorAll("a.card[href]").length;
-      const el = document.getElementById("games-count");
-      if (el) el.innerHTML = "образцов в каталоге: <strong>" + n + "</strong>";
-      const mn = document.getElementById("menu-games-n");
-      if (mn) mn.textContent = n;
+      // Папки, закрытые для гостей (на странице игры стоит data-guard)
+      const GUEST_LOCKED = new Set([
+        "obby", "tycoon", "minecraft", "murder-mystery", "pet-simulator",
+        "flee-facility", "build-boat", "tower-defense", "hideout",
+        "adopt-me", "blox-fruits", "brookhaven-rp", "nights-forest",
+        "rivals-arena", "steal-brainrot", "grow-garden", "speed-escape",
+        "create-lab", "voice-ai-proposal", "apps", "portal-3d",
+      ]);
+      const ALWAYS_OPEN = new Set([
+        "create-lab/game.html",
+        "create-lab/comic.html",
+        "create-lab/lab3d.html",
+      ]);
+
+      function normHref(href) {
+        if (!href) return "";
+        return String(href).replace(/^\.\//, "").replace(/\/+$/, "").split("?")[0].split("#")[0];
+      }
+
+      function folderOf(href) {
+        const h = normHref(href);
+        if (!h || ALWAYS_OPEN.has(h)) return "";
+        return (h.split("/")[0] || "");
+      }
+
+      function isGuestLockedHref(href) {
+        const h = normHref(href);
+        if (ALWAYS_OPEN.has(h)) return false;
+        if (h.indexOf("create-lab/") === 0 && h !== "create-lab" && h !== "create-lab/index.html") {
+          return false;
+        }
+        return GUEST_LOCKED.has(folderOf(href));
+      }
+
+      function refreshCatalogStats() {
+        const admin = window.Amal3dLock && Amal3dLock.canEnter();
+        const seen = new Map();
+
+        document.querySelectorAll("a.card[href], [data-amal-3d-lock][data-href]").forEach((node) => {
+          const href = node.getAttribute("href") || node.getAttribute("data-href") || "";
+          const key = normHref(href) || href;
+          if (!key || key === "#" || key.indexOf("javascript:") === 0) return;
+          const locked = isGuestLockedHref(href) || node.hasAttribute("data-amal-3d-lock");
+          if (!seen.has(key)) seen.set(key, locked);
+          else if (locked) seen.set(key, true);
+        });
+
+        let lockedN = 0;
+        let openN = 0;
+        seen.forEach((locked) => {
+          if (locked) lockedN++;
+          else openN++;
+        });
+        const total = openN + lockedN;
+        const setText = (id, v) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(v);
+        };
+        setText("stat-open", openN);
+        setText("stat-lock", lockedN);
+        setText("stat-total", total);
+        setText("menu-games-open", openN);
+        setText("menu-games-lock", lockedN);
+        setText("menu-games-n", total);
+
+        document.querySelectorAll("a.card[href]").forEach((card) => {
+          const href = card.getAttribute("href") || "";
+          const shouldLock = !admin && isGuestLockedHref(href);
+          card.classList.toggle("guest-locked", shouldLock);
+          let veil = card.querySelector(".guest-lock-veil");
+          if (shouldLock) {
+            if (!veil) {
+              veil = document.createElement("div");
+              veil.className = "guest-lock-veil";
+              veil.setAttribute("aria-hidden", "true");
+              veil.textContent = "⛓ 🔒 ⛓";
+              card.appendChild(veil);
+            }
+            const badge = card.querySelector(".badge");
+            if (badge && !badge.dataset.lockBadge) {
+              badge.dataset.lockBadge = "1";
+              badge.dataset.prevBadge = badge.textContent;
+              badge.textContent = "LOCKED";
+            }
+            if (!card.dataset.lockWired) {
+              card.dataset.lockWired = "1";
+              card.addEventListener("click", (e) => {
+                if (window.Amal3dLock && !Amal3dLock.canEnter()) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  Amal3dLock.showModal();
+                }
+              });
+            }
+          } else if (veil) {
+            veil.remove();
+          }
+        });
+      }
+
+      refreshCatalogStats();
+      setTimeout(refreshCatalogStats, 80);
+      setTimeout(refreshCatalogStats, 450);
+      window.__amalRefreshCatalogStats = refreshCatalogStats;
 
       // Смена иконки куба — выбор сохраняется в браузере
       const ICON_KEY = "amal-menu-cube-icon";
@@ -2235,6 +2418,9 @@
       }
       // wire any other locked cards on page
       if (window.Amal3dLock) Amal3dLock.wire(document);
+      if (typeof window.__amalRefreshCatalogStats === "function") {
+        window.__amalRefreshCatalogStats();
+      }
     })();
   </script>
 
