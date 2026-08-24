@@ -10,6 +10,12 @@
   <meta name="author" content="Amal" />
   <meta name="application-name" content="Amal Games" />
   <meta name="theme-color" content="#0d6e5f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Amal Games" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icons/amal.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/amal.svg" />
   <meta property="og:site_name" content="Amal Games" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="ru_RU" />
@@ -87,7 +93,8 @@
     ]
   }
   </script>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <!-- Кэш страницы разрешён для офлайна (управляет Service Worker) -->
+  <meta http-equiv="Cache-Control" content="max-age=3600" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
@@ -215,6 +222,17 @@
       margin: 0.45rem 0 0;
       font: 600 12px/1.35 Nunito, sans-serif;
       color: var(--muted);
+    }
+    .hub-offline-hint {
+      margin: 0.55rem auto 0;
+      max-width: min(720px, 94vw);
+      padding: 0.45rem 0.75rem;
+      border-radius: 12px;
+      background: rgba(13,110,95,.1);
+      border: 1px solid rgba(13,110,95,.18);
+      font: 700 12px/1.4 Nunito, sans-serif;
+      color: var(--teal);
+      text-align: center;
     }
     .card.guest-locked { position: relative; }
     /* Замок только на картинке — название и описание остаются видны */
@@ -1147,6 +1165,7 @@
       </div>
       <p class="hub-quick-note">Это открытые игры — заходить может любой. Ниже в каталоге видно, сколько ещё под замком.</p>
     </div>
+    <p class="hub-offline-hint">📴 Открой сайт один раз с интернетом — потом главная и сохранённые игры работают и без сети. На телефоне включена экономия батареи.</p>
     <div class="lab-links">
       <a class="primary" href="create-lab/game.html">✨ Создать игру</a>
       <a href="create-lab/comic.html">📖 Комикс</a>
@@ -2697,6 +2716,7 @@
       sync();
     })();
   </script>
+  <script src="./shared/amal-pwa.js?v=1" defer></script>
   <script src="./owner-cheats.js" defer></script>
   <script src="./shared/amal-owner-powers.js?v=23" defer></script>
   <script src="./shared/amal-throne.js?v=5" defer></script>

@@ -1,0 +1,165 @@
+/* Amal Games · офлайн-кэш (Service Worker) */
+/* eslint-disable no-restricted-globals */
+(function () {
+  "use strict";
+
+  var VERSION = "amal-offline-v3";
+  var CORE = VERSION + "-core";
+  var RUNTIME = VERSION + "-runtime";
+
+  function basePath() {
+    try {
+      var scope = self.registration && self.registration.scope;
+      if (scope) return new URL("./", scope).href;
+    } catch (_) {}
+    return self.location.href.replace(/[^/]+$/, "");
+  }
+
+  function u(path) {
+    return new URL(path, basePath()).href;
+  }
+
+  // Главная + общее + несколько открытых игр (лёгкие). Остальное кэшируется при первом визите.
+  var PRECACHE = [
+    "./",
+    "./index.html",
+    "./offline.html",
+    "./manifest.webmanifest",
+    "./shared/amal-pwa.js",
+    "./shared/amal-3d-wip-lock.js",
+    "./shared/amal-throne.js",
+    "./shared/amal-hub.js",
+    "./shared/amal-gallery-ratings.js",
+    "./shared/amal-site-faq.js",
+    "./snake-game/",
+    "./snake-game/index.html",
+    "./zombie-vs-plants/",
+    "./zombie-vs-plants/index.html",
+    "./rift-storm/",
+    "./rift-storm/index.html",
+    "./rift-storm/game.js",
+    "./rift-storm/style.css",
+    "./kick-buddy/",
+    "./kick-buddy/index.html",
+    "./create-lab/game.html",
+    "./create-lab/lab3d.html",
+  ].map(u);
+
+  self.addEventListener("install", function (event) {
+    event.waitUntil(
+      caches
+        .open(CORE)
+        .then(function (cache) {
+          return Promise.all(
+            PRECACHE.map(function (url) {
+              return cache.add(url).catch(function () {
+                /* файл мог отсутствовать — не валим весь install */
+              });
+            })
+          );
+        })
+        .then(function () {
+          return self.skipWaiting();
+        })
+    );
+  });
+
+  self.addEventListener("activate", function (event) {
+    event.waitUntil(
+      caches
+        .keys()
+        .then(function (keys) {
+          return Promise.all(
+            keys.map(function (key) {
+              if (key.indexOf("amal-offline-") === 0 && key !== CORE && key !== RUNTIME) {
+                return caches.delete(key);
+              }
+            })
+          );
+        })
+        .then(function () {
+          return self.clients.claim();
+        })
+    );
+  });
+
+  function isNav(req) {
+    return req.mode === "navigate" || (req.headers.get("accept") || "").indexOf("text/html") !== -1;
+  }
+
+  function sameOrigin(url) {
+    try {
+      return new URL(url).origin === self.location.origin;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  self.addEventListener("fetch", function (event) {
+    var req = event.request;
+    if (req.method !== "GET") return;
+    if (!sameOrigin(req.url)) return;
+
+    if (isNav(req)) {
+      event.respondWith(
+        fetch(req)
+          .then(function (res) {
+            var copy = res.clone();
+            caches.open(RUNTIME).then(function (c) {
+              c.put(req, copy);
+            });
+            return res;
+          })
+          .catch(function () {
+            return caches.match(req).then(function (hit) {
+              if (hit) return hit;
+              return caches.match(u("./index.html")).then(function (hub) {
+                if (hub) return hub;
+                return caches.match(u("./offline.html"));
+              });
+            });
+          })
+      );
+      return;
+    }
+
+    event.respondWith(
+      caches.match(req).then(function (hit) {
+        if (hit) return hit;
+        return fetch(req)
+          .then(function (res) {
+            if (!res || res.status !== 200 || res.type === "opaque") return res;
+            var copy = res.clone();
+            caches.open(RUNTIME).then(function (c) {
+              c.put(req, copy);
+            });
+            return res;
+          })
+          .catch(function () {
+            return caches.match(u("./offline.html"));
+          });
+      })
+    );
+  });
+
+  self.addEventListener("message", function (event) {
+    if (!event.data) return;
+    if (event.data.type === "SKIP_WAITING") self.skipWaiting();
+    if (event.data.type === "PREFETCH" && Array.isArray(event.data.urls)) {
+      event.waitUntil(
+        caches.open(RUNTIME).then(function (cache) {
+          return Promise.all(
+            event.data.urls.map(function (path) {
+              var url = u(path);
+              return fetch(url)
+                .then(function (res) {
+                  if (res && res.ok) return cache.put(url, res);
+                })
+                .catch(function () {});
+            })
+          );
+        })
+      );
+    }
+  });
+})();
