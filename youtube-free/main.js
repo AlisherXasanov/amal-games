@@ -1,18 +1,19 @@
 /**
- * Смотри без рекламы v2 — спальня, каналы, плеер внутри (без переходов).
+ * Смотри v3 — лента, лайки, подписки, каналы, реальные видео внутри (без ухода).
  */
 (function () {
   window.__AMAL_NO_WORLD__ = true;
 
   const CHANNELS = window.YT_CHANNELS || [];
-  const SUGGESTED = window.YT_SUGGESTED || [];
-  const MY_KEY = "amal-watch-my-videos-v1";
+  const SUB_KEY = "amal-watch-subs-v1";
+  const LIKE_KEY = "amal-watch-likes-v1";
 
   const viewHome = document.getElementById("viewHome");
   const viewChannel = document.getElementById("viewChannel");
   const btnHome = document.getElementById("btnHome");
   const channelShelf = document.getElementById("channelShelf");
-  const suggestRow = document.getElementById("suggestRow");
+  const feed = document.getElementById("feed");
+  const shortsRow = document.getElementById("shortsRow");
   const tvPreview = document.getElementById("tvPreview");
   const tvHint = document.getElementById("tvHint");
   const channelHead = document.getElementById("channelHead");
@@ -23,89 +24,112 @@
   const ytFrame = document.getElementById("ytFrame");
   const localVideo = document.getElementById("localVideo");
   const nowPlaying = document.getElementById("nowPlaying");
-
-  const chatToggle = document.getElementById("chatToggle");
-  const chatPanel = document.getElementById("chatPanel");
-  const chatLog = document.getElementById("chatLog");
-  const chatForm = document.getElementById("chatForm");
-  const chatIn = document.getElementById("chatIn");
+  const likeBtn = document.getElementById("likeBtn");
+  const likeCount = document.getElementById("likeCount");
+  const subsStat = document.getElementById("subsStat");
+  const subBtn = document.getElementById("subBtn");
 
   let currentChannel = null;
+  let currentVideoKey = "";
   let myVideos = [];
+  let liked = loadMap(LIKE_KEY);
+  let subs = loadMap(SUB_KEY);
 
-  function loadMyVideos() {
-    return [];
+  function loadMap(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "{}");
+    } catch (_) {
+      return {};
+    }
   }
 
-  function saveMyVideos() {
-    /* blob-ссылки живут пока открыта вкладка */
+  function saveMap(key, obj) {
+    try {
+      localStorage.setItem(key, JSON.stringify(obj));
+    } catch (_) {}
   }
 
   function findChannel(id) {
     return CHANNELS.find((c) => c.id === id);
   }
 
-  function ytEmbed(id) {
-    return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?rel=0&modestbranding=1&autoplay=1";
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
   }
 
-  function ytPlaylist(pl) {
-    return "https://www.youtube-nocookie.com/embed/videoseries?list=" + encodeURIComponent(pl) + "&rel=0&autoplay=1";
+  /** Реальные ролики YouTube внутри iframe — поиск-плейлист, без перехода */
+  function searchEmbed(q) {
+    return (
+      "https://www.youtube-nocookie.com/embed?listType=search&list=" +
+      encodeURIComponent(q) +
+      "&autoplay=1&rel=0"
+    );
   }
 
-  function stopAllPlayers() {
+  function stopPlayers() {
     ytFrame.hidden = true;
     ytFrame.src = "";
     localVideo.hidden = true;
     localVideo.pause();
     localVideo.removeAttribute("src");
-    localVideo.load();
+    try {
+      localVideo.load();
+    } catch (_) {}
     playerPh.hidden = false;
-    tvPreview.innerHTML = "<span>📺 Выбери канал на полке</span>";
   }
 
-  function playInBox(targetEl, opts) {
-    stopAllPlayers();
+  function setTvPreview(src) {
+    if (!src) {
+      tvPreview.innerHTML = "<span>📺 Выбери видео ниже</span>";
+      return;
+    }
+    tvPreview.innerHTML =
+      '<iframe src="' +
+      src +
+      '" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>';
+  }
+
+  function playSearch(q, title, opts) {
+    opts = opts || {};
+    const src = searchEmbed(q);
+    stopPlayers();
     playerPh.hidden = true;
-
-    if (opts.type === "local") {
-      localVideo.hidden = false;
-      localVideo.src = opts.url;
-      localVideo.play().catch(function () {});
-      if (targetEl === tvPreview) {
-        tvPreview.innerHTML = "";
-        const v = localVideo.cloneNode(true);
-        v.hidden = false;
-        v.src = opts.url;
-        v.controls = true;
-        v.playsInline = true;
-        tvPreview.appendChild(v);
-      }
-      nowPlaying.textContent = "Сейчас: " + opts.title;
-      tvHint.textContent = opts.title;
-      return;
-    }
-
-    if (opts.type === "playlist") {
-      ytFrame.hidden = false;
-      ytFrame.src = ytPlaylist(opts.playlist);
-      if (targetEl === tvPreview) {
-        tvPreview.innerHTML =
-          '<iframe src="' + ytPlaylist(opts.playlist) + '" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
-      }
-      nowPlaying.textContent = "Сейчас: лента «" + opts.title + "»";
-      tvHint.textContent = "▶ " + opts.title;
-      return;
-    }
-
     ytFrame.hidden = false;
-    ytFrame.src = ytEmbed(opts.id);
-    if (targetEl === tvPreview) {
-      tvPreview.innerHTML =
-        '<iframe src="' + ytEmbed(opts.id) + '" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+    ytFrame.src = src;
+    if (opts.alsoTv) setTvPreview(src);
+    nowPlaying.textContent = "Сейчас: " + title;
+    tvHint.textContent = "▶ " + title;
+    currentVideoKey = (opts.channelId || "") + "::" + q;
+    refreshLikeUi(opts.likesLabel);
+  }
+
+  function playLocal(url, title) {
+    stopPlayers();
+    playerPh.hidden = true;
+    localVideo.hidden = false;
+    localVideo.src = url;
+    localVideo.play().catch(function () {});
+    nowPlaying.textContent = "Сейчас: " + title;
+    currentVideoKey = "local::" + title;
+    refreshLikeUi("—");
+  }
+
+  function refreshLikeUi(fallbackLabel) {
+    const on = !!liked[currentVideoKey];
+    likeBtn.classList.toggle("on", on);
+    if (fallbackLabel && fallbackLabel !== "—") {
+      likeCount.textContent = on ? fallbackLabel + " · ты 👍" : fallbackLabel;
+    } else {
+      likeCount.textContent = on ? "нравится" : "лайк";
     }
-    nowPlaying.textContent = "Сейчас: " + opts.title;
-    tvHint.textContent = "▶ " + opts.title;
+  }
+
+  function refreshSubUi(ch) {
+    if (!ch) return;
+    const on = !!subs[ch.id];
+    subBtn.classList.toggle("on", on);
+    subBtn.textContent = on ? "Вы подписаны" : "Подписаться";
+    subsStat.textContent = "👥 " + ch.subs + (on ? " · +ты" : "");
   }
 
   function showView(name) {
@@ -117,163 +141,179 @@
   function openHome() {
     currentChannel = null;
     showView("home");
-    stopAllPlayers();
+    stopPlayers();
+    setTvPreview("");
   }
 
-  function openChannel(id) {
+  function openChannel(id, autoPlay) {
     const ch = findChannel(id);
     if (!ch) return;
     currentChannel = ch;
     showView("channel");
 
     channelHead.innerHTML =
-      '<h2>' + ch.emoji + " " + ch.name + "</h2><p>" + ch.desc + "</p>";
+      "<h2>" +
+      ch.emoji +
+      " " +
+      escapeHtml(ch.name) +
+      "</h2><p>" +
+      escapeHtml(ch.desc) +
+      '</p><div class="head-stats">👥 ' +
+      escapeHtml(ch.subs) +
+      " подписчиков</div>";
 
+    refreshSubUi(ch);
     uploadBox.hidden = !ch.allowUpload;
 
-    const vids = ch.allowUpload ? myVideos.map((v, i) => ({ local: true, url: v.url, title: v.title, idx: i })) : [];
-    ch.videos.forEach(function (v) {
+    const vids = [];
+    if (ch.allowUpload) {
+      myVideos.forEach(function (v) {
+        vids.push({ local: true, url: v.url, title: v.title, likes: "—" });
+      });
+    }
+    (ch.videos || []).forEach(function (v) {
       vids.push(v);
     });
 
     videoGrid.innerHTML = "";
     if (!vids.length && ch.allowUpload) {
-      videoGrid.innerHTML = '<p style="grid-column:1/-1;color:#999;font-size:13px;padding:8px">Загрузи свой первый ролик ↑</p>';
+      videoGrid.innerHTML =
+        '<p style="grid-column:1/-1;color:#999;font-size:13px;padding:8px">Загрузи первый ролик ↑</p>';
     }
 
     vids.forEach(function (v) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vid-card";
-      const thumb = v.playlist ? "📋" : v.local ? "🌙" : "▶";
-      btn.innerHTML = '<div class="vid-thumb">' + thumb + '</div><b>' + escapeHtml(v.title) + "</b>";
+      const badge = v.short ? '<span class="badge">Shorts</span>' : "";
+      btn.innerHTML =
+        '<div class="vid-thumb">' +
+        badge +
+        "<span>" +
+        (v.local ? "🌙" : v.short ? "📱" : ch.emoji) +
+        "</span></div><b>" +
+        escapeHtml(v.title) +
+        '</b><div class="vl">👍 ' +
+        escapeHtml(v.likes || "—") +
+        "</div>";
       btn.addEventListener("click", function () {
-        if (v.local) {
-          playInBox(null, { type: "local", url: v.url, title: v.title });
-        } else if (v.playlist && ch.playlist) {
-          playInBox(null, { type: "playlist", playlist: ch.playlist, title: ch.name + " — все серии" });
-        } else if (v.id === "playlist" && ch.playlist) {
-          playInBox(null, { type: "playlist", playlist: ch.playlist, title: ch.name });
-        } else {
-          playInBox(null, { type: "yt", id: v.id, title: v.title });
-        }
+        if (v.local) playLocal(v.url, v.title);
+        else playSearch(v.q || ch.search, v.title, { channelId: ch.id, likesLabel: v.likes });
       });
       videoGrid.appendChild(btn);
     });
 
-    if (vids.length && !vids[0].local) {
+    if (autoPlay && autoPlay.q) {
+      playSearch(autoPlay.q, autoPlay.title, { channelId: ch.id, likesLabel: autoPlay.likes });
+    } else if (vids.length && !vids[0].local) {
       const first = vids[0];
-      if (first.playlist && ch.playlist) {
-        playInBox(null, { type: "playlist", playlist: ch.playlist, title: first.title });
-      } else if (first.id && first.id !== "playlist") {
-        playInBox(null, { type: "yt", id: first.id, title: first.title });
-      }
+      playSearch(first.q || ch.search, first.title, { channelId: ch.id, likesLabel: first.likes });
+    } else if (vids.length && vids[0].local) {
+      playLocal(vids[0].url, vids[0].title);
     }
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  function buildFeed() {
+    feed.innerHTML = "";
+    shortsRow.innerHTML = "";
+    const all = [];
+
+    CHANNELS.forEach(function (ch) {
+      if (ch.allowUpload) return;
+      (ch.videos || []).forEach(function (v, i) {
+        all.push({ ch: ch, v: v, order: i });
+      });
+    });
+
+    // перемешать чуть-чуть, но оставить разнообразие
+    all.sort(function (a, b) {
+      return (a.order % 3) - (b.order % 3) || a.ch.name.localeCompare(b.ch.name);
+    });
+
+    all.forEach(function (item) {
+      const v = item.v;
+      const ch = item.ch;
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = v.short ? "short-card" : "feed-card";
+      card.innerHTML =
+        '<div class="feed-thumb"><span>' +
+        (v.short ? "📱" : ch.emoji) +
+        '</span></div><div class="feed-meta"><b>' +
+        escapeHtml(v.title) +
+        '</b><div class="ch">' +
+        ch.emoji +
+        " " +
+        escapeHtml(ch.name) +
+        '</div><div class="likes">👍 ' +
+        escapeHtml(v.likes || "—") +
+        " · 👥 " +
+        escapeHtml(ch.subs) +
+        "</div></div>";
+      card.addEventListener("click", function () {
+        openChannel(ch.id, v);
+        playSearch(v.q || ch.search, v.title, {
+          channelId: ch.id,
+          likesLabel: v.likes,
+          alsoTv: true,
+        });
+      });
+      if (v.short) shortsRow.appendChild(card);
+      else feed.appendChild(card);
+    });
   }
 
-  function playSuggest(item) {
-    const ch = findChannel(item.channelId);
-    if (!ch) return;
-    if (item.pick === "upload") {
-      openChannel(ch.id);
-      return;
-    }
-    openChannel(ch.id);
-    const v = ch.videos[item.pick || 0];
-    if (!v) return;
-    if (v.playlist && ch.playlist) {
-      playInBox(tvPreview, { type: "playlist", playlist: ch.playlist, title: v.title });
-    } else {
-      playInBox(tvPreview, { type: "yt", id: v.id, title: v.title });
-    }
-  }
-
-  // полка каналов
   CHANNELS.forEach(function (ch) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "ch-card";
     b.style.borderColor = ch.color;
-    b.innerHTML = '<span class="ico">' + ch.emoji + '</span><span class="nm">' + ch.name + "</span>";
+    b.innerHTML =
+      '<span class="ico">' +
+      ch.emoji +
+      '</span><span class="nm">' +
+      escapeHtml(ch.name) +
+      '</span><span class="subs">👥 ' +
+      escapeHtml(ch.subs) +
+      "</span>";
     b.addEventListener("click", function () {
       openChannel(ch.id);
     });
     channelShelf.appendChild(b);
   });
 
-  SUGGESTED.forEach(function (s) {
-    const ch = findChannel(s.channelId);
-    if (!ch) return;
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "sug-btn";
-    b.textContent = ch.emoji + " " + ch.name;
-    b.addEventListener("click", function () {
-      playSuggest(s);
-    });
-    suggestRow.appendChild(b);
-  });
+  buildFeed();
 
   btnHome.addEventListener("click", openHome);
+
+  likeBtn.addEventListener("click", function () {
+    if (!currentVideoKey) return;
+    if (liked[currentVideoKey]) delete liked[currentVideoKey];
+    else liked[currentVideoKey] = 1;
+    saveMap(LIKE_KEY, liked);
+    const ch = currentChannel;
+    const v = ch && (ch.videos || []).find(function (x) {
+      return currentVideoKey.indexOf(x.q) !== -1;
+    });
+    refreshLikeUi(v && v.likes);
+  });
+
+  subBtn.addEventListener("click", function () {
+    if (!currentChannel) return;
+    if (subs[currentChannel.id]) delete subs[currentChannel.id];
+    else subs[currentChannel.id] = 1;
+    saveMap(SUB_KEY, subs);
+    refreshSubUi(currentChannel);
+  });
 
   fileIn.addEventListener("change", function () {
     const f = fileIn.files && fileIn.files[0];
     if (!f || !currentChannel) return;
     const url = URL.createObjectURL(f);
     const title = f.name.replace(/\.[^.]+$/, "") || "Мой ролик";
-    myVideos.unshift({ title: title, url: url, at: Date.now() });
-    saveMyVideos();
+    myVideos.unshift({ title: title, url: url });
     openChannel(currentChannel.id);
-    playInBox(null, { type: "local", url: url, title: title });
-    chatMsg("Загрузила «" + title + "» на канал Amal 🌙", "bot");
-  });
-
-  // чат
-  function chatMsg(text, role) {
-    const d = document.createElement("div");
-    d.className = "msg " + role;
-    d.innerHTML = text;
-    chatLog.appendChild(d);
-    chatLog.scrollTop = chatLog.scrollHeight;
-  }
-
-  function matchChannel(text) {
-    const t = text.toLowerCase();
-    for (let i = 0; i < CHANNELS.length; i++) {
-      const c = CHANNELS[i];
-      if (t.indexOf(c.name.toLowerCase()) !== -1) return c;
-      if (c.id === "tri-kota" && /три кота|трикота|3 кота/.test(t)) return c;
-      if (c.id === "vlada4" && /vlad|влад|a4|а4/.test(t)) return c;
-      if (c.id === "gravity" && /gravity|гравити|фолз/.test(t)) return c;
-      if (c.id === "amal-room" && /мой|amal|амал|свой канал/.test(t)) return c;
-      if (/мульт|детск|детям/.test(t) && c.cat === "kids") return c;
-      if (/челлендж|блог/.test(t) && c.cat === "blog") return c;
-    }
-    return null;
-  }
-
-  chatForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const text = chatIn.value.trim();
-    if (!text) return;
-    chatMsg(escapeHtml(text), "user");
-    chatIn.value = "";
-    const ch = matchChannel(text);
-    if (ch) {
-      chatMsg("Открываю канал <b>" + ch.name + "</b> — видео включится здесь, без перехода.", "bot");
-      openChannel(ch.id);
-      chatPanel.hidden = false;
-    } else {
-      chatMsg("Не нашла канал. Попробуй: <b>Три кота</b>, <b>Vlad A4</b>, <b>мультики</b>, <b>мой канал</b>.", "bot");
-    }
-  });
-
-  chatToggle.addEventListener("click", function () {
-    chatPanel.hidden = !chatPanel.hidden;
+    playLocal(url, title);
   });
 
   // PWA
@@ -291,10 +331,4 @@
     deferredPrompt = null;
     installBtn.hidden = true;
   });
-
-  chatMsg("Привет! 🏠 Это твоя <b>спальня-телевизор</b>. Жми канал на полке — видео играет <b>здесь</b>, никуда не перекидывает.", "bot");
-
-  if (location.hash.indexOf("channel=") === 1) {
-    openChannel(location.hash.split("=")[1]);
-  }
 })();

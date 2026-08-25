@@ -4,81 +4,68 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Смотри без рекламы — Amal Apps</title>
-  <meta name="description" content="Спальня-телевизор: каналы, мультики, блогеры — видео прямо в приложении." />
+  <meta name="description" content="Спальня: каналы, лайки, подписки, лента видео — всё внутри, без переходов." />
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
-<body>
+<body class="watch-app">
   <header class="topbar">
     <button type="button" class="btn ghost" id="btnHome" hidden>🏠 Спальня</button>
     <a class="btn ghost" href="../">← Каталог</a>
-    <h1>▶ <span>Смотри</span> без рекламы</h1>
-    <button type="button" class="btn accent" id="installBtn" hidden>📲 На телефон</button>
+    <h1>▶ <span>Смотри</span></h1>
+    <button type="button" class="btn accent" id="installBtn" hidden>📲</button>
   </header>
 
-  <!-- Главное меню: спальня -->
   <section class="view active" id="viewHome">
     <div class="bedroom">
       <div class="room-bg"></div>
-      <div class="window"></div>
-      <div class="bed"></div>
-      <div class="lamp"></div>
       <div class="tv-unit">
         <div class="tv-frame">
-          <div class="tv-screen" id="tvPreview">
-            <span>📺 Выбери канал на полке</span>
-          </div>
+          <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
         </div>
-        <p class="tv-hint" id="tvHint">Твоё главное меню — спальня. Нажми канал — видео включится здесь.</p>
+        <p class="tv-hint" id="tvHint">Мотай вниз — там лента. Жми канал или карточку.</p>
       </div>
-      <div class="shelf-label">Популярные каналы</div>
+
+      <div class="shelf-label">Каналы</div>
       <div class="channel-shelf" id="channelShelf"></div>
-      <div class="suggest-label">Рекомендуем посмотреть</div>
-      <div class="suggest-row" id="suggestRow"></div>
+
+      <div class="shelf-label" id="feedShortsLabel">📱 Shorts</div>
+      <div class="feed-row" id="shortsRow"></div>
+
+      <div class="shelf-label">Рекомендации · мотай вниз</div>
+      <div class="feed" id="feed"></div>
     </div>
   </section>
 
-  <!-- Страница канала -->
   <section class="view" id="viewChannel">
     <div class="channel-head" id="channelHead"></div>
     <div class="player-area">
       <div class="player-box" id="playerBox">
-        <div class="player-ph" id="playerPh">▶ Выбери видео ниже</div>
+        <div class="player-ph" id="playerPh">▶ Выбери видео</div>
         <video id="localVideo" controls playsinline hidden></video>
         <iframe id="ytFrame" title="Видео" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+      </div>
+      <div class="stats-bar" id="statsBar">
+        <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">0</span></button>
+        <span class="stat" id="subsStat">👥 0</span>
+        <button type="button" class="sub-btn" id="subBtn">Подписаться</button>
       </div>
       <p class="now" id="nowPlaying">Сейчас: —</p>
     </div>
     <div class="upload-box" id="uploadBox" hidden>
-      <p>📁 Добавь <b>свой ролик</b> — он будет только у тебя, даже если его нет на YouTube.</p>
+      <p>📁 Свой ролик — только у тебя, даже если его нет на YouTube.</p>
       <label class="btn accent upload-label">
-        Загрузить видео с телефона / компа
+        Загрузить
         <input type="file" id="fileIn" accept="video/*" hidden />
       </label>
     </div>
+    <div class="shelf-label pad">Видео канала · выбери любое</div>
     <div class="video-grid" id="videoGrid"></div>
   </section>
 
-  <!-- Чат-помощник -->
-  <aside class="chat-dock" id="chatDock">
-    <button type="button" class="chat-toggle" id="chatToggle">🤖 Помощник</button>
-    <div class="chat-panel" id="chatPanel" hidden>
-      <div class="chat-head">
-        <b>Умный помощник</b>
-        <p>«Три кота», «Vlad A4», «мультики»…</p>
-      </div>
-      <div class="chat-log" id="chatLog"></div>
-      <form class="chat-form" id="chatForm">
-        <input id="chatIn" placeholder="Хочу смотреть…" maxlength="180" autocomplete="off" />
-        <button type="submit">→</button>
-      </form>
-    </div>
-  </aside>
-
-  <script src="./channels-data.js?v=2"></script>
-  <script src="./main.js?v=2"></script>
-  <script src="../shared/amal-hub.js?v=68"></script>
+  <script src="./channels-data.js?v=3"></script>
+  <script src="./main.js?v=3"></script>
 </body>
 </html>
