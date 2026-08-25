@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v22";
+  var VERSION = "amal-offline-v23";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -55,6 +55,7 @@
     "./obby/main.js",
     "./youtube-free/",
     "./youtube-free/index.html",
+    "./youtube-free/bez-reklamy.html",
     "./youtube-free/main.js",
     "./youtube-free/style.css",
     "./youtube-free/channels-data.js",
