@@ -8,14 +8,14 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=11" />
+  <link rel="stylesheet" href="./style.css?v=12" />
 </head>
 <body class="watch-app">
   <header class="topbar">
     <button type="button" class="btn ghost" id="btnHome" hidden>🏠 Спальня</button>
     <a class="btn ghost" href="../">← Каталог</a>
     <h1>▶ <span>Смотри</span></h1>
-    <button type="button" class="btn accent" id="btnShorts">📱 Shorts</button>
+    <button type="button" class="btn accent" id="btnShorts">📱 Лента</button>
     <button type="button" class="btn accent" id="installBtn" hidden>📲</button>
   </header>
 
@@ -26,7 +26,7 @@
         <div class="tv-frame">
           <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
         </div>
-        <p class="tv-hint" id="tvHint">Без рекламы. Открой канал → внизу меню роликов, листай пальцем.</p>
+        <p class="tv-hint" id="tvHint">Жми «Лента» — листай ролики вверх/вниз, как Shorts. На канал не выкинет.</p>
       </div>
 
       <div class="shelf-label">Каналы</div>
@@ -42,10 +42,10 @@
         <div class="search-hits" id="searchHits"></div>
       </div>
 
-      <div class="shelf-label shorts-open" id="feedShortsLabel" role="button" tabindex="0">📱 Shorts · листай →</div>
+      <div class="shelf-label shorts-open" id="feedShortsLabel" role="button" tabindex="0">📱 Лента роликов · жми сюда и листай</div>
       <div class="feed-row" id="shortsRow"></div>
 
-      <div class="shelf-label">Подборка · мотай вниз</div>
+      <div class="shelf-label">Подборка · жми ролик = сразу лента</div>
       <div class="feed" id="feed"></div>
     </div>
   </section>
@@ -53,8 +53,8 @@
   <section class="view" id="viewShorts">
     <div class="shorts-top">
       <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
-      <span>📱 Shorts</span>
-      <span class="shorts-tip">листай вверх/вниз</span>
+      <span>📱 Лента</span>
+      <span class="shorts-tip">листай вверх / вниз</span>
     </div>
     <div class="shorts-feed" id="shortsFeed"></div>
   </section>
@@ -112,8 +112,8 @@
     </div>
   </div>
 
-  <script src="./channels-data.js?v=11"></script>
-  <script src="./main.js?v=11"></script>
+  <script src="./channels-data.js?v=12"></script>
+  <script src="./main.js?v=12"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

@@ -282,7 +282,11 @@ body.watch-app .amal-side-quick {
   border-top: 1px solid #2a2a2a;
 }
 .shorts-meta b { display: block; font-size: 14px; margin-bottom: 4px; }
-.shorts-meta .ch { font-size: 12px; color: #c4b5fd; }
+.shorts-meta .ch { font-size: 12px; color: #c4b5fd; margin-bottom: 8px; }
+.shorts-ch-btn {
+  padding: 8px 14px; border-radius: 999px; border: 1px solid #554466;
+  background: #2a1a3a; color: #fff; font: 800 12px system-ui; cursor: pointer;
+}
 .shorts-empty { padding: 24px; text-align: center; color: #9988aa; }
 
 .channel-head {

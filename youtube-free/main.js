@@ -182,13 +182,41 @@
 
   function collectShorts() {
     const out = [];
+    const seen = {};
     CHANNELS.forEach(function (ch) {
       if (ch.allowUpload) return;
       realVideos(ch).forEach(function (v) {
-        if (isShortVideo(v)) out.push({ ch: ch, v: v });
+        if (!isShortVideo(v)) return;
+        if (seen[v.id]) return;
+        seen[v.id] = 1;
+        out.push({ ch: ch, v: v });
       });
     });
     return out;
+  }
+
+  /** Лента как Shorts: Shorts + обычные ролики, листаешь без канала */
+  function collectSwipeFeed() {
+    const shorts = collectShorts();
+    const rest = [];
+    const seen = {};
+    shorts.forEach(function (item) {
+      seen[item.v.id] = 1;
+    });
+    CHANNELS.forEach(function (ch) {
+      if (ch.allowUpload) return;
+      realVideos(ch).forEach(function (v, i) {
+        if (seen[v.id]) return;
+        if (i > 14) return;
+        seen[v.id] = 1;
+        rest.push({ ch: ch, v: v });
+      });
+    });
+    // перемешать чуть-чуть обычные
+    rest.sort(function (a, b) {
+      return ((a.v.id.charCodeAt(0) + a.v.id.charCodeAt(2)) % 7) - ((b.v.id.charCodeAt(0) + b.v.id.charCodeAt(2)) % 7);
+    });
+    return shorts.concat(rest).slice(0, 80);
   }
 
   function stopShortsPlayers() {
@@ -744,9 +772,9 @@
 
   function buildShortsFeed(startId) {
     if (!shortsFeed) return;
-    allShorts = collectShorts();
+    allShorts = collectSwipeFeed();
     if (!allShorts.length) {
-      shortsFeed.innerHTML = '<p class="shorts-empty">Shorts пока нет.</p>';
+      shortsFeed.innerHTML = '<p class="shorts-empty">Пока пусто — зайди позже.</p>';
       return;
     }
     shortsFeed.innerHTML = "";
@@ -755,6 +783,7 @@
       slide.className = "shorts-slide";
       slide.dataset.vid = item.v.id;
       slide.dataset.idx = String(idx);
+      slide.dataset.chid = item.ch.id;
       slide.innerHTML =
         '<div class="shorts-player"><iframe title="' +
         escapeHtml(item.v.title) +
@@ -763,8 +792,18 @@
         escapeHtml(item.v.title) +
         '</b><div class="ch">' +
         escapeHtml(item.ch.name) +
-        "</div></div>";
+        '</div><button type="button" class="shorts-ch-btn" data-ch="' +
+        escapeHtml(item.ch.id) +
+        '">Канал</button></div>';
       shortsFeed.appendChild(slide);
+    });
+
+    shortsFeed.querySelectorAll(".shorts-ch-btn").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const id = btn.getAttribute("data-ch");
+        if (id) openChannel(id);
+      });
     });
 
     if (shortsObserver) shortsObserver.disconnect();
@@ -801,7 +840,11 @@
       if (found >= 0) startIdx = found;
     }
     const target = shortsFeed.querySelector('.shorts-slide[data-idx="' + startIdx + '"]');
-    if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
+    if (target) {
+      requestAnimationFrame(function () {
+        target.scrollIntoView({ behavior: "instant", block: "start" });
+      });
+    }
   }
 
   function openShorts(startId) {
@@ -841,9 +884,9 @@
         '</b><div class="ch">' +
         escapeHtml(ch.name) +
         "</div></div>";
+      // сразу лента — без перехода на канал
       card.addEventListener("click", function () {
-        if (isShortVideo(v)) openShorts(v.id);
-        else openChannel(ch.id, v);
+        openShorts(v.id);
       });
       if (isShortVideo(v)) shortsRow.appendChild(card);
       else feed.appendChild(card);
