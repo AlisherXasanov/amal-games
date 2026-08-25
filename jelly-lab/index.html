@@ -3,55 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Желейная хата — своя лаборатория</title>
-  <meta name="description" content="Своя 3D-хата: Руби будит тебя утром, потом опыты, конфеты и съёмка роликов без рекламы." />
+  <title>Желейная хата — комнаты</title>
+  <meta name="description" content="Хата с комнатами: коридор, кухня, дверь с глазком, полки с конфетами. Руби и Лимон — свои герои." />
   <meta name="theme-color" content="#f5c93a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <div class="app">
     <header class="top">
       <a href="../">← Каталог</a>
       <h1>Желейная хата</h1>
-      <p class="tag">утро в хате · Руби будит тебя</p>
+      <p class="tag" id="roomTitle">Комната</p>
     </header>
 
     <p class="how">
-      Как это работает: сначала тёмная комната, Руби «спит». Потом <b>он сам просыпается и будит тебя</b>.
-      Ты жмёшь «Я проснулся» — и можно играть: конфеты, опыты, съёмка.
+      Ходи <b>стрелками</b> ← → или кнопками по краям. Комнаты разные: спальня, коридор, кухня, дверь Лимона.
+      Руби иногда уезжает на море — тогда его нет дома.
     </p>
 
     <div class="stage-wrap">
+      <button type="button" class="nav left" id="navL" aria-label="Влево">‹</button>
+      <button type="button" class="nav right" id="navR" aria-label="Вправо">›</button>
       <canvas id="c"></canvas>
-      <div class="bubble" id="bubble">Тихо… утро в хате</div>
+      <div class="bubble" id="bubble">…</div>
+      <div class="peep" id="peep" hidden>
+        <p>Глазок</p>
+        <div class="peep-view" id="peepView"></div>
+      </div>
       <div class="rec" id="rec" hidden>⏺ СЪЁМКА</div>
-      <button type="button" class="wake-me" id="btnWakeMe" hidden>☀️ Я проснулся!</button>
     </div>
 
-    <p class="who" id="who">Сейчас: ночь · Руби ещё спит</p>
+    <p class="who" id="who">—</p>
 
-    <div class="actions locked" id="actions" aria-disabled="true">
-      <p class="lock-hint" id="lockHint">Сначала дождись, пока Руби тебя разбудит</p>
-      <button type="button" data-act="candy">🍬 Дать конфету</button>
-      <button type="button" data-act="enough">😤 Сказать: хватит</button>
-      <button type="button" data-act="bath">🛁 Ванна</button>
-      <button type="button" data-act="pizza">🍕 Пицца</button>
-      <button type="button" data-act="water">💧 Опыт с водой</button>
-      <button type="button" data-act="throw">🎾 Кинуть мяч</button>
-      <button type="button" data-act="squash">🫧 Жмять «Комок»</button>
-      <button type="button" data-act="limon">💛 Позвать Лимона</button>
-      <button type="button" data-act="tik">🤖 Позвать робота Тика</button>
-      <button type="button" data-act="film" class="film">🎬 Снять / сохранить ролик</button>
-    </div>
+    <div class="actions" id="actions"></div>
 
-    <p class="note">Руби — красный мишка (наш герой). Лимон — жёлтый спорщик. Тик — робот с наушниками. Это не чужой YouTube.</p>
+    <p class="note">Руби — красный мишка. Лимон — жёлтый сосед за дверью. Тик — робот. Свои имена, свой дом.</p>
   </div>
 
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=2"></script>
+  <script type="module" src="./game.js?v=3"></script>
 </body>
 </html>
