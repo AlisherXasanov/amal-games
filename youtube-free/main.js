@@ -1,247 +1,290 @@
 /**
- * Смотри без рекламы — умный поиск YouTube по блогерам и темам.
- * Честно: не взламываем YouTube, а быстро находим нужное видео.
+ * Смотри без рекламы v2 — спальня, каналы, плеер внутри (без переходов).
  */
 (function () {
   window.__AMAL_NO_WORLD__ = true;
 
-  /** Подборки: поиск + известные ролики (публичные embed) */
-  const TOPICS = [
-    {
-      id: "sakvashin",
-      name: "Саквашин",
-      emoji: "🎮",
-      keys: ["саквашин", "sakvashin", "sakva", "саква"],
-      search: "Саквашин",
-      videos: [{ id: "search", title: "Смотреть Саквашина", searchOnly: true }],
-      blurb: "Саквашин — игровые ролики и приключения. Вот что могу включить:",
-    },
-    {
-      id: "vlada4",
-      name: "Vlad A4",
-      emoji: "🔥",
-      keys: ["vlad", "влад", "a4", "а4", "vlada", "влада 4", "vlad a4"],
-      search: "Vlad A4",
-      videos: [{ id: "search", title: "Лучшее Vlad A4", searchOnly: true }],
-      blurb: "Vlad A4 — челленджи и безумные эксперименты:",
-    },
-    {
-      id: "mrbeast",
-      name: "MrBeast",
-      emoji: "💰",
-      keys: ["mrbeast", "мистер", "бист", "mr beast", "мрбист"],
-      search: "MrBeast русская озвучка",
-      videos: [{ id: "search", title: "MrBeast — популярное", searchOnly: true }],
-      blurb: "MrBeast — большие челленджи и призы:",
-    },
-    {
-      id: "gravity",
-      name: "Gravity Falls",
-      emoji: "🌲",
-      keys: ["gravity", "гравити", "фолз", "falls", "гравити фолз", "гравити фолс"],
-      search: "Gravity Falls русская озвучка",
-      videos: [{ id: "search", title: "Gravity Falls — серии", searchOnly: true }],
-      blurb: "Gravity Falls — ждём новые серии? Пока вот классика:",
-    },
-    {
-      id: "meme",
-      name: "Мемы и Shorts",
-      emoji: "😂",
-      keys: ["мем", "shorts", "шorts", "прикол", "смешн"],
-      search: "youtube shorts смешные русские",
-      videos: [{ id: "search", title: "Shorts подборка", searchOnly: true }],
-      blurb: "Короткие ролики — быстро, без долгого поиска:",
-    },
-    {
-      id: "minecraft",
-      name: "Minecraft",
-      emoji: "⛏️",
-      keys: ["minecraft", "майн", "майнкрафт", "крафт"],
-      search: "Minecraft русский let's play",
-      videos: [{ id: "search", title: "Minecraft LP", searchOnly: true }],
-      blurb: "Minecraft — выживание и постройки:",
-    },
-  ];
+  const CHANNELS = window.YT_CHANNELS || [];
+  const SUGGESTED = window.YT_SUGGESTED || [];
+  const MY_KEY = "amal-watch-my-videos-v1";
 
-  const logEl = document.getElementById("chatLog");
-  const form = document.getElementById("chatForm");
-  const input = document.getElementById("chatIn");
-  const playerBox = document.getElementById("playerBox");
-  const placeholder = document.getElementById("placeholder");
+  const viewHome = document.getElementById("viewHome");
+  const viewChannel = document.getElementById("viewChannel");
+  const btnHome = document.getElementById("btnHome");
+  const channelShelf = document.getElementById("channelShelf");
+  const suggestRow = document.getElementById("suggestRow");
+  const tvPreview = document.getElementById("tvPreview");
+  const tvHint = document.getElementById("tvHint");
+  const channelHead = document.getElementById("channelHead");
+  const videoGrid = document.getElementById("videoGrid");
+  const uploadBox = document.getElementById("uploadBox");
+  const fileIn = document.getElementById("fileIn");
+  const playerPh = document.getElementById("playerPh");
+  const ytFrame = document.getElementById("ytFrame");
+  const localVideo = document.getElementById("localVideo");
   const nowPlaying = document.getElementById("nowPlaying");
-  const chipsEl = document.getElementById("quickChips");
 
-  function ytSearchUrl(q) {
-    return "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
+  const chatToggle = document.getElementById("chatToggle");
+  const chatPanel = document.getElementById("chatPanel");
+  const chatLog = document.getElementById("chatLog");
+  const chatForm = document.getElementById("chatForm");
+  const chatIn = document.getElementById("chatIn");
+
+  let currentChannel = null;
+  let myVideos = [];
+
+  function loadMyVideos() {
+    return [];
   }
 
-  function ytEmbedUrl(id) {
-    return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?rel=0&modestbranding=1";
+  function saveMyVideos() {
+    /* blob-ссылки живут пока открыта вкладка */
   }
 
-  function addMsg(text, role, actions) {
+  function findChannel(id) {
+    return CHANNELS.find((c) => c.id === id);
+  }
+
+  function ytEmbed(id) {
+    return "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(id) + "?rel=0&modestbranding=1&autoplay=1";
+  }
+
+  function ytPlaylist(pl) {
+    return "https://www.youtube-nocookie.com/embed/videoseries?list=" + encodeURIComponent(pl) + "&rel=0&autoplay=1";
+  }
+
+  function stopAllPlayers() {
+    ytFrame.hidden = true;
+    ytFrame.src = "";
+    localVideo.hidden = true;
+    localVideo.pause();
+    localVideo.removeAttribute("src");
+    localVideo.load();
+    playerPh.hidden = false;
+    tvPreview.innerHTML = "<span>📺 Выбери канал на полке</span>";
+  }
+
+  function playInBox(targetEl, opts) {
+    stopAllPlayers();
+    playerPh.hidden = true;
+
+    if (opts.type === "local") {
+      localVideo.hidden = false;
+      localVideo.src = opts.url;
+      localVideo.play().catch(function () {});
+      if (targetEl === tvPreview) {
+        tvPreview.innerHTML = "";
+        const v = localVideo.cloneNode(true);
+        v.hidden = false;
+        v.src = opts.url;
+        v.controls = true;
+        v.playsInline = true;
+        tvPreview.appendChild(v);
+      }
+      nowPlaying.textContent = "Сейчас: " + opts.title;
+      tvHint.textContent = opts.title;
+      return;
+    }
+
+    if (opts.type === "playlist") {
+      ytFrame.hidden = false;
+      ytFrame.src = ytPlaylist(opts.playlist);
+      if (targetEl === tvPreview) {
+        tvPreview.innerHTML =
+          '<iframe src="' + ytPlaylist(opts.playlist) + '" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+      }
+      nowPlaying.textContent = "Сейчас: лента «" + opts.title + "»";
+      tvHint.textContent = "▶ " + opts.title;
+      return;
+    }
+
+    ytFrame.hidden = false;
+    ytFrame.src = ytEmbed(opts.id);
+    if (targetEl === tvPreview) {
+      tvPreview.innerHTML =
+        '<iframe src="' + ytEmbed(opts.id) + '" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+    }
+    nowPlaying.textContent = "Сейчас: " + opts.title;
+    tvHint.textContent = "▶ " + opts.title;
+  }
+
+  function showView(name) {
+    viewHome.classList.toggle("active", name === "home");
+    viewChannel.classList.toggle("active", name === "channel");
+    btnHome.hidden = name !== "channel";
+  }
+
+  function openHome() {
+    currentChannel = null;
+    showView("home");
+    stopAllPlayers();
+  }
+
+  function openChannel(id) {
+    const ch = findChannel(id);
+    if (!ch) return;
+    currentChannel = ch;
+    showView("channel");
+
+    channelHead.innerHTML =
+      '<h2>' + ch.emoji + " " + ch.name + "</h2><p>" + ch.desc + "</p>";
+
+    uploadBox.hidden = !ch.allowUpload;
+
+    const vids = ch.allowUpload ? myVideos.map((v, i) => ({ local: true, url: v.url, title: v.title, idx: i })) : [];
+    ch.videos.forEach(function (v) {
+      vids.push(v);
+    });
+
+    videoGrid.innerHTML = "";
+    if (!vids.length && ch.allowUpload) {
+      videoGrid.innerHTML = '<p style="grid-column:1/-1;color:#999;font-size:13px;padding:8px">Загрузи свой первый ролик ↑</p>';
+    }
+
+    vids.forEach(function (v) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "vid-card";
+      const thumb = v.playlist ? "📋" : v.local ? "🌙" : "▶";
+      btn.innerHTML = '<div class="vid-thumb">' + thumb + '</div><b>' + escapeHtml(v.title) + "</b>";
+      btn.addEventListener("click", function () {
+        if (v.local) {
+          playInBox(null, { type: "local", url: v.url, title: v.title });
+        } else if (v.playlist && ch.playlist) {
+          playInBox(null, { type: "playlist", playlist: ch.playlist, title: ch.name + " — все серии" });
+        } else if (v.id === "playlist" && ch.playlist) {
+          playInBox(null, { type: "playlist", playlist: ch.playlist, title: ch.name });
+        } else {
+          playInBox(null, { type: "yt", id: v.id, title: v.title });
+        }
+      });
+      videoGrid.appendChild(btn);
+    });
+
+    if (vids.length && !vids[0].local) {
+      const first = vids[0];
+      if (first.playlist && ch.playlist) {
+        playInBox(null, { type: "playlist", playlist: ch.playlist, title: first.title });
+      } else if (first.id && first.id !== "playlist") {
+        playInBox(null, { type: "yt", id: first.id, title: first.title });
+      }
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  }
+
+  function playSuggest(item) {
+    const ch = findChannel(item.channelId);
+    if (!ch) return;
+    if (item.pick === "upload") {
+      openChannel(ch.id);
+      return;
+    }
+    openChannel(ch.id);
+    const v = ch.videos[item.pick || 0];
+    if (!v) return;
+    if (v.playlist && ch.playlist) {
+      playInBox(tvPreview, { type: "playlist", playlist: ch.playlist, title: v.title });
+    } else {
+      playInBox(tvPreview, { type: "yt", id: v.id, title: v.title });
+    }
+  }
+
+  // полка каналов
+  CHANNELS.forEach(function (ch) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "ch-card";
+    b.style.borderColor = ch.color;
+    b.innerHTML = '<span class="ico">' + ch.emoji + '</span><span class="nm">' + ch.name + "</span>";
+    b.addEventListener("click", function () {
+      openChannel(ch.id);
+    });
+    channelShelf.appendChild(b);
+  });
+
+  SUGGESTED.forEach(function (s) {
+    const ch = findChannel(s.channelId);
+    if (!ch) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "sug-btn";
+    b.textContent = ch.emoji + " " + ch.name;
+    b.addEventListener("click", function () {
+      playSuggest(s);
+    });
+    suggestRow.appendChild(b);
+  });
+
+  btnHome.addEventListener("click", openHome);
+
+  fileIn.addEventListener("change", function () {
+    const f = fileIn.files && fileIn.files[0];
+    if (!f || !currentChannel) return;
+    const url = URL.createObjectURL(f);
+    const title = f.name.replace(/\.[^.]+$/, "") || "Мой ролик";
+    myVideos.unshift({ title: title, url: url, at: Date.now() });
+    saveMyVideos();
+    openChannel(currentChannel.id);
+    playInBox(null, { type: "local", url: url, title: title });
+    chatMsg("Загрузила «" + title + "» на канал Amal 🌙", "bot");
+  });
+
+  // чат
+  function chatMsg(text, role) {
     const d = document.createElement("div");
     d.className = "msg " + role;
     d.innerHTML = text;
-    if (actions && actions.length) {
-      const acts = document.createElement("div");
-      acts.className = "acts";
-      actions.forEach((a) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.textContent = a.label;
-        b.addEventListener("click", a.onClick);
-        acts.appendChild(b);
-      });
-      d.appendChild(acts);
-    }
-    logEl.appendChild(d);
-    logEl.scrollTop = logEl.scrollHeight;
+    chatLog.appendChild(d);
+    chatLog.scrollTop = chatLog.scrollHeight;
   }
 
-  function playVideo(id, title, searchFallback) {
-    if (!id || id === "search") {
-      if (searchFallback) window.open(ytSearchUrl(searchFallback), "_blank", "noopener");
-      nowPlaying.textContent = "Поиск на YouTube: " + (searchFallback || title);
-      return;
-    }
-    placeholder.style.display = "none";
-    let iframe = playerBox.querySelector("iframe");
-    if (!iframe) {
-      iframe = document.createElement("iframe");
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-      iframe.allowFullscreen = true;
-      iframe.title = title || "YouTube";
-      playerBox.appendChild(iframe);
-    }
-    iframe.src = ytEmbedUrl(id);
-    nowPlaying.textContent = "Сейчас: " + (title || id);
-  }
-
-  function openTopic(topic) {
-    addMsg(
-      topic.emoji + " <b>" + topic.name + "</b><br>" + topic.blurb,
-      "bot",
-      topic.videos.map((v, i) => ({
-        label: v.title || topic.name + " " + (i + 1),
-        onClick: () => {
-          if (v.searchOnly) {
-            playVideo("search", v.title, topic.search);
-            addMsg("Открываю поиск «" + topic.search + "» на YouTube.", "bot");
-          } else {
-            playVideo(v.id, v.title, topic.search);
-          }
-        },
-      })).concat([
-        {
-          label: "🔍 Все видео «" + topic.search + "»",
-          onClick: () => window.open(ytSearchUrl(topic.search), "_blank", "noopener"),
-        },
-      ])
-    );
-  }
-
-  function matchTopic(text) {
+  function matchChannel(text) {
     const t = text.toLowerCase();
-    let best = null;
-    let score = 0;
-    for (let i = 0; i < TOPICS.length; i++) {
-      const topic = TOPICS[i];
-      for (let k = 0; k < topic.keys.length; k++) {
-        if (t.indexOf(topic.keys[k]) !== -1) {
-          const s = topic.keys[k].length;
-          if (s > score) {
-            score = s;
-            best = topic;
-          }
-        }
-      }
+    for (let i = 0; i < CHANNELS.length; i++) {
+      const c = CHANNELS[i];
+      if (t.indexOf(c.name.toLowerCase()) !== -1) return c;
+      if (c.id === "tri-kota" && /три кота|трикота|3 кота/.test(t)) return c;
+      if (c.id === "vlada4" && /vlad|влад|a4|а4/.test(t)) return c;
+      if (c.id === "gravity" && /gravity|гравити|фолз/.test(t)) return c;
+      if (c.id === "amal-room" && /мой|amal|амал|свой канал/.test(t)) return c;
+      if (/мульт|детск|детям/.test(t) && c.cat === "kids") return c;
+      if (/челлендж|блог/.test(t) && c.cat === "blog") return c;
     }
-    return best;
+    return null;
   }
 
-  function replyToUser(text) {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-
-    addMsg(trimmed.replace(/</g, "&lt;"), "user");
-
-    const topic = matchTopic(trimmed);
-
-    if (/привет|здрав|хай|hello/i.test(trimmed)) {
-      addMsg(
-        "Привет! 👋 Я помощник <b>Смотри без рекламы</b>.<br>Напиши, кого смотреть: <b>Саквашин</b>, <b>Vlad A4</b>, <b>MrBeast</b>, <b>Gravity Falls</b> — или любую другую тему.",
-        "bot"
-      );
-      return;
-    }
-
-    if (/реклам|premium|премиум|без реклам/i.test(trimmed)) {
-      addMsg(
-        "Честно: полностью убрать рекламу внутри YouTube может только <b>YouTube Premium</b> (платно).<br><br>" +
-          "Это приложение <b>бесплатное</b>: ты пишешь — я сразу нахожу нужного блогера или тему, без долгого листания и лишних кликов.",
-        "bot",
-        [
-          {
-            label: "YouTube Premium",
-            onClick: () => window.open("https://www.youtube.com/premium", "_blank", "noopener"),
-          },
-        ]
-      );
-      return;
-    }
-
-    if (topic) {
-      openTopic(topic);
-      return;
-    }
-
-    // произвольный запрос — поиск
-    const q = trimmed.replace(/^(хочу|покажи|найди|смотреть|про|посмотреть)\s+/gi, "").trim() || trimmed;
-    addMsg(
-      "Ищу на YouTube: <b>" + q.replace(/</g, "&lt;") + "</b><br>Можешь уточнить блогера — я знаю Саквашина, Vlad A4, MrBeast, Gravity Falls и других.",
-      "bot",
-      [
-        {
-          label: "▶ Искать «" + q.slice(0, 28) + "»",
-          onClick: () => {
-            window.open(ytSearchUrl(q), "_blank", "noopener");
-            nowPlaying.textContent = "Поиск: " + q;
-          },
-        },
-      ]
-    );
-  }
-
-  // быстрые кнопки
-  TOPICS.forEach((topic) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.textContent = topic.emoji + " " + topic.name;
-    b.addEventListener("click", () => {
-      openTopic(topic);
-      input.value = topic.name;
-    });
-    chipsEl.appendChild(b);
-  });
-
-  form.addEventListener("submit", (e) => {
+  chatForm.addEventListener("submit", function (e) {
     e.preventDefault();
-    replyToUser(input.value);
-    input.value = "";
+    const text = chatIn.value.trim();
+    if (!text) return;
+    chatMsg(escapeHtml(text), "user");
+    chatIn.value = "";
+    const ch = matchChannel(text);
+    if (ch) {
+      chatMsg("Открываю канал <b>" + ch.name + "</b> — видео включится здесь, без перехода.", "bot");
+      openChannel(ch.id);
+      chatPanel.hidden = false;
+    } else {
+      chatMsg("Не нашла канал. Попробуй: <b>Три кота</b>, <b>Vlad A4</b>, <b>мультики</b>, <b>мой канал</b>.", "bot");
+    }
   });
 
-  // PWA install
+  chatToggle.addEventListener("click", function () {
+    chatPanel.hidden = !chatPanel.hidden;
+  });
+
+  // PWA
   let deferredPrompt = null;
   const installBtn = document.getElementById("installBtn");
-  window.addEventListener("beforeinstallprompt", (e) => {
+  window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault();
     deferredPrompt = e;
     installBtn.hidden = false;
   });
-  installBtn.addEventListener("click", async () => {
+  installBtn.addEventListener("click", async function () {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     await deferredPrompt.userChoice;
@@ -249,9 +292,9 @@
     installBtn.hidden = true;
   });
 
-  addMsg(
-    "Я <b>нейросеть-помощник Amal</b> 🤖<br>" +
-      "Напиши, что хочешь посмотреть — например:<br>«<i>про Саквашина</i>», «<i>Gravity Falls</i>», «<i>Vlad A4</i>», «<i>MrBeast</i>».",
-    "bot"
-  );
+  chatMsg("Привет! 🏠 Это твоя <b>спальня-телевизор</b>. Жми канал на полке — видео играет <b>здесь</b>, никуда не перекидывает.", "bot");
+
+  if (location.hash.indexOf("channel=") === 1) {
+    openChannel(location.hash.split("=")[1]);
+  }
 })();

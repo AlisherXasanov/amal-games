@@ -1,0 +1,120 @@
+/**
+ * Каналы — плеер внутри приложения. playlist = лента канала на YouTube.
+ */
+window.YT_CHANNELS = [
+  {
+    id: "tri-kota",
+    name: "Три кота",
+    emoji: "🐱",
+    cat: "kids",
+    catLabel: "Детские мультики",
+    color: "#ff9f43",
+    desc: "Коржик, Компот и Кaramelka.",
+    playlist: "UUdSaNPMpj-Vi_SF6_MAFpSw",
+    videos: [
+      { id: "tCL1PzE9RhE", title: "Три кота — мультсерия" },
+      { id: "playlist", title: "▶ Все серии канала", playlist: true },
+    ],
+  },
+  {
+    id: "smeshariki",
+    name: "Смешарики",
+    emoji: "⚪",
+    cat: "kids",
+    catLabel: "Детские мультики",
+    color: "#74b9ff",
+    desc: "Круглые друзья.",
+    videos: [
+      { id: "tCL1PzE9RhE", title: "Смешарики — серия" },
+      { id: "M7lc1UVf-VE", title: "Смешарики — подборка" },
+    ],
+  },
+  {
+    id: "fixiki",
+    name: "Фиксики",
+    emoji: "🔧",
+    cat: "kids",
+    catLabel: "Детские мультики",
+    color: "#55efc4",
+    desc: "Про технику и гаджеты.",
+    videos: [{ id: "tCL1PzE9RhE", title: "Фиксики — серия" }],
+  },
+  {
+    id: "vlada4",
+    name: "Vlad A4",
+    emoji: "🔥",
+    cat: "blog",
+    catLabel: "Челленджи",
+    color: "#e17055",
+    desc: "Эксперименты и челленджи.",
+    videos: [
+      { id: "tCL1PzE9RhE", title: "Vlad A4 — ролик 1" },
+      { id: "M7lc1UVf-VE", title: "Vlad A4 — ролик 2" },
+    ],
+  },
+  {
+    id: "sakvashin",
+    name: "Саквашин",
+    emoji: "🎮",
+    cat: "blog",
+    catLabel: "Челленджи",
+    color: "#a29bfe",
+    desc: "Игры и прохождения.",
+    videos: [{ id: "M7lc1UVf-VE", title: "Саквашин — игровой ролик" }],
+  },
+  {
+    id: "mrbeast",
+    name: "MrBeast",
+    emoji: "💰",
+    cat: "blog",
+    catLabel: "Челленджи",
+    color: "#00b894",
+    desc: "Большие призы.",
+    videos: [{ id: "tCL1PzE9RhE", title: "MrBeast — челлендж" }],
+  },
+  {
+    id: "gravity",
+    name: "Gravity Falls",
+    emoji: "🌲",
+    cat: "toon",
+    catLabel: "Мультсериалы",
+    color: "#6c5ce7",
+    desc: "Гравити Фолз.",
+    videos: [{ id: "tCL1PzE9RhE", title: "Gravity Falls — серия" }],
+  },
+  {
+    id: "anime-draw",
+    name: "Рисуем аниме",
+    emoji: "✏️",
+    cat: "toon",
+    catLabel: "Мультсериалы",
+    color: "#fd79a8",
+    desc: "Уроки рисовки.",
+    videos: [{ id: "M7lc1UVf-VE", title: "Как рисовать аниме" }],
+  },
+  {
+    id: "amal-room",
+    name: "Канал Amal",
+    emoji: "🌙",
+    cat: "mine",
+    catLabel: "Твой канал",
+    color: "#f0b429",
+    desc: "Твои идеи и ролики — даже черновики, которых ещё нет на YouTube.",
+    allowUpload: true,
+    videos: [],
+  },
+];
+
+window.YT_SUGGESTED = [
+  { channelId: "tri-kota", pick: 0 },
+  { channelId: "vlada4", pick: 0 },
+  { channelId: "gravity", pick: 0 },
+  { channelId: "amal-room", pick: "upload" },
+];
+
+window.YT_CATS = [
+  { id: "kids", label: "🧸 Детские", emoji: "🧸" },
+  { id: "blog", label: "🔥 Блогеры", emoji: "🔥" },
+  { id: "toon", label: "📺 Мультики", emoji: "📺" },
+  { id: "mine", label: "🌙 Твой канал", emoji: "🌙" },
+];
