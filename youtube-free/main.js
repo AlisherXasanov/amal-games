@@ -9,9 +9,9 @@
   const LIKE_KEY = "amal-watch-likes-v1";
   const COMMENT_KEY = "amal-watch-comments-v1";
   const REPORT_KEY = "amal-watch-reports-v1";
-  // Сначала обычный embed (точно играет). Piped — режим без рекламы по кнопке.
-  const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
+  // Без рекламы по умолчанию (Piped). Если не играет — кнопка «Обычный плеер».
   const EMBED_NOADS = "https://piped.video/embed/";
+  const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
   const PIPED_APIS = [
     "https://pipedapi.adminforge.de",
     "https://pipedapi.nosebs.ru",
@@ -59,7 +59,7 @@
   let currentVideoKey = "";
   let currentLikesLabel = "—";
   let currentPlayId = "";
-  let usingNoAds = false;
+  let usingNoAds = true;
   let myVideos = [];
   let liked = loadMap(LIKE_KEY);
   let subs = loadMap(SUB_KEY);
@@ -117,7 +117,8 @@
 
   function embedUrl(id, autoplay, noAds) {
     const ap = autoplay === false ? "0" : "1";
-    if (noAds) {
+    const useNoAds = noAds !== false;
+    if (useNoAds) {
       return EMBED_NOADS + encodeURIComponent(id) + "?autoplay=" + ap;
     }
     return (
@@ -129,6 +130,7 @@
   }
 
   function playlistUrl(list) {
+    // плейлист YouTube часто с рекламой — лучше не использовать; оставляем как запасной
     return (
       EMBED_WORKS +
       "videoseries?list=" +
@@ -143,7 +145,8 @@
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
-      '<button type="button" id="btnAltPlayer" class="sub-btn">Режим без рекламы</button>' +
+      '<button type="button" id="btnAltPlayer" class="sub-btn">Если не играет — обычный плеер</button>' +
+      '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню роликов</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
     if (playerBox && playerBox.parentNode) {
       playerBox.parentNode.insertBefore(bar, playerBox.nextSibling);
@@ -153,8 +156,13 @@
       usingNoAds = !usingNoAds;
       ytFrame.src = embedUrl(currentPlayId, true, usingNoAds);
       this.textContent = usingNoAds
-        ? "Обычный плеер (если не играет)"
-        : "Режим без рекламы";
+        ? "Если не играет — обычный плеер"
+        : "Вернуть без рекламы";
+    };
+    document.getElementById("btnToMenu").onclick = function () {
+      const menu = document.getElementById("channelMenu");
+      if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
+      else if (videoGrid) videoGrid.scrollIntoView({ behavior: "smooth", block: "start" });
     };
   }
 
@@ -362,19 +370,19 @@
     ensureZoomBar();
     ensurePlayerTools();
     stopAllMedia();
-    usingNoAds = false;
+    usingNoAds = true;
     currentPlayId = id;
     playerPh.hidden = true;
     ytFrame.hidden = false;
-    ytFrame.src = embedUrl(id, true, false);
+    ytFrame.src = embedUrl(id, true, true);
     nowPlaying.textContent = "Сейчас: " + title;
-    if (tvHint) tvHint.textContent = "▶ " + title;
+    if (tvHint) tvHint.textContent = "▶ " + title + " · без рекламы";
     currentVideoKey = (opts.channelId || "") + "::" + id;
     currentLikesLabel = formatLikes(opts.likesLabel);
     refreshLikeUi();
     renderComments();
     const alt = document.getElementById("btnAltPlayer");
-    if (alt) alt.textContent = "Режим без рекламы";
+    if (alt) alt.textContent = "Если не играет — обычный плеер";
   }
 
   function playPlaylist(list, title) {
@@ -428,7 +436,12 @@
   function playVideoObj(ch, v) {
     if (v.local) return playLocal(v.url, v.title);
     if (v.playlist || v.id === "playlist") {
-      return playPlaylist(v.playlist || ch.uploads, v.title || ch.name);
+      // не открываем YouTube-плейлист (там реклама) — грузим меню
+      loadAllFromChannel(ch);
+      const menu = document.getElementById("channelMenu");
+      if (menu) menu.scrollTo({ top: 0, behavior: "smooth" });
+      if (tvHint) tvHint.textContent = "📋 Меню роликов ниже — листай и выбирай";
+      return;
     }
     if (isShortVideo(v)) {
       openShorts(v.id);
@@ -491,9 +504,9 @@
     count.className = "grid-count";
     count.style.cssText = "grid-column:1/-1;font-size:12px;color:#c4b5fd;padding:4px 0 8px";
     count.textContent =
-      "В списке сейчас: " +
+      "Меню: " +
       realVideos(ch).length +
-      " роликов. Кнопка «Все ролики» открывает полную ленту канала.";
+      " роликов — листай вниз и жми на любой";
     videoGrid.appendChild(count);
 
     vids.forEach(function (v) {
@@ -767,7 +780,7 @@
             });
             const vid = slide.dataset.vid;
             if (vid && (!fr.src || fr.src.indexOf(vid) < 0)) {
-              fr.src = embedUrl(vid, true, false);
+              fr.src = embedUrl(vid, true, true);
             }
           } else if (!entry.isIntersecting) {
             fr.src = "";
@@ -892,10 +905,8 @@
   if (allVideosBtn) {
     allVideosBtn.addEventListener("click", function () {
       if (!currentChannel) return;
-      if (currentChannel.uploads) {
-        playPlaylist(currentChannel.uploads, "Все ролики · " + currentChannel.name);
-      }
-      if (videoGrid) videoGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+      const menu = document.getElementById("channelMenu");
+      if (menu) menu.scrollTo({ top: 0, behavior: "smooth" });
       loadAllFromChannel(currentChannel);
     });
   }

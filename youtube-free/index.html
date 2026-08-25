@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=9" />
+  <link rel="stylesheet" href="./style.css?v=10" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -26,7 +26,7 @@
         <div class="tv-frame">
           <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
         </div>
-        <p class="tv-hint" id="tvHint">Открой канал — подтянутся все ролики. Лайки только твои, без накрутки. Если не играет — обычный плеер уже включён.</p>
+        <p class="tv-hint" id="tvHint">Без рекламы. Открой канал → внизу меню роликов, листай пальцем.</p>
       </div>
 
       <div class="shelf-label">Каналы</div>
@@ -50,40 +50,43 @@
   </section>
 
   <section class="view" id="viewChannel">
-    <div class="channel-head" id="channelHead"></div>
-    <div class="player-area">
-      <div class="player-box" id="playerBox">
-        <div class="player-ph" id="playerPh">▶ Выбери видео</div>
-        <video id="localVideo" controls playsinline hidden></video>
-        <iframe id="ytFrame" title="Видео" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+    <div class="channel-layout">
+      <div class="channel-head" id="channelHead"></div>
+      <div class="player-area">
+        <div class="player-box" id="playerBox">
+          <div class="player-ph" id="playerPh">▶ Выбери видео из меню ниже</div>
+          <video id="localVideo" controls playsinline hidden></video>
+          <iframe id="ytFrame" title="Видео" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+        </div>
+        <div class="stats-bar" id="statsBar">
+          <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">лайк</span></button>
+          <span class="stat" id="subsStat">👥 0</span>
+          <button type="button" class="sub-btn" id="subBtn">Подписаться</button>
+          <button type="button" class="sub-btn" id="reportBtn">⚠ Ошибка</button>
+        </div>
+        <p class="now" id="nowPlaying">Сейчас: —</p>
       </div>
-      <div class="stats-bar" id="statsBar">
-        <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">0</span></button>
-        <span class="stat" id="subsStat">👥 0</span>
-        <button type="button" class="sub-btn" id="subBtn">Подписаться</button>
-        <button type="button" class="sub-btn" id="allVideosBtn">📋 Все ролики</button>
-        <button type="button" class="sub-btn" id="reportBtn">⚠ Ошибка</button>
-      </div>
-      <p class="now" id="nowPlaying">Сейчас: —</p>
-    </div>
-    <div class="upload-box" id="uploadBox" hidden>
-      <p>📁 Свой ролик — только у тебя, даже если его нет на YouTube.</p>
-      <label class="btn accent upload-label">
-        Загрузить
-        <input type="file" id="fileIn" accept="video/*" hidden />
-      </label>
-    </div>
-    <div class="shelf-label pad">Ролики канала · свежие</div>
-    <div class="video-grid" id="videoGrid"></div>
 
-    <div class="comments-box" id="commentsBox">
-      <div class="shelf-label pad">💬 Комментарии</div>
-      <div class="comments-list" id="commentsList"></div>
-      <form class="comment-form" id="commentForm">
-        <input id="commentNick" maxlength="24" placeholder="Имя" autocomplete="nickname" />
-        <input id="commentText" maxlength="400" placeholder="Напиши комментарий…" required />
-        <button type="submit">Отправить</button>
-      </form>
+      <div class="channel-menu" id="channelMenu">
+        <div class="menu-title">📋 Меню роликов · листай вниз</div>
+        <div class="upload-box" id="uploadBox" hidden>
+          <p>📁 Свой ролик — только у тебя.</p>
+          <label class="btn accent upload-label">
+            Загрузить
+            <input type="file" id="fileIn" accept="video/*" hidden />
+          </label>
+        </div>
+        <div class="video-grid" id="videoGrid"></div>
+        <div class="comments-box" id="commentsBox">
+          <div class="shelf-label pad">💬 Комментарии</div>
+          <div class="comments-list" id="commentsList"></div>
+          <form class="comment-form" id="commentForm">
+            <input id="commentNick" maxlength="24" placeholder="Имя" autocomplete="nickname" />
+            <input id="commentText" maxlength="400" placeholder="Напиши комментарий…" required />
+            <button type="submit">Отправить</button>
+          </form>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -99,8 +102,8 @@
     </div>
   </div>
 
-  <script src="./channels-data.js?v=9"></script>
-  <script src="./main.js?v=9"></script>
+  <script src="./channels-data.js?v=10"></script>
+  <script src="./main.js?v=10"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

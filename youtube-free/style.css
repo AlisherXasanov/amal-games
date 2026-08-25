@@ -249,16 +249,48 @@ body.watch-app .amal-side-quick {
 
 .channel-head {
   padding: 14px 16px; background: linear-gradient(135deg, #2a1a3a, #1a1028);
-  border-bottom: 1px solid #3d2a5c;
+  border-bottom: 1px solid #3d2a5c; flex-shrink: 0;
 }
 .channel-head h2 { font-size: 18px; margin-bottom: 4px; }
 .channel-head p { font-size: 12px; color: #b8a8d0; }
 .channel-head .head-stats { margin-top: 8px; font-size: 12px; color: #fde68a; }
 
-.player-area { background: #000; }
+#viewChannel.active {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 52px);
+  overflow: hidden;
+}
+.channel-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.player-area { background: #000; flex-shrink: 0; }
 .player-box {
   position: relative; width: 100%; max-width: 960px; margin: 0 auto;
-  max-height: 52vh; aspect-ratio: 16/9; background: #111;
+  max-height: 36vh; aspect-ratio: 16/9; background: #111;
+}
+.channel-menu {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: #1a1028;
+  padding-bottom: 48px;
+  overscroll-behavior: contain;
+}
+.menu-title {
+  position: sticky; top: 0; z-index: 5;
+  padding: 12px 14px;
+  font: 800 13px system-ui;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #fde68a;
+  background: linear-gradient(180deg, #2a1a3a, #1e1430);
+  border-bottom: 1px solid #4a3568;
 }
 .player-ph {
   position: absolute; inset: 0; display: grid; place-items: center;
