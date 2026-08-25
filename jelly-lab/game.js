@@ -105,7 +105,7 @@ sun.position.set(3, 10, 4);
 scene.add(sun);
 
 const texCache = {};
-function tex(key, draw, size = 256) {
+function tex(key, draw, size = 512) {
   if (texCache[key]) return texCache[key];
   const c = document.createElement("canvas");
   c.width = c.height = size;
@@ -113,99 +113,252 @@ function tex(key, draw, size = 256) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 4;
   texCache[key] = t;
   return t;
 }
-function floorTex(g, s) {
-  for (let r = 0; r < 8; r++) {
-    g.fillStyle = r % 2 ? "#b8884c" : "#d2ad78";
-    g.fillRect(0, (r * s) / 8, s, s / 8 - 1);
+function noise(g, s, a = 0.12, step = 2) {
+  const img = g.getImageData(0, 0, s, s);
+  const d = img.data;
+  for (let y = 0; y < s; y += step) {
+    for (let x = 0; x < s; x += step) {
+      const n = (Math.random() - 0.5) * 255 * a;
+      for (let dy = 0; dy < step && y + dy < s; dy++) {
+        for (let dx = 0; dx < step && x + dx < s; dx++) {
+          const i = ((y + dy) * s + (x + dx)) * 4;
+          d[i] = Math.max(0, Math.min(255, d[i] + n));
+          d[i + 1] = Math.max(0, Math.min(255, d[i + 1] + n));
+          d[i + 2] = Math.max(0, Math.min(255, d[i + 2] + n));
+        }
+      }
+    }
   }
+  g.putImageData(img, 0, 0);
+}
+function floorTex(g, s) {
+  const rows = 8;
+  const h = s / rows;
+  for (let r = 0; r < rows; r++) {
+    const base = r % 2 ? [168, 118, 62] : [210, 168, 108];
+    g.fillStyle = `rgb(${base[0]},${base[1]},${base[2]})`;
+    g.fillRect(0, r * h, s, h - 1);
+    for (let x = 0; x < s; x += 3) {
+      const wobble = Math.sin(x * 0.04 + r) * 2;
+      g.strokeStyle = `rgba(80,40,12,${0.08 + Math.random() * 0.12})`;
+      g.beginPath();
+      g.moveTo(x, r * h + 2 + wobble);
+      g.lineTo(x + 2, r * h + h - 3 + wobble * 0.5);
+      g.stroke();
+    }
+    g.fillStyle = "rgba(60,30,10,0.35)";
+    g.fillRect(0, (r + 1) * h - 2, s, 2);
+  }
+  noise(g, s, 0.1, 2);
 }
 function wallTex(g, s) {
-  g.fillStyle = "#f3e6c8";
+  const grd = g.createLinearGradient(0, 0, 0, s);
+  grd.addColorStop(0, "#faf3e4");
+  grd.addColorStop(0.55, "#f0e2c4");
+  grd.addColorStop(1, "#e6d4ae");
+  g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
-}
-function tileTex(g, s) {
-  g.fillStyle = "#dfeaf2";
-  g.fillRect(0, 0, s, s);
-  g.strokeStyle = "#9bb";
-  for (let i = 0; i <= 8; i++) {
+  for (let i = 0; i < 18; i++) {
+    g.strokeStyle = `rgba(180,150,100,${0.08 + (i % 3) * 0.04})`;
+    g.lineWidth = 1;
+    const y = ((i + 0.5) * s) / 18;
     g.beginPath();
-    g.moveTo((i * s) / 8, 0);
-    g.lineTo((i * s) / 8, s);
-    g.stroke();
-    g.beginPath();
-    g.moveTo(0, (i * s) / 8);
-    g.lineTo(s, (i * s) / 8);
+    g.moveTo(0, y);
+    g.lineTo(s, y + Math.sin(i) * 2);
     g.stroke();
   }
+  noise(g, s, 0.06, 3);
+}
+function tileTex(g, s) {
+  const n = 8;
+  const cell = s / n;
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      const shade = 220 + ((x + y) % 2) * 12 + Math.floor(Math.random() * 8);
+      g.fillStyle = `rgb(${shade - 8},${shade},${shade + 6})`;
+      g.fillRect(x * cell + 1, y * cell + 1, cell - 2, cell - 2);
+      g.strokeStyle = "rgba(140,160,170,0.55)";
+      g.strokeRect(x * cell + 0.5, y * cell + 0.5, cell - 1, cell - 1);
+    }
+  }
+  noise(g, s, 0.07, 2);
 }
 function woodTex(g, s) {
   g.fillStyle = "#a8753a";
   g.fillRect(0, 0, s, s);
-  for (let i = 0; i < 14; i++) {
-    g.strokeStyle = "rgba(60,30,10,0.22)";
+  for (let i = 0; i < 28; i++) {
+    g.strokeStyle = `rgba(60,30,10,${0.12 + Math.random() * 0.18})`;
+    g.lineWidth = 1 + (i % 3);
     g.beginPath();
-    g.moveTo(0, i * 18);
-    g.lineTo(s, i * 18 + 3);
+    g.moveTo(0, (i * s) / 28 + Math.random() * 4);
+    g.bezierCurveTo(s * 0.35, (i * s) / 28 + 6, s * 0.65, (i * s) / 28 - 4, s, (i * s) / 28 + 3);
     g.stroke();
   }
+  noise(g, s, 0.09, 2);
+}
+function fabricTex(g, s) {
+  g.fillStyle = "#3d6eb8";
+  g.fillRect(0, 0, s, s);
+  for (let y = 0; y < s; y += 4) {
+    for (let x = 0; x < s; x += 4) {
+      const weave = ((x / 4 + y / 4) % 2) === 0;
+      g.fillStyle = weave ? "rgba(90,140,210,0.55)" : "rgba(40,80,150,0.45)";
+      g.fillRect(x, y, 4, 4);
+    }
+  }
+  for (let i = 0; i < s; i += 8) {
+    g.strokeStyle = "rgba(255,255,255,0.08)";
+    g.beginPath();
+    g.moveTo(i, 0);
+    g.lineTo(i, s);
+    g.stroke();
+    g.beginPath();
+    g.moveTo(0, i);
+    g.lineTo(s, i);
+    g.stroke();
+  }
+  noise(g, s, 0.08, 2);
 }
 function doorTex(g, s) {
-  g.fillStyle = "#7a4a22";
+  const grd = g.createLinearGradient(0, 0, s, 0);
+  grd.addColorStop(0, "#6a3e1c");
+  grd.addColorStop(0.5, "#8a5628");
+  grd.addColorStop(1, "#5e3616");
+  g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
-  g.strokeStyle = "#5a3418";
-  g.lineWidth = 10;
-  g.strokeRect(14, 14, s - 28, s - 28);
-  g.fillStyle = "#111";
+  for (let i = 0; i < 20; i++) {
+    g.strokeStyle = `rgba(40,20,8,${0.15 + Math.random() * 0.2})`;
+    g.beginPath();
+    g.moveTo(0, i * (s / 20));
+    g.lineTo(s, i * (s / 20) + 2);
+    g.stroke();
+  }
+  g.strokeStyle = "#4a2a12";
+  g.lineWidth = 14;
+  g.strokeRect(18, 18, s - 36, s - 36);
+  g.lineWidth = 6;
+  g.strokeRect(s * 0.12, s * 0.12, s * 0.76, s * 0.35);
+  g.strokeRect(s * 0.12, s * 0.52, s * 0.76, s * 0.35);
+  g.fillStyle = "#c9a227";
   g.beginPath();
-  g.arc(s * 0.5, s * 0.42, 14, 0, Math.PI * 2);
+  g.arc(s * 0.78, s * 0.5, 14, 0, Math.PI * 2);
   g.fill();
+  g.fillStyle = "#2a1a0a";
+  g.beginPath();
+  g.arc(s * 0.78, s * 0.5, 5, 0, Math.PI * 2);
+  g.fill();
+  noise(g, s, 0.08, 2);
 }
 function metalTex(g, s) {
   const grd = g.createLinearGradient(0, 0, s, s);
-  grd.addColorStop(0, "#f0f4f8");
-  grd.addColorStop(1, "#8fa4b2");
+  grd.addColorStop(0, "#f4f7fa");
+  grd.addColorStop(0.4, "#c5d0d8");
+  grd.addColorStop(0.7, "#9aadb8");
+  grd.addColorStop(1, "#dfe6eb");
   g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 40; i++) {
+    g.strokeStyle = `rgba(255,255,255,${0.04 + Math.random() * 0.08})`;
+    g.beginPath();
+    g.moveTo(0, Math.random() * s);
+    g.lineTo(s, Math.random() * s);
+    g.stroke();
+  }
+  noise(g, s, 0.05, 2);
 }
 function candyTex(g, s) {
   g.fillStyle = "#e51d30";
   g.fillRect(0, 0, s, s);
-  g.fillStyle = "#fff";
-  g.fillRect(0, s * 0.4, s, s * 0.2);
+  for (let i = 0; i < 10; i++) {
+    g.fillStyle = i % 2 ? "#fff8f0" : "#e51d30";
+    g.fillRect(0, (i * s) / 10, s, s / 10);
+  }
+  g.fillStyle = "rgba(255,255,255,0.35)";
+  g.fillRect(0, s * 0.38, s, s * 0.24);
+  noise(g, s, 0.06, 3);
 }
 function sandTex(g, s) {
   g.fillStyle = "#e8d4a4";
   g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 1200; i++) {
+    const x = Math.random() * s;
+    const y = Math.random() * s;
+    const r = 1 + Math.random() * 2;
+    g.fillStyle = `rgba(${180 + Math.random() * 60},${150 + Math.random() * 40},${90 + Math.random() * 40},${0.25 + Math.random() * 0.35})`;
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fill();
+  }
+  noise(g, s, 0.1, 2);
 }
 function bookTex(g, s) {
-  g.fillStyle = "#245fd0";
+  const grd = g.createLinearGradient(0, 0, s, 0);
+  grd.addColorStop(0, "#1a3a8a");
+  grd.addColorStop(0.15, "#2a55c0");
+  grd.addColorStop(1, "#1e48a8");
+  g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
   g.fillStyle = "#f0b429";
-  g.fillRect(s * 0.1, s * 0.15, s * 0.8, s * 0.12);
+  g.fillRect(s * 0.1, s * 0.15, s * 0.8, s * 0.1);
+  g.fillStyle = "rgba(255,255,255,0.15)";
+  g.fillRect(s * 0.1, s * 0.55, s * 0.8, s * 0.04);
+  g.fillRect(s * 0.1, s * 0.65, s * 0.55, s * 0.04);
+  noise(g, s, 0.07, 3);
 }
 function rugTex(g, s) {
-  g.fillStyle = "#c94a3a";
+  g.fillStyle = "#b83a2e";
   g.fillRect(0, 0, s, s);
-  g.strokeStyle = "#f0c84a";
-  g.lineWidth = 12;
-  g.strokeRect(14, 14, s - 28, s - 28);
+  for (let i = 0; i < 6; i++) {
+    g.strokeStyle = i % 2 ? "#f0c84a" : "#8a2418";
+    g.lineWidth = 10 - i;
+    g.strokeRect(20 + i * 18, 20 + i * 18, s - 40 - i * 36, s - 40 - i * 36);
+  }
+  for (let y = 40; y < s - 40; y += 6) {
+    for (let x = 40; x < s - 40; x += 6) {
+      if ((x + y) % 12 === 0) {
+        g.fillStyle = "rgba(240,200,80,0.25)";
+        g.fillRect(x, y, 3, 3);
+      }
+    }
+  }
+  noise(g, s, 0.08, 2);
 }
 function asphaltTex(g, s) {
-  g.fillStyle = "#6a6e74";
+  g.fillStyle = "#5a5e64";
   g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 800; i++) {
+    g.fillStyle = `rgba(${50 + Math.random() * 40},${50 + Math.random() * 40},${55 + Math.random() * 40},0.4)`;
+    g.fillRect(Math.random() * s, Math.random() * s, 2 + Math.random() * 4, 2);
+  }
   g.fillStyle = "#d8c86a";
-  g.fillRect(s * 0.45, 0, s * 0.1, s);
+  g.fillRect(s * 0.46, 0, s * 0.08, s);
+  g.fillStyle = "rgba(0,0,0,0.25)";
+  for (let y = 0; y < s; y += 48) g.fillRect(s * 0.46, y + 24, s * 0.08, 16);
+  noise(g, s, 0.09, 2);
 }
 function screenTex(g, s) {
-  g.fillStyle = "#102018";
+  const grd = g.createLinearGradient(0, 0, 0, s);
+  grd.addColorStop(0, "#0a1812");
+  grd.addColorStop(1, "#102818");
+  g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
+  for (let y = 0; y < s; y += 3) {
+    g.fillStyle = `rgba(61,255,138,${0.03 + (y % 9 === 0 ? 0.06 : 0)})`;
+    g.fillRect(0, y, s, 1);
+  }
   g.fillStyle = "#3dff8a";
-  g.font = "bold " + Math.floor(s * 0.12) + "px sans-serif";
+  g.font = "bold " + Math.floor(s * 0.11) + "px sans-serif";
   g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.shadowColor = "#1aff66";
+  g.shadowBlur = 12;
   g.fillText("ПК ВАЛЕРЫ", s / 2, s * 0.5);
+  g.shadowBlur = 0;
+  noise(g, s, 0.04, 4);
 }
 
 function say(t) {
@@ -222,12 +375,9 @@ function say(t) {
 
 function updateQuest() {
   if (!questEl) return;
-  if (!state.greeted) questEl.textContent = "→ Подойди к Валере в гостиной и поздоровайся";
-  else if (!state.played) questEl.textContent = "→ Дай Валере еду (конфета / баттерсквиш / мяч) — поиграть";
-  else if (!state.rested) questEl.textContent = "→ Клик по дивану или кровати — отдохнуть с Валерой";
-  else if (!has("camera")) questEl.textContent = "→ Возьми камеру в гостиной";
-  else if (!state.clips.length) questEl.textContent = "→ Выбери камеру и сними Валеру";
-  else questEl.textContent = "Можно: комп · ванная · туалет · улица → машина на пляж · ждать гостя";
+  if (!state.greeted) questEl.textContent = "Кликни Валеру — поговорить";
+  else if (!state.played) questEl.textContent = "Кликни вещь, потом Валеру — или просто кликни Валеру (сам возьмёт еду из кармана)";
+  else questEl.textContent = "Гуляй по комнатам. Диван — отдых. Дверь — улица.";
 }
 
 function matColor(c) {
@@ -459,7 +609,7 @@ function buildWorld() {
 
   // ——— ГОСТИНАЯ ———
   const sofaH = 0.5;
-  const sofa = furniture(2.2, sofaH, 0.85, matColor(0x4a7fd4), -1.8, 2.4);
+  const sofa = furniture(2.2, sofaH, 0.85, matMap("fabric", fabricTex), -1.8, 2.4);
   box(2.2, 0.45, 0.22, matColor(0x3a6ab8), -1.8, sofaH + 0.22, 2.05, false);
   mark(sofa, "sofa", "Диван");
 
@@ -626,10 +776,18 @@ function take(id) {
     return false;
   }
   state.inv.push(id);
+  state.selected = id;
   renderInv();
   updateQuest();
   say("Взял: " + ITEM[id].name);
   return true;
+}
+function pickForValera() {
+  if (state.selected && (FOOD.has(state.selected) || state.selected === "ball" || state.selected === "camera")) return state.selected;
+  for (const id of state.inv) if (FOOD.has(id)) return id;
+  if (has("ball")) return "ball";
+  if (has("camera")) return "camera";
+  return null;
 }
 function takeWorld(mesh, id) {
   if (!take(id)) return;
@@ -663,8 +821,15 @@ function renderInv() {
   Object.keys(seen).forEach((id) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "item" + (state.selected === id ? " sel" : "");
-    b.innerHTML = ITEM[id].emoji + "<small>" + ITEM[id].name + (seen[id] > 1 ? "×" + seen[id] : "") + "</small>";
+    const inHand = state.selected === id;
+    b.className = "item" + (inHand ? " sel" : "");
+    b.innerHTML =
+      ITEM[id].emoji +
+      "<small>" +
+      (inHand ? "в руке · " : "") +
+      ITEM[id].name +
+      (seen[id] > 1 ? "×" + seen[id] : "") +
+      "</small>";
     b.onclick = (e) => {
       e.stopPropagation();
       state.selected = state.selected === id ? null : id;
@@ -791,16 +956,20 @@ function interact(id, mesh) {
     return;
   }
   if (id === "valera") {
-    if (tryFilm("valera")) return;
-    if (state.selected && FOOD.has(state.selected)) {
-      const n = ITEM[state.selected].name;
-      useOne(state.selected);
+    const give = pickForValera();
+    if (give === "camera") {
+      state.selected = "camera";
+      if (tryFilm("valera")) return;
+    }
+    if (give && FOOD.has(give)) {
+      const n = ITEM[give].name;
+      useOne(give);
       state.played = true;
       updateQuest();
       say("Ммм, " + n + "! Поиграли.");
       return;
     }
-    if (state.selected === "ball") {
+    if (give === "ball") {
       useOne("ball");
       state.played = true;
       updateQuest();
@@ -810,10 +979,10 @@ function interact(id, mesh) {
     if (!state.greeted) {
       state.greeted = true;
       updateQuest();
-      say("Привет! Это квартира Валеры: гостиная, спальня, кухня, ванна, туалет.");
+      say("Привет! Это квартира Валеры.");
       return;
     }
-    say("Дай еду или мяч — поиграем. Диван/кровать — отдых.");
+    say("Кликни еду или мяч, потом меня — или просто кликни: возьму из кармана.");
     return;
   }
   if (id === "sofa" || id === "bed") {
