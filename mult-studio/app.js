@@ -69,6 +69,7 @@ const ASK_KEY = "mult-studio-asks-v1";
 const canvas = document.getElementById("view");
 const shelf = document.getElementById("shelf");
 const nowTitle = document.getElementById("nowTitle");
+const subs = document.getElementById("subs");
 const btnPlay = document.getElementById("btnPlay");
 const btnStop = document.getElementById("btnStop");
 const studioScene = document.getElementById("studioScene");
@@ -82,6 +83,11 @@ let playing = false;
 let playToken = 0;
 let customLines = null;
 
+function setSubs(text) {
+  if (subs) subs.textContent = text;
+  if (nowTitle) nowTitle.textContent = text;
+}
+
 /* ——— 3D scene ——— */
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -90,9 +96,9 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffe566);
 
-const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-camera.position.set(0, 1.35, 2.55);
-camera.lookAt(0, 0.75, 0);
+const camera = new THREE.PerspectiveCamera(45, 16 / 9, 0.1, 100);
+camera.position.set(0, 1.55, 3.35);
+camera.lookAt(0, 1.05, 0);
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.85));
 const sun = new THREE.DirectionalLight(0xfff2cc, 1.05);
@@ -152,13 +158,13 @@ function makeBear() {
   nose.position.set(0, 1.34, 0.26);
   g.add(nose);
   [-1, 1].forEach((s) => {
-    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.18, 4, 8), red);
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.28, 10), red);
     arm.position.set(s * 0.42, 0.95, 0.05);
-    arm.rotation.z = s * 0.4;
+    arm.rotation.z = s * 0.55;
     g.add(arm);
   });
   [-1, 1].forEach((s) => {
-    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.08, 0.12, 4, 8), red);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.22, 10), red);
     leg.position.set(s * 0.16, 0.62, 0.05);
     g.add(leg);
   });
@@ -172,11 +178,11 @@ scene.add(bear);
 function makeHand(x) {
   const g = new THREE.Group();
   const sleeve = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.1, 0.35, 4, 8),
+    new THREE.CylinderGeometry(0.1, 0.11, 0.45, 12),
     new THREE.MeshLambertMaterial({ color: 0x2f6fdb })
   );
   sleeve.rotation.x = Math.PI / 2;
-  sleeve.position.set(0, 0, -0.2);
+  sleeve.position.set(0, 0, -0.22);
   g.add(sleeve);
   const palm = new THREE.Mesh(
     new THREE.SphereGeometry(0.14, 14, 12),
@@ -184,7 +190,7 @@ function makeHand(x) {
   );
   palm.scale.set(1.1, 0.7, 1.2);
   g.add(palm);
-  g.position.set(x, 1.85, 0.9);
+  g.position.set(x, 1.95, 0.95);
   return g;
 }
 
@@ -200,10 +206,11 @@ candy.position.set(0.55, 0.72, 0.7);
 scene.add(candy);
 
 function resize() {
-  const w = canvas.clientWidth || canvas.parentElement.clientWidth;
-  const h = canvas.clientHeight || 360;
+  const frame = canvas.parentElement;
+  const w = Math.max(320, frame ? frame.clientWidth : canvas.clientWidth);
+  const h = Math.max(180, frame ? frame.clientHeight : Math.round(w * 9 / 16));
   renderer.setSize(w, h, false);
-  camera.aspect = w / Math.max(1, h);
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", resize);
@@ -214,8 +221,8 @@ function animate(now) {
   const t = (now - t0) / 1000;
   bear.position.y = 0.55 + Math.abs(Math.sin(t * 3)) * 0.04;
   bear.rotation.y = Math.sin(t * 1.2) * 0.15;
-  handL.position.y = 1.85 + Math.sin(t * 2) * 0.03;
-  handR.position.y = 1.85 + Math.cos(t * 2.1) * 0.03;
+  handL.position.y = 1.95 + Math.sin(t * 2) * 0.03;
+  handR.position.y = 1.95 + Math.cos(t * 2.1) * 0.03;
   candy.rotation.y = t;
   if (playing && current.id === "dance") {
     bear.rotation.z = Math.sin(t * 6) * 0.2;
@@ -227,11 +234,19 @@ function animate(now) {
 }
 requestAnimationFrame(animate);
 
-/* ——— speech ——— */
+/* ——— speech + visible captions (captions always work) ——— */
 function speak(text) {
   return new Promise((resolve) => {
-    if (!window.speechSynthesis) {
+    const minMs = Math.min(6500, Math.max(2200, text.length * 70));
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
       resolve();
+    };
+    const timer = setTimeout(finish, minMs);
+
+    if (!window.speechSynthesis) {
       return;
     }
     try {
@@ -239,11 +254,17 @@ function speak(text) {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ru-RU";
       u.rate = 1.02;
-      u.onend = () => resolve();
-      u.onerror = () => resolve();
+      u.onend = () => {
+        clearTimeout(timer);
+        // keep caption a moment after voice
+        setTimeout(finish, 250);
+      };
+      u.onerror = () => {
+        /* timer will finish */
+      };
       window.speechSynthesis.speak(u);
     } catch (_) {
-      resolve();
+      /* timer will finish */
     }
   });
 }
@@ -257,22 +278,24 @@ function stopSpeech() {
 async function playEpisode(ep, linesOverride) {
   current = ep;
   customLines = linesOverride || null;
-  nowTitle.textContent = ep.title;
   highlightShelf();
   playing = true;
   const token = ++playToken;
   btnPlay.textContent = "▶ Идёт…";
+  setSubs("▶ " + ep.title);
+  await wait(500);
   const lines = customLines || ep.lines;
   for (const line of lines) {
     if (token !== playToken) return;
-    nowTitle.textContent = line;
+    setSubs(line);
     await speak(line);
-    await wait(350);
+    if (token !== playToken) return;
+    await wait(280);
   }
   if (token !== playToken) return;
   playing = false;
   btnPlay.textContent = "▶ Смотреть";
-  nowTitle.textContent = ep.title + " · конец";
+  setSubs(ep.title + " · конец · жми ещё раз");
 }
 
 function wait(ms) {
@@ -324,7 +347,7 @@ function renderShelf() {
     btn.addEventListener("click", () => {
       current = ep;
       customLines = ep.mine ? ep.lines : null;
-      nowTitle.textContent = ep.title;
+      setSubs(ep.title);
       highlightShelf();
       playEpisode(ep, ep.mine ? ep.lines : null);
     });
@@ -377,7 +400,7 @@ btnStop.addEventListener("click", () => {
   playing = false;
   stopSpeech();
   btnPlay.textContent = "▶ Смотреть";
-  nowTitle.textContent = current.title;
+  setSubs(current.title + " · стоп");
 });
 
 document.getElementById("btnShoot").addEventListener("click", () => {
@@ -491,4 +514,5 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 renderShelf();
 renderAsks();
-nowTitle.textContent = current.title;
+setSubs("Жми «▶ Смотреть» или карточку ниже");
+requestAnimationFrame(resize);

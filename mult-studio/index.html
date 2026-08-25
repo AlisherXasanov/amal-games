@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#f5c93a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
   <header class="top">
@@ -27,7 +27,10 @@
     <section class="panel on" id="panel-watch">
       <p class="lead">Полка своих роликов. Жми — играет 3D-сцена. Рекламы нет.</p>
       <div class="stage-wrap">
-        <canvas id="view"></canvas>
+        <div class="stage-frame">
+          <canvas id="view"></canvas>
+          <div class="subtitles" id="subs">Жми «▶ Смотреть» или карточку ниже</div>
+        </div>
         <div class="stage-bar">
           <button type="button" class="go" id="btnPlay">▶ Смотреть</button>
           <button type="button" class="ghost" id="btnStop">⏹</button>
@@ -74,6 +77,6 @@
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./app.js?v=1"></script>
+  <script type="module" src="./app.js?v=2"></script>
 </body>
 </html>
