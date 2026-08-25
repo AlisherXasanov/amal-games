@@ -487,10 +487,14 @@ function setDoorOpen(open, silent) {
   state.doorOpen = open;
   if (doorGroup) doorGroup.rotation.y = open ? -Math.PI / 2 : 0;
   for (let i = solids.length - 1; i >= 0; i--) {
-    if (solids[i].tag === "doorway") solids.splice(i, 1);
+    if (solids[i].tag === "doorway" || solids[i].tag === "doorclear") solids.splice(i, 1);
   }
-  if (!open) addSolid(0, -2.0, 1.8, 0.32, "doorway");
-  if (!silent) say(open ? "Дверь открыта — выходи на улицу." : "Дверь закрыта.");
+  if (!open) {
+    addSolid(0, -2.0, 2.0, 0.4, "doorway");
+  }
+  if (!silent) {
+    say(open ? "Дверь открыта! Смотри на коврик у двери и иди вперёд (W) на улицу." : "Дверь закрыта. E или ручка — открыть.");
+  }
 }
 
 function goToBeach() {
@@ -575,6 +579,19 @@ function buildWorld() {
   box(DH * 2, 0.9, 0.22, wall, 0, H - 0.45, -2.0);
   box(0.16, 2.4, 0.2, wood, -DH - 0.05, 1.2, -2.0, false);
   box(0.16, 2.4, 0.2, wood, DH + 0.05, 1.2, -2.0, false);
+
+  // коврик-стрелка к двери (видно куда идти)
+  const exitMat = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.6, 2.4),
+    matColor(0x3dff8a)
+  );
+  exitMat.rotation.x = -Math.PI / 2;
+  exitMat.position.set(0, 0.03, -0.6);
+  scene.add(exitMat);
+  const exitOut = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 2.0), matColor(0xffe066));
+  exitOut.rotation.x = -Math.PI / 2;
+  exitOut.position.set(0, 0.03, -3.2);
+  scene.add(exitOut);
 
   // входная дверь
   doorGroup = new THREE.Group();
@@ -812,28 +829,53 @@ function useOne(id) {
   renderInv();
   updateQuest();
 }
+function invSlots() {
+  const slots = [];
+  const seen = new Set();
+  state.inv.forEach((id) => {
+    if (!seen.has(id)) {
+      seen.add(id);
+      slots.push(id);
+    }
+  });
+  return slots;
+}
+function selectSlot(n) {
+  const slots = invSlots();
+  if (n < 0 || n >= slots.length) {
+    say(slots.length ? "Пустой слот. Есть вещи в 1–" + slots.length : "Карман пуст — кликни вещь в мире.");
+    return;
+  }
+  state.selected = slots[n];
+  renderInv();
+  say("Слот " + (n + 1) + ": " + ITEM[state.selected].name);
+}
 function renderInv() {
   invEl.innerHTML = "";
-  const seen = {};
+  const slots = invSlots();
+  const counts = {};
   state.inv.forEach((id) => {
-    seen[id] = (seen[id] || 0) + 1;
+    counts[id] = (counts[id] || 0) + 1;
   });
-  Object.keys(seen).forEach((id) => {
+  slots.forEach((id, idx) => {
     const b = document.createElement("button");
     b.type = "button";
     const inHand = state.selected === id;
     b.className = "item" + (inHand ? " sel" : "");
     b.innerHTML =
+      "<span class='slotn'>" +
+      (idx + 1) +
+      "</span>" +
       ITEM[id].emoji +
       "<small>" +
-      (inHand ? "в руке · " : "") +
       ITEM[id].name +
-      (seen[id] > 1 ? "×" + seen[id] : "") +
+      (counts[id] > 1 ? "×" + counts[id] : "") +
       "</small>";
     b.onclick = (e) => {
       e.stopPropagation();
       state.selected = state.selected === id ? null : id;
       renderInv();
+      if (state.selected) say("В руках: " + ITEM[id].name);
     };
     invEl.appendChild(b);
   });
@@ -1039,8 +1081,13 @@ function interact(id, mesh) {
 function tryMove(dx, dz) {
   const nx = player.x + dx;
   const nz = player.z + dz;
-  for (const s of solids) {
-    if (nx > s.minX && nx < s.maxX && nz > s.minZ && nz < s.maxZ) return;
+  // открытая дверь: свободный коридор через проём
+  const inDoorCorridor =
+    state.doorOpen && nx > -0.95 && nx < 0.95 && nz > -3.4 && nz < 0.2;
+  if (!inDoorCorridor) {
+    for (const s of solids) {
+      if (nx > s.minX && nx < s.maxX && nz > s.minZ && nz < s.maxZ) return;
+    }
   }
   if (!state.atBeach && nz < -9.5) {
     say("Пляж только на машине.");
@@ -1146,6 +1193,22 @@ window.addEventListener("keydown", (e) => {
     if (boot.hidden && anyModalOpen()) closeAllModals();
   }
   if (e.code === "KeyG" && !state.atBeach) bringGuest();
+  if (e.code === "KeyE" && !state.atBeach && !anyModalOpen()) {
+    setDoorOpen(!state.doorOpen);
+  }
+  // слоты 1–9 (и numpad)
+  const digit = e.code.match(/^Digit([1-9])$/);
+  const pad = e.code.match(/^Numpad([1-9])$/);
+  const n = digit ? +digit[1] : pad ? +pad[1] : 0;
+  if (n >= 1 && n <= 9 && !anyModalOpen()) {
+    e.preventDefault();
+    selectSlot(n - 1);
+  }
+  if (e.code === "Digit0" || e.code === "Numpad0") {
+    state.selected = null;
+    renderInv();
+    say("Убрал из рук.");
+  }
 });
 window.addEventListener("keyup", (e) => {
   keys[e.code] = false;
@@ -1157,7 +1220,7 @@ document.getElementById("startBtn").onclick = () => {
   cross.hidden = false;
   lockPointer();
   updateQuest();
-  say("Квартира Валеры. Гостиная → спальня → кухня → ванна → туалет. Предметы на полках.");
+  say("1–9 — выбрать вещь. E — открыть дверь. Зелёный коврик → иди W на улицу.");
 };
 
 function resize() {

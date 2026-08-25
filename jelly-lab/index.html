@@ -6,12 +6,12 @@
   <title>Квартира Валеры</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=16" />
+  <link rel="stylesheet" href="./style.css?v=17" />
 </head>
 <body>
   <div id="boot">
     <h1>Квартира Валеры</h1>
-    <p>Кликни вещь — взял. Кликни Валеру — отдал или поговорил. Не надо мудрить.</p>
+    <p>Кликни вещь — взял. Клавиши <b>1–9</b> — сменить вещь в руках. <b>E</b> — дверь. Зелёный коврик → улица.</p>
     <p class="hint">WASD — ходить · мышь — смотреть · Esc — закрыть окна</p>
     <button type="button" id="startBtn">▶ Войти</button>
   </div>
@@ -22,7 +22,7 @@
     <div class="speech" id="speech">…</div>
     <div class="place" id="place">Дом</div>
     <div class="inv" id="inv"></div>
-    <p class="help">Esc — закрыть · G — позвать гостя</p>
+    <p class="help">1–9 вещи · E дверь · G гость · Esc</p>
   </div>
 
   <canvas id="c"></canvas>
@@ -59,6 +59,6 @@
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=16"></script>
+  <script type="module" src="./game.js?v=17"></script>
 </body>
 </html>
