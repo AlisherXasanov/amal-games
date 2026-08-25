@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=13" />
+  <link rel="stylesheet" href="./style.css?v=15" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -26,11 +26,15 @@
         <div class="tv-frame">
           <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
         </div>
-        <p class="tv-hint" id="tvHint">Жми «Лента» — листай вверх/вниз. Ролики должны сразу играть.</p>
+        <p class="tv-hint" id="tvHint">Каналы мотай вбок (колёсико / стрелки). Лента — вверх-вниз колёсиком. Новые ролики подтягиваются сами.</p>
       </div>
 
-      <div class="shelf-label">Каналы</div>
-      <div class="channel-shelf" id="channelShelf"></div>
+      <div class="shelf-label">Каналы · мотай вбок</div>
+      <div class="channel-shelf-wrap">
+        <button type="button" class="shelf-arrow" id="chScrollLeft" aria-label="Влево">‹</button>
+        <div class="channel-shelf" id="channelShelf"></div>
+        <button type="button" class="shelf-arrow" id="chScrollRight" aria-label="Вправо">›</button>
+      </div>
 
       <div class="search-dock" id="searchDock">
         <div class="shelf-label">🔎 Напиши по-русски — найду канал или ролик</div>
@@ -54,7 +58,7 @@
     <div class="shorts-top">
       <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
       <span>📱 Лента</span>
-      <span class="shorts-tip">листай вверх / вниз</span>
+      <span class="shorts-tip">колёсико / свайп · вверх-вниз</span>
     </div>
     <div class="shorts-feed" id="shortsFeed"></div>
   </section>
@@ -112,8 +116,8 @@
     </div>
   </div>
 
-  <script src="./channels-data.js?v=13"></script>
-  <script src="./main.js?v=13"></script>
+  <script src="./channels-data.js?v=15"></script>
+  <script src="./main.js?v=15"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

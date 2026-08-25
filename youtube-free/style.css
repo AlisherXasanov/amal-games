@@ -117,11 +117,32 @@ body.watch-app .amal-side-quick {
 }
 .shelf-label.pad { padding: 0 14px; }
 
-.channel-shelf {
-  display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 10px;
-  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+.channel-shelf-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
-.channel-shelf::-webkit-scrollbar { height: 0; }
+.channel-shelf {
+  display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 12px;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  flex: 1; min-width: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #7c3aed transparent;
+  cursor: grab;
+  touch-action: pan-x;
+}
+.channel-shelf:active { cursor: grabbing; }
+.channel-shelf::-webkit-scrollbar { height: 6px; }
+.channel-shelf::-webkit-scrollbar-thumb {
+  background: #7c3aed; border-radius: 99px;
+}
+.shelf-arrow {
+  flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid #554466; background: #2a1a3a; color: #fff;
+  font: 800 18px system-ui; cursor: pointer;
+}
+.shelf-arrow:hover { background: #3d2a5c; }
 .ch-card {
   border: 1px solid rgba(255,255,255,.14); cursor: pointer; text-align: center;
   padding: 10px 6px; border-radius: 14px; background: rgba(255,255,255,.08); color: #fff;
@@ -294,6 +315,19 @@ body.watch-app .amal-side-quick {
 }
 .shorts-player iframe {
   position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+  pointer-events: none; /* колёсико листает ленту, а не залипает в iframe */
+}
+.shorts-player.controls-on iframe { pointer-events: auto; }
+.shorts-tap {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 12px; pointer-events: none;
+}
+.shorts-tap span {
+  pointer-events: auto;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(0,0,0,.65); border: 1px solid #554466;
+  color: #fff; font: 800 12px system-ui; cursor: pointer;
 }
 .shorts-meta {
   padding: 10px 14px 16px; background: linear-gradient(#0a0a0a, #1a1028);

@@ -582,17 +582,51 @@
       if (v.id) have[v.id] = true;
     });
     let added = 0;
-    incoming.forEach(function (v) {
-      if (!v.id || have[v.id] || v.id === "playlist") return;
+    // новые сверху (RSS/Piped отдают свежие первыми)
+    const fresh = [];
+    (incoming || []).forEach(function (v) {
+      if (!v || !v.id || have[v.id] || v.id === "playlist") return;
       have[v.id] = true;
-      const plIdx = ch.videos.findIndex(function (x) {
-        return x.id === "playlist" || x.playlist;
-      });
-      if (plIdx >= 0) ch.videos.splice(plIdx, 0, v);
-      else ch.videos.push(v);
+      fresh.push(v);
       added++;
     });
+    if (fresh.length) {
+      ch.videos = fresh.concat(ch.videos);
+    }
     return added;
+  }
+
+  async function fetchYoutubeRss(channelId) {
+    if (!channelId) return [];
+    const url =
+      "https://www.youtube.com/feeds/videos.xml?channel_id=" +
+      encodeURIComponent(channelId);
+    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const vids = [];
+    const re = /<entry>([\s\S]*?)<\/entry>/g;
+    let m;
+    while ((m = re.exec(xml))) {
+      const block = m[1];
+      const idM = block.match(/yt:videoId>([^<]+)/);
+      const titleM = block.match(/<title>([^<]*)<\/title>/);
+      if (!idM) continue;
+      const id = idM[1];
+      const title = (titleM && titleM[1] ? titleM[1] : "Ролик")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .slice(0, 100);
+      vids.push({
+        id: id,
+        title: title,
+        likes: "",
+        thumb: "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg",
+      });
+    }
+    return vids;
   }
 
   function parsePipedStream(s) {
@@ -639,7 +673,16 @@
           const v = parsePipedStream(s);
           if (v) vids.push(v);
         });
-        return { videos: vids, nextpage: data.nextpage || null };
+        if (vids.length) {
+          return { videos: vids, nextpage: data.nextpage || null };
+        }
+      } catch (_) {}
+    }
+    // Piped часто пустой — подтягиваем свежие через официальный RSS YouTube
+    if (!nextpage) {
+      try {
+        const rssVids = await fetchYoutubeRss(channelId);
+        if (rssVids.length) return { videos: rssVids, nextpage: null };
       } catch (_) {}
     }
     return { videos: [], nextpage: null };
@@ -786,7 +829,8 @@
       slide.innerHTML =
         '<div class="shorts-player"><iframe title="' +
         escapeHtml(item.v.title) +
-        '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
+        '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>' +
+        '<div class="shorts-tap"><span class="shorts-enable">▶ Управление видео</span></div></div>' +
         '<div class="shorts-meta"><b>' +
         escapeHtml(item.v.title) +
         '</b><div class="ch">' +
@@ -795,6 +839,16 @@
         escapeHtml(item.ch.id) +
         '">Канал</button></div>';
       shortsFeed.appendChild(slide);
+    });
+
+    shortsFeed.querySelectorAll(".shorts-enable").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const player = btn.closest(".shorts-player");
+        if (!player) return;
+        player.classList.add("controls-on");
+        btn.textContent = "Мотай ленту колёсиком сбоку";
+      });
     });
 
     shortsFeed.querySelectorAll(".shorts-ch-btn").forEach(function (btn) {
@@ -857,6 +911,51 @@
     } else {
       playSlide(shortsFeed.querySelector(".shorts-slide"));
     }
+
+    setupFeedWheel();
+  }
+
+  let feedWheelLock = false;
+  function setupFeedWheel() {
+    if (!shortsFeed || shortsFeed.dataset.wheelBound === "1") return;
+    shortsFeed.dataset.wheelBound = "1";
+    shortsFeed.addEventListener(
+      "wheel",
+      function (e) {
+        if (Math.abs(e.deltaY) < 8) return;
+        e.preventDefault();
+        if (feedWheelLock) return;
+        feedWheelLock = true;
+        const slides = Array.prototype.slice.call(shortsFeed.querySelectorAll(".shorts-slide"));
+        if (!slides.length) {
+          feedWheelLock = false;
+          return;
+        }
+        const h = Math.max(1, shortsFeed.clientHeight);
+        let idx = Math.round(shortsFeed.scrollTop / h);
+        idx = Math.max(0, Math.min(slides.length - 1, idx));
+        const next = e.deltaY > 0 ? idx + 1 : idx - 1;
+        const clamped = Math.max(0, Math.min(slides.length - 1, next));
+        const target = slides[clamped];
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          const fr = target.querySelector("iframe");
+          const vid = target.dataset.vid;
+          if (fr && vid) {
+            shortsFeed.querySelectorAll("iframe").forEach(function (other) {
+              if (other !== fr) other.src = "";
+            });
+            fr.src = embedUrl(vid, true, false);
+          }
+          const player = target.querySelector(".shorts-player");
+          if (player) player.classList.remove("controls-on");
+        }
+        setTimeout(function () {
+          feedWheelLock = false;
+        }, 420);
+      },
+      { passive: false }
+    );
   }
 
   function openShorts(startId) {
@@ -927,7 +1026,129 @@
     channelShelf.appendChild(b);
   });
 
+  function setupChannelShelfScroll() {
+    if (!channelShelf || channelShelf.dataset.scrollBound === "1") return;
+    channelShelf.dataset.scrollBound = "1";
+    const left = document.getElementById("chScrollLeft");
+    const right = document.getElementById("chScrollRight");
+    if (left) {
+      left.addEventListener("click", function () {
+        channelShelf.scrollBy({ left: -240, behavior: "smooth" });
+      });
+    }
+    if (right) {
+      right.addEventListener("click", function () {
+        channelShelf.scrollBy({ left: 240, behavior: "smooth" });
+      });
+    }
+    channelShelf.addEventListener(
+      "wheel",
+      function (e) {
+        if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        e.preventDefault();
+        channelShelf.scrollLeft += e.deltaY;
+      },
+      { passive: false }
+    );
+    let drag = false;
+    let moved = false;
+    let startX = 0;
+    let startLeft = 0;
+    channelShelf.addEventListener("pointerdown", function (e) {
+      if (e.button != null && e.button !== 0) return;
+      drag = true;
+      moved = false;
+      startX = e.clientX;
+      startLeft = channelShelf.scrollLeft;
+      try {
+        channelShelf.setPointerCapture(e.pointerId);
+      } catch (_) {}
+    });
+    channelShelf.addEventListener("pointermove", function (e) {
+      if (!drag) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 8) {
+        moved = true;
+        channelShelf.scrollLeft = startLeft - dx;
+      }
+    });
+    function endDrag() {
+      drag = false;
+    }
+    channelShelf.addEventListener("pointerup", endDrag);
+    channelShelf.addEventListener("pointercancel", endDrag);
+    channelShelf.addEventListener(
+      "click",
+      function (e) {
+        if (!moved) return;
+        e.preventDefault();
+        e.stopPropagation();
+        moved = false;
+      },
+      true
+    );
+  }
+  setupChannelShelfScroll();
+
+  function updateShelfCounts() {
+    if (!channelShelf) return;
+    const cards = channelShelf.querySelectorAll(".ch-card");
+    CHANNELS.forEach(function (ch) {
+      Array.prototype.forEach.call(cards, function (card) {
+        const nm = card.querySelector(".nm");
+        if (nm && nm.textContent === ch.name) {
+          const subsEl = card.querySelector(".subs");
+          const n = realVideos(ch).length;
+          if (subsEl) subsEl.textContent = n ? n + " видео" : ch.subs;
+        }
+      });
+    });
+  }
+
+  async function refreshAllChannelsLive(silent) {
+    if (!silent && tvHint) tvHint.textContent = "⏳ Подтягиваю новые ролики с каналов…";
+    let addedTotal = 0;
+    for (let i = 0; i < CHANNELS.length; i++) {
+      const ch = CHANNELS[i];
+      if (!ch.channelId || ch.allowUpload) continue;
+      try {
+        let vids = [];
+        try {
+          vids = await fetchYoutubeRss(ch.channelId);
+        } catch (_) {}
+        if (!vids.length) {
+          const page = await fetchPipedChannel(ch.channelId, null);
+          vids = page.videos || [];
+        }
+        addedTotal += mergeVideos(ch, vids);
+      } catch (_) {}
+    }
+    updateShelfCounts();
+    if (viewHome && viewHome.classList.contains("active")) {
+      buildFeed();
+    }
+    if (currentChannel) {
+      refreshChannelGrid(currentChannel);
+    }
+    if (tvHint) {
+      if (addedTotal) {
+        tvHint.textContent =
+          "✓ Новые ролики с каналов: +" + addedTotal + ". Смотри в ленте.";
+      } else if (!silent) {
+        tvHint.textContent = "✓ Список свежий — новых роликов пока нет.";
+      }
+    }
+    try {
+      localStorage.setItem("amal-watch-last-refresh", String(Date.now()));
+    } catch (_) {}
+  }
+
   buildFeed();
+  refreshAllChannelsLive(true);
+  setInterval(function () {
+    refreshAllChannelsLive(true);
+  }, 5 * 60 * 1000);
+
   btnHome.addEventListener("click", openHome);
 
   const searchForm = document.getElementById("searchForm");
@@ -949,6 +1170,7 @@
     { keys: ["гравити", "gravity", "фолз", "dipper", "мейбл"], channel: "gravity" },
     { keys: ["сладост", "гадост", "конфет"], channel: "sladosti" },
     { keys: ["биллиент", "billy", "билли"], channel: "billionent" },
+    { keys: ["gadosti", "гадости"], channel: "sladosti" },
     { keys: ["ярокс", "ерокс", "erox", "стандофф"], channel: "yaroks" },
     { keys: ["мой канал", "амал", "загруз"], channel: "amal-room" },
   ];
