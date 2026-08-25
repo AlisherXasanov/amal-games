@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v43";
+  var VERSION = "amal-offline-v44";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 

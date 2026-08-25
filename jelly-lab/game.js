@@ -389,14 +389,26 @@ function buildWorld() {
   // walls: cream inside look
   const wallM = matMap("wall", wallTex, 0xffffff, 2, 1);
   const woodM = matMap("wood", woodTex);
+  const wallH = 3.6;
+  const wallY = wallH / 2;
+  // ceiling
+  const ceil = new THREE.Mesh(
+    new THREE.PlaneGeometry(16.2, 12.2),
+    matColor(0xf7edd8)
+  );
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.set(0, wallH - 0.02, 3.5);
+  scene.add(ceil);
   // back
-  box(16, 3.1, 0.22, wallM, 0, 1.55, 9.2);
+  box(16, wallH, 0.22, wallM, 0, wallY, 9.2);
   // sides
-  box(0.22, 3.1, 12, wallM, -8, 1.55, 3.2);
-  box(0.22, 3.1, 12, wallM, 8, 1.55, 3.2);
+  box(0.22, wallH, 12, wallM, -8, wallY, 3.2);
+  box(0.22, wallH, 12, wallM, 8, wallY, 3.2);
   // front with door gap
-  box(6.2, 3.1, 0.22, wallM, -4.9, 1.55, -2.0);
-  box(6.2, 3.1, 0.22, wallM, 4.9, 1.55, -2.0);
+  box(6.2, wallH, 0.22, wallM, -4.9, wallY, -2.0);
+  box(6.2, wallH, 0.22, wallM, 4.9, wallY, -2.0);
+  // lintel above door
+  box(2.4, 1.0, 0.22, wallM, 0, wallH - 0.5, -2.0);
   // door frame
   box(0.25, 2.6, 0.3, woodM, -1.05, 1.3, -2.0);
   box(0.25, 2.6, 0.3, woodM, 1.05, 1.3, -2.0);
