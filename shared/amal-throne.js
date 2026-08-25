@@ -239,14 +239,11 @@
   font:900 16px/1.2 Nunito,system-ui;box-shadow:0 18px 56px rgba(180,83,9,.55);max-width:94vw;text-align:center;
 }
 #amal-throne-banner.show{opacity:1}
-body.amal-throne-cubes-down #amal-cube-dash,
-body.amal-throne-cubes-down #amal-cube-btn,
-body.amal-throne-cubes-down #amal-cube-pickup,
 body.amal-throne-cubes-down #amal-glitch-ghost,
 body.amal-throne-cubes-down #amal-glitch-catch{
   display:none !important;visibility:hidden !important;pointer-events:none !important;
 }
-/* Куб на главном меню (.side-cube) НЕ прячем — там клон, быстрые игры и сила */
+/* Админ-куб хозяина НЕ прячем — только глитч-кубы. Меню .side-cube тоже всегда видно. */
 body.amal-throne-rewrite,body.amal-throne-absolute{
   filter:saturate(1.4) contrast(1.1);
 }
@@ -303,13 +300,13 @@ body.amal-throne-absolute::after{
         '<div class="ath-lock">🔒 Только настоящий хозяин · не для lucky / не для куба</div>' +
         "</div>" +
         '<div class="ath-grid">' +
-        '<button type="button" class="ath ascend" data-throne="throne-absolute">☀ АБСОЛЮТНАЯ СИЛА<small>×10000 · ∞ казна · бессмертие · кубы подавлены · закон мира</small></button>' +
+        '<button type="button" class="ath ascend" data-throne="throne-absolute">☀ АБСОЛЮТНАЯ СИЛА<small>×10000 · ∞ казна · бессмертие · глитч-кубы тише · закон мира</small></button>' +
         '<button type="button" class="ath ascend" data-throne="throne-ascend">☀ Вознесение<small>Полный пакет Трона</small></button>' +
         '<button type="button" class="ath" data-throne="throne-x10000">⚔ Сила ×10000<small>В сто раз сильнее прежнего ×100</small></button>' +
         '<button type="button" class="ath" data-throne="throne-vault">💎 Бездонная казна<small>∞ монеты / очки / ресурсы — недоступно «просто игроку»</small></button>' +
         '<button type="button" class="ath" data-throne="throne-untouchable">🛡 Неприкасаемый<small>Урон к тебе = 0 навсегда в сессии</small></button>' +
-        '<button type="button" class="ath" data-throne="throne-suppress">⛓ Подавить кубы<small>Админ-куб и глитч-куб исчезают</small></button>' +
-        '<button type="button" class="ath" data-throne="throne-restore">♻ Вернуть кубы<small>Снять подавление</small></button>' +
+        '<button type="button" class="ath" data-throne="throne-suppress">⛓ Подавить глитч-кубы<small>Случайные глитч-кубы исчезают · админ-куб остаётся</small></button>' +
+        '<button type="button" class="ath" data-throne="throne-restore">♻ Вернуть глитч-кубы<small>Снять подавление глитча</small></button>' +
         '<button type="button" class="ath" data-throne="throne-law">⚖ Закон мира<small>Мгновенная победа</small></button>' +
         '<button type="button" class="ath" data-throne="throne-rewrite">🌌 Переписать реальность<small>Сайт под твой закон</small></button>' +
         '<button type="button" class="ath" data-throne="throne-snapshot">📸 Снимок<small>Запомнить мир</small></button>' +
@@ -356,20 +353,20 @@ body.amal-throne-absolute::after{
     try {
       localStorage.setItem(STORAGE_SUPPRESS, on ? "1" : "0");
     } catch (_) {}
-    // На главной куб меню всегда виден (клон, быстрые игры). Подавление — только в играх.
-    const hide = !!on && !isHubPage();
+    // Подавление — только глитч-кубы. Личный админ-куб хозяина всегда доступен.
+    const hide = !!on;
     document.body.classList.toggle("amal-throne-cubes-down", hide);
     if (hide) {
-      ["amal-cube-dash", "amal-cube-btn", "amal-glitch-catch", "amal-glitch-ghost"].forEach((id) => {
+      ["amal-glitch-catch", "amal-glitch-ghost"].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.style.display = "none";
       });
-    } else {
-      const dash = document.getElementById("amal-cube-dash");
-      if (dash) dash.style.display = "";
-      const btn = document.getElementById("amal-cube-btn");
-      if (btn) btn.style.display = "";
     }
+    // админ-куб на всякий случай вернуть, если раньше прятали
+    ["amal-cube-dash", "amal-cube-btn", "amal-cube-pickup"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el && el.style.display === "none") el.style.display = "";
+    });
   }
 
   function takeSnapshot() {
