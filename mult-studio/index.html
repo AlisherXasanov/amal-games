@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Мульт-студия — свои ролики без рекламы</title>
+  <meta name="description" content="Свои 3D-ролики про мишку: смотри без рекламы, создавай в студии, закажи персональный ролик по имени." />
+  <meta name="theme-color" content="#f5c93a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <header class="top">
+    <a href="../">← Каталог</a>
+    <h1>Мульт-студия</h1>
+    <p class="tag">только своё · без рекламы · не чужой YouTube</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab on" data-tab="watch">Смотреть</button>
+    <button type="button" class="tab" data-tab="studio">Студия</button>
+    <button type="button" class="tab" data-tab="ask">Заказать ролик</button>
+  </nav>
+
+  <main>
+    <section class="panel on" id="panel-watch">
+      <p class="lead">Полка своих роликов. Жми — играет 3D-сцена. Рекламы нет.</p>
+      <div class="stage-wrap">
+        <canvas id="view"></canvas>
+        <div class="stage-bar">
+          <button type="button" class="go" id="btnPlay">▶ Смотреть</button>
+          <button type="button" class="ghost" id="btnStop">⏹</button>
+          <span id="nowTitle">выбери ролик справа</span>
+        </div>
+      </div>
+      <div class="shelf" id="shelf"></div>
+    </section>
+
+    <section class="panel" id="panel-studio">
+      <p class="lead">Собери свой ролик: выбери сцену, текст и имя — потом жми «Снять».</p>
+      <label>Сцена
+        <select id="studioScene"></select>
+      </label>
+      <label>Имя на сайте (как ник)
+        <input id="studioNick" maxlength="24" placeholder="например: Артём" autocomplete="nickname" />
+      </label>
+      <label>Что сказать (можно править)
+        <textarea id="studioLine" rows="3" maxlength="280"></textarea>
+      </label>
+      <div class="row">
+        <button type="button" class="go" id="btnShoot">🎬 Снять ролик</button>
+        <button type="button" class="ghost" id="btnSaveMine">💾 В мою полку</button>
+      </div>
+      <p class="note" id="studioNote">Ролик играет на вкладке «Смотреть». Сохранённые лежат только в этом браузере.</p>
+    </section>
+
+    <section class="panel" id="panel-ask">
+      <p class="lead">Напиши в комментарии: «можно ролик про меня» и своё имя с сайта. Потом можно сразу сгенерировать персональный ролик.</p>
+      <form id="askForm" class="ask-form">
+        <input id="askNick" maxlength="24" placeholder="Имя / ник на сайте" required />
+        <input id="askText" maxlength="160" placeholder="можно ролик про меня…" required />
+        <button type="submit" class="go">Отправить</button>
+      </form>
+      <div class="row">
+        <button type="button" class="go" id="btnShout">🎁 Сделать ролик для этого имени</button>
+      </div>
+      <div class="comments" id="comments"></div>
+      <p class="note">Мишка скажет примерно: «Привет, [имя]! Спасибо, что подписался и поставил лайк. Я не настоящий Валера с YouTube, но этот ролик — для тебя.»</p>
+    </section>
+  </main>
+
+  <script src="../shared/amal-hub.js?v=70" defer></script>
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./app.js?v=1"></script>
+</body>
+</html>
