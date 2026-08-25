@@ -6,13 +6,13 @@
   <title>Желейная хата — Валера дома</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=12" />
+  <link rel="stylesheet" href="./style.css?v=13" />
 </head>
 <body>
   <div id="boot">
     <h1>Желейная хата</h1>
-    <p>Валера дома · желтобрюх на улице · глазок в двери · камера → свой комп</p>
-    <p class="hint">WASD — ходить · мышь — смотреть · клик — действие · Esc — курсор</p>
+    <p>Клик по вещи — в инвентарь · ручка двери · желтобрюх не спит · ищи пасхалки</p>
+    <p class="hint">WASD — ходить · мышь — смотреть · Esc — закрыть окна / курсор</p>
     <button type="button" id="startBtn">▶ Войти в хату</button>
   </div>
 
@@ -21,7 +21,7 @@
     <div class="speech" id="speech">…</div>
     <div class="place" id="place">Хата</div>
     <div class="inv" id="inv"></div>
-    <p class="help">Привет → игра → камера → комп</p>
+    <p class="help">Esc — закрыть · клик снаружи окна тоже</p>
   </div>
 
   <canvas id="c"></canvas>
@@ -51,13 +51,13 @@
       <div class="pc-bezel">
         <div id="pcScreen" class="pc-screen"></div>
       </div>
-      <button type="button" id="pcClose">Выключить</button>
+      <button type="button" id="pcClose" class="big-close">← Выйти с компа (или Esc)</button>
     </div>
   </div>
 
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=11"></script>
+  <script type="module" src="./game.js?v=13"></script>
 </body>
 </html>

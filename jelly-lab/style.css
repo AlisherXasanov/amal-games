@@ -87,9 +87,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
 }
 #fridgeClose, #pcClose, #peepClose, #startBtn { pointer-events: auto; }
 #fridgeClose, #pcClose, #peepClose {
-  border: 0; border-radius: 999px; padding: 10px 16px;
-  background: var(--deep); color: #fff6df; font: 800 1rem var(--font); cursor: pointer;
+  border: 0; border-radius: 999px; padding: 14px 20px; margin-top: 8px;
+  background: var(--deep); color: #fff6df; font: 800 1.05rem var(--font); cursor: pointer;
+  min-width: 70%;
 }
+.big-close { background: #8b1e1e !important; font-size: 1.1rem !important; }
 
 .peep-card { background: #1a1a1a; color: #f5f0e0; border-color: #444; }
 .peep-hole {

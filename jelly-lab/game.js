@@ -28,8 +28,11 @@ const ITEM = {
   coat: { emoji: "🧥", name: "халатик" },
   goggles: { emoji: "🥽", name: "очки" },
   candle: { emoji: "🕯️", name: "свечка" },
-  camera: { emoji: "📷", name: "камера" }
+  camera: { emoji: "📷", name: "камера" },
+  star: { emoji: "⭐", name: "звезда" }
 };
+
+const LOOT = new Set(Object.keys(ITEM));
 
 const state = {
   locked: false,
@@ -37,25 +40,27 @@ const state = {
   selected: null,
   candyN: 0,
   peepDone: false,
-  yellowAsleep: true,
+  yellowAsleep: false,
   fridgeBearSleep: false,
   babyDressed: false,
   kubCharged: false,
   bathing: false,
   greeted: false,
   played: false,
+  doorOpen: false,
   clips: [],
   yaw: Math.PI,
   pitch: 0
 };
 
-const player = { x: 0, z: 3.2, speed: 4.0 };
+const player = { x: 0, z: 3.2, speed: 4.4 };
 const keys = {};
 const clickables = [];
 const solids = [];
 let yellowRef = null;
-let valeraRef = null;
-let monitorMat = null;
+let doorGroup = null;
+let interactBusyUntil = 0;
+let skipNextClick = false;
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -64,14 +69,14 @@ renderer.setSize(window.innerWidth, window.innerHeight, false);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xffe8a0);
-scene.fog = new THREE.Fog(0xffe8a0, 14, 34);
+scene.fog = new THREE.Fog(0xffe8a0, 16, 42);
 
-const camera = new THREE.PerspectiveCamera(72, 1, 0.08, 90);
+const camera = new THREE.PerspectiveCamera(72, 1, 0.08, 100);
 scene.add(new THREE.AmbientLight(0xfff6e0, 0.92));
 const sun = new THREE.DirectionalLight(0xfff2cc, 1.15);
 sun.position.set(5, 12, 4);
 scene.add(sun);
-const lamp = new THREE.PointLight(0xffe0a0, 0.55, 14);
+const lamp = new THREE.PointLight(0xffe0a0, 0.55, 16);
 lamp.position.set(0, 2.6, 2);
 scene.add(lamp);
 
@@ -80,8 +85,7 @@ function tex(key, draw, size = 256) {
   if (texCache[key]) return texCache[key];
   const c = document.createElement("canvas");
   c.width = c.height = size;
-  const g = c.getContext("2d");
-  draw(g, size);
+  draw(c.getContext("2d"), size);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
@@ -91,30 +95,26 @@ function tex(key, draw, size = 256) {
 }
 
 function floorTex(g, s) {
-  g.fillStyle = "#c9a06a";
-  g.fillRect(0, 0, s, s);
   const rows = 8;
   const h = s / rows;
   for (let r = 0; r < rows; r++) {
-    const y = r * h;
     g.fillStyle = r % 2 ? "#b8884c" : "#d2ad78";
-    g.fillRect(0, y, s, h - 1);
+    g.fillRect(0, r * h, s, h - 1);
     g.strokeStyle = "rgba(70,40,15,0.35)";
     g.lineWidth = 2;
     g.beginPath();
-    g.moveTo(0, y + h);
-    g.lineTo(s, y + h);
+    g.moveTo(0, r * h + h);
+    g.lineTo(s, r * h + h);
     g.stroke();
     for (let k = 0; k < 3; k++) {
-      const x = ((r * 37 + k * 89) % 100) / 100 * s;
+      const x = (((r * 37 + k * 89) % 100) / 100) * s;
       g.beginPath();
-      g.moveTo(x, y);
-      g.lineTo(x, y + h);
+      g.moveTo(x, r * h);
+      g.lineTo(x, r * h + h);
       g.stroke();
     }
   }
 }
-
 function wallTex(g, s) {
   g.fillStyle = "#f3e6c8";
   g.fillRect(0, 0, s, s);
@@ -125,12 +125,7 @@ function wallTex(g, s) {
     g.lineTo(s, y);
     g.stroke();
   }
-  g.fillStyle = "rgba(210,170,90,0.12)";
-  for (let i = 0; i < 40; i++) {
-    g.fillRect((i * 47) % s, (i * 29) % s, 8, 8);
-  }
 }
-
 function woodTex(g, s) {
   g.fillStyle = "#a8753a";
   g.fillRect(0, 0, s, s);
@@ -143,7 +138,6 @@ function woodTex(g, s) {
     g.stroke();
   }
 }
-
 function doorTex(g, s) {
   g.fillStyle = "#7a4a22";
   g.fillRect(0, 0, s, s);
@@ -152,53 +146,34 @@ function doorTex(g, s) {
   g.strokeRect(10, 10, s - 20, s - 20);
   g.strokeRect(28, 28, s - 56, s * 0.38);
   g.strokeRect(28, s * 0.52, s - 56, s * 0.35);
-  g.fillStyle = "#d4b06a";
-  g.beginPath();
-  g.arc(s * 0.78, s * 0.52, 10, 0, Math.PI * 2);
-  g.fill();
   g.fillStyle = "#111";
   g.beginPath();
   g.arc(s * 0.5, s * 0.42, 14, 0, Math.PI * 2);
   g.fill();
-  g.fillStyle = "#333";
-  g.beginPath();
-  g.arc(s * 0.5, s * 0.42, 7, 0, Math.PI * 2);
-  g.fill();
 }
-
 function metalTex(g, s) {
   const grd = g.createLinearGradient(0, 0, s, s);
   grd.addColorStop(0, "#f0f4f8");
-  grd.addColorStop(0.5, "#c5d2dc");
   grd.addColorStop(1, "#8fa4b2");
   g.fillStyle = grd;
   g.fillRect(0, 0, s, s);
   g.fillStyle = "rgba(255,255,255,0.35)";
   g.fillRect(s * 0.15, 0, s * 0.12, s);
-  g.fillStyle = "#6a7";
-  g.fillRect(s * 0.08, s * 0.42, 10, 28);
 }
-
 function candyTex(g, s) {
   g.fillStyle = "#e51d30";
   g.fillRect(0, 0, s, s);
   g.fillStyle = "#fff";
   g.fillRect(0, s * 0.38, s, s * 0.24);
-  g.fillStyle = "#e51d30";
-  g.font = "bold " + (s * 0.35) + "px sans-serif";
-  g.textAlign = "center";
-  g.fillText("★", s / 2, s * 0.62);
 }
-
 function sandTex(g, s) {
   g.fillStyle = "#e8d4a4";
   g.fillRect(0, 0, s, s);
-  for (let i = 0; i < 120; i++) {
-    g.fillStyle = `rgba(120,90,40,${0.08 + (i % 7) * 0.02})`;
-    g.fillRect((i * 53) % s, (i * 97) % s, 2 + (i % 3), 2);
+  for (let i = 0; i < 100; i++) {
+    g.fillStyle = `rgba(120,90,40,${0.1 + (i % 5) * 0.02})`;
+    g.fillRect((i * 53) % s, (i * 97) % s, 2, 2);
   }
 }
-
 function bookTex(g, s) {
   g.fillStyle = "#245fd0";
   g.fillRect(0, 0, s, s);
@@ -206,34 +181,20 @@ function bookTex(g, s) {
   g.fillRect(s * 0.08, s * 0.12, s * 0.84, s * 0.14);
   g.fillStyle = "#fff8e0";
   g.fillRect(s * 0.12, s * 0.38, s * 0.76, s * 0.42);
-  g.fillStyle = "#333";
-  g.font = "bold " + Math.floor(s * 0.12) + "px sans-serif";
-  g.fillText("АЗБУКА", s * 0.18, s * 0.58);
 }
-
 function rugTex(g, s) {
   g.fillStyle = "#c94a3a";
   g.fillRect(0, 0, s, s);
   g.strokeStyle = "#f0c84a";
   g.lineWidth = 14;
   g.strokeRect(18, 18, s - 36, s - 36);
-  g.fillStyle = "#f0c84a";
-  g.beginPath();
-  g.arc(s / 2, s / 2, s * 0.18, 0, Math.PI * 2);
-  g.fill();
 }
-
 function asphaltTex(g, s) {
   g.fillStyle = "#6a6e74";
   g.fillRect(0, 0, s, s);
-  for (let i = 0; i < 80; i++) {
-    g.fillStyle = `rgba(0,0,0,${0.08 + (i % 5) * 0.03})`;
-    g.fillRect((i * 41) % s, (i * 73) % s, 3, 3);
-  }
   g.fillStyle = "#d8c86a";
   g.fillRect(s * 0.46, 0, s * 0.08, s);
 }
-
 function screenTex(g, s) {
   g.fillStyle = "#102018";
   g.fillRect(0, 0, s, s);
@@ -242,8 +203,8 @@ function screenTex(g, s) {
   g.textAlign = "center";
   g.fillText("МОЙ ПК", s / 2, s * 0.42);
   g.fillStyle = "#9fefc0";
-  g.font = Math.floor(s * 0.1) + "px sans-serif";
-  g.fillText("клик → ролики", s / 2, s * 0.62);
+  g.font = Math.floor(s * 0.09) + "px sans-serif";
+  g.fillText("Esc / клик снаружи", s / 2, s * 0.62);
 }
 
 function say(t) {
@@ -262,17 +223,14 @@ function matColor(color) {
   return new THREE.MeshLambertMaterial({ color });
 }
 function matMap(key, drawer, color = 0xffffff, repeatX = 1, repeatY = 1) {
-  const map = tex(key, drawer);
-  const m = map.clone();
-  m.repeat.set(repeatX, repeatY);
-  m.needsUpdate = true;
-  return new THREE.MeshLambertMaterial({ map: m, color });
+  const map = tex(key, drawer).clone();
+  map.repeat.set(repeatX, repeatY);
+  map.needsUpdate = true;
+  return new THREE.MeshLambertMaterial({ map, color });
 }
-
 function addSolid(x, z, w, d) {
   solids.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
 }
-
 function box(w, h, d, material, x, y, z, solid = true) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
   m.position.set(x, y, z);
@@ -280,7 +238,6 @@ function box(w, h, d, material, x, y, z, solid = true) {
   if (solid) addSolid(x, z, w * 0.95, d * 0.95);
   return m;
 }
-
 function mark(obj, id, title) {
   obj.traverse((ch) => {
     ch.userData.clickId = id;
@@ -334,21 +291,29 @@ function makeBear(color, sleepy = false, scale = 1) {
 
 function zoneName() {
   const { x, z } = player;
-  if (z < -12) return "Пляж";
-  if (z < -1.8) return "Улица";
-  if (x > 5.2) return "Роботы";
-  if (x < -4.8) return "Кухня";
-  if (z > 5.5) return "Спальня";
-  if (z > 1.5 && x > -1.5 && x < 2.5) return "Гостиная";
+  if (z < -20) return "Пляж";
+  if (z < -10) return "Двор";
+  if (z < -1.5) return "Улица";
+  if (x > 7) return "Роботы";
+  if (x < -6.5) return "Кухня";
+  if (x > 4.5 && z > 6) return "Ванная";
+  if (z > 6.8) return "Спальня";
+  if (Math.abs(x) < 3 && z > 1) return "Гостиная";
   return "Коридор";
 }
 
-function addClip(title, line) {
-  state.clips.push({ title, line, t: Date.now() });
-  if (state.clips.length > 8) state.clips.shift();
-  say("Кадр снят. Потом открой компьютер.");
+function bumpInteract() {
+  interactBusyUntil = performance.now() + 300;
+}
+function canInteract() {
+  return performance.now() >= interactBusyUntil;
 }
 
+function addClip(title, line) {
+  state.clips.push({ title, line });
+  if (state.clips.length > 8) state.clips.shift();
+  say("Кадр снят. Открой компьютер.");
+}
 function flashFilm() {
   if (!filmFlash) return;
   filmFlash.hidden = false;
@@ -361,213 +326,192 @@ function flashFilm() {
 }
 
 function buildWorld() {
-  // floors
-  const houseFloor = new THREE.Mesh(
-    new THREE.PlaneGeometry(16, 12),
-    matMap("floor", floorTex, 0xffffff, 4, 3)
-  );
-  houseFloor.rotation.x = -Math.PI / 2;
-  houseFloor.position.set(0, 0, 3.5);
-  scene.add(houseFloor);
-
-  const rug = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.2, 2.2),
-    matMap("rug", rugTex)
-  );
-  rug.rotation.x = -Math.PI / 2;
-  rug.position.set(0, 0.02, 3.0);
-  scene.add(rug);
-
-  const street = new THREE.Mesh(
-    new THREE.PlaneGeometry(22, 10),
-    matMap("asphalt", asphaltTex, 0xffffff, 3, 2)
-  );
-  street.rotation.x = -Math.PI / 2;
-  street.position.set(0, -0.01, -6);
-  scene.add(street);
-
-  // walls: cream inside look
-  const wallM = matMap("wall", wallTex, 0xffffff, 2, 1);
   const woodM = matMap("wood", woodTex);
+  const wallM = matMap("wall", wallTex, 0xffffff, 2, 1);
   const wallH = 3.6;
   const wallY = wallH / 2;
-  // ceiling
-  const ceil = new THREE.Mesh(
-    new THREE.PlaneGeometry(16.2, 12.2),
-    matColor(0xf7edd8)
-  );
-  ceil.rotation.x = Math.PI / 2;
-  ceil.position.set(0, wallH - 0.02, 3.5);
-  scene.add(ceil);
-  // back
-  box(16, wallH, 0.22, wallM, 0, wallY, 9.2);
-  // sides
-  box(0.22, wallH, 12, wallM, -8, wallY, 3.2);
-  box(0.22, wallH, 12, wallM, 8, wallY, 3.2);
-  // front with door gap
-  box(6.2, wallH, 0.22, wallM, -4.9, wallY, -2.0);
-  box(6.2, wallH, 0.22, wallM, 4.9, wallY, -2.0);
-  // lintel above door
-  box(2.4, 1.0, 0.22, wallM, 0, wallH - 0.5, -2.0);
-  // door frame
-  box(0.25, 2.6, 0.3, woodM, -1.05, 1.3, -2.0);
-  box(0.25, 2.6, 0.3, woodM, 1.05, 1.3, -2.0);
-  box(2.35, 0.25, 0.3, woodM, 0, 2.55, -2.0);
 
-  const door = box(1.9, 2.45, 0.12, matMap("door", doorTex), 0, 1.25, -2.0, false);
-  mark(door, "door", "Дверь");
-  // real peephole hole (dark circle + click)
-  const peepHole = new THREE.Mesh(
-    new THREE.CircleGeometry(0.09, 20),
-    matColor(0x050505)
-  );
-  peepHole.position.set(0, 1.55, -1.93);
-  scene.add(peepHole);
+  const houseFloor = new THREE.Mesh(new THREE.PlaneGeometry(20, 14), matMap("floor", floorTex, 0xffffff, 5, 4));
+  houseFloor.rotation.x = -Math.PI / 2;
+  houseFloor.position.set(0, 0, 4);
+  scene.add(houseFloor);
+
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 2.4), matMap("rug", rugTex));
+  rug.rotation.x = -Math.PI / 2;
+  rug.position.set(0, 0.02, 3.2);
+  scene.add(rug);
+
+  const street = new THREE.Mesh(new THREE.PlaneGeometry(30, 14), matMap("asphalt", asphaltTex, 0xffffff, 4, 2));
+  street.rotation.x = -Math.PI / 2;
+  street.position.set(0, -0.01, -7);
+  scene.add(street);
+
+  const yard = new THREE.Mesh(new THREE.PlaneGeometry(26, 12), matColor(0x7cb86a));
+  yard.rotation.x = -Math.PI / 2;
+  yard.position.set(0, -0.015, -15);
+  scene.add(yard);
+
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(20.2, 14.2), matColor(0xf7edd8));
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.set(0, wallH - 0.02, 4);
+  scene.add(ceil);
+
+  box(20, wallH, 0.22, wallM, 0, wallY, 10.5);
+  box(0.22, wallH, 14, wallM, -10, wallY, 3.5);
+  box(0.22, wallH, 14, wallM, 10, wallY, 3.5);
+  // фасад без щелей: проём ~2.0 под дверь
+  box(8.0, wallH, 0.22, wallM, -5.95, wallY, -2.0);
+  box(8.0, wallH, 0.22, wallM, 5.95, wallY, -2.0);
+  box(2.1, 1.05, 0.22, wallM, 0, wallH - 0.52, -2.0);
+  box(0.22, 2.55, 0.28, woodM, -1.05, 1.28, -2.0);
+  box(0.22, 2.55, 0.28, woodM, 1.05, 1.28, -2.0);
+  box(2.32, 0.22, 0.28, woodM, 0, 2.55, -2.0);
+
+  doorGroup = new THREE.Group();
+  doorGroup.position.set(-0.95, 0, -2.0);
+  scene.add(doorGroup);
+  const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(1.9, 2.45, 0.1), matMap("door", doorTex));
+  doorMesh.position.set(0.95, 1.25, 0);
+  doorGroup.add(doorMesh);
+  mark(doorMesh, "door", "Дверь");
+  const handle = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), matColor(0xd4b06a));
+  handle.position.set(1.65, 1.2, 0.09);
+  doorGroup.add(handle);
+  mark(handle, "handle", "Ручка");
+  const peepHole = new THREE.Mesh(new THREE.CircleGeometry(0.09, 20), matColor(0x050505));
+  peepHole.position.set(0.95, 1.55, 0.06);
+  doorGroup.add(peepHole);
   mark(peepHole, "peep", "Глазок");
-  const peepRing = new THREE.Mesh(
-    new THREE.RingGeometry(0.1, 0.14, 20),
-    matColor(0xb0b0b0)
-  );
-  peepRing.position.set(0, 1.55, -1.925);
-  scene.add(peepRing);
+  const peepRing = new THREE.Mesh(new THREE.RingGeometry(0.1, 0.14, 20), matColor(0xb0b0b0));
+  peepRing.position.set(0.95, 1.55, 0.065);
+  doorGroup.add(peepRing);
   mark(peepRing, "peep", "Глазок");
 
-  // --- bedroom ---
-  const bed = box(2.6, 0.4, 1.5, woodM, -1.2, 0.32, 7.5);
-  box(2.6, 0.18, 1.5, matColor(0xe8f0ff), -1.2, 0.58, 7.5, false);
-  box(0.55, 0.35, 1.5, matColor(0xfff8e0), -2.2, 0.7, 7.5, false);
+  const bed = box(2.6, 0.4, 1.5, woodM, -1.2, 0.32, 8.6);
+  box(2.6, 0.18, 1.5, matColor(0xe8f0ff), -1.2, 0.58, 8.6, false);
   mark(bed, "bed", "Кровать");
-  const dresser = box(1.4, 1.15, 0.55, woodM, 2.8, 0.7, 7.7);
+  const dresser = box(1.4, 1.15, 0.55, woodM, 3.2, 0.7, 9.0);
   mark(dresser, "dresser", "Комод");
-  const book = box(0.28, 0.38, 0.1, matMap("book", bookTex), 2.55, 1.4, 7.55, false);
+  const book = box(0.28, 0.38, 0.1, matMap("book", bookTex), 2.95, 1.4, 8.85, false);
   mark(book, "book", "Книжка");
 
-  // Валера — ТОЛЬКО дома
-  valeraRef = makeBear(0xe51d30, false, 1);
-  valeraRef.position.set(0.2, 0, 6.6);
-  valeraRef.rotation.y = Math.PI;
-  scene.add(valeraRef);
-  mark(valeraRef, "valera", "Валера");
+  const valera = makeBear(0xe51d30, false, 1);
+  valera.position.set(0.2, 0, 7.4);
+  valera.rotation.y = Math.PI;
+  scene.add(valera);
+  mark(valera, "valera", "Валера");
 
   const baby = makeBear(0xff8fab, false, 0.4);
-  baby.position.set(1.3, 0, 7.0);
+  baby.position.set(1.4, 0, 8.0);
   scene.add(baby);
   mark(baby, "baby", "Крошка");
 
-  // --- living: shelf, candy, camera, PC ---
   for (let i = 0; i < 4; i++) {
     const c = new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 12), matMap("candy", candyTex));
-    c.position.set(-2.4 + i * 0.32, 1.52, 3.6);
+    c.position.set(-2.6 + i * 0.32, 1.52, 3.8);
     scene.add(c);
     mark(c, "candy", "Конфета");
   }
-  const shelf = box(2.0, 0.1, 0.38, woodM, -2.0, 1.35, 3.45, false);
+  const shelf = box(2.0, 0.1, 0.38, woodM, -2.2, 1.35, 3.65, false);
   mark(shelf, "shelf", "Полка");
 
   const dump = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), matColor(0xf5e6c8));
   dump.scale.set(1.35, 0.85, 1);
-  dump.position.set(1.5, 0.85, 3.4);
+  dump.position.set(1.5, 0.85, 3.6);
   scene.add(dump);
   mark(dump, "dumpling", "Дамплинг");
 
   const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.28, 12), matColor(0xfff4d0));
-  candle.position.set(1.95, 0.9, 3.4);
+  candle.position.set(1.95, 0.9, 3.6);
   scene.add(candle);
   const flame = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), matColor(0xff8800));
-  flame.position.set(1.95, 1.1, 3.4);
+  flame.position.set(1.95, 1.1, 3.6);
   scene.add(flame);
   mark(candle, "candle", "Свечка");
   mark(flame, "candle", "Свечка");
 
-  const camBody = box(0.32, 0.2, 0.24, matColor(0x2a2a2a), 2.6, 0.95, 3.5, false);
+  const camBody = box(0.32, 0.2, 0.24, matColor(0x2a2a2a), 2.8, 0.95, 3.7, false);
   const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.1, 14), matColor(0x111));
   lens.rotation.x = Math.PI / 2;
-  lens.position.set(2.6, 0.95, 3.66);
+  lens.position.set(2.8, 0.95, 3.86);
   scene.add(lens);
   mark(camBody, "camera", "Камера");
   mark(lens, "camera", "Камера");
 
-  // свой компьютер
-  const desk = box(1.6, 0.12, 0.7, woodM, 4.2, 0.85, 5.2);
-  box(0.08, 0.75, 0.08, woodM, 3.55, 0.4, 4.95, false);
-  box(0.08, 0.75, 0.08, woodM, 4.85, 0.4, 4.95, false);
-  box(0.08, 0.75, 0.08, woodM, 3.55, 0.4, 5.45, false);
-  box(0.08, 0.75, 0.08, woodM, 4.85, 0.4, 5.45, false);
-  mark(desk, "desk", "Стол с компом");
-  const monitor = box(0.7, 0.48, 0.06, matColor(0x222), 4.2, 1.35, 5.0, false);
-  monitorMat = matMap("screen", screenTex);
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.4), monitorMat);
-  screen.position.set(4.2, 1.35, 5.04);
+  const desk = box(1.6, 0.12, 0.7, woodM, 5.0, 0.85, 5.6);
+  mark(desk, "desk", "Стол");
+  const monitor = box(0.7, 0.48, 0.06, matColor(0x222), 5.0, 1.35, 5.4, false);
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.4), matMap("screen", screenTex));
+  screen.position.set(5.0, 1.35, 5.44);
   scene.add(screen);
   mark(monitor, "pc", "Компьютер");
   mark(screen, "pc", "Компьютер");
-  const kb = box(0.55, 0.04, 0.22, matColor(0x444), 4.2, 0.95, 5.25, false);
-  mark(kb, "pc", "Компьютер");
+  mark(box(0.55, 0.04, 0.22, matColor(0x444), 5.0, 0.95, 5.65, false), "pc", "Компьютер");
 
-  const bath = box(1.5, 0.5, 0.85, matColor(0xd8ecff), 5.8, 0.38, 7.2);
-  mark(bath, "bath", "Ванночка");
+  mark(box(1.5, 0.5, 0.85, matColor(0xd8ecff), 7.2, 0.38, 8.4), "bath", "Ванночка");
+  mark(box(1.15, 2.2, 0.8, matMap("metal", metalTex), -7.8, 1.15, 2.4), "fridge", "Холодильник");
+  mark(box(2.0, 0.14, 1.1, woodM, -7.0, 0.85, 4.8), "table", "Стол");
 
-  // --- kitchen ---
-  const fridge = box(1.15, 2.2, 0.8, matMap("metal", metalTex), -6.3, 1.15, 2.2);
-  mark(fridge, "fridge", "Холодильник");
-  const table = box(2.0, 0.14, 1.1, woodM, -5.6, 0.85, 4.4);
-  mark(table, "table", "Кухонный стол");
   const water = new THREE.Mesh(
     new THREE.CylinderGeometry(0.1, 0.1, 0.26, 14),
     new THREE.MeshLambertMaterial({ color: 0x66ccff, transparent: true, opacity: 0.78 })
   );
-  water.position.set(-5.2, 1.05, 4.1);
+  water.position.set(-6.5, 1.05, 4.5);
   scene.add(water);
   mark(water, "water", "Вода");
-  const battery = box(0.24, 0.12, 0.14, matColor(0x33aa55), -5.0, 1.0, 4.5, false);
-  mark(battery, "battery", "Батарейка");
-  const goggles = box(0.28, 0.1, 0.18, matColor(0x44c0ff), -5.5, 1.0, 4.0, false);
-  mark(goggles, "goggles", "Очки");
-  const coat = box(0.3, 0.45, 0.12, matColor(0xffffff), -6.6, 1.2, 4.9, false);
-  mark(coat, "coat", "Халатик");
+  mark(box(0.24, 0.12, 0.14, matColor(0x33aa55), -6.4, 1.0, 5.0, false), "battery", "Батарейка");
+  mark(box(0.28, 0.1, 0.18, matColor(0x44c0ff), -7.0, 1.0, 4.4, false), "goggles", "Очки");
+  mark(box(0.3, 0.45, 0.12, matColor(0xffffff), -8.2, 1.2, 5.4, false), "coat", "Халатик");
   const ball = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 12), matColor(0x7dff4a));
-  ball.position.set(-4.6, 0.25, 3.2);
+  ball.position.set(-5.8, 0.25, 3.5);
   scene.add(ball);
   mark(ball, "ball", "Мяч");
 
-  // --- желтобрюх ТОЛЬКО на улице ---
-  yellowRef = makeBear(0xf0c000, true, 0.95);
-  yellowRef.position.set(1.8, 0, -5.2);
-  yellowRef.rotation.y = -0.4;
+  yellowRef = makeBear(0xf0c000, false, 0.95);
+  yellowRef.position.set(2.2, 0, -5.5);
+  yellowRef.rotation.y = -0.35;
   scene.add(yellowRef);
   mark(yellowRef, "yellow", "Желтобрюх");
 
-  // mailbox / street props
-  box(0.35, 1.1, 0.35, matColor(0x4a6), -2.2, 0.55, -4.5, false);
-  box(0.5, 0.35, 0.35, matColor(0x336), -2.2, 1.2, -4.5, false);
-
-  // robots
-  const elik = box(0.55, 0.7, 0.4, matColor(0x6ec9ff), 6.5, 0.9, 2.4);
-  mark(elik, "elik", "Элик");
-  const kub = box(0.5, 0.5, 0.5, matColor(0x8899aa), 6.5, 0.8, 4.0);
-  mark(kub, "kub", "Робот Куб");
+  mark(box(0.55, 0.7, 0.4, matColor(0x6ec9ff), 8.2, 0.9, 2.6), "elik", "Элик");
+  mark(box(0.5, 0.5, 0.5, matColor(0x8899aa), 8.2, 0.8, 4.2), "kub", "Куб");
   for (let i = 0; i < 3; i++) {
-    const cu = box(0.18, 0.18, 0.18, matColor([0xe51d30, 0x2f6fdb, 0xf0b429][i]), 5.8 + i * 0.25, 0.3, 3.2, false);
-    mark(cu, "cube", "Кубик");
+    mark(box(0.18, 0.18, 0.18, matColor([0xe51d30, 0x2f6fdb, 0xf0b429][i]), 7.4 + i * 0.25, 0.3, 3.4, false), "cube", "Кубик");
   }
 
-  // beach — без Валеры
-  const sand = new THREE.Mesh(new THREE.PlaneGeometry(30, 18), matMap("sand", sandTex, 0xffffff, 4, 3));
+  const skelli = makeBear(0xc8d0d8, false, 0.85);
+  skelli.position.set(-9, 0, -13);
+  scene.add(skelli);
+  mark(skelli, "skelli", "Скелли");
+  const grandy = makeBear(0x3d9b5f, false, 1.25);
+  grandy.position.set(10, 0, -7);
+  scene.add(grandy);
+  mark(grandy, "grandy", "Гранди");
+  const oz = makeBear(0xff7a18, false, 0.9);
+  oz.position.set(8.5, 0, 8.8);
+  const hat = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.45, 12), matColor(0x5b2d8e));
+  hat.position.set(0, 1.85, 0);
+  oz.add(hat);
+  scene.add(oz);
+  mark(oz, "oz", "Оз");
+
+  const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.38), matColor(0xfff36a));
+  star.position.set(-3.5, 6.4, -11);
+  scene.add(star);
+  mark(star, "star", "Звезда");
+
+  const sand = new THREE.Mesh(new THREE.PlaneGeometry(42, 26), matMap("sand", sandTex, 0xffffff, 5, 4));
   sand.rotation.x = -Math.PI / 2;
-  sand.position.set(0, -0.03, -18);
+  sand.position.set(0, -0.03, -26);
   scene.add(sand);
-  const waterPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(30, 12),
-    new THREE.MeshLambertMaterial({ color: 0x3aa0d8 })
-  );
+  const waterPlane = new THREE.Mesh(new THREE.PlaneGeometry(42, 16), matColor(0x3aa0d8));
   waterPlane.rotation.x = -Math.PI / 2;
-  waterPlane.position.set(0, -0.02, -26);
+  waterPlane.position.set(0, -0.02, -36);
   scene.add(waterPlane);
-  const path = box(3.2, 0.04, 6, matMap("sand", sandTex), 0, 0.015, -10.5, false);
-  mark(path, "path", "Тропинка на пляж");
-  const umbrella = box(0.1, 1.5, 0.1, matColor(0xffffff), -1.4, 0.8, -16.5, false);
+  mark(box(3.6, 0.04, 12, matMap("sand", sandTex), 0, 0.015, -15, false), "path", "Тропинка");
+  const umbrella = box(0.1, 1.5, 0.1, matColor(0xffffff), -2, 0.8, -24, false);
   const cone = new THREE.Mesh(new THREE.ConeGeometry(0.9, 0.28, 14), matColor(0xe51d30));
-  cone.position.set(-1.4, 1.6, -16.5);
+  cone.position.set(-2, 1.6, -24);
   scene.add(cone);
   mark(umbrella, "umbrella", "Зонтик");
   mark(cone, "umbrella", "Зонтик");
@@ -577,15 +521,32 @@ function has(id) {
   return state.inv.includes(id);
 }
 function take(id) {
-  if (!ITEM[id]) return;
+  if (!ITEM[id]) return false;
   const count = state.inv.filter((x) => x === id).length;
   if (count >= 5) {
     say("Много уже.");
-    return;
+    return false;
   }
   state.inv.push(id);
   renderInv();
-  say("Взял: " + ITEM[id].name + (count ? " ×" + (count + 1) : ""));
+  say("Взял: " + ITEM[id].name);
+  return true;
+}
+function takeWorld(mesh, id) {
+  if (!take(id)) return;
+  const origin = new THREE.Vector3();
+  mesh.getWorldPosition(origin);
+  for (let i = clickables.length - 1; i >= 0; i--) {
+    const ch = clickables[i];
+    if (ch.userData.clickId !== id) continue;
+    const p = new THREE.Vector3();
+    ch.getWorldPosition(p);
+    if (p.distanceTo(origin) < 0.7) {
+      ch.visible = false;
+      ch.userData.clickId = null;
+      clickables.splice(i, 1);
+    }
+  }
 }
 function useOne(id) {
   const i = state.inv.indexOf(id);
@@ -593,7 +554,6 @@ function useOne(id) {
   if (state.selected === id && !has(id)) state.selected = null;
   renderInv();
 }
-
 function renderInv() {
   invEl.innerHTML = "";
   const seen = {};
@@ -607,19 +567,13 @@ function renderInv() {
     b.innerHTML = ITEM[id].emoji + "<small>" + ITEM[id].name + (seen[id] > 1 ? "×" + seen[id] : "") + "</small>";
     b.onclick = (e) => {
       e.stopPropagation();
+      e.preventDefault();
       state.selected = state.selected === id ? null : id;
       renderInv();
+      say(state.selected ? "Выбрано: " + ITEM[id].name + ". Клик по герою — дать." : "Убрал из рук.");
     };
     invEl.appendChild(b);
   });
-}
-
-function askCandy() {
-  state.candyN++;
-  const n = state.candyN % 3;
-  if (n === 1) say("Дай конфетку.");
-  else if (n === 2) say("Дай конфетку, дай конфетку.");
-  else say("Дай конфетку, дай конфетку, дай конфетку.");
 }
 
 function tryFilm(who) {
@@ -627,41 +581,48 @@ function tryFilm(who) {
   flashFilm();
   if (who === "valera") {
     if (!state.greeted) {
-      addClip("Привет", "Подошёл к Валере. Пока только зашёл.");
-      say("Сначала поздоровайся — кликни без камеры.");
+      say("Сначала поздоровайся без камеры.");
       return true;
     }
     if (!state.played) {
-      addClip("Валера дома", "Валера дома. Пока без игры.");
       say("Сначала поиграй: дай конфету или мяч.");
       return true;
     }
-    addClip("Играем с Валерой", "Здорово! Сняли, как играем с Валерой дома.");
-    say("Снято! Теперь на компе можно посмотреть.");
+    addClip("Играем с Валерой", "Сняли, как играем с Валерой дома.");
     return true;
   }
   if (who === "yellow") {
-    addClip("Желтобрюх на улице", "В кадре желтобрюх на улице — не в хате.");
+    addClip("Желтобрюх", "Желтобрюх на улице — не спит.");
     return true;
   }
   if (who === "baby") {
-    addClip("Крошка", "Крошка дома, как всегда.");
+    addClip("Крошка", "Крошка дома.");
+    return true;
+  }
+  if (who === "skelli" || who === "grandy" || who === "oz") {
+    addClip("Пасхалка", "Поймали редкого гостя: " + who);
     return true;
   }
   return false;
 }
 
+function closeAllModals() {
+  fridgeModal.hidden = true;
+  pcModal.hidden = true;
+  peepModal.hidden = true;
+}
+
 function openFridge() {
-  state.fridgeBearSleep = Math.random() < 0.3;
-  fridgeExtra.textContent = state.fridgeBearSleep
-    ? "Ого… кто-то спит между полками."
-    : "Холодно. Можно взять вещи.";
+  fridgeExtra.textContent = "Можно взять вещи. Клик снаружи / Esc — закрыть.";
   fridgeIn.innerHTML = "";
   ["pizza", "water", "candy", "battery"].forEach((id) => {
     const b = document.createElement("button");
     b.type = "button";
     b.textContent = ITEM[id].emoji + " " + ITEM[id].name;
-    b.onclick = () => take(id);
+    b.onclick = (e) => {
+      e.stopPropagation();
+      take(id);
+    };
     fridgeIn.appendChild(b);
   });
   fridgeModal.hidden = false;
@@ -670,64 +631,85 @@ function openFridge() {
 
 function openPeep() {
   state.peepDone = true;
-  state.yellowAsleep = Math.random() < 0.6;
-  if (yellowRef) yellowRef.rotation.z = state.yellowAsleep ? 0.55 : 0;
-  peepView.textContent = state.yellowAsleep
-    ? "В дырочке: желтобрюх на улице… спит у стены."
-    : "В дырочке: желтобрюх на улице смотрит в сторону.";
+  state.yellowAsleep = false;
+  if (yellowRef) yellowRef.rotation.z = 0;
+  peepView.textContent = "В дырочке: желтобрюх на улице стоит и смотрит. Не спит.";
   peepModal.hidden = false;
   exitPointer();
-  say(state.yellowAsleep ? "В глазок: спит на улице." : "В глазок: на улице смотрит.");
+  say("В глазок: желтобрюх на улице. Не спит.");
 }
 
 function openPc() {
   if (!state.clips.length) {
     pcScreen.innerHTML =
-      "<p class='pc-empty'>Пока пусто.<br>Возьми камеру → поздоровайся с Валерой → поиграй → сними → вернись сюда.</p>";
+      "<p class='pc-empty'>Пока пусто.<br>Камера → Валера → снять → сюда.<br><b>Esc</b> или клик по тёмному — выход.</p>";
   } else {
     pcScreen.innerHTML = state.clips
-      .map(
-        (c, i) =>
-          `<article class="clip"><b>Ролик ${i + 1}: ${c.title}</b><p>${c.line}</p></article>`
-      )
+      .map((c, i) => `<article class="clip"><b>Ролик ${i + 1}: ${c.title}</b><p>${c.line}</p></article>`)
       .join("");
   }
   pcModal.hidden = false;
   exitPointer();
-  say(state.clips.length ? "Смотрим, как получилось." : "Сначала сними что-нибудь камерой.");
+  say("Комп. Esc или клик снаружи — выйти.");
 }
 
-document.getElementById("fridgeClose").onclick = () => {
-  fridgeModal.hidden = true;
-};
-document.getElementById("pcClose").onclick = () => {
-  pcModal.hidden = true;
-};
-document.getElementById("peepClose").onclick = () => {
-  peepModal.hidden = true;
-};
+function toggleDoor() {
+  state.doorOpen = !state.doorOpen;
+  if (doorGroup) doorGroup.rotation.y = state.doorOpen ? -1.25 : 0;
+  say(state.doorOpen ? "Дверь открыта. Можно на улицу." : "Дверь закрыта.");
+}
 
-function interact(id) {
+function bindModalClose(modal, btnId) {
+  const btn = document.getElementById(btnId);
+  if (btn) {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      modal.hidden = true;
+      say("Закрыто.");
+    };
+  }
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.hidden = true;
+      say("Закрыто.");
+    }
+  });
+  const card = modal.querySelector(".modal-card");
+  if (card) card.addEventListener("click", (e) => e.stopPropagation());
+}
+bindModalClose(fridgeModal, "fridgeClose");
+bindModalClose(pcModal, "pcClose");
+bindModalClose(peepModal, "peepClose");
+
+function interact(id, mesh) {
+  if (!canInteract()) return;
+  bumpInteract();
+
+  if (LOOT.has(id) && mesh) {
+    takeWorld(mesh, id);
+    return;
+  }
+
+  if (id === "handle" || id === "door") {
+    toggleDoor();
+    return;
+  }
+  if (id === "peep") {
+    openPeep();
+    return;
+  }
   if (id === "valera") {
     if (tryFilm("valera")) return;
     if (state.selected === "candy") {
       useOne("candy");
       state.played = true;
-      say("Ммм… Спасибо. Дай конфетку ещё.");
+      say("Ммм… Спасибо!");
       return;
     }
     if (state.selected === "ball") {
       useOne("ball");
       state.played = true;
-      say("Кинули мяч! Играем.");
-      return;
-    }
-    if (state.selected === "dumpling") {
-      say("Хлюп. Опыт с дамплингом.");
-      return;
-    }
-    if (state.selected === "candle") {
-      say("Свечка рядом. Осторожно.");
+      say("Играем с мячом!");
       return;
     }
     if (state.selected === "water") {
@@ -740,12 +722,7 @@ function interact(id) {
       say("Привет, Валера! Ты дома.");
       return;
     }
-    if (!state.played) {
-      askCandy();
-      say("Дай конфетку — или мяч, поиграем.");
-      return;
-    }
-    askCandy();
+    say("Дай конфетку — или мяч.");
     return;
   }
   if (id === "baby") {
@@ -761,40 +738,41 @@ function interact(id) {
       say("Очки на Крошке.");
       return;
     }
-    say("Крошка дома. На пляж с нами не ходит.");
+    say("Крошка дома.");
     return;
   }
-  if (id === "candy") take("candy");
-  if (id === "dumpling") take("dumpling");
-  if (id === "water") take("water");
-  if (id === "battery") take("battery");
-  if (id === "cube") take("cube");
-  if (id === "book") take("book");
-  if (id === "coat") take("coat");
-  if (id === "goggles") take("goggles");
-  if (id === "candle") take("candle");
-  if (id === "camera") take("camera");
-  if (id === "ball") take("ball");
+  if (id === "yellow") {
+    if (tryFilm("yellow")) return;
+    say("Я на улице. Не сплю.");
+    return;
+  }
+  if (id === "skelli") {
+    if (tryFilm("skelli")) return;
+    say("Скелли: …ты меня раньше не видел.");
+    return;
+  }
+  if (id === "grandy") {
+    if (tryFilm("grandy")) return;
+    say("Гранди: я большой и редкий.");
+    return;
+  }
+  if (id === "oz") {
+    if (tryFilm("oz")) return;
+    say("Оз: шляпа с секретом.");
+    return;
+  }
+  if (id === "star") {
+    takeWorld(mesh, "star");
+    say("Пасхалка: звезда с неба!");
+    return;
+  }
   if (id === "fridge") openFridge();
   if (id === "pc" || id === "desk") openPc();
   if (id === "bath") {
     state.bathing = !state.bathing;
-    say(state.bathing ? "Купается. Бульк-бульк." : "Вылез из ванны.");
+    say(state.bathing ? "Купается." : "Вылез.");
   }
-  if (id === "peep") openPeep();
-  if (id === "door") {
-    if (!state.peepDone) say("Сначала посмотри в глазок — дырочку в двери.");
-    else say("За дверью улица. Желтобрюх там, не в хате.");
-  }
-  if (id === "yellow") {
-    if (tryFilm("yellow")) return;
-    if (!state.peepDone) {
-      say("Сначала глянь в глазок из хаты.");
-      return;
-    }
-    say(state.yellowAsleep ? "…хррр… на улице." : "Чего надо? Я на улице.");
-  }
-  if (id === "elik") say("Бип! Элик дома у роботов.");
+  if (id === "elik") say("Бип! Элик.");
   if (id === "kub") {
     if (state.selected === "battery") {
       useOne("battery");
@@ -802,7 +780,7 @@ function interact(id) {
       say("Батарейка вставлена.");
       return;
     }
-    say(state.kubCharged ? "Дай кубик." : "Нужна батарейка.");
+    say(state.kubCharged ? "Заряжен." : "Нужна батарейка.");
   }
   if (id === "bed") say("Кровать Валеры.");
   if (id === "dresser") {
@@ -810,12 +788,13 @@ function interact(id) {
     else say("Комод.");
   }
   if (id === "table" || id === "shelf") say("Можно ставить вещи.");
-  if (id === "umbrella" || id === "path") say("Пляж дальше. Валеры тут нет — он дома.");
+  if (id === "umbrella" || id === "path") say("Пляж дальше. Валера дома.");
 }
 
 function tryMove(dx, dz) {
   const nx = player.x + dx;
   const nz = player.z + dz;
+  if (!state.doorOpen && nz < -1.85 && nz > -2.3 && nx > -1.0 && nx < 1.0) return;
   for (const s of solids) {
     if (nx > s.minX && nx < s.maxX && nz > s.minZ && nz < s.maxZ) return;
   }
@@ -825,17 +804,26 @@ function tryMove(dx, dz) {
 
 function updateCam() {
   camera.position.set(player.x, 1.55, player.z);
-  const e = new THREE.Euler(state.pitch, state.yaw, 0, "YXZ");
-  camera.quaternion.setFromEuler(e);
+  camera.quaternion.setFromEuler(new THREE.Euler(state.pitch, state.yaw, 0, "YXZ"));
 }
 
 const raycaster = new THREE.Raycaster();
-function shootInteract() {
-  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+function doRayInteract(nx, ny) {
+  if (!canInteract()) return;
+  raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
   const hits = raycaster.intersectObjects(clickables, false);
   if (hits[0] && hits[0].object.userData.clickId) {
-    interact(hits[0].object.userData.clickId);
+    interact(hits[0].object.userData.clickId, hits[0].object);
   }
+}
+function shootInteract() {
+  doRayInteract(0, 0);
+}
+function shootAtClient(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
+  const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
+  doRayInteract(nx, ny);
 }
 
 let dragging = false;
@@ -868,45 +856,24 @@ function lookDelta(dx, dy) {
   state.pitch = Math.max(-1.2, Math.min(1.2, state.pitch));
 }
 
-function shootAtClient(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
-  const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
-  raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
-  const hits = raycaster.intersectObjects(clickables, false);
-  if (hits[0] && hits[0].object.userData.clickId) {
-    interact(hits[0].object.userData.clickId);
-  }
-}
-
 function anyModalOpen() {
-  return (
-    fridgeModal.hidden === false ||
-    pcModal.hidden === false ||
-    peepModal.hidden === false ||
-    boot.hidden === false
-  );
+  return !fridgeModal.hidden || !pcModal.hidden || !peepModal.hidden || !boot.hidden;
 }
 
 canvas.addEventListener("pointerdown", (e) => {
-  if (anyModalOpen()) return;
-  if (e.button !== 0) return;
-  if (state.locked) return;
+  if (anyModalOpen() || e.button !== 0 || state.locked) return;
   dragging = true;
   dragMoved = false;
   dragStart = { x: e.clientX, y: e.clientY };
   canvas.setPointerCapture?.(e.pointerId);
 });
-
 canvas.addEventListener("pointermove", (e) => {
   if (state.locked) {
     lookDelta(e.movementX, e.movementY);
     return;
   }
   if (!dragging || !dragStart) return;
-  const dx = e.clientX - dragStart.x;
-  const dy = e.clientY - dragStart.y;
-  if (!dragMoved && Math.hypot(dx, dy) < 4) return;
+  if (!dragMoved && Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y) < 4) return;
   if (!dragMoved) {
     dragMoved = true;
     dragStart = { x: e.clientX, y: e.clientY };
@@ -915,22 +882,24 @@ canvas.addEventListener("pointermove", (e) => {
   lookDelta(e.clientX - dragStart.x, e.clientY - dragStart.y);
   dragStart = { x: e.clientX, y: e.clientY };
 });
-
 canvas.addEventListener("pointerup", (e) => {
-  if (anyModalOpen()) return;
-  if (state.locked) return;
+  if (anyModalOpen() || state.locked) return;
   const moved = dragMoved;
   dragging = false;
   dragStart = null;
   dragMoved = false;
   if (!moved) {
     shootAtClient(e.clientX, e.clientY);
+    skipNextClick = true;
     lockPointer();
   }
 });
-
 canvas.addEventListener("click", () => {
   if (anyModalOpen()) return;
+  if (skipNextClick) {
+    skipNextClick = false;
+    return;
+  }
   if (state.locked) shootInteract();
   else lockPointer();
 });
@@ -939,9 +908,10 @@ window.addEventListener("keydown", (e) => {
   keys[e.code] = true;
   if (e.code === "Escape") {
     exitPointer();
-    fridgeModal.hidden = true;
-    pcModal.hidden = true;
-    peepModal.hidden = true;
+    if (anyModalOpen() && boot.hidden) {
+      closeAllModals();
+      say("Закрыто. Esc ещё раз — курсор.");
+    }
   }
 });
 window.addEventListener("keyup", (e) => {
@@ -953,14 +923,12 @@ document.getElementById("startBtn").onclick = () => {
   hud.hidden = false;
   cross.hidden = false;
   lockPointer();
-  say("Валера дома. Поздоровайся → поиграй → сними камерой → смотри на компе. Желтобрюх на улице.");
+  say("Предмет кликом берётся в инвентарь. Ручка двери открывает. Желтобрюх не спит. Ищи Скелли, Гранди, Оз и звезду.");
 };
 
 function resize() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  renderer.setSize(w, h, false);
-  camera.aspect = w / Math.max(1, h);
+  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  camera.aspect = window.innerWidth / Math.max(1, window.innerHeight);
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", resize);
@@ -985,10 +953,10 @@ function loop(now) {
     tryMove((fx / len) * sp, (fz / len) * sp);
     placeEl.textContent = zoneName();
   }
-  player.x = Math.max(-7.2, Math.min(7.2, player.x));
-  player.z = Math.max(-28, Math.min(8.6, player.z));
+  player.x = Math.max(-9.2, Math.min(9.2, player.x));
+  player.z = Math.max(-36, Math.min(9.8, player.z));
   updateCam();
-  scene.background = new THREE.Color(player.z < -12 ? 0x87c8ef : player.z < -2 ? 0xc8d8e8 : 0xffe8a0);
+  scene.background = new THREE.Color(player.z < -18 ? 0x87c8ef : player.z < -2 ? 0xc8d8e8 : 0xffe8a0);
   scene.fog.color.copy(scene.background);
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
