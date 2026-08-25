@@ -9,9 +9,9 @@
   const LIKE_KEY = "amal-watch-likes-v1";
   const COMMENT_KEY = "amal-watch-comments-v1";
   const REPORT_KEY = "amal-watch-reports-v1";
-  // Без рекламы по умолчанию (Piped). Если не играет — кнопка «Обычный плеер».
-  const EMBED_NOADS = "https://piped.video/embed/";
+  // Надёжный плеер по умолчанию (играет). Piped — опция «без рекламы», часто глючит.
   const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
+  const EMBED_NOADS = "https://piped.video/embed/";
   const PIPED_APIS = [
     "https://pipedapi.adminforge.de",
     "https://pipedapi.nosebs.ru",
@@ -59,7 +59,7 @@
   let currentVideoKey = "";
   let currentLikesLabel = "—";
   let currentPlayId = "";
-  let usingNoAds = true;
+  let usingNoAds = false;
   let myVideos = [];
   let liked = loadMap(LIKE_KEY);
   let subs = loadMap(SUB_KEY);
@@ -117,14 +117,13 @@
 
   function embedUrl(id, autoplay, noAds) {
     const ap = autoplay === false ? "0" : "1";
-    const useNoAds = noAds !== false;
-    if (useNoAds) {
-      return EMBED_NOADS + encodeURIComponent(id) + "?autoplay=" + ap;
+    if (noAds) {
+      return EMBED_NOADS + encodeURIComponent(id) + "?autoplay=" + ap + "&listen=0";
     }
     return (
       EMBED_WORKS +
       encodeURIComponent(id) +
-      "?rel=0&modestbranding=1&iv_load_policy=3&autoplay=" +
+      "?rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&autoplay=" +
       ap
     );
   }
@@ -145,7 +144,7 @@
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
-      '<button type="button" id="btnAltPlayer" class="sub-btn">Если не играет — обычный плеер</button>' +
+      '<button type="button" id="btnAltPlayer" class="sub-btn">Попробовать без рекламы</button>' +
       '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню роликов</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
     if (playerBox && playerBox.parentNode) {
@@ -156,8 +155,8 @@
       usingNoAds = !usingNoAds;
       ytFrame.src = embedUrl(currentPlayId, true, usingNoAds);
       this.textContent = usingNoAds
-        ? "Если не играет — обычный плеер"
-        : "Вернуть без рекламы";
+        ? "Вернуть обычный плеер (если зависло)"
+        : "Попробовать без рекламы";
     };
     document.getElementById("btnToMenu").onclick = function () {
       const menu = document.getElementById("channelMenu");
@@ -398,19 +397,19 @@
     ensureZoomBar();
     ensurePlayerTools();
     stopAllMedia();
-    usingNoAds = true;
+    usingNoAds = false;
     currentPlayId = id;
     playerPh.hidden = true;
     ytFrame.hidden = false;
-    ytFrame.src = embedUrl(id, true, true);
+    ytFrame.src = embedUrl(id, true, false);
     nowPlaying.textContent = "Сейчас: " + title;
-    if (tvHint) tvHint.textContent = "▶ " + title + " · без рекламы";
+    if (tvHint) tvHint.textContent = "▶ " + title;
     currentVideoKey = (opts.channelId || "") + "::" + id;
     currentLikesLabel = formatLikes(opts.likesLabel);
     refreshLikeUi();
     renderComments();
     const alt = document.getElementById("btnAltPlayer");
-    if (alt) alt.textContent = "Если не играет — обычный плеер";
+    if (alt) alt.textContent = "Попробовать без рекламы";
   }
 
   function playPlaylist(list, title) {
@@ -819,7 +818,7 @@
             });
             const vid = slide.dataset.vid;
             if (vid && (!fr.src || fr.src.indexOf(vid) < 0)) {
-              fr.src = embedUrl(vid, true, true);
+              fr.src = embedUrl(vid, true, false);
             }
           } else if (!entry.isIntersecting) {
             fr.src = "";
@@ -840,10 +839,23 @@
       if (found >= 0) startIdx = found;
     }
     const target = shortsFeed.querySelector('.shorts-slide[data-idx="' + startIdx + '"]');
+    function playSlide(slide) {
+      if (!slide) return;
+      const fr = slide.querySelector("iframe");
+      const vid = slide.dataset.vid;
+      if (!fr || !vid) return;
+      shortsFeed.querySelectorAll("iframe").forEach(function (other) {
+        if (other !== fr) other.src = "";
+      });
+      fr.src = embedUrl(vid, true, false);
+    }
     if (target) {
       requestAnimationFrame(function () {
         target.scrollIntoView({ behavior: "instant", block: "start" });
+        playSlide(target);
       });
+    } else {
+      playSlide(shortsFeed.querySelector(".shorts-slide"));
     }
   }
 
@@ -1029,7 +1041,7 @@
         escapeHtml(item.ch.name) +
         "</span></div>";
       btn.addEventListener("click", function () {
-        openChannel(item.ch.id, item.v);
+        openShorts(item.v.id);
       });
       searchHits.appendChild(btn);
     });

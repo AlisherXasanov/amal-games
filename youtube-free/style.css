@@ -258,18 +258,36 @@ body.watch-app .amal-side-quick {
 .shorts-top {
   display: flex; align-items: center; gap: 10px; padding: 10px 12px;
   background: rgba(0,0,0,.85); border-bottom: 1px solid #3d2a5c;
-  position: sticky; top: 0; z-index: 40;
+  z-index: 40; flex-shrink: 0;
 }
 .shorts-top span { font: 800 14px system-ui; }
 .shorts-tip { margin-left: auto; font-size: 11px; color: #9988aa; }
 
+#viewShorts.active {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 52px);
+  overflow: hidden;
+  background: #000;
+}
 .shorts-feed {
-  height: calc(100dvh - 52px); overflow-y: auto; scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch; background: #000;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  background: #000;
+  overscroll-behavior: contain;
 }
 .shorts-slide {
-  height: calc(100dvh - 52px); scroll-snap-align: start; scroll-snap-stop: always;
-  display: flex; flex-direction: column; background: #0a0a0a;
+  height: 100%;
+  min-height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  box-sizing: border-box;
 }
 .shorts-player {
   flex: 1; min-height: 0; position: relative; background: #111;
