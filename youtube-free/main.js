@@ -470,10 +470,7 @@
       if (tvHint) tvHint.textContent = "📋 Меню роликов ниже — листай и выбирай";
       return;
     }
-    if (isShortVideo(v)) {
-      openShorts(v.id);
-      return;
-    }
+    // остаёмся на этом канале и крутим выбранный ролик
     playId(v.id, v.title || "Ролик", { channelId: ch.id, likesLabel: v.likes });
   }
 
@@ -755,7 +752,8 @@
   function openChannel(id, autoPlay) {
     const ch = findChannel(id);
     if (!ch) return;
-    if (autoPlay && isShortVideo(autoPlay)) {
+    // short только если явно Shorts и нет запроса «открыть на канале»
+    if (autoPlay && isShortVideo(autoPlay) && autoPlay.forceShorts) {
       openShorts(autoPlay.id);
       return;
     }
@@ -797,12 +795,15 @@
 
     renderVideoGrid(ch, vids);
 
-    if (autoPlay) playVideoObj(ch, autoPlay);
-    else {
+    if (autoPlay) {
+      // всегда этот ролик в плеере канала (даже если short)
+      if (autoPlay.local) playLocal(autoPlay.url, autoPlay.title);
+      else if (autoPlay.playlist || autoPlay.id === "playlist") playVideoObj(ch, autoPlay);
+      else playId(autoPlay.id, autoPlay.title || "Ролик", { channelId: ch.id, likesLabel: autoPlay.likes });
+    } else {
       const first = pickAutoPlay(vids);
       if (first) {
-        if (isShortVideo(first)) playVideoObj(ch, first);
-        else playId(first.id, first.title || "Ролик", { channelId: ch.id, likesLabel: first.likes });
+        playId(first.id, first.title || "Ролик", { channelId: ch.id, likesLabel: first.likes });
       }
     }
     renderComments();
@@ -995,9 +996,9 @@
         '</b><div class="ch">' +
         escapeHtml(ch.name) +
         "</div></div>";
-      // сразу лента — без перехода на канал
       card.addEventListener("click", function () {
-        openShorts(v.id);
+        // именно этот ролик на своём канале — не чужая лента
+        openChannel(ch.id, v);
       });
       if (isShortVideo(v)) shortsRow.appendChild(card);
       else feed.appendChild(card);
@@ -1054,26 +1055,37 @@
     let moved = false;
     let startX = 0;
     let startLeft = 0;
+    let activePid = null;
     channelShelf.addEventListener("pointerdown", function (e) {
       if (e.button != null && e.button !== 0) return;
+      // клик по карточке канала — не перехватывать, иначе канал не открывается
+      if (e.target.closest("button.ch-card")) {
+        drag = false;
+        moved = false;
+        return;
+      }
       drag = true;
       moved = false;
       startX = e.clientX;
       startLeft = channelShelf.scrollLeft;
-      try {
-        channelShelf.setPointerCapture(e.pointerId);
-      } catch (_) {}
+      activePid = e.pointerId;
     });
     channelShelf.addEventListener("pointermove", function (e) {
       if (!drag) return;
       const dx = e.clientX - startX;
-      if (Math.abs(dx) > 8) {
+      if (!moved && Math.abs(dx) > 14) {
         moved = true;
+        try {
+          channelShelf.setPointerCapture(activePid);
+        } catch (_) {}
+      }
+      if (moved) {
         channelShelf.scrollLeft = startLeft - dx;
       }
     });
     function endDrag() {
       drag = false;
+      activePid = null;
     }
     channelShelf.addEventListener("pointerup", endDrag);
     channelShelf.addEventListener("pointercancel", endDrag);
@@ -1263,7 +1275,7 @@
         escapeHtml(item.ch.name) +
         "</span></div>";
       btn.addEventListener("click", function () {
-        openShorts(item.v.id);
+        openChannel(item.ch.id, item.v);
       });
       searchHits.appendChild(btn);
     });
