@@ -3,25 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Желейная хата — Валера дома</title>
+  <title>Дом Валеры</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=13" />
+  <link rel="stylesheet" href="./style.css?v=14" />
 </head>
 <body>
   <div id="boot">
-    <h1>Желейная хата</h1>
-    <p>Клик по вещи — в инвентарь · ручка двери · желтобрюх не спит · ищи пасхалки</p>
-    <p class="hint">WASD — ходить · мышь — смотреть · Esc — закрыть окна / курсор</p>
-    <button type="button" id="startBtn">▶ Войти в хату</button>
+    <h1>Дом Валеры</h1>
+    <p>Ты в гостях у Валеры дома. Пляж далеко — только на машине.</p>
+    <ol class="boot-steps">
+      <li>Поздоровайся с Валерой</li>
+      <li>Дай конфету или мяч</li>
+      <li>Сними камерой → смотри на компе</li>
+      <li>Ручка двери → улица → красная машина</li>
+    </ol>
+    <p class="hint">WASD — ходить · мышь — смотреть · Esc — закрыть окна</p>
+    <button type="button" id="startBtn">▶ Войти в дом</button>
   </div>
 
   <div id="hud" hidden>
     <div class="cross" id="cross" hidden></div>
+    <div class="quest" id="quest">…</div>
     <div class="speech" id="speech">…</div>
-    <div class="place" id="place">Хата</div>
+    <div class="place" id="place">Дом</div>
     <div class="inv" id="inv"></div>
-    <p class="help">Esc — закрыть · клик снаружи окна тоже</p>
+    <p class="help">Esc — закрыть · клик снаружи окна</p>
   </div>
 
   <canvas id="c"></canvas>
@@ -47,17 +54,17 @@
 
   <div class="modal" id="pcModal" hidden>
     <div class="modal-card pc-card">
-      <h2>Мой компьютер</h2>
+      <h2>Компьютер Валеры</h2>
       <div class="pc-bezel">
         <div id="pcScreen" class="pc-screen"></div>
       </div>
-      <button type="button" id="pcClose" class="big-close">← Выйти с компа (или Esc)</button>
+      <button type="button" id="pcClose" class="big-close">← Выйти (Esc)</button>
     </div>
   </div>
 
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=13"></script>
+  <script type="module" src="./game.js?v=14"></script>
 </body>
 </html>
