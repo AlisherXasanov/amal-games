@@ -1,16 +1,18 @@
 /**
  * Котёл и молот — физический подъём (в духе Getting Over It).
- * Молот упирается в землю/скалу → котёл едет и «летит» в сторону.
+ * Молот упирается → котёл едет по дуге; сквозь скалы не проходит.
  */
 import * as THREE from "three";
 
 window.__AMAL_NO_WORLD__ = true;
 
-const GRAVITY = -26;
-const POT_R = 0.52;
-const HAMMER_LEN = 2.45;
-const HAMMER_HEAD = 0.32;
-const WIN_Y = 28;
+const GRAVITY = -22;
+const POT_R = 0.48;
+const HAMMER_LEN = 2.15;
+const HAMMER_HEAD = 0.28;
+const WIN_Y = 26;
+const SUBSTEPS = 5;
+const MAX_PLANT_STEP = 0.28;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x6b7a42);
@@ -42,7 +44,6 @@ function mat(color, opts) {
   });
 }
 
-/** { ax,ay,bx,by } + твёрдые боксы {x,y,w,h} */
 const segments = [];
 const boxes = [];
 
@@ -65,17 +66,21 @@ function addBoxTerrain(cx, cy, w, h, color) {
 }
 
 function addCircleTree(cx, cy, r) {
-  const trunkH = r * 7;
+  const trunkH = r * 6.2;
   const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(r * 0.38, r * 0.48, trunkH, 12),
+    new THREE.CylinderGeometry(r * 0.36, r * 0.46, trunkH, 12),
     mat(0x5c4030, { roughness: 0.9 })
   );
   trunk.position.set(cx, cy + trunkH / 2, 0);
   trunk.castShadow = true;
   scene.add(trunk);
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(r * 1.6, 12, 10), mat(0x3d6b2e, { roughness: 0.95 }));
+  canopy.position.set(cx, cy + trunkH + r * 0.4, 0);
+  canopy.castShadow = true;
+  scene.add(canopy);
   const top = cy + trunkH;
   const bot = cy;
-  const tw = r * 0.42;
+  const tw = r * 0.4;
   boxes.push({ x: cx, y: cy + trunkH / 2, w: tw * 2, h: trunkH, hx: tw, hy: trunkH / 2 });
   segments.push(
     { ax: cx - tw, ay: bot, bx: cx - tw, by: top },
@@ -84,21 +89,22 @@ function addCircleTree(cx, cy, r) {
   );
 }
 
-// === Уровень: старт проще — дерево и уступы рядом ===
-addBoxTerrain(0, -0.4, 16, 0.8, 0xd2b48c);
-addBoxTerrain(1.6, 0.55, 1.4, 0.7, 0xb8956a); // камень у ног вправо
-addBoxTerrain(-1.1, 0.7, 1.3, 0.9, 0xb8956a); // камень влево — дотянуться молотом
-addCircleTree(-1.55, 0.0, 0.5); // дерево БЛИЗКО
-addBoxTerrain(-4.2, 3.2, 2.0, 5.5, 0xb8956a);
-addBoxTerrain(3.6, 2.0, 2.2, 3.6, 0xb8956a);
-addBoxTerrain(-2.2, 7.5, 3.0, 1.1, 0xc4a574);
-addBoxTerrain(2.5, 10.0, 2.8, 1.1, 0xc4a574);
-addBoxTerrain(-3.5, 13.0, 2.5, 1, 0xb8956a);
-addBoxTerrain(1.5, 16.0, 3.5, 1.1, 0xc4a574);
-addBoxTerrain(-2, 19.0, 2.6, 1, 0xb8956a);
-addBoxTerrain(3, 22.0, 3, 1.1, 0xc4a574);
-addBoxTerrain(0, 25.5, 4.5, 1.2, 0xd2b48c);
-addBoxTerrain(6.2, 13.5, 1.6, 10, 0xa67c52);
+// Старт: земля короче, уступы и дерево рядом — сразу можно упереться
+addBoxTerrain(0, -0.35, 9.5, 0.7, 0xd2b48c);
+addBoxTerrain(1.05, 0.45, 1.15, 0.55, 0xb8956a);
+addBoxTerrain(-0.85, 0.55, 1.1, 0.7, 0xb8956a);
+addCircleTree(-1.15, 0.0, 0.42);
+addBoxTerrain(2.15, 1.35, 1.3, 1.8, 0xb8956a);
+addBoxTerrain(-2.55, 2.4, 1.6, 3.6, 0xb8956a);
+addBoxTerrain(3.4, 3.8, 1.8, 2.4, 0xb8956a);
+addBoxTerrain(-1.6, 6.2, 2.4, 1.0, 0xc4a574);
+addBoxTerrain(2.2, 8.6, 2.4, 1.0, 0xc4a574);
+addBoxTerrain(-2.8, 11.2, 2.2, 0.95, 0xb8956a);
+addBoxTerrain(1.4, 14.0, 3.0, 1.0, 0xc4a574);
+addBoxTerrain(-1.8, 17.0, 2.4, 0.95, 0xb8956a);
+addBoxTerrain(2.6, 20.0, 2.8, 1.0, 0xc4a574);
+addBoxTerrain(0, 23.2, 4.2, 1.15, 0xd2b48c);
+addBoxTerrain(5.4, 12.0, 1.4, 9, 0xa67c52);
 
 for (let i = 0; i < 6; i++) {
   const hill = new THREE.Mesh(
@@ -118,7 +124,7 @@ const pot = new THREE.Mesh(
   mat(0x4a5a28, { roughness: 0.45, metalness: 0.25 })
 );
 pot.rotation.x = Math.PI;
-pot.position.y = 0.15;
+pot.position.y = 0.12;
 pot.castShadow = true;
 potGroup.add(pot);
 
@@ -127,16 +133,16 @@ const rim = new THREE.Mesh(
   mat(0x3a4a20, { metalness: 0.3, roughness: 0.4 })
 );
 rim.rotation.x = Math.PI / 2;
-rim.position.y = 0.42;
+rim.position.y = 0.38;
 potGroup.add(rim);
 
 const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.35, 4, 10), mat(0xe8b896, { roughness: 0.7 }));
-torso.position.y = 0.85;
+torso.position.y = 0.82;
 torso.castShadow = true;
 potGroup.add(torso);
 
 const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), mat(0xf0c4a8, { roughness: 0.65 }));
-head.position.y = 1.35;
+head.position.y = 1.3;
 head.castShadow = true;
 potGroup.add(head);
 
@@ -144,11 +150,11 @@ const hair = new THREE.Mesh(
   new THREE.SphereGeometry(0.21, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.5),
   mat(0x2a1a12, { roughness: 0.9 })
 );
-hair.position.y = 1.42;
+hair.position.y = 1.37;
 potGroup.add(hair);
 
 const hammerPivot = new THREE.Group();
-hammerPivot.position.set(0.12, 0.92, 0.12);
+hammerPivot.position.set(0.12, 0.88, 0.12);
 potGroup.add(hammerPivot);
 
 const handle = new THREE.Mesh(
@@ -160,7 +166,7 @@ handle.castShadow = true;
 hammerPivot.add(handle);
 
 const headHammer = new THREE.Mesh(
-  new THREE.BoxGeometry(0.58, 0.38, 0.38),
+  new THREE.BoxGeometry(0.52, 0.34, 0.34),
   mat(0x8a9099, { metalness: 0.65, roughness: 0.35 })
 );
 headHammer.position.y = HAMMER_LEN;
@@ -169,17 +175,17 @@ hammerPivot.add(headHammer);
 
 const body = {
   x: 0,
-  y: 1.15,
+  y: 1.05,
   vx: 0,
   vy: 0,
-  angle: 0.9,
-  targetAngle: 0.9,
-  prevAngle: 0.9,
-  grounded: false,
+  angle: 1.05,
+  targetAngle: 1.05,
+  prevAngle: 1.05,
+  planted: false,
 };
 
 function pivot() {
-  return { x: body.x + 0.12, y: body.y + 0.92 };
+  return { x: body.x + 0.12, y: body.y + 0.88 };
 }
 
 function hammerHeadAt(angle) {
@@ -187,9 +193,11 @@ function hammerHeadAt(angle) {
   return {
     x: p.x + Math.sin(angle) * HAMMER_LEN,
     y: p.y + Math.cos(angle) * HAMMER_LEN,
-    px: p.x,
-    py: p.y,
   };
+}
+
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, v));
 }
 
 function distPointSeg(px, py, seg) {
@@ -199,43 +207,51 @@ function distPointSeg(px, py, seg) {
   const apy = py - seg.ay;
   const ab2 = abx * abx + aby * aby || 1;
   let t = (apx * abx + apy * aby) / ab2;
-  t = Math.max(0, Math.min(1, t));
+  t = clamp(t, 0, 1);
   const cx = seg.ax + abx * t;
   const cy = seg.ay + aby * t;
   const dx = px - cx;
   const dy = py - cy;
   const d = Math.hypot(dx, dy);
-  return { d, cx, cy, nx: d > 1e-6 ? dx / d : 0, ny: d > 1e-6 ? dy / d : 1, t };
+  return { d, cx, cy, nx: d > 1e-6 ? dx / d : 0, ny: d > 1e-6 ? dy / d : 1 };
 }
 
-/** Вытолкнуть круг из всех боксов (твердо, без прохождения) */
+/** Вытолкнуть круг из боксов (несколько проходов). Без бесконечного пола. */
 function resolvePotSolid(x, y, r) {
   let nx = x;
   let ny = y;
   let hit = false;
-  for (let i = 0; i < boxes.length; i++) {
-    const b = boxes[i];
-    const dx = nx - b.x;
-    const dy = ny - b.y;
-    const px = b.hx + r;
-    const py = b.hy + r;
-    if (Math.abs(dx) < px && Math.abs(dy) < py) {
-      hit = true;
-      const ox = px - Math.abs(dx);
-      const oy = py - Math.abs(dy);
-      if (ox < oy) {
-        nx += dx > 0 ? ox : -ox;
-      } else {
-        ny += dy > 0 ? oy : -oy;
+  let snx = 0;
+  let sny = 0;
+  for (let pass = 0; pass < 4; pass++) {
+    let moved = false;
+    for (let i = 0; i < boxes.length; i++) {
+      const b = boxes[i];
+      const dx = nx - b.x;
+      const dy = ny - b.y;
+      const px = b.hx + r;
+      const py = b.hy + r;
+      if (Math.abs(dx) < px && Math.abs(dy) < py) {
+        hit = true;
+        moved = true;
+        const ox = px - Math.abs(dx);
+        const oy = py - Math.abs(dy);
+        if (ox < oy) {
+          const s = dx > 0 ? 1 : -1;
+          nx += s * ox;
+          snx = s;
+          sny = 0;
+        } else {
+          const s = dy > 0 ? 1 : -1;
+          ny += s * oy;
+          snx = 0;
+          sny = s;
+        }
       }
     }
+    if (!moved) break;
   }
-  // пол на всякий случай
-  if (ny < r + 0.0) {
-    ny = r;
-    hit = true;
-  }
-  return { x: nx, y: ny, hit };
+  return { x: nx, y: ny, hit, nx: snx, ny: sny };
 }
 
 function nearestHammerHit(hx, hy) {
@@ -243,59 +259,92 @@ function nearestHammerHit(hx, hy) {
   for (let i = 0; i < segments.length; i++) {
     const info = distPointSeg(hx, hy, segments[i]);
     if (info.d <= HAMMER_HEAD) {
-      if (!best || info.d < best.d) best = info;
+      if (!best || info.d < best.d) best = { ...info, kind: "seg" };
     }
   }
   for (let i = 0; i < boxes.length; i++) {
     const b = boxes[i];
-    const dx = hx - b.x;
-    const dy = hy - b.y;
-    const cx = Math.max(b.x - b.hx, Math.min(b.x + b.hx, hx));
-    const cy = Math.max(b.y - b.hy, Math.min(b.y + b.hy, hy));
+    const cx = clamp(hx, b.x - b.hx, b.x + b.hx);
+    const cy = clamp(hy, b.y - b.hy, b.y + b.hy);
     const ox = hx - cx;
     const oy = hy - cy;
     const d = Math.hypot(ox, oy);
     if (d <= HAMMER_HEAD && d > 1e-6) {
-      const info = { d, cx, cy, nx: ox / d, ny: oy / d };
+      const info = { d, cx, cy, nx: ox / d, ny: oy / d, kind: "box" };
       if (!best || info.d < best.d) best = info;
-    } else if (d < 1e-6 && Math.abs(dx) < b.hx && Math.abs(dy) < b.hy) {
-      // голова внутри бокса — выталкиваем к ближайшей грани
-      const left = Math.abs(hx - (b.x - b.hx));
-      const right = Math.abs(hx - (b.x + b.hx));
-      const bottom = Math.abs(hy - (b.y - b.hy));
-      const top = Math.abs(hy - (b.y + b.hy));
+    } else if (d < 1e-6 && Math.abs(hx - b.x) < b.hx && Math.abs(hy - b.y) < b.hy) {
+      const left = hx - (b.x - b.hx);
+      const right = b.x + b.hx - hx;
+      const bottom = hy - (b.y - b.hy);
+      const top = b.y + b.hy - hy;
       const m = Math.min(left, right, bottom, top);
       let cx2 = hx;
       let cy2 = hy;
-      let nx = 0;
-      let ny = 0;
+      let nnx = 0;
+      let nny = 0;
       if (m === left) {
         cx2 = b.x - b.hx;
-        nx = -1;
+        nnx = -1;
       } else if (m === right) {
         cx2 = b.x + b.hx;
-        nx = 1;
+        nnx = 1;
       } else if (m === bottom) {
         cy2 = b.y - b.hy;
-        ny = -1;
+        nny = -1;
       } else {
         cy2 = b.y + b.hy;
-        ny = 1;
+        nny = 1;
       }
-      const info = { d: 0, cx: cx2, cy: cy2, nx, ny };
+      const info = { d: 0, cx: cx2, cy: cy2, nx: nnx, ny: nny, kind: "inside" };
       if (!best || info.d < best.d) best = info;
     }
   }
   return best;
 }
 
+/** Упор молота: котёл на дуге вокруг точки контакта, без телепортов. */
+function applyHammerPlant(dt) {
+  const head = hammerHeadAt(body.angle);
+  const hit = nearestHammerHit(head.x, head.y);
+  body.planted = !!hit;
+  if (!hit) return;
+
+  const tipX = hit.cx + hit.nx * 0.04;
+  const tipY = hit.cy + hit.ny * 0.04;
+  const desiredPx = tipX - Math.sin(body.angle) * HAMMER_LEN;
+  const desiredPy = tipY - Math.cos(body.angle) * HAMMER_LEN;
+  let wantX = desiredPx - 0.12;
+  let wantY = desiredPy - 0.88;
+
+  let dx = wantX - body.x;
+  let dy = wantY - body.y;
+  const len = Math.hypot(dx, dy);
+  if (len > MAX_PLANT_STEP) {
+    dx = (dx / len) * MAX_PLANT_STEP;
+    dy = (dy / len) * MAX_PLANT_STEP;
+    wantX = body.x + dx;
+    wantY = body.y + dy;
+  }
+
+  const invDt = 1 / Math.max(dt, 1e-4);
+  body.vx = dx * invDt;
+  body.vy = dy * invDt;
+  body.x = wantX;
+  body.y = wantY;
+
+  // чуть «цепляемся» за нормаль, чтобы не проскальзывать в камень
+  body.vx += hit.nx * 1.2;
+  body.vy += hit.ny * 1.2;
+}
+
 function setAngleFromClient(clientX, clientY) {
   const rect = renderer.domElement.getBoundingClientRect();
   const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
   const ndcY = -(((clientY - rect.top) / rect.height) * 2 - 1);
+  const span = camera.position.z * 0.52;
+  const worldX = camera.position.x + ndcX * span;
+  const worldY = camera.position.y + ndcY * span * 0.72;
   const p = pivot();
-  const worldX = body.x + ndcX * 9;
-  const worldY = body.y + 1.2 + ndcY * 6;
   body.targetAngle = Math.atan2(worldX - p.x, worldY - p.y);
 }
 
@@ -315,13 +364,14 @@ window.addEventListener("resize", () => {
 });
 
 function reset() {
-  body.x = 0.2;
-  body.y = 1.15;
+  body.x = 0.15;
+  body.y = 1.05;
   body.vx = 0;
   body.vy = 0;
   body.angle = 1.05;
   body.targetAngle = 1.05;
   body.prevAngle = body.angle;
+  body.planted = false;
   won = false;
   document.getElementById("win").classList.remove("show");
 }
@@ -335,7 +385,7 @@ if (hud) {
   const tip = hud.querySelector("p");
   if (tip) {
     tip.innerHTML =
-      "Крути <b>мышкой</b> молот. Упри голову молота <b>в землю под собой</b> и крути дальше — котёл уедет в сторону. Дерево рядом — зацепись и лезь вверх.";
+      "Крути <b>мышкой</b> молот. Упри голову <b>в землю / камень под собой</b> и крути дальше — котёл уедет в сторону. Дерево слева рядом.";
   }
 }
 
@@ -344,97 +394,65 @@ let last = performance.now();
 function tick(now) {
   requestAnimationFrame(tick);
   if (document.hidden) return;
-  const dt = Math.min(0.028, (now - last) / 1000);
+  const dt = Math.min(0.03, (now - last) / 1000);
   last = now;
 
   body.prevAngle = body.angle;
   let da = body.targetAngle - body.angle;
   while (da > Math.PI) da -= Math.PI * 2;
   while (da < -Math.PI) da += Math.PI * 2;
-  const maxTurn = 12 * dt;
-  body.angle += Math.max(-maxTurn, Math.min(maxTurn, da));
-  const omega = (body.angle - body.prevAngle) / Math.max(dt, 1e-4);
+  const maxTurn = 10 * dt;
+  body.angle += clamp(da, -maxTurn, maxTurn);
 
-  // Гравитация
-  body.vy += GRAVITY * dt;
-  body.vx *= 0.997;
-  body.vy *= 0.998;
-
-  body.x += body.vx * dt;
-  body.y += body.vy * dt;
-
-  // Молот упёрся → котёл двигается вокруг точки контакта (главная механика)
-  let head = hammerHeadAt(body.angle);
-  let hit = nearestHammerHit(head.x, head.y);
-  if (hit) {
-    // Точка на поверхности
-    const cx = hit.cx + hit.nx * HAMMER_HEAD * 0.98;
-    const cy = hit.cy + hit.ny * HAMMER_HEAD * 0.98;
-    // Поставить pivot на расстоянии LEN от контакта вдоль молота
-    const p = pivot();
-    const desiredPx = cx - Math.sin(body.angle) * HAMMER_LEN;
-    const desiredPy = cy - Math.cos(body.angle) * HAMMER_LEN;
-    const ox = desiredPx - p.x;
-    const oy = desiredPy - p.y;
-    body.x += ox;
-    body.y += oy;
-
-    // Скорость от вращения вокруг контакта: v = ω × r
-    // направление перпендикулярно рукояти
-    const tx = Math.cos(body.angle);
-    const ty = -Math.sin(body.angle);
-    const tangential = omega * HAMMER_LEN;
-    // сила «отталкивания» при вращении в землю
-    body.vx = body.vx * 0.35 + tx * tangential * 0.85;
-    body.vy = body.vy * 0.35 + ty * tangential * 0.85;
-
-    // лёгкий толчок от нормали, если вдавливаем
-    body.vx += hit.nx * 2.5 * dt * 60;
-    body.vy += hit.ny * 2.5 * dt * 60;
-  }
-
-  // Котёл твёрдый — не сквозь скалы
-  const solid = resolvePotSolid(body.x, body.y, POT_R * 0.9);
-  if (solid.hit) {
-    const dx = solid.x - body.x;
-    const dy = solid.y - body.y;
-    body.x = solid.x;
-    body.y = solid.y;
-    if (dx || dy) {
-      const len = Math.hypot(dx, dy) || 1;
-      const nx = dx / len;
-      const ny = dy / len;
-      const vn = body.vx * nx + body.vy * ny;
-      if (vn < 0) {
-        body.vx -= vn * nx * 1.05;
-        body.vy -= vn * ny * 1.05;
-      }
-      body.vx *= 0.88;
-      body.vy *= 0.88;
-      body.grounded = true;
+  const h = dt / SUBSTEPS;
+  for (let s = 0; s < SUBSTEPS; s++) {
+    if (!body.planted) {
+      body.vy += GRAVITY * h;
+      body.vx *= 0.999;
+      body.vy *= 0.999;
+    } else {
+      body.vx *= 0.992;
+      body.vy *= 0.992;
     }
-  } else {
-    body.grounded = false;
+
+    body.x += body.vx * h;
+    body.y += body.vy * h;
+
+    applyHammerPlant(h);
+
+    const solid = resolvePotSolid(body.x, body.y, POT_R * 0.88);
+    if (solid.hit) {
+      body.x = solid.x;
+      body.y = solid.y;
+      if (solid.nx || solid.ny) {
+        const vn = body.vx * solid.nx + body.vy * solid.ny;
+        if (vn < 0) {
+          body.vx -= vn * solid.nx * 1.08;
+          body.vy -= vn * solid.ny * 1.08;
+        }
+        body.vx *= 0.9;
+        body.vy *= 0.9;
+      }
+    }
   }
 
-  if (body.y < -2) reset();
-  if (body.x < -13) {
-    body.x = -13;
-    body.vx = Math.abs(body.vx) * 0.2;
+  // ограничение скорости — без ракетного вылета
+  const spd = Math.hypot(body.vx, body.vy);
+  if (spd > 18) {
+    body.vx = (body.vx / spd) * 18;
+    body.vy = (body.vy / spd) * 18;
   }
-  if (body.x > 13) {
-    body.x = 13;
-    body.vx = -Math.abs(body.vx) * 0.2;
-  }
+
+  if (body.y < -3 || body.x < -14 || body.x > 14) reset();
 
   potGroup.position.set(body.x, body.y, 0);
   hammerPivot.rotation.z = -body.angle;
 
-  camera.position.x += (body.x - camera.position.x) * 0.1;
-  camera.position.y += (body.y + 1.6 - camera.position.y) * 0.1;
-  camera.lookAt(body.x, body.y + 0.8, 0);
+  camera.position.x += (body.x - camera.position.x) * 0.12;
+  camera.position.y += (body.y + 1.5 - camera.position.y) * 0.12;
+  camera.lookAt(body.x, body.y + 0.7, 0);
 
-  heightEl.textContent = "Высота: " + Math.max(0, body.y - 1.15).toFixed(1) + " м";
+  heightEl.textContent = "Высота: " + Math.max(0, body.y - 1.05).toFixed(1) + " м";
 
   if (!won && body.y >= WIN_Y) {
     won = true;
