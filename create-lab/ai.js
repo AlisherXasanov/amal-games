@@ -58,9 +58,10 @@ window.Ushastik = (() => {
     let sessionId = 0;
     let failCount = 0;
     let restartCount = 0;
-    const SILENCE_MS = 1200;
-    const MAX_LISTEN_MS = 10000; // максимум 10 сек — потом сам выключится
-    const MAX_RESTARTS = 2;
+    let noSpeechCount = 0;
+    const SILENCE_MS = 1600;
+    const MAX_LISTEN_MS = 25000;
+    const MAX_RESTARTS = 12;
 
     function setMicLabel(listeningNow) {
       const start = (micLabel && micLabel.dataset.labelStart) || "Сказать";
@@ -303,21 +304,25 @@ window.Ushastik = (() => {
     function bindRecognition(rec, sid) {
       rec.lang = SPEECH_LANG;
       rec.interimResults = true;
-      rec.continuous = false;
-      rec.maxAlternatives = 1;
+      rec.continuous = true;
+      rec.maxAlternatives = 3;
 
       rec.onresult = (event) => {
         if (sid !== sessionId || !wantListen) return;
         let interim = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const chunk = event.results[i][0].transcript;
+          const alt = event.results[i][0];
+          const chunk = (alt && alt.transcript) || "";
+          if (!chunk) continue;
           if (event.results[i].isFinal) finalText += (finalText ? " " : "") + chunk;
           else interim += chunk;
         }
         interimText = interim;
         const live = (finalText + " " + interim).replace(/\s+/g, " ").trim();
         if (live) {
-          setStatus(`Слышу: ${live}`);
+          noSpeechCount = 0;
+          failCount = 0;
+          setStatus("Слышу: «" + live + "» — замолчи или нажми СТОП");
           armSilence(sid);
         } else setStatus(REPLIES.listening);
       };
@@ -332,9 +337,21 @@ window.Ushastik = (() => {
           return;
         }
         if (err === "no-speech") {
+          noSpeechCount += 1;
+          if (noSpeechCount <= 4 && wantListen) {
+            setStatus("Тихо… говори громче и ближе. Я ещё слушаю.");
+            return;
+          }
           finishListening(false);
           setStatus("Тишина. Нажми микрофон и скажи ещё раз.");
           return;
+        }
+        if (err === "network" || err === "offline") {
+          failCount += 1;
+          if (failCount <= 6 && wantListen) {
+            setStatus("Связь мигает… я всё ещё слушаю, говори!");
+            return;
+          }
         }
         finishListening(false);
         setStatus("Микрофон сбился. Напиши текстом — так надёжнее.");
@@ -348,12 +365,19 @@ window.Ushastik = (() => {
           return;
         }
         const text = (finalText + " " + interimText).replace(/\s+/g, " ").trim();
-        if (text) {
-          finishListening(true);
+        if (text && !silenceTimer) {
+          // continuous ended but we have text — keep listening a bit more via restart
+        }
+        if (text && silenceTimer) {
+          // silence already armed
           return;
         }
         restartCount += 1;
         if (restartCount > MAX_RESTARTS) {
+          if (text) {
+            finishListening(true);
+            return;
+          }
           finishListening(false);
           setStatus("Не расслышал. Нажми микрофон и скажи чётко.");
           return;
@@ -368,17 +392,33 @@ window.Ushastik = (() => {
             next.start();
             listening = true;
             setState("listening");
-            setStatus(REPLIES.listening);
+            if (!text) setStatus(REPLIES.listening);
           } catch (_) {
-            finishListening(false);
+            if (text) finishListening(true);
+            else finishListening(false);
           }
-        }, 200);
+        }, 180);
       };
+    }
+
+    async function warmMicPermission() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
+        stream.getTracks().forEach(function (t) {
+          t.stop();
+        });
+        await new Promise(function (r) {
+          setTimeout(r, 80);
+        });
+      } catch (_) {}
     }
 
     function startListen() {
       if (!SpeechRecognition) {
-        speak("В этом браузере нет распознавания речи. Пиши текстом.");
+        speak("В этом браузере нет распознавания речи. Пиши текстом. Лучше Chrome или Edge.");
         return;
       }
       stopTalk();
@@ -389,27 +429,44 @@ window.Ushastik = (() => {
       interimText = "";
       failCount = 0;
       restartCount = 0;
+      noSpeechCount = 0;
       wantListen = true;
       listening = true;
 
-      recognition = new SpeechRecognition();
-      bindRecognition(recognition, sid);
       setState("listening");
-      setStatus(REPLIES.listening);
+      setStatus("Разреши микрофон, потом говори…");
 
-      maxTimer = setTimeout(() => {
+      warmMicPermission().then(function () {
         if (sid !== sessionId || !wantListen) return;
-        const text = (finalText + " " + interimText).replace(/\s+/g, " ").trim();
-        finishListening(!!text);
-        if (!text) setStatus("Время вышло. Нажми микрофон и скажи короче.");
-      }, MAX_LISTEN_MS);
+        recognition = new SpeechRecognition();
+        bindRecognition(recognition, sid);
+        setStatus(REPLIES.listening);
 
-      try {
-        recognition.start();
-      } catch (_) {
-        finishListening(false);
-        speak("Не удалось включить микрофон. Пиши текстом.");
-      }
+        maxTimer = setTimeout(() => {
+          if (sid !== sessionId || !wantListen) return;
+          const text = (finalText + " " + interimText).replace(/\s+/g, " ").trim();
+          finishListening(!!text);
+          if (!text) setStatus("Время вышло. Нажми микрофон и скажи короче.");
+        }, MAX_LISTEN_MS);
+
+        try {
+          recognition.start();
+          setStatus("Слушаю! Говори сейчас по-русски…");
+        } catch (_) {
+          setTimeout(function () {
+            if (sid !== sessionId || !wantListen) return;
+            try {
+              recognition = new SpeechRecognition();
+              bindRecognition(recognition, sid);
+              recognition.start();
+              setStatus("Слушаю! Говори сейчас по-русски…");
+            } catch (__) {
+              finishListening(false);
+              speak("Не удалось включить микрофон. Пиши текстом. Открой в Google Chrome.");
+            }
+          }, 350);
+        }
+      });
     }
 
     function stopListen(processText = true) {

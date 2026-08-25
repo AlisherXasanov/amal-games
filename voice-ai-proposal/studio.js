@@ -681,18 +681,32 @@
 
     const blob = new Blob(allChunks, { type: (allChunks[0] && allChunks[0].type) || "audio/webm" });
 
-    if (!allChunks.length || blob.size < 800) {
+    if (!allChunks.length || blob.size < 400) {
       setLiveListening(false);
-      setLiveStatus("Слишком тихо / коротко. Нажми микрофон и скажи ещё раз.");
+      setLiveStatus("Слишком тихо / коротко. Пробую другой слух (Chrome)…");
       whisperBusy = false;
+      if (SpeechRecognition) {
+        setTimeout(function () {
+          startListening(forMode);
+        }, 200);
+      } else {
+        setLiveStatus("Слишком тихо. Нажми микрофон и скажи ещё раз.");
+      }
       return;
     }
 
     const W = await waitForWhisper(90000);
     if (!W) {
       setLiveListening(false);
-      setLiveStatus("Подожди: уши ещё качаются. Когда будет «готовы» — нажми микрофон.");
       whisperBusy = false;
+      if (SpeechRecognition) {
+        setLiveStatus("Уши Whisper не готовы — включаю слух Chrome. Говори!");
+        setTimeout(function () {
+          startListening(forMode);
+        }, 200);
+      } else {
+        setLiveStatus("Подожди: уши ещё качаются. Или открой Google Chrome.");
+      }
       return;
     }
 
@@ -707,16 +721,33 @@
       });
       setLiveListening(false);
       if (!text || text.length < 2) {
-        setLiveStatus("Не разобрал. Нажми микрофон и скажи громче и яснее.");
         clearLiveWrite("…");
-      } else {
-        writeHeard(text, "Слышу: «" + text + "»");
-        applyHeardSpeech(text, forMode);
+        whisperBusy = false;
+        if (SpeechRecognition) {
+          setLiveStatus("Whisper не разобрал — пробую Chrome. Говори сейчас!");
+          setTimeout(function () {
+            startListening(forMode);
+          }, 250);
+        } else {
+          setLiveStatus("Не разобрал. Нажми микрофон и скажи громче и яснее.");
+        }
+        return;
       }
+      writeHeard(text, "Слышу: «" + text + "»");
+      applyHeardSpeech(text, forMode);
     } catch (err) {
       console.error(err);
       setLiveListening(false);
-      setLiveStatus("Ошибка. Нужен интернет для ушей. Попробуй ещё раз.");
+      whisperBusy = false;
+      if (SpeechRecognition) {
+        setLiveStatus("Сбой Whisper — пробую Chrome. Говори!");
+        setTimeout(function () {
+          startListening(forMode);
+        }, 250);
+      } else {
+        setLiveStatus("Ошибка. Нужен интернет. Попробуй Chrome.");
+      }
+      return;
     }
     whisperBusy = false;
   }
@@ -834,15 +865,15 @@
         if (!heardSound) {
           noiseFloor = noiseFloor * 0.95 + rms * 0.05;
         }
-        const speakGate = Math.max(0.018, noiseFloor * 2.8 + 0.01);
-        const quietGate = Math.max(0.01, noiseFloor * 1.6 + 0.006);
+        const speakGate = Math.max(0.01, noiseFloor * 1.9 + 0.006);
+        const quietGate = Math.max(0.007, noiseFloor * 1.35 + 0.004);
 
         const now = Date.now();
         if (rms > speakGate) {
           speechFrames += 1;
           lastLoudAt = now;
           if (rms > speechPeak) speechPeak = rms;
-          if (!heardSound && speechFrames >= 4) {
+          if (!heardSound && speechFrames >= 2) {
             heardSound = true;
             setLiveStatus("Слышу! Говори… (Стоп = микрофон)");
             if (heardText) {
@@ -851,23 +882,22 @@
             }
           }
         } else if (rms < quietGate) {
-          speechFrames = Math.max(0, speechFrames - 2);
+          speechFrames = Math.max(0, speechFrames - 1);
         }
 
-        // Auto-stop ~1.2s after real speech ends (need a bit of speech first)
+        // Auto-stop ~1.4s after real speech ends
         if (
           heardSound &&
           lastLoudAt &&
-          now - lastLoudAt > 1200 &&
-          now - recordStartedAt > 2200 &&
-          speechPeak > noiseFloor * 2
+          now - lastLoudAt > 1400 &&
+          now - recordStartedAt > 1800
         ) {
           setLiveStatus("Останавливаю… пишу слова");
           finishWhisperCapture();
           return;
         }
-        // Max 8 seconds
-        if (recordStartedAt && now - recordStartedAt > 8000) {
+        // Max 14 seconds
+        if (recordStartedAt && now - recordStartedAt > 14000) {
           setLiveStatus("Останавливаю… пишу слова");
           finishWhisperCapture();
           return;
@@ -916,7 +946,7 @@
         setLiveStatus("Останавливаю… пишу слова");
         finishWhisperCapture();
       }
-    }, 8000);
+    }, 14000);
 
     // Do NOT start Chrome SpeechRecognition here — it lies / praises too early.
     // Whisper alone writes the real words.
