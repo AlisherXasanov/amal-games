@@ -9,13 +9,16 @@ const FILM_KEY = "jelly-lab-films-v1";
 
 const state = {
   asleep: true,
+  playerAsleep: true,
+  dayStarted: false,
   hunger: 0.6,
   wet: false,
   limonIn: false,
   tikIn: false,
   filming: false,
   filmLines: [],
-  sayToken: 0
+  sayToken: 0,
+  night: 0.85
 };
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -30,8 +33,9 @@ const camera = new THREE.PerspectiveCamera(40, 16 / 10, 0.1, 80);
 camera.position.set(0, 1.45, 2.6);
 camera.lookAt(0, 1.15, 0.2);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-const sun = new THREE.DirectionalLight(0xfff1c8, 1.05);
+const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+scene.add(ambient);
+const sun = new THREE.DirectionalLight(0xfff1c8, 0.35);
 sun.position.set(2.5, 5, 3);
 scene.add(sun);
 
@@ -249,7 +253,27 @@ function say(text, secs = 2.4) {
   });
 }
 
+function setDayLight(on) {
+  ambient.intensity = on ? 0.9 : 0.28;
+  sun.intensity = on ? 1.05 : 0.25;
+  scene.background = new THREE.Color(on ? 0xffe566 : 0x3a4560);
+}
+
+function unlockDay() {
+  state.dayStarted = true;
+  state.playerAsleep = false;
+  document.getElementById("actions").classList.remove("locked");
+  document.getElementById("btnWakeMe").hidden = true;
+  who.textContent = "День начался · можно играть кнопками внизу";
+}
+
 function updateWho() {
+  if (!state.dayStarted) {
+    who.textContent = state.asleep
+      ? "Сейчас: ночь · Руби ещё спит"
+      : "Руби проснулся и будит тебя!";
+    return;
+  }
   const parts = ["Руби"];
   if (state.limonIn) parts.push("Лимон");
   if (state.tikIn) parts.push("Тик");
@@ -257,12 +281,21 @@ function updateWho() {
 }
 
 async function act(name) {
+  if (!state.dayStarted && name !== "film") {
+    await say("Сначала дождись утра: Руби должен тебя разбудить.", 2);
+    return;
+  }
+
   if (name === "film") {
+    if (!state.dayStarted) {
+      await say("Съёмка после того, как ты проснёшься.", 2);
+      return;
+    }
     if (!state.filming) {
       state.filming = true;
       state.filmLines = ["Начало выпуска в Желейной хате"];
       recEl.hidden = false;
-      await say("Съёмка началась! Делай действия — всё попадёт в ролик.", 2.2);
+      await say("Съёмка началась! Жми действия — фразы попадут в ролик.", 2.2);
     } else {
       state.filming = false;
       recEl.hidden = true;
@@ -272,29 +305,22 @@ async function act(name) {
         const list = JSON.parse(localStorage.getItem(FILM_KEY) || "[]");
         list.unshift({ id: "f-" + Date.now(), title, lines, at: Date.now() });
         localStorage.setItem(FILM_KEY, JSON.stringify(list.slice(0, 30)));
-        // also drop into mult-studio shelf if present
         const mine = JSON.parse(localStorage.getItem("mult-studio-mine-v1") || "[]");
         mine.unshift({ id: "lab-" + Date.now(), title, lines });
         localStorage.setItem("mult-studio-mine-v1", JSON.stringify(mine.slice(0, 40)));
       } catch (_) {}
-      await say("Ролик сохранён! Смотри в Мульт-студии → полка «твой ролик».", 3);
+      await say("Ролик сохранён в Мульт-студии (полка «твой ролик»).", 3);
     }
     return;
   }
 
-  if (name === "wake") {
-    state.asleep = false;
-    await say("Руби: Ку-ку… Дай конфетку! Дай конфетку!");
-    return;
-  }
   if (name === "candy") {
     state.hunger = Math.max(0, state.hunger - 0.25);
-    state.asleep = false;
-    await say("Руби: Ммм! Спасибо! Ещё одну можно?");
+    await say("Руби: Ммм! Спасибо! Дай конфетку ещё! Дай конфетку!");
     return;
   }
   if (name === "enough") {
-    await say("Ведущий: Руби, хватит! Хватит просить конфеты.");
+    await say("Ты: Руби, хватит! Хватит просить конфеты.");
     await say("Руби: Ну ладно… чуть-чуть ещё?");
     return;
   }
@@ -307,14 +333,14 @@ async function act(name) {
   }
   if (name === "pizza") {
     state.hunger = 0;
-    await say("Руби: Пицца! Синенькие… ой, то есть вкусные кусочки!");
+    await say("Руби: Пицца! Вкусные кусочки!");
     return;
   }
   if (name === "water") {
     water.visible = true;
     water.scale.set(1, 1, 1);
     await say("Опыт: наливаем воду…");
-    await say("Руби: Бульк! Я желейный, мне мокро и весело!");
+    await say("Руби: Бульк! Мне мокро и весело!");
     setTimeout(() => { water.visible = false; }, 4000);
     return;
   }
@@ -347,7 +373,7 @@ async function act(name) {
     tik.visible = state.tikIn;
     updateWho();
     if (state.tikIn) {
-      await say("Тик: Бип! Я помогу с опытом. Наушники на месте.");
+      await say("Тик: Бип! Помогу с опытом. Наушники на месте.");
     } else {
       await say("Тик: Бип-бай! Ушёл заряжаться.");
     }
@@ -360,9 +386,31 @@ document.getElementById("actions").addEventListener("click", (e) => {
   act(btn.dataset.act);
 });
 
-// start asleep pose
-rubi.rotation.z = 0.35;
-say("Руби спит… Разбуди его!", 2);
+document.getElementById("btnWakeMe").addEventListener("click", async () => {
+  unlockDay();
+  setDayLight(true);
+  await say("Ты: Я проснулся!", 1.5);
+  await say("Руби: Ура! Давай играть и проводить опыты!", 2.2);
+  updateWho();
+});
+
+async function morningIntro() {
+  setDayLight(false);
+  rubi.rotation.z = 0.4;
+  state.asleep = true;
+  updateWho();
+  await say("Ночь в жёлтой хате… Руби спит.", 2.2);
+  await say("…", 0.8);
+  state.asleep = false;
+  setDayLight(true);
+  updateWho();
+  await say("Руби: Ку-ку! Эй, ты чего спишь?!", 2.4);
+  await say("Руби: Вставай! Я тебя бужу! Дай конфетку потом!", 2.6);
+  document.getElementById("btnWakeMe").hidden = false;
+  bubble.textContent = "Руби тебя будит — жми жёлтую кнопку";
+}
+
+morningIntro();
 
 const t0 = performance.now();
 function loop(now) {
@@ -373,7 +421,7 @@ function loop(now) {
     rubi.rotation.z = Math.sin(t * 1.5) * 0.05;
     rubi.position.y = 0.55 + bounce;
   } else {
-    rubi.rotation.z = 0.35;
+    rubi.rotation.z = 0.4;
     rubi.position.y = 0.55;
   }
 
