@@ -8,13 +8,14 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=4" />
+  <link rel="stylesheet" href="./style.css?v=9" />
 </head>
 <body class="watch-app">
   <header class="topbar">
     <button type="button" class="btn ghost" id="btnHome" hidden>🏠 Спальня</button>
     <a class="btn ghost" href="../">← Каталог</a>
     <h1>▶ <span>Смотри</span></h1>
+    <button type="button" class="btn accent" id="btnShorts">📱 Shorts</button>
     <button type="button" class="btn accent" id="installBtn" hidden>📲</button>
   </header>
 
@@ -25,18 +26,27 @@
         <div class="tv-frame">
           <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
         </div>
-        <p class="tv-hint" id="tvHint">Мотай вниз — настоящие превью. Канал «Три кота · Море» — пляж в 3 частях. Зум + на экране.</p>
+        <p class="tv-hint" id="tvHint">Открой канал — подтянутся все ролики. Лайки только твои, без накрутки. Если не играет — обычный плеер уже включён.</p>
       </div>
 
       <div class="shelf-label">Каналы</div>
       <div class="channel-shelf" id="channelShelf"></div>
 
-      <div class="shelf-label" id="feedShortsLabel">📱 Shorts</div>
+      <div class="shelf-label shorts-open" id="feedShortsLabel" role="button" tabindex="0">📱 Shorts · листай →</div>
       <div class="feed-row" id="shortsRow"></div>
 
-      <div class="shelf-label">Рекомендации · мотай вниз</div>
+      <div class="shelf-label">Подборка · мотай вниз</div>
       <div class="feed" id="feed"></div>
     </div>
+  </section>
+
+  <section class="view" id="viewShorts">
+    <div class="shorts-top">
+      <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
+      <span>📱 Shorts</span>
+      <span class="shorts-tip">листай вверх/вниз</span>
+    </div>
+    <div class="shorts-feed" id="shortsFeed"></div>
   </section>
 
   <section class="view" id="viewChannel">
@@ -51,6 +61,8 @@
         <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">0</span></button>
         <span class="stat" id="subsStat">👥 0</span>
         <button type="button" class="sub-btn" id="subBtn">Подписаться</button>
+        <button type="button" class="sub-btn" id="allVideosBtn">📋 Все ролики</button>
+        <button type="button" class="sub-btn" id="reportBtn">⚠ Ошибка</button>
       </div>
       <p class="now" id="nowPlaying">Сейчас: —</p>
     </div>
@@ -61,12 +73,34 @@
         <input type="file" id="fileIn" accept="video/*" hidden />
       </label>
     </div>
-    <div class="shelf-label pad">Видео канала · выбери любое</div>
+    <div class="shelf-label pad">Ролики канала · свежие</div>
     <div class="video-grid" id="videoGrid"></div>
+
+    <div class="comments-box" id="commentsBox">
+      <div class="shelf-label pad">💬 Комментарии</div>
+      <div class="comments-list" id="commentsList"></div>
+      <form class="comment-form" id="commentForm">
+        <input id="commentNick" maxlength="24" placeholder="Имя" autocomplete="nickname" />
+        <input id="commentText" maxlength="400" placeholder="Напиши комментарий…" required />
+        <button type="submit">Отправить</button>
+      </form>
+    </div>
   </section>
 
-  <script src="./channels-data.js?v=4"></script>
-  <script src="./main.js?v=4"></script>
+  <div class="modal" id="reportModal" hidden>
+    <div class="modal-card">
+      <h3>Сообщить об ошибке</h3>
+      <p>Не играет видео, не тот ролик, битая картинка — напиши, что случилось.</p>
+      <textarea id="reportText" rows="4" maxlength="500" placeholder="Опиши ошибку…"></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="reportCancel">Отмена</button>
+        <button type="button" class="btn accent" id="reportSend">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./channels-data.js?v=9"></script>
+  <script src="./main.js?v=9"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
