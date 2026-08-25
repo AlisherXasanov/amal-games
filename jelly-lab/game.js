@@ -1,4 +1,4 @@
-import * as THREE from "three";
+﻿import * as THREE from "three";
 
 const canvas = document.getElementById("c");
 const speech = document.getElementById("speech");
@@ -62,8 +62,7 @@ sun.position.set(4, 10, 6);
 scene.add(sun);
 
 const texCache = {};
-function tex(draw, size = 128) {
-  const key = draw.name || Math.random();
+function tex(key, draw, size = 128) {
   if (texCache[key]) return texCache[key];
   const c = document.createElement("canvas");
   c.width = c.height = size;
@@ -86,7 +85,6 @@ function woodTex(g, s) {
     g.stroke();
   }
 }
-woodTex.name = "wood";
 function metalTex(g, s) {
   const grd = g.createLinearGradient(0, 0, s, s);
   grd.addColorStop(0, "#e8eef4");
@@ -96,14 +94,12 @@ function metalTex(g, s) {
   g.fillStyle = "rgba(255,255,255,0.25)";
   g.fillRect(10, 0, 20, s);
 }
-metalTex.name = "metal";
 function candyTex(g, s) {
   g.fillStyle = "#e51d30";
   g.fillRect(0, 0, s, s);
   g.fillStyle = "#fff";
   g.fillRect(0, s * 0.4, s, s * 0.2);
 }
-candyTex.name = "candy";
 function sandTex(g, s) {
   g.fillStyle = "#e6d3a0";
   g.fillRect(0, 0, s, s);
@@ -112,7 +108,6 @@ function sandTex(g, s) {
     g.fillRect(Math.random() * s, Math.random() * s, 2, 2);
   }
 }
-sandTex.name = "sand";
 function bookTex(g, s) {
   g.fillStyle = "#2f6fdb";
   g.fillRect(0, 0, s, s);
@@ -121,8 +116,6 @@ function bookTex(g, s) {
   g.fillStyle = "#fff8e0";
   g.fillRect(s * 0.15, s * 0.4, s * 0.7, s * 0.35);
 }
-bookTex.name = "book";
-
 function say(t) {
   speech.textContent = t;
   try {
@@ -138,8 +131,8 @@ function say(t) {
 function matColor(color) {
   return new THREE.MeshLambertMaterial({ color });
 }
-function matMap(drawer, color = 0xffffff) {
-  return new THREE.MeshLambertMaterial({ map: tex(drawer), color });
+function matMap(key, drawer, color = 0xffffff) {
+  return new THREE.MeshLambertMaterial({ map: tex(key, drawer), color });
 }
 
 function addSolid(x, z, w, d) {
@@ -209,24 +202,24 @@ function buildWorld() {
   // floor house
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(22, 22),
-    matMap(woodTex)
+    matMap("wood", woodTex)
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(0, 0, 2);
   scene.add(floor);
 
   // стены дома с проходом на пляж (юг)
-  box(6, 3.2, 0.25, matMap(woodTex), -5, 1.6, -2.0);
-  box(6, 3.2, 0.25, matMap(woodTex), 5, 1.6, -2.0);
-  box(0.25, 3.2, 14, matMap(woodTex), -8, 1.6, 2);
-  box(0.25, 3.2, 14, matMap(woodTex), 8, 1.6, 2);
-  box(16, 3.2, 0.25, matMap(woodTex), 0, 1.6, 9.5);
+  box(6, 3.2, 0.25, matMap("wood", woodTex), -5, 1.6, -2.0);
+  box(6, 3.2, 0.25, matMap("wood", woodTex), 5, 1.6, -2.0);
+  box(0.25, 3.2, 14, matMap("wood", woodTex), -8, 1.6, 2);
+  box(0.25, 3.2, 14, matMap("wood", woodTex), 8, 1.6, 2);
+  box(16, 3.2, 0.25, matMap("wood", woodTex), 0, 1.6, 9.5);
   // --- bedroom (z ~ 7) ---
-  const bed = box(2.4, 0.45, 1.4, matMap(woodTex), 0, 0.35, 7.6);
+  const bed = box(2.4, 0.45, 1.4, matMap("wood", woodTex), 0, 0.35, 7.6);
   mark(bed, "bed", "Кровать");
-  const dresser = box(1.3, 1.1, 0.55, matMap(woodTex), 3.2, 0.7, 7.8);
+  const dresser = box(1.3, 1.1, 0.55, matMap("wood", woodTex), 3.2, 0.7, 7.8);
   mark(dresser, "dresser", "Комод");
-  const book = box(0.25, 0.35, 0.08, matMap(bookTex), 3.0, 1.4, 7.7, false);
+  const book = box(0.25, 0.35, 0.08, matMap("book", bookTex), 3.0, 1.4, 7.7, false);
   mark(book, "book", "Книжка");
   const bear = makeBear(0xe51d30, false);
   bear.position.set(-0.8, 0, 7.2);
@@ -244,12 +237,12 @@ function buildWorld() {
 
   // --- hall / living ---
   for (let i = 0; i < 4; i++) {
-    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), matMap(candyTex));
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), matMap("candy", candyTex));
     c.position.set(-2.5 + i * 0.35, 1.55, 3.5);
     scene.add(c);
     mark(c, "candy", "Конфета");
   }
-  const shelf = box(2.2, 0.12, 0.4, matMap(woodTex), -2.0, 1.4, 3.3, false);
+  const shelf = box(2.2, 0.12, 0.4, matMap("wood", woodTex), -2.0, 1.4, 3.3, false);
   mark(shelf, "shelf", "Полка");
   const dump = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), matColor(0xf5e6c8));
   dump.scale.set(1.3, 0.85, 1);
@@ -270,7 +263,7 @@ function buildWorld() {
   mark(bath, "bath", "Ванночка");
 
   // --- kitchen (x negative) ---
-  const fridge = box(1.2, 2.3, 0.85, matMap(metalTex), -6.2, 1.2, 2.5);
+  const fridge = box(1.2, 2.3, 0.85, matMap("metal", metalTex), -6.2, 1.2, 2.5);
   mark(fridge, "fridge", "Холодильник");
   const water = new THREE.Mesh(
     new THREE.CylinderGeometry(0.1, 0.1, 0.25, 12),
@@ -279,7 +272,7 @@ function buildWorld() {
   water.position.set(-5.2, 1.0, 3.5);
   scene.add(water);
   mark(water, "water", "Вода");
-  const table = box(2.2, 0.15, 1.2, matMap(woodTex), -5.5, 0.85, 4.2);
+  const table = box(2.2, 0.15, 1.2, matMap("wood", woodTex), -5.5, 0.85, 4.2);
   mark(table, "table", "Стол");
   const battery = box(0.25, 0.12, 0.15, matColor(0x33aa55), -5.0, 1.0, 4.0, false);
   mark(battery, "battery", "Батарейка");
@@ -289,7 +282,7 @@ function buildWorld() {
   mark(coat, "coat", "Халатик");
 
   // --- neighbor door (z small) ---
-  const door = box(1.5, 2.5, 0.15, matMap(woodTex), 0, 1.3, -1.5);
+  const door = box(1.5, 2.5, 0.15, matMap("wood", woodTex), 0, 1.3, -1.5);
   mark(door, "door", "Дверь");
   const peep = new THREE.Mesh(new THREE.CircleGeometry(0.1, 16), matColor(0x111));
   peep.position.set(0, 1.6, -1.4);
@@ -311,7 +304,7 @@ function buildWorld() {
   }
 
   // --- beach (z < -12) ---
-  const sand = new THREE.Mesh(new THREE.PlaneGeometry(30, 20), matMap(sandTex));
+  const sand = new THREE.Mesh(new THREE.PlaneGeometry(30, 20), matMap("sand", sandTex));
   sand.rotation.x = -Math.PI / 2;
   sand.position.set(0, -0.02, -18);
   scene.add(sand);
@@ -325,7 +318,7 @@ function buildWorld() {
   scene.background = new THREE.Color(0xffe566);
 
   // path to beach - opening
-  const path = box(3.5, 0.05, 8, matMap(sandTex), 0, 0.02, -6, false);
+  const path = box(3.5, 0.05, 8, matMap("sand", sandTex), 0, 0.02, -6, false);
   mark(path, "path", "Тропинка на пляж");
   const umbrella = box(0.1, 1.5, 0.1, matColor(0xffffff), -1.5, 0.8, -16, false);
   const cone = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.3, 12), matColor(0xe51d30));
@@ -534,8 +527,15 @@ function shootInteract() {
   }
 }
 
+let dragging = false;
+let dragStart = null;
+let dragMoved = false;
+
 function lockPointer() {
-  canvas.requestPointerLock();
+  try {
+    const p = canvas.requestPointerLock && canvas.requestPointerLock();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+  } catch (_) {}
 }
 function exitPointer() {
   if (document.pointerLockElement) document.exitPointerLock();
@@ -544,19 +544,75 @@ function exitPointer() {
 document.addEventListener("pointerlockchange", () => {
   state.locked = document.pointerLockElement === canvas;
   cross.hidden = !state.locked;
+  if (state.locked) {
+    dragging = false;
+    dragStart = null;
+    dragMoved = false;
+  }
+});
+
+function lookDelta(dx, dy) {
+  state.yaw -= dx * 0.0022;
+  state.pitch -= dy * 0.0022;
+  state.pitch = Math.max(-1.2, Math.min(1.2, state.pitch));
+}
+
+function shootAtClient(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const nx = ((clientX - rect.left) / rect.width) * 2 - 1;
+  const ny = -(((clientY - rect.top) / rect.height) * 2 - 1);
+  raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
+  const hits = raycaster.intersectObjects(clickables, false);
+  if (hits[0] && hits[0].object.userData.clickId) {
+    interact(hits[0].object.userData.clickId);
+  }
+}
+
+canvas.addEventListener("pointerdown", (e) => {
+  if (fridgeModal.hidden === false || boot.hidden === false) return;
+  if (e.button !== 0) return;
+  if (state.locked) return;
+  dragging = true;
+  dragMoved = false;
+  dragStart = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture?.(e.pointerId);
+});
+
+canvas.addEventListener("pointermove", (e) => {
+  if (state.locked) {
+    lookDelta(e.movementX, e.movementY);
+    return;
+  }
+  if (!dragging || !dragStart) return;
+  const dx = e.clientX - dragStart.x;
+  const dy = e.clientY - dragStart.y;
+  if (!dragMoved && Math.hypot(dx, dy) < 4) return;
+  if (!dragMoved) {
+    dragMoved = true;
+    dragStart = { x: e.clientX, y: e.clientY };
+    return;
+  }
+  lookDelta(e.clientX - dragStart.x, e.clientY - dragStart.y);
+  dragStart = { x: e.clientX, y: e.clientY };
+});
+
+canvas.addEventListener("pointerup", (e) => {
+  if (fridgeModal.hidden === false || boot.hidden === false) return;
+  if (state.locked) return;
+  const moved = dragMoved;
+  dragging = false;
+  dragStart = null;
+  dragMoved = false;
+  if (!moved) {
+    shootAtClient(e.clientX, e.clientY);
+    lockPointer();
+  }
 });
 
 canvas.addEventListener("click", () => {
-  if (fridgeModal.hidden === false) return;
-  if (!state.locked) lockPointer();
-  else shootInteract();
-});
-
-document.addEventListener("mousemove", (e) => {
-  if (!state.locked) return;
-  state.yaw -= e.movementX * 0.0022;
-  state.pitch -= e.movementY * 0.0022;
-  state.pitch = Math.max(-1.2, Math.min(1.2, state.pitch));
+  if (fridgeModal.hidden === false || boot.hidden === false) return;
+  if (state.locked) shootInteract();
+  else lockPointer();
 });
 
 window.addEventListener("keydown", (e) => {
@@ -573,8 +629,9 @@ window.addEventListener("keyup", (e) => {
 document.getElementById("startBtn").onclick = () => {
   boot.hidden = true;
   hud.hidden = false;
+  cross.hidden = false;
   lockPointer();
-  say("Дай конфетку. WASD — ходить. Крошка всегда дома.");
+  say("Дай конфетку. WASD — ходить. Крошка всегда дома. Мышью можно крутить и без блокировки.");
 };
 
 function resize() {
