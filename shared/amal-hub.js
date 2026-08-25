@@ -6371,7 +6371,7 @@
       try {
         var path = String(location.pathname || "").toLowerCase();
         if (
-          /\/(obby|tower-defense|tycoon|murder-mystery|pet-simulator|flee-facility|build-boat|adopt-me|blox-fruits|brookhaven-rp|grow-garden|nights-forest|rivals-arena|speed-escape|steal-brainrot|minecraft|bed-wars|portal-3d|lab3d)(\/|$|\.html)/.test(
+          /\/(obby|tower-defense|tycoon|murder-mystery|pet-simulator|flee-facility|build-boat|adopt-me|blox-fruits|brookhaven-rp|grow-garden|nights-forest|rivals-arena|speed-escape|steal-brainrot|minecraft|bed-wars|portal-3d|lab3d|pot-hammer)(\/|$|\.html)/.test(
             path
           )
         ) {

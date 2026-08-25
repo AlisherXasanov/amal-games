@@ -238,6 +238,7 @@
         "/bed-wars",
         "/portal-3d",
         "/lab3d",
+        "/pot-hammer",
       ];
       for (var i = 0; i < ids.length; i++) {
         if (p.indexOf(ids[i]) !== -1) return true;

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Котёл и молот — Amal Games</title>
+  <meta name="description" content="Заберись вверх: крути молот мышкой, цепляйся за скалы. Физика как в Getting Over It." />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #5a6b3a; font-family: system-ui, sans-serif; touch-action: none; }
+    #hud {
+      position: fixed; top: 12px; left: 12px; z-index: 5; color: #f5f0e1;
+      text-shadow: 0 2px 6px #000; max-width: min(360px, 70vw);
+      padding: 10px 12px; border-radius: 14px; background: rgba(20,24,12,.55);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    #hud h1 { font-size: 16px; margin-bottom: 4px; }
+    #hud p { font-size: 12px; line-height: 1.4; opacity: .92; font-weight: 600; }
+    #back {
+      position: fixed; top: 12px; right: 12px; z-index: 5;
+      padding: 8px 14px; border-radius: 10px; background: rgba(0,0,0,.55);
+      color: #fff; text-decoration: none; font: 700 13px system-ui;
+    }
+    #height {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5;
+      padding: 8px 16px; border-radius: 999px; background: rgba(0,0,0,.55);
+      color: #fde68a; font: 800 14px system-ui;
+    }
+    #win {
+      position: fixed; inset: 0; display: none; place-items: center; z-index: 20;
+      background: rgba(0,0,0,.78); color: #fff; text-align: center; padding: 24px;
+    }
+    #win.show { display: grid; }
+    #win h2 { font-size: 28px; color: #fde68a; margin-bottom: 8px; }
+    #win button {
+      margin-top: 14px; padding: 10px 20px; border: 0; border-radius: 10px;
+      background: #f0b429; color: #1a1400; font: 800 14px system-ui; cursor: pointer;
+    }
+    #amal-world-root,#amal-world-canvas,#amal-world-dock,#amal-cube-btn,#amal-cube-dash{display:none!important}
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="hud">
+    <h1>🍲 Котёл и молот</h1>
+    <p>Крути <b>мышкой</b> (или пальцем) — молот цепляется за скалы и дерево. Цель — залезть как можно выше.</p>
+  </div>
+  <div id="height">Высота: 0 м</div>
+  <a id="back" href="../">← Каталог</a>
+  <div id="win">
+    <div>
+      <h2>Вершина!</h2>
+      <p>Ты забрался наверх.</p>
+      <button type="button" id="again">Ещё раз</button>
+    </div>
+  </div>
+  <script type="module" src="./main.js?v=1"></script>
+  <script src="../shared/amal-owner-powers.js?v=23"></script>
+  <script src="../shared/amal-hub.js?v=68"></script>
+</body>
+</html>
