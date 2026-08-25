@@ -1,6 +1,6 @@
 {
-  "name": "Amal Games",
-  "short_name": "Amal Games",
+  "name": "Amal Lab",
+  "short_name": "Amal Lab",
   "description": "Браузерные игры Amal — можно играть и без интернета после первого открытия.",
   "lang": "ru",
   "start_url": "./index.html",
