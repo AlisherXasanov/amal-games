@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Эфир — смотреть без рекламы</title>
+  <meta name="description" content="Смотровая без рекламы: свои ролики и прямые потоки. Без чужих вставок." />
+  <meta name="theme-color" content="#1a2a32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="top">
+    <a class="back" href="../">← Каталог</a>
+    <p class="mark">ЭФИР</p>
+    <p class="tag">без рекламы · свои ролики</p>
+  </header>
+
+  <main class="stage">
+    <section class="screen" aria-label="Плеер">
+      <video id="player" controls playsinline preload="metadata"></video>
+      <div class="screen-empty" id="empty">
+        <p class="empty-title">Выбери ролик</p>
+        <p class="empty-sub">Или загрузи свой — он играет здесь, без вставок.</p>
+      </div>
+    </section>
+
+    <aside class="dock">
+      <h1>Эфир</h1>
+      <p class="lead">Смотровая на твоём сайте. Пока — прямые ролики и загрузка с устройства. Без слов про имя и без чужой рекламы в плеере.</p>
+
+      <label class="upload">
+        <span>📁 Свой файл</span>
+        <input type="file" id="fileIn" accept="video/*" />
+      </label>
+
+      <p class="shelf-label">Подборка · жми и смотри</p>
+      <div class="shelf" id="shelf" role="list"></div>
+
+      <p class="note" id="now">Сейчас: —</p>
+    </aside>
+  </main>
+
+  <script src="./app.js?v=1" defer></script>
+</body>
+</html>
