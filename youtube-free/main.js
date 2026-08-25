@@ -18,6 +18,13 @@
     "https://pipedapi.nosebs.ru",
   ];
   let playGen = 0;
+  const streamCache = {};
+  const STREAM_CACHE_MS = 20 * 60 * 1000;
+  const INV_APIS = [
+    "https://yewtu.be",
+    "https://inv.nadeko.net",
+    "https://invidious.nerdvpn.de",
+  ];
 
   const viewHome = document.getElementById("viewHome");
   const viewChannel = document.getElementById("viewChannel");
@@ -132,48 +139,100 @@
     );
   }
 
-  /** Прямая ссылка на файл ролика — без чужого сайта Piped/Invidious в рамке */
-  async function fetchDirectStream(videoId) {
-    for (let i = 0; i < PIPED_APIS.length; i++) {
-      const base = PIPED_APIS[i];
-      try {
-        const res = await fetch(base + "/streams/" + encodeURIComponent(videoId), {
-          signal: AbortSignal.timeout(12000),
-        });
-        if (!res.ok) continue;
-        const data = await res.json();
-        const streams = data.videoStreams || [];
-        const muxed = streams
-          .filter(function (s) {
-            return s && s.url && s.videoOnly === false;
+  function pickStreamFromPiped(data) {
+    if (!data) return null;
+    const streams = (data.videoStreams || []).filter(function (s) {
+      return s && s.url && s.videoOnly === false;
+    });
+    if (!streams.length) return data.hls || null;
+    streams.sort(function (a, b) {
+      function score(s) {
+        const q = parseInt(s.quality, 10) || 0;
+        // средние качества стартуют быстрее тяжёлого 1080p
+        if (q >= 360 && q <= 720) return 2000 + q;
+        return q;
+      }
+      return score(b) - score(a);
+    });
+    return streams[0].url;
+  }
+
+  function pickStreamFromInv(data) {
+    if (!data) return null;
+    const formats = data.formatStreams || [];
+    if (!formats.length) return null;
+    // берём не самый огромный — быстрее старт
+    const mid = formats[Math.min(formats.length - 1, Math.max(0, formats.length - 2))];
+    return (mid && mid.url) || formats[formats.length - 1].url || null;
+  }
+
+  function fetchWithTimeout(url, ms) {
+    return fetch(url, { signal: AbortSignal.timeout(ms || 4500) });
+  }
+
+  /** Параллельно стучимся во все зеркала — берём первое живое (с кэшем). */
+  function fetchDirectStream(videoId) {
+    const hit = streamCache[videoId];
+    if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
+      return Promise.resolve(hit.url);
+    }
+
+    const jobs = [];
+    PIPED_APIS.forEach(function (base) {
+      jobs.push(
+        fetchWithTimeout(base + "/streams/" + encodeURIComponent(videoId), 4500)
+          .then(function (res) {
+            if (!res.ok) throw new Error("bad");
+            return res.json();
           })
-          .sort(function (a, b) {
-            return (b.bitrate || 0) - (a.bitrate || 0);
+          .then(pickStreamFromPiped)
+      );
+    });
+    INV_APIS.forEach(function (base) {
+      jobs.push(
+        fetchWithTimeout(base + "/api/v1/videos/" + encodeURIComponent(videoId), 4500)
+          .then(function (res) {
+            if (!res.ok) throw new Error("bad");
+            return res.json();
+          })
+          .then(pickStreamFromInv)
+      );
+    });
+
+    return new Promise(function (resolve) {
+      let pending = jobs.length;
+      let finished = false;
+      if (!pending) {
+        resolve(null);
+        return;
+      }
+      jobs.forEach(function (job) {
+        job
+          .then(function (url) {
+            if (finished) return;
+            if (!url) {
+              pending--;
+              if (pending <= 0) resolve(null);
+              return;
+            }
+            finished = true;
+            streamCache[videoId] = { url: url, t: Date.now() };
+            resolve(url);
+          })
+          .catch(function () {
+            if (finished) return;
+            pending--;
+            if (pending <= 0) resolve(null);
           });
-        if (muxed[0] && muxed[0].url) return muxed[0].url;
-        if (data.hls) return data.hls;
-      } catch (_) {}
-    }
-    const inv = [
-      "https://yewtu.be",
-      "https://inv.nadeko.net",
-      "https://invidious.nerdvpn.de",
-    ];
-    for (let j = 0; j < inv.length; j++) {
-      try {
-        const res = await fetch(
-          inv[j] + "/api/v1/videos/" + encodeURIComponent(videoId),
-          { signal: AbortSignal.timeout(12000) }
-        );
-        if (!res.ok) continue;
-        const data = await res.json();
-        const formats = data.formatStreams || [];
-        if (formats.length && formats[formats.length - 1].url) {
-          return formats[formats.length - 1].url;
-        }
-      } catch (_) {}
-    }
-    return null;
+      });
+    });
+  }
+
+  function prefetchStream(videoId) {
+    if (!videoId || videoId === "playlist") return;
+    const hit = streamCache[videoId];
+    if (hit && Date.now() - hit.t < STREAM_CACHE_MS) return;
+    fetchDirectStream(videoId).catch(function () {});
   }
 
   function playlistUrl(list) {
@@ -424,16 +483,39 @@
       if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
     };
     document.getElementById("btnFloatNoAds").onclick = function () {
+      const btn = this;
       usingNoAds = true;
       savePlayerPref();
       if (!currentPlayId) return;
+      btn.textContent = "⏳ Секунду…";
       const title =
         (nowPlaying && nowPlaying.textContent
           ? nowPlaying.textContent.replace(/^Сейчас:\s*/, "")
           : "Ролик") || "Ролик";
-      playId(currentPlayId, title, {
+      const id = currentPlayId;
+      // если уже в кэше — играем сразу без полного stop/reload-задержки
+      const hit = streamCache[id];
+      if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
+        playGen++;
+        const gen = playGen;
+        currentPlayId = id;
+        ytFrame.hidden = true;
+        ytFrame.src = "about:blank";
+        playerPh.hidden = true;
+        localVideo.hidden = false;
+        localVideo.src = hit.url;
+        localVideo.play().catch(function () {});
+        setWatching(true);
+        btn.textContent = "🚫 Без рекламы";
+        if (gen) {/* keep */}
+        return;
+      }
+      playId(id, title, {
         channelId: currentChannel && currentChannel.id,
       });
+      setTimeout(function () {
+        btn.textContent = "🚫 Без рекламы";
+      }, 1200);
     };
     document.getElementById("btnFloatExtra").onclick = function () {
       document.body.classList.toggle("show-extra-panels");
@@ -521,10 +603,20 @@
 
     if (usingNoAds) {
       playerPh.hidden = false;
-      playerPh.textContent = "⏳ Грузим без рекламы…";
+      playerPh.textContent = "⏳ Без рекламы…";
       ytFrame.hidden = true;
       localVideo.hidden = true;
       if (tvHint) tvHint.textContent = "▶ " + title;
+      const cached = streamCache[id];
+      if (cached && Date.now() - cached.t < STREAM_CACHE_MS && cached.url) {
+        playerPh.hidden = true;
+        localVideo.hidden = false;
+        localVideo.src = cached.url;
+        localVideo.play().catch(function () {});
+        // обновим кэш в фоне
+        fetchDirectStream(id).catch(function () {});
+        return;
+      }
       fetchDirectStream(id).then(function (url) {
         if (gen !== playGen || currentPlayId !== id) return;
         if (url) {
@@ -697,7 +789,19 @@
       btn.addEventListener("click", function () {
         playVideoObj(ch, v);
       });
+      btn.addEventListener("pointerenter", function () {
+        if (v.id && v.id !== "playlist" && !v.local) prefetchStream(v.id);
+      });
       videoGrid.appendChild(btn);
+    });
+
+    // заранее греем первые ролики — кнопка «без рекламы» сработает мгновеннее
+    let warmed = 0;
+    vids.forEach(function (v) {
+      if (warmed >= 8) return;
+      if (!v.id || v.id === "playlist" || v.local || v.playlist) return;
+      prefetchStream(v.id);
+      warmed++;
     });
 
     if (!ch.allowUpload && ch.channelId) {
