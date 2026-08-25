@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v3";
+  var VERSION = "amal-offline-v4";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -19,18 +19,21 @@
     return new URL(path, basePath()).href;
   }
 
-  // Главная + общее + несколько открытых игр (лёгкие). Остальное кэшируется при первом визите.
+  // Главная + общие скрипты + игры/приложения, которые реально работают офлайн.
+  // YouTube внутри «Смотри» нужен интернет — сама оболочка кэшируется.
   var PRECACHE = [
     "./",
     "./index.html",
     "./offline.html",
     "./manifest.webmanifest",
+    "./icons/amal.svg",
     "./shared/amal-pwa.js",
     "./shared/amal-3d-wip-lock.js",
     "./shared/amal-throne.js",
     "./shared/amal-hub.js",
     "./shared/amal-gallery-ratings.js",
     "./shared/amal-site-faq.js",
+    "./shared/amal-owner-powers.js",
     "./snake-game/",
     "./snake-game/index.html",
     "./zombie-vs-plants/",
@@ -41,8 +44,25 @@
     "./rift-storm/style.css",
     "./kick-buddy/",
     "./kick-buddy/index.html",
+    "./candle-mine/",
+    "./candle-mine/index.html",
+    "./candle-mine/main.js",
+    "./pot-hammer/",
+    "./pot-hammer/index.html",
+    "./pot-hammer/main.js",
+    "./obby/",
+    "./obby/index.html",
+    "./obby/main.js",
+    "./youtube-free/",
+    "./youtube-free/index.html",
+    "./youtube-free/main.js",
+    "./youtube-free/style.css",
+    "./youtube-free/channels-data.js",
+    "./youtube-free/manifest.webmanifest",
     "./create-lab/game.html",
     "./create-lab/lab3d.html",
+    "./apps/",
+    "./apps/index.html",
   ].map(u);
 
   self.addEventListener("install", function (event) {

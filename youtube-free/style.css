@@ -81,7 +81,43 @@ body.watch-app .amal-side-quick {
   border: 1px solid rgba(255,255,255,.14); cursor: pointer; text-align: center;
   padding: 10px 6px; border-radius: 14px; background: rgba(255,255,255,.08); color: #fff;
 }
-.ch-card .ico { font-size: 26px; display: block; }
+.ch-card .ch-ico-img {
+  width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+  display: block; margin: 0 auto 4px; border: 2px solid rgba(255,255,255,.25);
+}
+.ch-title-row { display: flex; gap: 12px; align-items: flex-start; }
+.ch-avatar {
+  width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(255,255,255,.3); flex-shrink: 0;
+}
+.ch-avatar.emoji {
+  display: grid; place-items: center; font-size: 28px; background: #2a1a3a;
+}
+.mini-ico {
+  width: 16px; height: 16px; border-radius: 50%; object-fit: cover;
+  vertical-align: middle; margin-right: 2px;
+}
+.feed-thumb img, .vid-thumb img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.feed-thumb, .vid-thumb { position: relative; }
+.zoom-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  padding: 8px 14px; background: #121212; border-bottom: 1px solid #2a2a2a;
+}
+.zoom-bar button {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid #444;
+  background: #2a2a2a; color: #fff; font: 800 16px system-ui; cursor: pointer;
+}
+.zoom-bar #zoomLabel { font: 800 12px system-ui; color: #fde68a; min-width: 44px; text-align: center; }
+.zoom-tip { font-size: 11px; color: #888; }
+#ytFrame, #localVideo {
+  transition: transform .05s linear; will-change: transform;
+}
+.pan-overlay {
+  position: absolute; inset: 0; z-index: 5; cursor: grab; background: transparent;
+}
+.pan-overlay:active { cursor: grabbing; }
 .ch-card .nm { font: 700 10px system-ui; line-height: 1.2; margin-top: 4px; }
 .ch-card .subs { font: 600 9px system-ui; color: #a78bfa; margin-top: 2px; }
 
