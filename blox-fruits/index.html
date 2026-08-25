@@ -39,6 +39,14 @@
     #stepDots span{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.25)}
     #stepDots span.on{background:#38bdf8}
   </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="../shared/amal-3d/legacy-boot.js?v=1"></script>
 </head>
 <body>
   <div id="hud">
@@ -72,11 +80,9 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="../shared/amal-orbit-cam.js?v=1"></script>
-  <script src="../shared/amal-walk-player.js?v=3"></script>
   <script src="../shared/amal-draft-owner.js?v=2"></script>
-  <script>
+    <script>
+  window.addEventListener("amal-3d-ready", function () {
   (function () {
     if (!THREE.CapsuleGeometry) {
       THREE.CapsuleGeometry = function (r, len, c, seg) {
@@ -697,6 +703,7 @@
     }
     requestAnimationFrame(animate);
   })();
+  });
   </script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
   <script src="../shared/amal-hub.js?v=66"></script>

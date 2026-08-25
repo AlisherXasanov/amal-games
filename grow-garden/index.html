@@ -20,6 +20,14 @@
     #prompt{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);z-index:20;font-size:13px;background:rgba(0,0,0,.55);padding:6px 12px;border-radius:8px;display:none}
     a.back{position:fixed;top:10px;right:10px;z-index:20;color:#cde;font-size:12px;opacity:.7;text-decoration:none}
   </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="../shared/amal-3d/legacy-boot.js?v=1"></script>
 </head>
 <body>
   <div id="hud">
@@ -43,11 +51,9 @@
   </div>
   <a class="back" href="../">← назад</a>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="../shared/amal-orbit-cam.js?v=1"></script>
-  <script src="../shared/amal-walk-player.js?v=3"></script>
   <script src="../shared/amal-draft-owner.js?v=2"></script>
-  <script>
+    <script>
+  window.addEventListener("amal-3d-ready", function () {
   (function () {
     if (!THREE.CapsuleGeometry) {
       THREE.CapsuleGeometry = function (r, len, c, seg) {
@@ -569,6 +575,7 @@
     toast("Большая ферма готова — посади семена!");
     animate(performance.now());
   })();
+  });
   </script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
   <script src="../shared/amal-hub.js?v=66"></script>

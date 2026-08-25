@@ -28,6 +28,14 @@
     #result h1 { font-size: 28px; color: #4ade80; }
     #result button { margin-top: 16px; padding: 10px 24px; font-size: 16px; border: none; border-radius: 8px; background: #3b82f6; color: #fff; cursor: pointer; }
   </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="../shared/amal-3d/legacy-boot.js?v=1"></script>
 </head>
 <body>
   <div id="ui">
@@ -52,9 +60,8 @@
   </div>
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Ещё раз</button></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="../shared/amal-orbit-cam.js?v=1"></script>
-  <script>
+    <script>
+  window.addEventListener("amal-3d-ready", function () {
   (function() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0ea5e9);
@@ -288,6 +295,7 @@
     }
     animate();
   })();
+  });
   </script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
   <script src="../shared/amal-hub.js?v=66"></script>

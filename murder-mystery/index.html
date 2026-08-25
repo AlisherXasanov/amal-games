@@ -27,6 +27,14 @@
     #admin-shop button:disabled { opacity: .45; }
     #admin-shop button.owned { background: linear-gradient(135deg, #86efac, #22c55e); }
   </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="../shared/amal-3d/legacy-boot.js?v=1"></script>
 </head>
 <body>
   <div id="ui">
@@ -47,9 +55,8 @@
   <div id="role-msg" id="role-popup"></div>
   <div id="result"><h1 id="res-title"></h1><p id="res-text"></p><button id="again">Играть ещё</button></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="../shared/amal-orbit-cam.js?v=1"></script>
-  <script>
+    <script>
+  window.addEventListener("amal-3d-ready", function () {
   (function() {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x1a1a2e);
@@ -345,6 +352,7 @@
     }
     animate();
   })();
+  });
   </script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
   <script src="../shared/amal-hub.js?v=66"></script>

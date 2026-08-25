@@ -18,6 +18,14 @@
     #toast{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);z-index:20;padding:12px 20px;border-radius:12px;background:rgba(14,165,233,.95);color:#fff;font-weight:800;display:none;pointer-events:none}
     #prompt{position:fixed;bottom:56px;left:50%;transform:translateX(-50%);z-index:20;font-size:14px;font-weight:700;background:rgba(255,255,255,.85);padding:8px 14px;border-radius:10px;display:none}
   </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+  <script type="module" src="../shared/amal-3d/legacy-boot.js?v=1"></script>
 </head>
 <body>
   <div id="hud">
@@ -41,11 +49,9 @@
   <div id="toast"></div>
   <div id="prompt"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="../shared/amal-orbit-cam.js?v=1"></script>
-  <script src="../shared/amal-walk-player.js?v=3"></script>
   <script src="../shared/amal-draft-owner.js?v=2"></script>
-  <script>
+    <script>
+  window.addEventListener("amal-3d-ready", function () {
   (function () {
     if (!THREE.CapsuleGeometry) {
       THREE.CapsuleGeometry = function (r, len) {
@@ -570,6 +576,7 @@
     toast("Большой район · зайди в дом через дверь (E)");
     animate(performance.now());
   })();
+  });
   </script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
   <script src="../shared/amal-hub.js?v=66"></script>
