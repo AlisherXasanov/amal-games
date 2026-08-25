@@ -407,6 +407,18 @@ body.watch-app .amal-side-quick {
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
   padding: 8px 14px; background: #121212; border-bottom: 1px solid #2a2a2a;
 }
+.player-tools .ad-note {
+  flex: 1 1 100%;
+  margin: 0 0 4px;
+  font: 700 12px system-ui;
+  color: #fde68a;
+  line-height: 1.35;
+}
+.sub-btn.accent-ad {
+  background: linear-gradient(135deg, #cc0000, #ff4444);
+  border-color: transparent;
+  color: #fff;
+}
 .now { padding: 8px 14px; font-size: 12px; color: #aaa; background: #121212; }
 
 .upload-box {

@@ -9,9 +9,16 @@
   const LIKE_KEY = "amal-watch-likes-v1";
   const COMMENT_KEY = "amal-watch-comments-v1";
   const REPORT_KEY = "amal-watch-reports-v1";
-  // Надёжный плеер по умолчанию (играет). Piped — опция «без рекламы», часто глючит.
+  // Обычный YouTube-embed почти всегда с рекламой (это их правила).
+  // «Без рекламы» = сторонние плееры (Piped / Invidious) — без ролика YouTube Ads, но могут глючить.
   const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
-  const EMBED_NOADS = "https://piped.video/embed/";
+  const EMBED_NOADS_LIST = [
+    "https://piped.video/embed/",
+    "https://yewtu.be/embed/",
+    "https://inv.nadeko.net/embed/",
+    "https://invidious.nerdvpn.de/embed/",
+  ];
+  let noAdsHostIdx = 0;
   const PIPED_APIS = [
     "https://pipedapi.adminforge.de",
     "https://pipedapi.nosebs.ru",
@@ -118,7 +125,8 @@
   function embedUrl(id, autoplay, noAds) {
     const ap = autoplay === false ? "0" : "1";
     if (noAds) {
-      return EMBED_NOADS + encodeURIComponent(id) + "?autoplay=" + ap + "&listen=0";
+      const base = EMBED_NOADS_LIST[noAdsHostIdx % EMBED_NOADS_LIST.length];
+      return base + encodeURIComponent(id) + "?autoplay=" + ap + "&listen=0";
     }
     return (
       EMBED_WORKS +
@@ -144,7 +152,8 @@
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
-      '<button type="button" id="btnAltPlayer" class="sub-btn">Попробовать без рекламы</button>' +
+      '<p class="ad-note" id="adNote">⚠ YouTube может показать свою рекламу. Жми красную кнопку ниже — другой плеер без роликов-рекламы.</p>' +
+      '<button type="button" id="btnAltPlayer" class="sub-btn accent-ad">🚫 Смотреть без рекламы</button>' +
       '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню роликов</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
     if (playerBox && playerBox.parentNode) {
@@ -152,11 +161,36 @@
     }
     document.getElementById("btnAltPlayer").onclick = function () {
       if (!currentPlayId) return;
-      usingNoAds = !usingNoAds;
+      if (!usingNoAds) {
+        usingNoAds = true;
+        noAdsHostIdx = 0;
+      } else {
+        // следующий зеркальный плеер, если этот завис
+        noAdsHostIdx = (noAdsHostIdx + 1) % EMBED_NOADS_LIST.length;
+        if (noAdsHostIdx === 0) {
+          usingNoAds = false;
+        }
+      }
       ytFrame.src = embedUrl(currentPlayId, true, usingNoAds);
-      this.textContent = usingNoAds
-        ? "Вернуть обычный плеер (если зависло)"
-        : "Попробовать без рекламы";
+      const note = document.getElementById("adNote");
+      if (usingNoAds) {
+        this.textContent =
+          "↻ Другое зеркало без рекламы (" +
+          (noAdsHostIdx + 1) +
+          "/" +
+          EMBED_NOADS_LIST.length +
+          ")";
+        if (note) {
+          note.textContent =
+            "Режим без рекламы YouTube. Если чёрный экран — жми кнопку ещё раз (другое зеркало) или вернись на обычный плеер.";
+        }
+      } else {
+        this.textContent = "🚫 Смотреть без рекламы";
+        if (note) {
+          note.textContent =
+            "⚠ Снова обычный YouTube — реклама возможна. Жми красную кнопку, чтобы убрать.";
+        }
+      }
     };
     document.getElementById("btnToMenu").onclick = function () {
       const menu = document.getElementById("channelMenu");
@@ -409,7 +443,12 @@
     refreshLikeUi();
     renderComments();
     const alt = document.getElementById("btnAltPlayer");
-    if (alt) alt.textContent = "Попробовать без рекламы";
+    if (alt) alt.textContent = "🚫 Смотреть без рекламы";
+    const note = document.getElementById("adNote");
+    if (note) {
+      note.textContent =
+        "⚠ YouTube может показать свою рекламу. Жми красную кнопку ниже — другой плеер без роликов-рекламы.";
+    }
   }
 
   function playPlaylist(list, title) {
