@@ -874,6 +874,140 @@
 
   buildFeed();
   btnHome.addEventListener("click", openHome);
+
+  const searchForm = document.getElementById("searchForm");
+  const searchInput = document.getElementById("searchInput");
+  const searchReply = document.getElementById("searchReply");
+  const searchHits = document.getElementById("searchHits");
+
+  const SEARCH_ALIASES = [
+    { keys: ["фиксик", "фикс", "симк", "нолик"], channel: "fixiki" },
+    { keys: ["фиксики новые", "новые фикси"], channel: "fixiki-new" },
+    { keys: ["три кота", "коржик", "карамельк", "компот"], channel: "tri-kota" },
+    { keys: ["пляж", "море", "краб"], channel: "tri-beach" },
+    { keys: ["познаватель", "валера", "желей"], channel: "poznavatel" },
+    { keys: ["фиксай", "fixeye"], channel: "fixeye" },
+    { keys: ["владус", "мармелад"], channel: "vladus" },
+    { keys: ["а4", "влад а4", "vlad"], channel: "vlada4" },
+    { keys: ["мистер бист", "mrbeast", "mr beast", "бист"], channel: "mrbeast" },
+    { keys: ["саквашин", "квашен", "саша"], channel: "sakvashin" },
+    { keys: ["гравити", "gravity", "фолз", "dipper", "мейбл"], channel: "gravity" },
+    { keys: ["сладост", "гадост", "конфет"], channel: "sladosti" },
+    { keys: ["биллиент", "billy", "билли"], channel: "billionent" },
+    { keys: ["ярокс", "ерокс", "erox", "стандофф"], channel: "yaroks" },
+    { keys: ["мой канал", "амал", "загруз"], channel: "amal-room" },
+  ];
+
+  function normRu(s) {
+    return String(s || "")
+      .toLowerCase()
+      .replace(/ё/g, "е")
+      .trim();
+  }
+
+  function runSearch(qRaw) {
+    const q = normRu(qRaw);
+    if (!searchHits || !searchReply) return;
+    searchHits.innerHTML = "";
+    if (!q) {
+      searchReply.textContent = "Напиши, что хочешь посмотреть.";
+      return;
+    }
+
+    let matchedCh = null;
+    for (let i = 0; i < SEARCH_ALIASES.length; i++) {
+      const a = SEARCH_ALIASES[i];
+      if (a.keys.some(function (k) { return q.indexOf(k) >= 0; })) {
+        matchedCh = findChannel(a.channel);
+        if (matchedCh) break;
+      }
+    }
+
+    const hits = [];
+    CHANNELS.forEach(function (ch) {
+      if (ch.allowUpload && q.indexOf("амал") < 0 && q.indexOf("мой") < 0) return;
+      const chName = normRu(ch.name + " " + (ch.desc || ""));
+      const chMatch = chName.indexOf(q) >= 0 || (matchedCh && matchedCh.id === ch.id);
+      realVideos(ch).forEach(function (v) {
+        const t = normRu(v.title);
+        if (chMatch || t.indexOf(q) >= 0 || (matchedCh && matchedCh.id === ch.id && hits.length < 8)) {
+          hits.push({ ch: ch, v: v, score: (t.indexOf(q) >= 0 ? 2 : 0) + (chMatch ? 1 : 0) });
+        }
+      });
+    });
+
+    hits.sort(function (a, b) { return b.score - a.score; });
+    const top = hits.slice(0, 12);
+
+    if (matchedCh && !top.length) {
+      searchReply.textContent = "Нашла канал «" + matchedCh.name + "». Открываю меню роликов.";
+      openChannel(matchedCh.id);
+      return;
+    }
+
+    if (!top.length) {
+      searchReply.textContent =
+        "Пока не нашла. Попробуй: фиксики, три кота, пляж, влад а4, познаватель, ярокс.";
+      return;
+    }
+
+    searchReply.textContent =
+      (matchedCh ? "Канал «" + matchedCh.name + "». " : "") +
+      "Вот что нашлось (" + top.length + "). Жми — откроется без рекламы.";
+
+    if (matchedCh) {
+      const openBtn = document.createElement("button");
+      openBtn.type = "button";
+      openBtn.className = "search-hit";
+      openBtn.innerHTML =
+        (matchedCh.icon
+          ? '<img src="' + matchedCh.icon + '" alt="" />'
+          : "<span></span>") +
+        "<div><b>▶ Весь канал: " +
+        escapeHtml(matchedCh.name) +
+        "</b><span>открыть меню всех роликов</span></div>";
+      openBtn.addEventListener("click", function () {
+        openChannel(matchedCh.id);
+      });
+      searchHits.appendChild(openBtn);
+    }
+
+    top.forEach(function (item) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "search-hit";
+      btn.innerHTML =
+        '<img src="' +
+        escapeHtml(item.v.thumb || item.ch.icon || "") +
+        '" alt="" />' +
+        "<div><b>" +
+        escapeHtml(item.v.title || "Ролик") +
+        "</b><span>" +
+        escapeHtml(item.ch.name) +
+        "</span></div>";
+      btn.addEventListener("click", function () {
+        openChannel(item.ch.id, item.v);
+      });
+      searchHits.appendChild(btn);
+    });
+  }
+
+  if (searchForm) {
+    searchForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      runSearch(searchInput ? searchInput.value : "");
+    });
+  }
+  if (searchInput) {
+    let t = null;
+    searchInput.addEventListener("input", function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        if (searchInput.value.trim().length >= 2) runSearch(searchInput.value);
+      }, 280);
+    });
+  }
+
   if (btnShorts) {
     btnShorts.addEventListener("click", function () {
       openShorts();

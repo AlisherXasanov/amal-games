@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=10" />
+  <link rel="stylesheet" href="./style.css?v=11" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -31,6 +31,16 @@
 
       <div class="shelf-label">Каналы</div>
       <div class="channel-shelf" id="channelShelf"></div>
+
+      <div class="search-dock" id="searchDock">
+        <div class="shelf-label">🔎 Напиши по-русски — найду канал или ролик</div>
+        <form class="search-form" id="searchForm">
+          <input id="searchInput" type="search" maxlength="120" placeholder="Например: фиксики, пляж, влад а4, сладости…" autocomplete="off" />
+          <button type="submit">Найти</button>
+        </form>
+        <div class="search-reply" id="searchReply">Пиши словами: «хочу фиксиков», «три кота на пляже», «мистер бист»…</div>
+        <div class="search-hits" id="searchHits"></div>
+      </div>
 
       <div class="shelf-label shorts-open" id="feedShortsLabel" role="button" tabindex="0">📱 Shorts · листай →</div>
       <div class="feed-row" id="shortsRow"></div>
@@ -102,8 +112,8 @@
     </div>
   </div>
 
-  <script src="./channels-data.js?v=10"></script>
-  <script src="./main.js?v=10"></script>
+  <script src="./channels-data.js?v=11"></script>
+  <script src="./main.js?v=11"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
