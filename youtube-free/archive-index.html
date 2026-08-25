@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Смотри без рекламы — Amal Apps</title>
+  <meta name="description" content="Спальня: каналы, лайки, подписки, лента видео — всё внутри, без переходов." />
+  <meta name="theme-color" content="#2d1b4e" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <link rel="stylesheet" href="./style.css?v=23" />
+</head>
+<body class="watch-app">
+  <header class="topbar">
+    <button type="button" class="btn ghost" id="btnHome" hidden>🏠 Спальня</button>
+    <a class="btn ghost" href="../">← Каталог</a>
+    <h1>▶ <span>Смотри</span></h1>
+    <a class="btn ghost" href="./bez-reklamy.html">🕊 Спокойнее</a>
+    <button type="button" class="btn accent" id="btnShorts">📱 Лента</button>
+    <button type="button" class="btn accent" id="installBtn" hidden>📲</button>
+  </header>
+
+  <section class="view active" id="viewHome">
+    <div class="bedroom">
+      <div class="room-bg"></div>
+      <div class="tv-unit">
+        <div class="tv-frame">
+          <div class="tv-screen" id="tvPreview"><span>📺 Выбери видео ниже</span></div>
+        </div>
+        <p class="tv-hint" id="tvHint">Каналы мотай вбок (колёсико / стрелки). Лента — вверх-вниз колёсиком. Новые ролики подтягиваются сами.</p>
+      </div>
+
+      <div class="shelf-label">Каналы · мотай вбок</div>
+      <div class="channel-shelf-wrap">
+        <button type="button" class="shelf-arrow" id="chScrollLeft" aria-label="Влево">‹</button>
+        <div class="channel-shelf" id="channelShelf"></div>
+        <button type="button" class="shelf-arrow" id="chScrollRight" aria-label="Вправо">›</button>
+      </div>
+
+      <div class="search-dock" id="searchDock">
+        <div class="shelf-label">🔎 Напиши по-русски — найду канал или ролик</div>
+        <form class="search-form" id="searchForm">
+          <input id="searchInput" type="search" maxlength="120" placeholder="Например: фиксики, пляж, влад а4, сладости…" autocomplete="off" />
+          <button type="submit">Найти</button>
+        </form>
+        <div class="search-reply" id="searchReply">Пиши словами: «хочу фиксиков», «три кота на пляже», «мистер бист»…</div>
+        <div class="search-hits" id="searchHits"></div>
+      </div>
+
+      <div class="shelf-label shorts-open" id="feedShortsLabel" role="button" tabindex="0">📱 Лента роликов · жми сюда и листай</div>
+      <div class="feed-row" id="shortsRow"></div>
+
+      <div class="shelf-label">Подборка · жми ролик = его канал и это видео</div>
+      <div class="feed" id="feed"></div>
+    </div>
+  </section>
+
+  <section class="view" id="viewShorts">
+    <div class="shorts-top">
+      <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
+      <span>📱 Лента</span>
+      <span class="shorts-tip">колёсико / свайп · вверх-вниз</span>
+    </div>
+    <div class="shorts-feed" id="shortsFeed"></div>
+  </section>
+
+  <section class="view" id="viewChannel">
+    <div class="channel-layout">
+      <div class="channel-head" id="channelHead"></div>
+      <div class="player-area">
+        <div class="player-box" id="playerBox">
+          <div class="player-ph" id="playerPh">▶ Выбери видео из меню ниже</div>
+          <video id="localVideo" controls playsinline hidden></video>
+          <iframe id="ytFrame" title="Видео" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+        </div>
+        <div class="stats-bar" id="statsBar">
+          <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">лайк</span></button>
+          <span class="stat" id="subsStat">👥 0</span>
+          <button type="button" class="sub-btn" id="subBtn">Подписаться</button>
+          <button type="button" class="sub-btn" id="reportBtn">⚠ Ошибка</button>
+        </div>
+        <p class="now" id="nowPlaying">Сейчас: —</p>
+      </div>
+
+      <div class="channel-menu" id="channelMenu">
+        <div class="menu-title">📋 Меню роликов · листай вниз</div>
+        <div class="upload-box" id="uploadBox" hidden>
+          <p>📁 Свой ролик — только у тебя.</p>
+          <label class="btn accent upload-label">
+            Загрузить
+            <input type="file" id="fileIn" accept="video/*" hidden />
+          </label>
+        </div>
+        <div class="video-grid" id="videoGrid"></div>
+        <div class="comments-box" id="commentsBox">
+          <div class="shelf-label pad">💬 Комментарии</div>
+          <div class="comments-list" id="commentsList"></div>
+          <form class="comment-form" id="commentForm">
+            <input id="commentNick" maxlength="24" placeholder="Имя" autocomplete="nickname" />
+            <input id="commentText" maxlength="400" placeholder="Напиши комментарий…" required />
+            <button type="submit">Отправить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal" id="reportModal" hidden>
+    <div class="modal-card">
+      <h3>Сообщить об ошибке</h3>
+      <p>Не играет видео, не тот ролик, битая картинка — напиши, что случилось.</p>
+      <textarea id="reportText" rows="4" maxlength="500" placeholder="Опиши ошибку…"></textarea>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="reportCancel">Отмена</button>
+        <button type="button" class="btn accent" id="reportSend">Отправить</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./channels-data.js?v=23"></script>
+  <script src="./main.js?v=23"></script>
+  <script src="../shared/amal-pwa.js?v=2"></script>
+</body>
+</html>
