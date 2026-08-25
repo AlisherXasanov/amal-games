@@ -66,7 +66,13 @@
   let currentVideoKey = "";
   let currentLikesLabel = "—";
   let currentPlayId = "";
-  let usingNoAds = false;
+  // по умолчанию сразу плеер без рекламы YouTube
+  let usingNoAds = true;
+  try {
+    const pref = localStorage.getItem("amal-watch-player");
+    if (pref === "yt") usingNoAds = false;
+    if (pref === "noads") usingNoAds = true;
+  } catch (_) {}
   let myVideos = [];
   let liked = loadMap(LIKE_KEY);
   let subs = loadMap(SUB_KEY);
@@ -146,49 +152,60 @@
     );
   }
 
+  function savePlayerPref() {
+    try {
+      localStorage.setItem("amal-watch-player", usingNoAds ? "noads" : "yt");
+    } catch (_) {}
+  }
+
+  function setAltBtnLabel() {
+    const alt = document.getElementById("btnAltPlayer");
+    const note = document.getElementById("adNote");
+    if (alt) {
+      alt.textContent = usingNoAds
+        ? "↻ Другое зеркало / обычный YouTube"
+        : "🚫 Вернуть без рекламы";
+    }
+    if (note) {
+      note.textContent = usingNoAds
+        ? "Сейчас плеер без рекламы YouTube. Если чёрный экран — жми кнопку (другое зеркало или обычный YouTube)."
+        : "⚠ Обычный YouTube — реклама возможна. Жми кнопку, чтобы снова без рекламы.";
+    }
+  }
+
   function ensurePlayerTools() {
     if (document.getElementById("playerTools")) return;
     const bar = document.createElement("div");
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
-      '<p class="ad-note" id="adNote">⚠ YouTube может показать свою рекламу. Жми красную кнопку ниже — другой плеер без роликов-рекламы.</p>' +
-      '<button type="button" id="btnAltPlayer" class="sub-btn accent-ad">🚫 Смотреть без рекламы</button>' +
+      '<p class="ad-note" id="adNote"></p>' +
+      '<button type="button" id="btnAltPlayer" class="sub-btn accent-ad"></button>' +
       '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню роликов</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
     if (playerBox && playerBox.parentNode) {
       playerBox.parentNode.insertBefore(bar, playerBox.nextSibling);
     }
+    setAltBtnLabel();
     document.getElementById("btnAltPlayer").onclick = function () {
       if (!currentPlayId) return;
-      if (!usingNoAds) {
-        usingNoAds = true;
-        noAdsHostIdx = 0;
-      } else {
-        // следующий зеркальный плеер, если этот завис
+      if (usingNoAds) {
         noAdsHostIdx = (noAdsHostIdx + 1) % EMBED_NOADS_LIST.length;
         if (noAdsHostIdx === 0) {
           usingNoAds = false;
         }
-      }
-      ytFrame.src = embedUrl(currentPlayId, true, usingNoAds);
-      const note = document.getElementById("adNote");
-      if (usingNoAds) {
-        this.textContent =
-          "↻ Другое зеркало без рекламы (" +
-          (noAdsHostIdx + 1) +
-          "/" +
-          EMBED_NOADS_LIST.length +
-          ")";
-        if (note) {
-          note.textContent =
-            "Режим без рекламы YouTube. Если чёрный экран — жми кнопку ещё раз (другое зеркало) или вернись на обычный плеер.";
-        }
       } else {
-        this.textContent = "🚫 Смотреть без рекламы";
-        if (note) {
-          note.textContent =
-            "⚠ Снова обычный YouTube — реклама возможна. Жми красную кнопку, чтобы убрать.";
+        usingNoAds = true;
+        noAdsHostIdx = 0;
+      }
+      savePlayerPref();
+      ytFrame.src = embedUrl(currentPlayId, true, usingNoAds);
+      setAltBtnLabel();
+      if (usingNoAds && noAdsHostIdx > 0) {
+        const alt = document.getElementById("btnAltPlayer");
+        if (alt) {
+          alt.textContent =
+            "↻ Зеркало " + (noAdsHostIdx + 1) + "/" + EMBED_NOADS_LIST.length + " · или YouTube";
         }
       }
     };
@@ -431,24 +448,22 @@
     ensureZoomBar();
     ensurePlayerTools();
     stopAllMedia();
-    usingNoAds = false;
     currentPlayId = id;
     playerPh.hidden = true;
     ytFrame.hidden = false;
-    ytFrame.src = embedUrl(id, true, false);
+    // сразу без рекламы (если выбран режим noads)
+    ytFrame.src = embedUrl(id, true, usingNoAds);
     nowPlaying.textContent = "Сейчас: " + title;
-    if (tvHint) tvHint.textContent = "▶ " + title;
+    if (tvHint) {
+      tvHint.textContent = usingNoAds
+        ? "▶ " + title + " · без рекламы YouTube"
+        : "▶ " + title;
+    }
     currentVideoKey = (opts.channelId || "") + "::" + id;
     currentLikesLabel = formatLikes(opts.likesLabel);
     refreshLikeUi();
     renderComments();
-    const alt = document.getElementById("btnAltPlayer");
-    if (alt) alt.textContent = "🚫 Смотреть без рекламы";
-    const note = document.getElementById("adNote");
-    if (note) {
-      note.textContent =
-        "⚠ YouTube может показать свою рекламу. Жми красную кнопку ниже — другой плеер без роликов-рекламы.";
-    }
+    setAltBtnLabel();
   }
 
   function playPlaylist(list, title) {
@@ -912,7 +927,7 @@
             });
             const vid = slide.dataset.vid;
             if (vid && (!fr.src || fr.src.indexOf(vid) < 0)) {
-              fr.src = embedUrl(vid, true, false);
+              fr.src = embedUrl(vid, true, usingNoAds);
             }
           } else if (!entry.isIntersecting) {
             fr.src = "";
@@ -941,7 +956,7 @@
       shortsFeed.querySelectorAll("iframe").forEach(function (other) {
         if (other !== fr) other.src = "";
       });
-      fr.src = embedUrl(vid, true, false);
+      fr.src = embedUrl(vid, true, usingNoAds);
     }
     if (target) {
       requestAnimationFrame(function () {
@@ -985,7 +1000,7 @@
             shortsFeed.querySelectorAll("iframe").forEach(function (other) {
               if (other !== fr) other.src = "";
             });
-            fr.src = embedUrl(vid, true, false);
+            fr.src = embedUrl(vid, true, usingNoAds);
           }
           const player = target.querySelector(".shorts-player");
           if (player) player.classList.remove("controls-on");
