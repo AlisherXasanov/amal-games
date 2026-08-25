@@ -6,7 +6,7 @@
   <title>Желейная хата — 3D</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=5" />
+  <link rel="stylesheet" href="./style.css?v=6" />
 </head>
 <body>
   <div class="app">
@@ -16,8 +16,9 @@
     </header>
 
     <p class="hint">
-      Это <b>3D</b>. Кликай мышкой по мишке и предметам.
-      Стрелки ‹ › — другая комната. Внизу инвентарь.
+      Большая 3D-хата. Кликай предметы (холодильник, комод, полки, дамплинг…).
+      Сначала <b>глазок</b> у двери — потом можно говорить с жёлтым мишкой (часто спит).
+      Элик — мини-игра. Робот Куб — любит кубики, ему нужна зарядка.
     </p>
 
     <div class="stage">
@@ -25,21 +26,31 @@
       <div class="view-wrap">
         <canvas id="c"></canvas>
         <div class="label" id="hoverLabel" hidden></div>
-        <div class="speech" id="speech">Кликни по красному мишке</div>
+        <div class="speech" id="speech">Кликай по предметам</div>
         <div class="room-tag" id="roomTag">Спальня</div>
       </div>
       <button type="button" class="nav" id="next">›</button>
     </div>
 
     <div class="inv-wrap">
-      <b>Инвентарь</b>
+      <b>Инвентарь</b> <span class="muted">— выбери вещь, потом кликни по мишке или роботу</span>
       <div class="inv" id="inv"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="elikModal" hidden>
+    <div class="modal-card">
+      <h2>Элик · мини-игра</h2>
+      <p>Жми кубики по порядку: 1 → 2 → 3 → 4</p>
+      <div class="elik-grid" id="elikGrid"></div>
+      <p id="elikStatus">Готов</p>
+      <button type="button" id="elikClose">Закрыть</button>
     </div>
   </div>
 
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=5"></script>
+  <script type="module" src="./game.js?v=6"></script>
 </body>
 </html>
