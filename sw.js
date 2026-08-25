@@ -1,9 +1,9 @@
-/* Amal Games · офлайн-кэш (Service Worker) */
+/* Amaya Games · офлайн-кэш (Service Worker) */
 /* eslint-disable no-restricted-globals */
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v26";
+  var VERSION = "amal-offline-v27";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 

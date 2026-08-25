@@ -14,7 +14,7 @@ window.SkazhiI18n = (() => {
     ru: {
       docTitle: "СкажиИгру — Студия",
       brand: "СкажиИгру",
-      navGames: "Amal's Games",
+      navGames: "Amaya Games",
       navPitch: "Презентация",
       langLabel: "Язык",
       eyebrow: "Студия",
@@ -123,7 +123,7 @@ window.SkazhiI18n = (() => {
     en: {
       docTitle: "SayGame — Studio",
       brand: "SayGame",
-      navGames: "Amal's Games",
+      navGames: "Amaya Games",
       navPitch: "Pitch",
       langLabel: "Language",
       eyebrow: "Studio",
@@ -229,7 +229,7 @@ window.SkazhiI18n = (() => {
     kk: {
       docTitle: "СкажиИгру — Студия",
       brand: "СкажиИгру",
-      navGames: "Amal's Games",
+      navGames: "Amaya Games",
       navPitch: "Презентация",
       langLabel: "Тіл",
       eyebrow: "Студия",
@@ -324,7 +324,7 @@ window.SkazhiI18n = (() => {
     es: {
       docTitle: "SayGame — Estudio",
       brand: "SayGame",
-      navGames: "Amal's Games",
+      navGames: "Amaya Games",
       navPitch: "Propuesta",
       langLabel: "Idioma",
       eyebrow: "Estudio",
@@ -419,7 +419,7 @@ window.SkazhiI18n = (() => {
     tr: {
       docTitle: "SayGame — Stüdyo",
       brand: "SayGame",
-      navGames: "Amal's Games",
+      navGames: "Amaya Games",
       navPitch: "Sunum",
       langLabel: "Dil",
       eyebrow: "Stüdyo",

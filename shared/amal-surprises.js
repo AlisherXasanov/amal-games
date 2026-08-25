@@ -693,7 +693,7 @@
     showCinematic({
       kicker: "мы",
       label: "Леша · и я рядом",
-      detail: "пасхалки в «" + game + "» · Amal Games",
+      detail: "пасхалки в «" + game + "» · Amaya Games",
       at: Date.now(),
     });
     try {

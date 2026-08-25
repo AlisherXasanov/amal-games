@@ -1,5 +1,5 @@
 /**
- * Amal Hub — общий ник, заметки и админ-инбокс для всех игр Amal's Games.
+ * Amal Hub — общий ник, заметки и админ-инбокс для всех игр Amaya Games.
  * Один origin (GitHub Pages) → один localStorage на все игры.
  */
 (function (global) {
@@ -642,7 +642,7 @@
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;");
-    root.innerHTML = `<div style="max-width:420px"><h1 style="margin:0 0 12px;font-size:1.6rem">Доступ закрыт</h1><p style="margin:0 0 8px;opacity:.9">${reasonSafe}</p><p style="margin:0;font-size:1.1rem">Осталось: <strong>${left}</strong></p><p style="margin:16px 0 0;opacity:.65;font-size:13px">Бан на все игры Amal Games</p></div>`;
+    root.innerHTML = `<div style="max-width:420px"><h1 style="margin:0 0 12px;font-size:1.6rem">Доступ закрыт</h1><p style="margin:0 0 8px;opacity:.9">${reasonSafe}</p><p style="margin:0;font-size:1.1rem">Осталось: <strong>${left}</strong></p><p style="margin:16px 0 0;opacity:.65;font-size:13px">Бан на все игры Amaya Games</p></div>`;
   }
 
   function getPlayerActivity() {
@@ -1393,7 +1393,7 @@
       when +
       "\nОткуда: " +
       fromGame +
-      "\nТеперь этот человек есть во всём Amal Games.";
+      "\nТеперь этот человек есть во всём Amaya Games.";
     // Локальный инбокс (если хозяин на этом же устройстве / синхрон через заметки)
     const list = loadNotes();
     list.push({
@@ -2929,7 +2929,7 @@
 
   function nickFormHtml(current) {
     const already = current
-      ? `<p class="sub" style="color:#bbf7d0">Ты уже зарегистрирован во <b>всех</b> играх Amal Games как <b>${escapeHtml(
+      ? `<p class="sub" style="color:#bbf7d0">Ты уже зарегистрирован во <b>всех</b> играх Amaya Games как <b>${escapeHtml(
           current,
         )}</b>.</p>`
       : "";
@@ -4044,7 +4044,7 @@
           err = "";
           msg = "Заметка отправлена Амалю";
           try {
-            const packet = `[Amal Games]\nНик: ${res.note.nick}\nИгра: ${gameTitle(res.note.game)}\n${res.note.text}`;
+            const packet = `[Amaya Games]\nНик: ${res.note.nick}\nИгра: ${gameTitle(res.note.game)}\n${res.note.text}`;
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(packet).catch(() => {});
             }
