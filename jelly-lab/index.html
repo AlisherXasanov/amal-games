@@ -2,11 +2,11 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Желейная хата — 2D</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Желейная хата — 3D</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=4" />
+  <link rel="stylesheet" href="./style.css?v=5" />
 </head>
 <body>
   <div class="app">
@@ -16,27 +16,30 @@
     </header>
 
     <p class="hint">
-      Жми на <b>предметы</b> в комнате. Стрелки — в другую комнату.
-      Внизу — <b>инвентарь</b> (что подобрал). Руби будет просить конфетку.
+      Это <b>3D</b>. Кликай мышкой по мишке и предметам.
+      Стрелки ‹ › — другая комната. Внизу инвентарь.
     </p>
 
-    <div class="hud">
-      <button type="button" class="arrow" id="prev" aria-label="Назад">‹</button>
-      <div class="room-frame">
-        <div class="room-name" id="roomName">Спальня</div>
-        <div class="room" id="room"></div>
-        <div class="speech" id="speech">…</div>
+    <div class="stage">
+      <button type="button" class="nav" id="prev">‹</button>
+      <div class="view-wrap">
+        <canvas id="c"></canvas>
+        <div class="label" id="hoverLabel" hidden></div>
+        <div class="speech" id="speech">Кликни по красному мишке</div>
+        <div class="room-tag" id="roomTag">Спальня</div>
       </div>
-      <button type="button" class="arrow" id="next" aria-label="Вперёд">›</button>
+      <button type="button" class="nav" id="next">›</button>
     </div>
 
     <div class="inv-wrap">
-      <span class="inv-label">Инвентарь</span>
+      <b>Инвентарь</b>
       <div class="inv" id="inv"></div>
     </div>
-
-    <p class="tip" id="tip">Кликни по Руби или по конфете на полке.</p>
   </div>
-  <script src="./game.js?v=4" defer></script>
+
+  <script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./game.js?v=5"></script>
 </body>
 </html>
