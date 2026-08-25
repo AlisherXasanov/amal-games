@@ -12,6 +12,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
   background: linear-gradient(180deg, #ffe9a8, #f0c84a);
   color: #2a2218; padding: 24px;
 }
+#boot[hidden], #hud[hidden], .cross[hidden] { display: none !important; }
 #boot h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.6rem); }
 #boot p { margin: 0; max-width: 36ch; font-weight: 700; line-height: 1.4; }
 #startBtn {
