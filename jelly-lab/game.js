@@ -10,14 +10,17 @@ const nextBtn = document.getElementById("next");
 const elikModal = document.getElementById("elikModal");
 const elikGrid = document.getElementById("elikGrid");
 const elikStatus = document.getElementById("elikStatus");
+const fridgeModal = document.getElementById("fridgeModal");
+const fridgeIn = document.getElementById("fridgeIn");
 
-const ROOMS = ["bedroom", "hall", "kitchen", "door", "robots"];
+const ROOMS = ["bedroom", "hall", "kitchen", "door", "robots", "beach"];
 const TITLES = {
   bedroom: "Спальня",
   hall: "Коридор",
   kitchen: "Кухня",
   door: "Дверь соседа",
-  robots: "Уголок роботов"
+  robots: "Роботы",
+  beach: "Пляж"
 };
 
 const ITEM_META = {
@@ -25,10 +28,20 @@ const ITEM_META = {
   dumpling: { emoji: "🥟", name: "дамплинг" },
   ball: { emoji: "🎾", name: "мяч" },
   pizza: { emoji: "🍕", name: "пицца" },
-  water: { emoji: "💧", name: "стакан воды" },
-  charge: { emoji: "🔋", name: "зарядка" },
-  cube: { emoji: "🟦", name: "кубик" }
+  water: { emoji: "💧", name: "вода" },
+  charge: { emoji: "🔋", name: "батарейка" },
+  cube: { emoji: "🟦", name: "кубик" },
+  book: { emoji: "📖", name: "книжка" },
+  coat: { emoji: "🧥", name: "халатик" },
+  goggles: { emoji: "🥽", name: "очки для опыта" }
 };
+
+const FRIDGE_STOCK = [
+  { id: "pizza", label: "Пицца" },
+  { id: "water", label: "Вода" },
+  { id: "candy", label: "Конфета" },
+  { id: "charge", label: "Батарейка" }
+];
 
 const state = {
   room: 0,
@@ -39,7 +52,10 @@ const state = {
   peepDone: false,
   yellowAsleep: true,
   kubCharged: false,
-  elikStep: 0
+  elikStep: 0,
+  lookYaw: 0,
+  babyDressed: false,
+  fridgeOpen: false
 };
 
 const clickables = [];
@@ -48,13 +64,13 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 100);
-camera.position.set(0, 1.65, 3.45);
-camera.lookAt(0, 1.05, 0);
+const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 120);
+const camBase = new THREE.Vector3(0, 1.7, 3.55);
+camera.position.copy(camBase);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.92));
-const sun = new THREE.DirectionalLight(0xfff2cc, 1.1);
-sun.position.set(2.4, 5.5, 3.2);
+scene.add(new THREE.AmbientLight(0xffffff, 0.95));
+const sun = new THREE.DirectionalLight(0xfff2cc, 1.15);
+sun.position.set(2.5, 6, 3.5);
 scene.add(sun);
 
 const world = new THREE.Group();
@@ -64,17 +80,25 @@ const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
 function say(t) {
-  // без «кто сказал»
   speech.textContent = t;
   try {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(t);
       u.lang = "ru-RU";
-      u.rate = 1;
       window.speechSynthesis.speak(u);
     }
   } catch (_) {}
+}
+
+function applyLook() {
+  const yaw = state.lookYaw;
+  camera.position.set(
+    Math.sin(yaw) * 3.55,
+    1.7,
+    Math.cos(yaw) * 3.55
+  );
+  camera.lookAt(0, 1.05, 0);
 }
 
 function box(w, h, d, color, x, y, z) {
@@ -87,117 +111,80 @@ function box(w, h, d, color, x, y, z) {
   return m;
 }
 
-function makeBear(color, sleepy) {
+function makeBear(color, sleepy, scale = 1) {
   const g = new THREE.Group();
   const mat = new THREE.MeshLambertMaterial({ color });
   const dark = new THREE.MeshLambertMaterial({ color: 0x2a1010 });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 28, 20), mat);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.46, 28, 20), mat);
   body.scale.set(1, 1.15, 0.92);
-  body.position.y = 1.05;
+  body.position.y = 1.08;
   g.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.36, 28, 20), mat);
-  head.position.y = 1.58;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.37, 28, 20), mat);
+  head.position.y = 1.62;
   g.add(head);
   [-1, 1].forEach((s) => {
     const ear = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 12), mat);
-    ear.position.set(s * 0.26, 1.84, 0);
+    ear.position.set(s * 0.27, 1.88, 0);
     g.add(ear);
     if (sleepy) {
-      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.02), dark);
-      eye.position.set(s * 0.12, 1.6, 0.3);
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.025, 0.02), dark);
+      eye.position.set(s * 0.12, 1.64, 0.32);
       g.add(eye);
     } else {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), dark);
-      eye.position.set(s * 0.12, 1.62, 0.3);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 10), dark);
+      eye.position.set(s * 0.12, 1.66, 0.32);
       g.add(eye);
     }
   });
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 10), dark);
-  nose.position.set(0, 1.5, 0.34);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), dark);
+  nose.position.set(0, 1.52, 0.36);
   g.add(nose);
   const hi = new THREE.Mesh(
-    new THREE.SphereGeometry(0.11, 12, 10),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 })
+    new THREE.SphereGeometry(0.12, 12, 10),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.42 })
   );
-  hi.position.set(-0.18, 1.7, 0.24);
+  hi.position.set(-0.18, 1.74, 0.26);
   g.add(hi);
   [-1, 1].forEach((s) => {
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.34, 10), mat);
-    arm.position.set(s * 0.52, 1.05, 0.05);
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), mat);
+    arm.position.set(s * 0.54, 1.08, 0.05);
     arm.rotation.z = s * 0.55;
     g.add(arm);
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.26, 10), mat);
-    leg.position.set(s * 0.17, 0.62, 0.04);
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.28, 10), mat);
+    leg.position.set(s * 0.18, 0.62, 0.04);
     g.add(leg);
   });
-  if (sleepy) g.rotation.z = 0.45;
+  if (sleepy) g.rotation.z = 0.5;
+  g.scale.setScalar(scale);
+  return g;
+}
+
+function makeBook(color, x, y, z) {
+  const g = new THREE.Group();
+  const cover = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.32, 0.06),
+    new THREE.MeshLambertMaterial({ color })
+  );
+  g.add(cover);
+  const page = new THREE.Mesh(
+    new THREE.BoxGeometry(0.2, 0.3, 0.04),
+    new THREE.MeshLambertMaterial({ color: 0xfff8e8 })
+  );
+  page.position.z = 0.02;
+  g.add(page);
+  g.position.set(x, y, z);
+  world.add(g);
   return g;
 }
 
 function makeDumpling() {
   const g = new THREE.Group();
   const body = new THREE.Mesh(
-    new THREE.SphereGeometry(0.22, 18, 14),
-    new THREE.MeshLambertMaterial({ color: 0xf5e6c8 })
+    new THREE.SphereGeometry(0.24, 18, 14),
+    new THREE.MeshLambertMaterial({ color: 0xf7e7c8 })
   );
-  body.scale.set(1.2, 0.85, 1);
+  body.scale.set(1.25, 0.85, 1);
   g.add(body);
-  const blush = new THREE.Mesh(
-    new THREE.SphereGeometry(0.05, 10, 8),
-    new THREE.MeshLambertMaterial({ color: 0xff8fa3 })
-  );
-  blush.position.set(0.12, 0.02, 0.18);
-  g.add(blush);
-  return g;
-}
-
-function makeElik() {
-  const g = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55, 0.7, 0.4),
-    new THREE.MeshLambertMaterial({ color: 0x6ec9ff })
-  );
-  body.position.y = 0.85;
-  g.add(body);
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.28, 16, 12),
-    new THREE.MeshLambertMaterial({ color: 0xe8f7ff })
-  );
-  head.position.y = 1.4;
-  g.add(head);
-  const screen = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.35, 0.22),
-    new THREE.MeshBasicMaterial({ color: 0x113355 })
-  );
-  screen.position.set(0, 0.9, 0.21);
-  g.add(screen);
-  [-1, 1].forEach((s) => {
-    const leg = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.07, 0.08, 0.35, 10),
-      new THREE.MeshLambertMaterial({ color: 0x4aa3d8 })
-    );
-    leg.position.set(s * 0.14, 0.35, 0);
-    g.add(leg);
-  });
-  return g;
-}
-
-function makeKub() {
-  const g = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.5, 0.5),
-    new THREE.MeshLambertMaterial({ color: state.kubCharged ? 0x7dffb0 : 0x8899aa })
-  );
-  body.position.y = 0.75;
-  g.add(body);
-  for (let i = 0; i < 3; i++) {
-    const c = new THREE.Mesh(
-      new THREE.BoxGeometry(0.14, 0.14, 0.14),
-      new THREE.MeshLambertMaterial({ color: [0xe51d30, 0x2f6fdb, 0xf0b429][i] })
-    );
-    c.position.set(-0.2 + i * 0.2, 1.15, 0.2);
-    g.add(c);
-  }
   return g;
 }
 
@@ -230,10 +217,10 @@ function clearWorld() {
 
 function shell(wall = 0xffe566) {
   scene.background = new THREE.Color(wall);
-  box(7.4, 3.4, 0.2, wall, 0, 1.55, -1.55);
-  box(0.2, 3.4, 3.4, 0xffe08a, -3.6, 1.55, 0);
-  box(0.2, 3.4, 3.4, 0xffe08a, 3.6, 1.55, 0);
-  box(7.4, 0.2, 3.8, 0xd9a428, 0, 0, 0.15);
+  box(7.6, 3.5, 0.22, wall, 0, 1.6, -1.6);
+  box(0.22, 3.5, 3.6, 0xffe08a, -3.7, 1.6, 0);
+  box(0.22, 3.5, 3.6, 0xffe08a, 3.7, 1.6, 0);
+  box(7.6, 0.22, 4, 0xd9a428, 0, 0, 0.15);
 }
 
 function build() {
@@ -242,149 +229,205 @@ function build() {
   roomTag.textContent = TITLES[id];
   prevBtn.disabled = state.room <= 0;
   nextBtn.disabled = state.room >= ROOMS.length - 1;
+  state.lookYaw = 0;
+  applyLook();
+
+  if (id === "beach") {
+    scene.background = new THREE.Color(0x87c8ef);
+    // sand + water
+    box(14, 0.3, 10, 0xe8d39a, 0, -0.1, 0);
+    box(14, 0.2, 6, 0x3aa0d8, 0, -0.15, -4);
+    const umbrella = box(0.12, 1.6, 0.12, 0xffffff, -1.2, 0.9, 0.5);
+    mark(umbrella, "umbrella", "Зонтик");
+    const top = new THREE.Mesh(
+      new THREE.ConeGeometry(0.9, 0.35, 12),
+      new THREE.MeshLambertMaterial({ color: 0xe51d30 })
+    );
+    top.position.set(-1.2, 1.75, 0.5);
+    world.add(top);
+    mark(top, "umbrella", "Зонтик на пляже");
+    if (state.bearHome === false || true) {
+      // beach trip bear if away OR always show vacation scene bear
+      const beachBear = makeBear(0xe51d30, false, 1);
+      beachBear.position.set(0.3, 0.2, 0.8);
+      world.add(beachBear);
+      mark(beachBear, "bear", "Мишка на пляже");
+    }
+    const towel = box(1.2, 0.05, 0.7, 0x2f6fdb, 1.3, 0.12, 1.0);
+    mark(towel, "towel", "Пляжное полотенце");
+    const shell = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 12, 10),
+      new THREE.MeshLambertMaterial({ color: 0xffd1a8 })
+    );
+    shell.scale.set(1.3, 0.5, 1);
+    shell.position.set(-0.3, 0.12, 1.4);
+    world.add(shell);
+    mark(shell, "shell", "Ракушка");
+    return;
+  }
+
   shell();
 
   if (id === "bedroom") {
-    const bed = box(2.6, 0.45, 1.4, 0x8b5a2b, -0.3, 0.4, 0.15);
+    const bed = box(2.7, 0.5, 1.5, 0x8b5a2b, -0.4, 0.4, 0.1);
     mark(bed, "bed", "Кровать");
-    box(2.6, 0.14, 1.4, 0xf5e6c8, -0.3, 0.65, 0.15);
-    const dresser = box(1.3, 1.1, 0.55, 0xa67c52, 2.2, 0.7, -0.9);
+    box(2.7, 0.15, 1.5, 0xf5e6c8, -0.4, 0.68, 0.1);
+    const dresser = box(1.4, 1.2, 0.6, 0xa67c52, 2.3, 0.75, -0.85);
     mark(dresser, "dresser", "Комод");
-    const drawer = box(1.1, 0.25, 0.5, 0x8b6914, 2.2, 0.55, -0.88);
-    mark(drawer, "dresser", "Ящик комода");
+    // books — nicer
+    const b1 = makeBook(0xe51d30, 2.05, 1.5, -0.7);
+    mark(b1, "book", "Красивая книжка");
+    const b2 = makeBook(0x2f6fdb, 2.3, 1.5, -0.7);
+    mark(b2, "book", "Синяя книжка");
+    const b3 = makeBook(0xf0b429, 2.55, 1.5, -0.7);
+    mark(b3, "book", "Жёлтая книжка");
     if (state.bearHome) {
       const bear = makeBear(0xe51d30, false);
-      bear.position.set(0.2, 0.55, 0.4);
+      bear.position.set(0.15, 0.55, 0.45);
       world.add(bear);
       mark(bear, "bear", "Красный желейный мишка");
+      // baby Angelina / Kroshka
+      const baby = makeBear(0xff8fab, false, 0.45);
+      baby.position.set(0.85, 0.55, 0.55);
+      if (state.babyDressed) {
+        const coat = new THREE.Mesh(
+          new THREE.BoxGeometry(0.35, 0.25, 0.2),
+          new THREE.MeshLambertMaterial({ color: 0xffffff })
+        );
+        coat.position.set(0, 0.95, 0.15);
+        baby.add(coat);
+      }
+      world.add(baby);
+      mark(baby, "baby", "Крошка · маленькая мишка");
     }
-    const bag = box(0.55, 0.4, 0.4, 0x5a3d1a, -2.2, 0.35, 0.5);
-    mark(bag, "sea", state.bearHome ? "Чемодан (на море)" : "Вернуться домой");
+    const bag = box(0.6, 0.42, 0.42, 0x5a3d1a, -2.3, 0.35, 0.55);
+    mark(bag, "sea", "Чемодан → пляж");
   }
 
   if (id === "hall") {
-    box(2.0, 0.12, 0.45, 0xc48a18, -1.8, 1.7, -1.25);
-    box(2.0, 0.12, 0.45, 0xc48a18, 1.8, 1.7, -1.25);
-    box(2.0, 0.12, 0.45, 0xc48a18, -1.8, 1.2, -1.25);
+    box(2.1, 0.14, 0.5, 0xc48a18, -1.9, 1.75, -1.3);
+    box(2.1, 0.14, 0.5, 0xc48a18, 1.9, 1.75, -1.3);
     for (let i = 0; i < 5; i++) {
       const c = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 14, 12),
+        new THREE.SphereGeometry(0.12, 14, 12),
         new THREE.MeshLambertMaterial({ color: i % 2 ? 0xe51d30 : 0xff6b6b })
       );
-      c.position.set(-2.4 + i * 0.3, 1.88, -1.1);
+      c.position.set(-2.5 + i * 0.32, 1.95, -1.12);
       world.add(c);
-      mark(c, "candy", "Конфета на полке");
+      mark(c, "candy", "Конфета");
     }
     for (let i = 0; i < 5; i++) {
       const c = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 14, 12),
+        new THREE.SphereGeometry(0.12, 14, 12),
         new THREE.MeshLambertMaterial({ color: 0xf0c000 })
       );
-      c.position.set(1.2 + i * 0.3, 1.88, -1.1);
+      c.position.set(1.2 + i * 0.32, 1.95, -1.12);
       world.add(c);
       mark(c, "candy", "Жёлтая конфета");
     }
     const dump = makeDumpling();
-    dump.position.set(0.2, 1.4, -1.05);
+    dump.position.set(0.15, 1.45, -1.05);
     world.add(dump);
-    mark(dump, "dumpling", "Дамплинг (антистресс)");
-    const bench = box(1.7, 0.28, 0.6, 0x8b5a2b, 0, 0.4, 0.65);
+    mark(dump, "dumpling", "Дамплинг");
+    const bench = box(1.8, 0.3, 0.65, 0x8b5a2b, 0, 0.4, 0.7);
     mark(bench, "sit", "Скамейка");
+    const coat = box(0.35, 0.55, 0.15, 0xffffff, -2.6, 1.2, 0.2);
+    mark(coat, "coat", "Халатик для Крошки");
     if (state.bearHome) {
       const bear = makeBear(0xe51d30, false);
-      bear.position.set(-1.2, 0.55, 0.45);
+      bear.position.set(-1.15, 0.55, 0.5);
       world.add(bear);
       mark(bear, "bear", "Красный желейный мишка");
     }
   }
 
   if (id === "kitchen") {
-    box(3.6, 0.2, 1.7, 0xe8c878, 0, 0.55, 0.3);
-    const fridge = box(1.1, 2.2, 0.8, 0xdde7ef, -2.5, 1.2, -0.7);
-    mark(fridge, "fridge", "Холодильник");
-    const handle = box(0.08, 0.7, 0.08, 0x888888, -1.95, 1.2, -0.28);
-    mark(handle, "fridge", "Дверца холодильника");
-    const shelf = box(1.6, 0.1, 0.4, 0xc48a18, 2.2, 1.6, -1.2);
-    mark(shelf, "shelf", "Кухонная полка");
+    box(3.8, 0.22, 1.8, 0xe8c878, 0, 0.55, 0.25);
+    const fridge = box(1.25, 2.4, 0.9, 0xe8eef5, -2.6, 1.3, -0.65);
+    mark(fridge, "fridge", "Холодильник — заглянуть");
+    box(0.1, 0.8, 0.1, 0x777777, -1.98, 1.3, -0.2);
+    const shelf = box(1.8, 0.12, 0.45, 0xc48a18, 2.3, 1.7, -1.25);
+    mark(shelf, "shelf", "Полка");
+    const goggles = box(0.28, 0.12, 0.18, 0x44c0ff, 2.0, 1.85, -1.1);
+    mark(goggles, "goggles", "Очки для опыта");
     const water = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.12, 0.28, 14),
-      new THREE.MeshLambertMaterial({ color: 0x66ccff, transparent: true, opacity: 0.7 })
+      new THREE.CylinderGeometry(0.13, 0.13, 0.3, 14),
+      new THREE.MeshLambertMaterial({ color: 0x66ccff, transparent: true, opacity: 0.72 })
     );
-    water.position.set(0.5, 0.78, 0.7);
+    water.position.set(0.55, 0.8, 0.7);
     world.add(water);
-    mark(water, "water", "Вода");
+    mark(water, "water", "Стакан воды");
     const dump = makeDumpling();
-    dump.position.set(-0.6, 0.78, 0.75);
+    dump.position.set(-0.55, 0.8, 0.75);
     world.add(dump);
     mark(dump, "dumpling", "Дамплинг");
     const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(0.15, 14, 12),
+      new THREE.SphereGeometry(0.16, 14, 12),
       new THREE.MeshLambertMaterial({ color: 0x4ec3ff })
     );
-    ball.position.set(1.0, 0.72, 0.8);
+    ball.position.set(1.1, 0.74, 0.85);
     world.add(ball);
     mark(ball, "ball", "Мяч");
-    const pizza = box(0.4, 0.05, 0.4, 0xf0b429, -0.1, 0.68, 0.85);
-    mark(pizza, "pizza", "Пицца");
-    const charge = box(0.25, 0.12, 0.15, 0x33aa55, 1.5, 0.7, 0.5);
-    mark(charge, "charge", "Зарядка");
-    [-0.8, 0.8].forEach((x) => {
+    const bat = box(0.28, 0.14, 0.16, 0x33aa55, 1.6, 0.72, 0.45);
+    mark(bat, "charge", "Батарейка");
+    [-0.85, 0.85].forEach((x) => {
       const hand = new THREE.Mesh(
-        new THREE.SphereGeometry(0.17, 14, 12),
+        new THREE.SphereGeometry(0.18, 14, 12),
         new THREE.MeshLambertMaterial({ color: 0xf0c29a })
       );
-      hand.position.set(x, 2.1, 1.05);
+      hand.position.set(x, 2.15, 1.1);
       world.add(hand);
     });
     if (state.bearHome) {
       const bear = makeBear(0xe51d30, false);
-      bear.position.set(0, 0.55, 0.05);
+      bear.position.set(0, 0.55, 0);
       world.add(bear);
       mark(bear, "bear", "Красный желейный мишка");
+      const baby = makeBear(0xff8fab, false, 0.42);
+      baby.position.set(0.9, 0.55, 0.15);
+      world.add(baby);
+      mark(baby, "baby", "Крошка");
     }
   }
 
   if (id === "door") {
-    const door = box(1.6, 2.6, 0.16, 0x8b5a2b, 0, 1.35, -1.3);
+    const door = box(1.7, 2.7, 0.18, 0x8b5a2b, 0, 1.4, -1.35);
     mark(door, "door", "Дверь");
     const peep = new THREE.Mesh(
-      new THREE.CircleGeometry(0.11, 18),
-      new THREE.MeshLambertMaterial({ color: 0x111111 })
+      new THREE.CircleGeometry(0.13, 20),
+      new THREE.MeshLambertMaterial({ color: 0x0a0a0a })
     );
-    peep.position.set(0, 1.65, -1.2);
+    peep.position.set(0, 1.7, -1.24);
     world.add(peep);
-    mark(peep, "peep", "Глазок — смотри сюда сначала");
-    const bell = box(0.16, 0.16, 0.12, 0xd4af37, 0.7, 1.35, -1.18);
+    mark(peep, "peep", "Глазок — смотри сначала!");
+    const bell = box(0.18, 0.18, 0.14, 0xd4af37, 0.75, 1.4, -1.22);
     mark(bell, "bell", "Звонок");
-    const yel = makeBear(0xf0c000, state.yellowAsleep);
-    yel.position.set(1.5, 0.55, 0.25);
-    yel.scale.setScalar(0.9);
+    const yel = makeBear(0xf0c000, state.yellowAsleep, 0.95);
+    yel.position.set(1.55, 0.55, 0.2);
     world.add(yel);
     mark(yel, "yellow", "Жёлтый мишка");
     if (state.bearHome) {
       const bear = makeBear(0xe51d30, false);
-      bear.position.set(-1.4, 0.55, 0.4);
+      bear.position.set(-1.45, 0.55, 0.45);
       world.add(bear);
       mark(bear, "bear", "Красный желейный мишка");
     }
   }
 
   if (id === "robots") {
-    const elik = makeElik();
-    elik.position.set(-1.1, 0.55, 0.3);
-    world.add(elik);
-    mark(elik, "elik", "Элик — мини-игра");
-    const kub = makeKub();
-    kub.position.set(1.1, 0.55, 0.3);
-    world.add(kub);
-    mark(kub, "kub", state.kubCharged ? "Робот Куб (заряжен)" : "Робот Куб (нужна зарядка)");
+    const elikBody = box(0.6, 0.75, 0.45, 0x6ec9ff, -1.2, 0.9, 0.25);
+    mark(elikBody, "elik", "Элик — игра");
+    const elikHead = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 16, 12),
+      new THREE.MeshLambertMaterial({ color: 0xe8f7ff })
+    );
+    elikHead.position.set(-1.2, 1.5, 0.25);
+    world.add(elikHead);
+    mark(elikHead, "elik", "Элик");
+    const kub = box(0.55, 0.55, 0.55, state.kubCharged ? 0x7dffb0 : 0x8899aa, 1.2, 0.8, 0.25);
+    mark(kub, "kub", state.kubCharged ? "Робот Куб (заряжен)" : "Робот Куб (нужна батарейка)");
     for (let i = 0; i < 4; i++) {
-      const c = new THREE.Mesh(
-        new THREE.BoxGeometry(0.2, 0.2, 0.2),
-        new THREE.MeshLambertMaterial({ color: [0xe51d30, 0x2f6fdb, 0xf0b429, 0x2a9d6e][i] })
-      );
-      c.position.set(-0.4 + i * 0.28, 0.35, 0.9);
-      world.add(c);
+      const c = box(0.22, 0.22, 0.22, [0xe51d30, 0x2f6fdb, 0xf0b429, 0x2a9d6e][i], -0.45 + i * 0.3, 0.35, 0.95);
       mark(c, "cube", "Кубик");
     }
   }
@@ -394,8 +437,9 @@ function has(id) {
   return state.inv.includes(id);
 }
 function take(id) {
+  if (!ITEM_META[id]) return;
   if (has(id)) {
-    say("Уже есть в инвентаре.");
+    say("Уже есть.");
     return;
   }
   state.inv.push(id);
@@ -411,7 +455,7 @@ function useUp(id) {
 function renderInv() {
   invEl.innerHTML = "";
   if (!state.inv.length) {
-    invEl.innerHTML = "<span class='muted'>пусто — кликай конфеты, дамплинг, зарядку, кубики</span>";
+    invEl.innerHTML = "<span class='muted'>пусто</span>";
     return;
   }
   state.inv.forEach((id) => {
@@ -422,7 +466,7 @@ function renderInv() {
     b.onclick = () => {
       state.selected = state.selected === id ? null : id;
       renderInv();
-      say(state.selected ? "Выбрано. Теперь кликни по мишке или роботу." : "Ок.");
+      say(state.selected ? "Выбрано: " + ITEM_META[id].name : "Ок.");
     };
     invEl.appendChild(b);
   });
@@ -436,9 +480,27 @@ function askCandy() {
   else say("Дай конфетку, дай конфетку, дай конфетку.");
 }
 
+function openFridge() {
+  state.fridgeOpen = true;
+  fridgeIn.innerHTML = "";
+  FRIDGE_STOCK.forEach((it) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = "<span class='e'>" + ITEM_META[it.id].emoji + "</span>" + it.label;
+    b.onclick = () => take(it.id);
+    fridgeIn.appendChild(b);
+  });
+  fridgeModal.hidden = false;
+  say("Холодильник открыт. Бери что нужно.");
+}
+document.getElementById("fridgeClose").onclick = () => {
+  fridgeModal.hidden = true;
+  state.fridgeOpen = false;
+};
+
 function openElik() {
   state.elikStep = 0;
-  elikStatus.textContent = "Жми 1, потом 2, 3, 4";
+  elikStatus.textContent = "Жми 1 → 2 → 3 → 4";
   elikGrid.innerHTML = "";
   [1, 2, 3, 4].forEach((n) => {
     const b = document.createElement("button");
@@ -447,15 +509,14 @@ function openElik() {
     b.onclick = () => {
       if (n === state.elikStep + 1) {
         state.elikStep++;
-        elikStatus.textContent = state.elikStep + " из 4";
         if (state.elikStep >= 4) {
           elikStatus.textContent = "Победа!";
-          say("Ура, получилось.");
+          say("Получилось.");
           take("cube");
-        }
+        } else elikStatus.textContent = state.elikStep + " из 4";
       } else {
         state.elikStep = 0;
-        elikStatus.textContent = "Заново: жми 1";
+        elikStatus.textContent = "Снова с 1";
       }
     };
     elikGrid.appendChild(b);
@@ -468,69 +529,79 @@ document.getElementById("elikClose").onclick = () => {
 
 function onClickId(id) {
   if (id === "bear") {
-    if (!state.bearHome) return;
     if (state.selected === "candy") {
       useUp("candy");
       say("Ммм… Дай конфетку, дай конфетку.");
       return;
     }
     if (state.selected === "dumpling") {
-      say("Хлюп-хлюп. Дамплинг мягкий.");
-      return;
-    }
-    if (state.selected === "pizza") {
-      useUp("pizza");
-      say("Пицца. Но конфетку всё равно дай.");
+      say("Хлюп. Дамплинг.");
       return;
     }
     if (state.selected === "water") {
       useUp("water");
-      say("Бульк. Мокро.");
+      say("Бульк.");
       return;
     }
     askCandy();
     return;
   }
+  if (id === "baby") {
+    if (state.selected === "coat") {
+      useUp("coat");
+      state.babyDressed = true;
+      build();
+      say("Крошка в халатике. Можно к опыту.");
+      return;
+    }
+    if (state.selected === "goggles") {
+      useUp("goggles");
+      say("Очки на Крошке. Готова к опыту.");
+      return;
+    }
+    say(state.babyDressed ? "Крошка готова." : "Крошку надо одеть: халатик или очки.");
+    return;
+  }
   if (id === "candy") take("candy");
   if (id === "dumpling") take("dumpling");
   if (id === "ball") take("ball");
-  if (id === "pizza") take("pizza");
   if (id === "water") take("water");
   if (id === "charge") take("charge");
   if (id === "cube") take("cube");
-  if (id === "sit") say("Сел. Тихо.");
+  if (id === "coat") take("coat");
+  if (id === "goggles") take("goggles");
+  if (id === "book") take("book");
+  if (id === "sit") say("Сел.");
   if (id === "bed") say("Кровать.");
   if (id === "dresser") {
-    if (!has("candy")) take("candy");
-    else say("В комоде шуршат обёртки.");
+    if (!has("coat")) take("coat");
+    else say("В комоде вещи Крошки.");
   }
-  if (id === "fridge") {
-    if (!has("pizza")) take("pizza");
-    else if (!has("water")) take("water");
-    else say("В холодильнике холодно и гудит.");
-  }
-  if (id === "shelf") say("На полке банки и ложки.");
+  if (id === "shelf") say("Полка на кухне.");
+  if (id === "fridge") openFridge();
   if (id === "sea") {
-    state.bearHome = !state.bearHome;
+    state.bearHome = false;
+    state.room = ROOMS.indexOf("beach");
     build();
-    say(state.bearHome ? "Снова дома." : "Уехал на море отдыхать.");
+    say("Пляж. Можно поворачивать взгляд кнопками ⟲ ⟳");
   }
+  if (id === "towel") say("Полотенце на песке.");
+  if (id === "umbrella") say("Тень от зонтика.");
+  if (id === "shell") take("candy"); // fun: shell finds candy
   if (id === "peep") {
     state.peepDone = true;
-    state.yellowAsleep = Math.random() < 0.65;
+    state.yellowAsleep = Math.random() < 0.7;
     build();
-    say(state.yellowAsleep
-      ? "В глазок: жёлтый мишка спит."
-      : "В глазок: жёлтый мишка смотрит.");
+    say(state.yellowAsleep ? "В глазок: спит." : "В глазок: смотрит.");
   }
   if (id === "bell") {
     if (!state.peepDone) {
-      say("Сначала посмотри в глазок.");
+      say("Сначала глазок.");
       return;
     }
     say("Динь-дон.");
   }
-  if (id === "door") say("Дверь. Сначала глазок.");
+  if (id === "door") say("Сначала глазок.");
   if (id === "yellow") {
     if (!state.peepDone) {
       say("Сначала посмотри в глазок.");
@@ -548,19 +619,19 @@ function onClickId(id) {
       useUp("charge");
       state.kubCharged = true;
       build();
-      say("Зарядился. Можно давать кубики.");
+      say("Батарейка вставлена. Заряжен.");
       return;
     }
     if (!state.kubCharged) {
-      say("Бип… мало энергии. Нужна зарядка.");
+      say("Мало энергии. Нужна батарейка.");
       return;
     }
     if (state.selected === "cube") {
       useUp("cube");
-      say("Кубик принят. Ещё!");
+      say("Кубик принят.");
       return;
     }
-    say("Дай кубик. Люблю кубики.");
+    say("Дай кубик.");
   }
 }
 
@@ -596,6 +667,14 @@ function go(d) {
 }
 prevBtn.onclick = () => go(-1);
 nextBtn.onclick = () => go(1);
+document.getElementById("lookL").onclick = () => {
+  state.lookYaw -= 0.35;
+  applyLook();
+};
+document.getElementById("lookR").onclick = () => {
+  state.lookYaw += 0.35;
+  applyLook();
+};
 window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowLeft") go(-1);
   if (e.key === "ArrowRight") go(1);
@@ -613,16 +692,8 @@ window.addEventListener("resize", resize);
 const t0 = performance.now();
 function loop(now) {
   const t = (now - t0) / 1000;
-  world.children.forEach((ch) => {
-    if (ch.userData && ch.userData.clickId === "bear" && !ch.isMesh) {
-      ch.position.y = 0.55 + Math.abs(Math.sin(t * 2)) * 0.03;
-    }
-  });
-  // bob groups marked via first child trick — traverse parents
   world.traverse((ch) => {
-    if (ch.parent === world && ch.children && ch.children.length > 5 && ch.userData.clickId === "bear") {
-      const base = ROOMS[state.room] === "bedroom" ? 0.55 : 0.55;
-      ch.position.y = base + Math.abs(Math.sin(t * 2.1)) * 0.03;
+    if (ch.parent === world && ch.userData.clickId === "bear" && ch.children && ch.children.length > 4) {
       ch.rotation.y = Math.sin(t * 0.8) * 0.1;
     }
   });
@@ -633,5 +704,6 @@ function loop(now) {
 build();
 renderInv();
 resize();
+applyLook();
 requestAnimationFrame(loop);
-say("Дай конфетку. Кликай предметы. У двери сначала глазок.");
+say("Дай конфетку. У двери — сначала глазок. Холодильник можно открыть.");
