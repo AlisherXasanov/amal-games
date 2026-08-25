@@ -18,6 +18,7 @@
     "https://pipedapi.nosebs.ru",
   ];
   let playGen = 0;
+  let rescueTimer = null;
   const streamCache = {};
   const STREAM_CACHE_MS = 20 * 60 * 1000;
   const INV_APIS = [
@@ -25,6 +26,56 @@
     "https://inv.nadeko.net",
     "https://invidious.nerdvpn.de",
   ];
+
+  function clearAdRescue() {
+    if (rescueTimer) {
+      clearInterval(rescueTimer);
+      rescueTimer = null;
+    }
+  }
+
+  /** Когда уже крутится YouTube (возможна реклама) — сами переключаемся на чистый поток */
+  function startAdRescue(videoId, gen) {
+    clearAdRescue();
+    let tries = 0;
+    rescueTimer = setInterval(function () {
+      if (gen !== playGen || currentPlayId !== videoId) {
+        clearAdRescue();
+        return;
+      }
+      if (localVideo && !localVideo.hidden && localVideo.src) {
+        clearAdRescue();
+        return;
+      }
+      tries++;
+      if (tries > 25) {
+        clearAdRescue();
+        return;
+      }
+      fetchDirectStream(videoId).then(function (url) {
+        if (!url || gen !== playGen || currentPlayId !== videoId) return;
+        applyCleanStream(url, gen, videoId);
+      });
+    }, 1100);
+  }
+
+  function applyCleanStream(url, gen, videoId) {
+    if (gen !== playGen) return;
+    if (videoId && currentPlayId !== videoId) return;
+    clearAdRescue();
+    ytFrame.hidden = true;
+    ytFrame.src = "about:blank";
+    playerPh.hidden = true;
+    localVideo.hidden = false;
+    if (localVideo.src !== url) {
+      localVideo.src = url;
+    }
+    localVideo.play().catch(function () {});
+    usingNoAds = true;
+    try {
+      savePlayerPref();
+    } catch (_) {}
+  }
 
   const viewHome = document.getElementById("viewHome");
   const viewChannel = document.getElementById("viewChannel");
@@ -570,6 +621,7 @@
   }
 
   function stopPlayers() {
+    clearAdRescue();
     playGen++;
     ytFrame.hidden = true;
     ytFrame.src = "about:blank";
@@ -600,47 +652,50 @@
     setAltBtnLabel();
     setWatching(true);
     document.body.classList.remove("show-extra-panels");
+    if (tvHint) tvHint.textContent = "▶ " + title;
 
-    if (usingNoAds) {
-      playerPh.hidden = false;
-      playerPh.textContent = "⏳ Без рекламы…";
-      ytFrame.hidden = true;
-      localVideo.hidden = true;
-      if (tvHint) tvHint.textContent = "▶ " + title;
-      const cached = streamCache[id];
-      if (cached && Date.now() - cached.t < STREAM_CACHE_MS && cached.url) {
-        playerPh.hidden = true;
-        localVideo.hidden = false;
-        localVideo.src = cached.url;
-        localVideo.play().catch(function () {});
-        // обновим кэш в фоне
-        fetchDirectStream(id).catch(function () {});
-        return;
-      }
-      fetchDirectStream(id).then(function (url) {
-        if (gen !== playGen || currentPlayId !== id) return;
-        if (url) {
-          playerPh.hidden = true;
-          ytFrame.hidden = true;
-          ytFrame.src = "about:blank";
-          localVideo.hidden = false;
-          localVideo.src = url;
-          localVideo.play().catch(function () {});
-          return;
-        }
-        playerPh.hidden = true;
-        localVideo.hidden = true;
-        ytFrame.hidden = false;
-        ytFrame.src = embedUrl(id, true);
-      });
+    // 1) кэш — сразу без рекламы
+    const cached = streamCache[id];
+    if (cached && Date.now() - cached.t < STREAM_CACHE_MS && cached.url) {
+      applyCleanStream(cached.url, gen, id);
+      fetchDirectStream(id).catch(function () {});
       return;
     }
 
-    playerPh.hidden = true;
+    // 2) ищем чистый поток; YouTube только как мост, и сами с него уйдём
+    playerPh.hidden = false;
+    playerPh.textContent = "⏳ Без рекламы…";
+    ytFrame.hidden = true;
     localVideo.hidden = true;
-    ytFrame.hidden = false;
-    ytFrame.src = embedUrl(id, true);
-    if (tvHint) tvHint.textContent = "▶ " + title;
+
+    let settled = false;
+    const bridgeTimer = setTimeout(function () {
+      if (settled || gen !== playGen || currentPlayId !== id) return;
+      // долго нет потока — временно YouTube, но сразу «спасаем» от рекламы
+      playerPh.hidden = true;
+      localVideo.hidden = true;
+      ytFrame.hidden = false;
+      ytFrame.src = embedUrl(id, true);
+      startAdRescue(id, gen);
+    }, 1600);
+
+    fetchDirectStream(id).then(function (url) {
+      if (gen !== playGen || currentPlayId !== id) return;
+      if (url) {
+        settled = true;
+        clearTimeout(bridgeTimer);
+        applyCleanStream(url, gen, id);
+        return;
+      }
+      // потока нет сейчас — YouTube + постоянные попытки убрать рекламу
+      settled = true;
+      clearTimeout(bridgeTimer);
+      playerPh.hidden = true;
+      localVideo.hidden = true;
+      ytFrame.hidden = false;
+      ytFrame.src = embedUrl(id, true);
+      startAdRescue(id, gen);
+    });
   }
 
   function playPlaylist(list, title) {
