@@ -2,82 +2,126 @@ import * as THREE from "three";
 
 const canvas = document.getElementById("c");
 const speech = document.getElementById("speech");
-const roomTag = document.getElementById("roomTag");
-const hoverLabel = document.getElementById("hoverLabel");
+const placeEl = document.getElementById("place");
 const invEl = document.getElementById("inv");
-const prevBtn = document.getElementById("prev");
-const nextBtn = document.getElementById("next");
-const elikModal = document.getElementById("elikModal");
-const elikGrid = document.getElementById("elikGrid");
-const elikStatus = document.getElementById("elikStatus");
+const cross = document.getElementById("cross");
+const boot = document.getElementById("boot");
+const hud = document.getElementById("hud");
 const fridgeModal = document.getElementById("fridgeModal");
 const fridgeIn = document.getElementById("fridgeIn");
+const fridgeExtra = document.getElementById("fridgeExtra");
 
-const ROOMS = ["bedroom", "hall", "kitchen", "door", "robots", "beach"];
-const TITLES = {
-  bedroom: "Спальня",
-  hall: "Коридор",
-  kitchen: "Кухня",
-  door: "Дверь соседа",
-  robots: "Роботы",
-  beach: "Пляж"
-};
-
-const ITEM_META = {
+const ITEM = {
   candy: { emoji: "🍬", name: "конфета" },
   dumpling: { emoji: "🥟", name: "дамплинг" },
   ball: { emoji: "🎾", name: "мяч" },
   pizza: { emoji: "🍕", name: "пицца" },
   water: { emoji: "💧", name: "вода" },
-  charge: { emoji: "🔋", name: "батарейка" },
+  battery: { emoji: "🔋", name: "батарейка" },
   cube: { emoji: "🟦", name: "кубик" },
   book: { emoji: "📖", name: "книжка" },
   coat: { emoji: "🧥", name: "халатик" },
-  goggles: { emoji: "🥽", name: "очки для опыта" }
+  goggles: { emoji: "🥽", name: "очки" },
+  candle: { emoji: "🕯️", name: "свечка" },
+  camera: { emoji: "📷", name: "камера" }
 };
 
-const FRIDGE_STOCK = [
-  { id: "pizza", label: "Пицца" },
-  { id: "water", label: "Вода" },
-  { id: "candy", label: "Конфета" },
-  { id: "charge", label: "Батарейка" }
-];
-
 const state = {
-  room: 0,
+  locked: false,
   inv: [],
   selected: null,
-  bearHome: true,
   candyN: 0,
   peepDone: false,
   yellowAsleep: true,
-  kubCharged: false,
-  elikStep: 0,
-  lookYaw: 0,
+  fridgeBearSleep: false,
   babyDressed: false,
-  fridgeOpen: false
+  kubCharged: false,
+  bathing: false,
+  yaw: 0,
+  pitch: 0
 };
 
+const player = { x: 0, z: 4.5, speed: 4.2 };
+const keys = {};
 const clickables = [];
+const solids = []; // {minX,maxX,minZ,maxZ}
+
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setSize(window.innerWidth, window.innerHeight, false);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, 16 / 9, 0.1, 120);
-const camBase = new THREE.Vector3(0, 1.7, 3.55);
-camera.position.copy(camBase);
+scene.background = new THREE.Color(0xffe566);
+scene.fog = new THREE.Fog(0xffe566, 12, 28);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.95));
-const sun = new THREE.DirectionalLight(0xfff2cc, 1.15);
-sun.position.set(2.5, 6, 3.5);
+const camera = new THREE.PerspectiveCamera(70, 1, 0.08, 80);
+scene.add(new THREE.AmbientLight(0xffffff, 0.88));
+const sun = new THREE.DirectionalLight(0xfff1c8, 1.05);
+sun.position.set(4, 10, 6);
 scene.add(sun);
 
-const world = new THREE.Group();
-scene.add(world);
-
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
+const texCache = {};
+function tex(draw, size = 128) {
+  const key = draw.name || Math.random();
+  if (texCache[key]) return texCache[key];
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d");
+  draw(g, size);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  texCache[key] = t;
+  return t;
+}
+function woodTex(g, s) {
+  g.fillStyle = "#b8894a";
+  g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 18; i++) {
+    g.strokeStyle = `rgba(90,50,20,${0.15 + Math.random() * 0.25})`;
+    g.beginPath();
+    g.moveTo(0, i * 8 + 3);
+    g.bezierCurveTo(s * 0.3, i * 8, s * 0.7, i * 8 + 6, s, i * 8);
+    g.stroke();
+  }
+}
+woodTex.name = "wood";
+function metalTex(g, s) {
+  const grd = g.createLinearGradient(0, 0, s, s);
+  grd.addColorStop(0, "#e8eef4");
+  grd.addColorStop(1, "#9aadb8");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, s, s);
+  g.fillStyle = "rgba(255,255,255,0.25)";
+  g.fillRect(10, 0, 20, s);
+}
+metalTex.name = "metal";
+function candyTex(g, s) {
+  g.fillStyle = "#e51d30";
+  g.fillRect(0, 0, s, s);
+  g.fillStyle = "#fff";
+  g.fillRect(0, s * 0.4, s, s * 0.2);
+}
+candyTex.name = "candy";
+function sandTex(g, s) {
+  g.fillStyle = "#e6d3a0";
+  g.fillRect(0, 0, s, s);
+  for (let i = 0; i < 80; i++) {
+    g.fillStyle = `rgba(120,90,40,${Math.random() * 0.25})`;
+    g.fillRect(Math.random() * s, Math.random() * s, 2, 2);
+  }
+}
+sandTex.name = "sand";
+function bookTex(g, s) {
+  g.fillStyle = "#2f6fdb";
+  g.fillRect(0, 0, s, s);
+  g.fillStyle = "#f0b429";
+  g.fillRect(s * 0.1, s * 0.15, s * 0.8, s * 0.12);
+  g.fillStyle = "#fff8e0";
+  g.fillRect(s * 0.15, s * 0.4, s * 0.7, s * 0.35);
+}
+bookTex.name = "book";
 
 function say(t) {
   speech.textContent = t;
@@ -91,101 +135,23 @@ function say(t) {
   } catch (_) {}
 }
 
-function applyLook() {
-  const yaw = state.lookYaw;
-  camera.position.set(
-    Math.sin(yaw) * 3.55,
-    1.7,
-    Math.cos(yaw) * 3.55
-  );
-  camera.lookAt(0, 1.05, 0);
+function matColor(color) {
+  return new THREE.MeshLambertMaterial({ color });
+}
+function matMap(drawer, color = 0xffffff) {
+  return new THREE.MeshLambertMaterial({ map: tex(drawer), color });
 }
 
-function box(w, h, d, color, x, y, z) {
-  const m = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    new THREE.MeshLambertMaterial({ color })
-  );
+function addSolid(x, z, w, d) {
+  solids.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 });
+}
+
+function box(w, h, d, material, x, y, z, solid = true) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
   m.position.set(x, y, z);
-  world.add(m);
+  scene.add(m);
+  if (solid) addSolid(x, z, w * 0.95, d * 0.95);
   return m;
-}
-
-function makeBear(color, sleepy, scale = 1) {
-  const g = new THREE.Group();
-  const mat = new THREE.MeshLambertMaterial({ color });
-  const dark = new THREE.MeshLambertMaterial({ color: 0x2a1010 });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.46, 28, 20), mat);
-  body.scale.set(1, 1.15, 0.92);
-  body.position.y = 1.08;
-  g.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.37, 28, 20), mat);
-  head.position.y = 1.62;
-  g.add(head);
-  [-1, 1].forEach((s) => {
-    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.13, 14, 12), mat);
-    ear.position.set(s * 0.27, 1.88, 0);
-    g.add(ear);
-    if (sleepy) {
-      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.025, 0.02), dark);
-      eye.position.set(s * 0.12, 1.64, 0.32);
-      g.add(eye);
-    } else {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.06, 12, 10), dark);
-      eye.position.set(s * 0.12, 1.66, 0.32);
-      g.add(eye);
-    }
-  });
-  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), dark);
-  nose.position.set(0, 1.52, 0.36);
-  g.add(nose);
-  const hi = new THREE.Mesh(
-    new THREE.SphereGeometry(0.12, 12, 10),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.42 })
-  );
-  hi.position.set(-0.18, 1.74, 0.26);
-  g.add(hi);
-  [-1, 1].forEach((s) => {
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), mat);
-    arm.position.set(s * 0.54, 1.08, 0.05);
-    arm.rotation.z = s * 0.55;
-    g.add(arm);
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.28, 10), mat);
-    leg.position.set(s * 0.18, 0.62, 0.04);
-    g.add(leg);
-  });
-  if (sleepy) g.rotation.z = 0.5;
-  g.scale.setScalar(scale);
-  return g;
-}
-
-function makeBook(color, x, y, z) {
-  const g = new THREE.Group();
-  const cover = new THREE.Mesh(
-    new THREE.BoxGeometry(0.22, 0.32, 0.06),
-    new THREE.MeshLambertMaterial({ color })
-  );
-  g.add(cover);
-  const page = new THREE.Mesh(
-    new THREE.BoxGeometry(0.2, 0.3, 0.04),
-    new THREE.MeshLambertMaterial({ color: 0xfff8e8 })
-  );
-  page.position.z = 0.02;
-  g.add(page);
-  g.position.set(x, y, z);
-  world.add(g);
-  return g;
-}
-
-function makeDumpling() {
-  const g = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.SphereGeometry(0.24, 18, 14),
-    new THREE.MeshLambertMaterial({ color: 0xf7e7c8 })
-  );
-  body.scale.set(1.25, 0.85, 1);
-  g.add(body);
-  return g;
 }
 
 function mark(obj, id, title) {
@@ -194,279 +160,222 @@ function mark(obj, id, title) {
     ch.userData.title = title;
     if (ch.isMesh) clickables.push(ch);
   });
-  if (obj.isMesh) {
-    obj.userData.clickId = id;
-    obj.userData.title = title;
-    clickables.push(obj);
-  }
 }
 
-function clearWorld() {
-  clickables.length = 0;
-  while (world.children.length) {
-    const o = world.children.pop();
-    o.traverse((ch) => {
-      if (ch.geometry) ch.geometry.dispose();
-      if (ch.material) {
-        if (Array.isArray(ch.material)) ch.material.forEach((m) => m.dispose());
-        else ch.material.dispose();
-      }
-    });
-  }
+function makeBear(color, sleepy = false, scale = 1) {
+  const g = new THREE.Group();
+  const mat = matColor(color);
+  const dark = matColor(0x2a1010);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 18), mat);
+  body.scale.set(1, 1.12, 0.9);
+  body.position.y = 0.95;
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 18), mat);
+  head.position.y = 1.45;
+  g.add(head);
+  [-1, 1].forEach((s) => {
+    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), mat);
+    ear.position.set(s * 0.24, 1.68, 0);
+    g.add(ear);
+    if (sleepy) {
+      const e = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.02, 0.02), dark);
+      e.position.set(s * 0.1, 1.48, 0.28);
+      g.add(e);
+    } else {
+      const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), dark);
+      e.position.set(s * 0.1, 1.5, 0.28);
+      g.add(e);
+    }
+  });
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), dark);
+  nose.position.set(0, 1.38, 0.32);
+  g.add(nose);
+  if (sleepy) g.rotation.z = 0.5;
+  g.scale.setScalar(scale);
+  return g;
 }
 
-function shell(wall = 0xffe566) {
-  scene.background = new THREE.Color(wall);
-  box(7.6, 3.5, 0.22, wall, 0, 1.6, -1.6);
-  box(0.22, 3.5, 3.6, 0xffe08a, -3.7, 1.6, 0);
-  box(0.22, 3.5, 3.6, 0xffe08a, 3.7, 1.6, 0);
-  box(7.6, 0.22, 4, 0xd9a428, 0, 0, 0.15);
+function zoneName() {
+  const { x, z } = player;
+  if (z < -10) return "Пляж";
+  if (x > 6) return "Роботы";
+  if (x < -5.5) return "Кухня";
+  if (z < 1.2) return "Дверь соседа";
+  if (z > 6) return "Спальня";
+  return "Коридор / гостиная";
 }
 
-function build() {
-  clearWorld();
-  const id = ROOMS[state.room];
-  roomTag.textContent = TITLES[id];
-  prevBtn.disabled = state.room <= 0;
-  nextBtn.disabled = state.room >= ROOMS.length - 1;
-  state.lookYaw = 0;
-  applyLook();
+function buildWorld() {
+  // floor house
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(22, 22),
+    matMap(woodTex)
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(0, 0, 2);
+  scene.add(floor);
 
-  if (id === "beach") {
-    scene.background = new THREE.Color(0x87c8ef);
-    // sand + water
-    box(14, 0.3, 10, 0xe8d39a, 0, -0.1, 0);
-    box(14, 0.2, 6, 0x3aa0d8, 0, -0.15, -4);
-    const umbrella = box(0.12, 1.6, 0.12, 0xffffff, -1.2, 0.9, 0.5);
-    mark(umbrella, "umbrella", "Зонтик");
-    const top = new THREE.Mesh(
-      new THREE.ConeGeometry(0.9, 0.35, 12),
-      new THREE.MeshLambertMaterial({ color: 0xe51d30 })
-    );
-    top.position.set(-1.2, 1.75, 0.5);
-    world.add(top);
-    mark(top, "umbrella", "Зонтик на пляже");
-    if (state.bearHome === false || true) {
-      // beach trip bear if away OR always show vacation scene bear
-      const beachBear = makeBear(0xe51d30, false, 1);
-      beachBear.position.set(0.3, 0.2, 0.8);
-      world.add(beachBear);
-      mark(beachBear, "bear", "Мишка на пляже");
-    }
-    const towel = box(1.2, 0.05, 0.7, 0x2f6fdb, 1.3, 0.12, 1.0);
-    mark(towel, "towel", "Пляжное полотенце");
-    const shell = new THREE.Mesh(
-      new THREE.SphereGeometry(0.12, 12, 10),
-      new THREE.MeshLambertMaterial({ color: 0xffd1a8 })
-    );
-    shell.scale.set(1.3, 0.5, 1);
-    shell.position.set(-0.3, 0.12, 1.4);
-    world.add(shell);
-    mark(shell, "shell", "Ракушка");
-    return;
+  // стены дома с проходом на пляж (юг)
+  box(6, 3.2, 0.25, matMap(woodTex), -5, 1.6, -2.0);
+  box(6, 3.2, 0.25, matMap(woodTex), 5, 1.6, -2.0);
+  box(0.25, 3.2, 14, matMap(woodTex), -8, 1.6, 2);
+  box(0.25, 3.2, 14, matMap(woodTex), 8, 1.6, 2);
+  box(16, 3.2, 0.25, matMap(woodTex), 0, 1.6, 9.5);
+  // --- bedroom (z ~ 7) ---
+  const bed = box(2.4, 0.45, 1.4, matMap(woodTex), 0, 0.35, 7.6);
+  mark(bed, "bed", "Кровать");
+  const dresser = box(1.3, 1.1, 0.55, matMap(woodTex), 3.2, 0.7, 7.8);
+  mark(dresser, "dresser", "Комод");
+  const book = box(0.25, 0.35, 0.08, matMap(bookTex), 3.0, 1.4, 7.7, false);
+  mark(book, "book", "Книжка");
+  const bear = makeBear(0xe51d30, false);
+  bear.position.set(-0.8, 0, 7.2);
+  scene.add(bear);
+  mark(bear, "bear", "Желейный мишка");
+  const baby = makeBear(0xff8fab, false, 0.42);
+  baby.position.set(0.6, 0, 7.3);
+  if (state.babyDressed) {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.15), matColor(0xffffff));
+    c.position.set(0, 0.9, 0.12);
+    baby.add(c);
+  }
+  scene.add(baby);
+  mark(baby, "baby", "Крошка");
+
+  // --- hall / living ---
+  for (let i = 0; i < 4; i++) {
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), matMap(candyTex));
+    c.position.set(-2.5 + i * 0.35, 1.55, 3.5);
+    scene.add(c);
+    mark(c, "candy", "Конфета");
+  }
+  const shelf = box(2.2, 0.12, 0.4, matMap(woodTex), -2.0, 1.4, 3.3, false);
+  mark(shelf, "shelf", "Полка");
+  const dump = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), matColor(0xf5e6c8));
+  dump.scale.set(1.3, 0.85, 1);
+  dump.position.set(1.2, 0.9, 3.2);
+  scene.add(dump);
+  mark(dump, "dumpling", "Дамплинг");
+  const candle = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.28, 10), matColor(0xfff2c8));
+  candle.position.set(1.6, 0.95, 3.2);
+  scene.add(candle);
+  const flame = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), matColor(0xff8800));
+  flame.position.set(1.6, 1.15, 3.2);
+  scene.add(flame);
+  mark(candle, "candle", "Свечка");
+  mark(flame, "candle", "Свечка");
+  const cam = box(0.28, 0.18, 0.22, matColor(0x333333), 2.4, 0.95, 3.4, false);
+  mark(cam, "camera", "Камера");
+  const bath = box(1.6, 0.55, 0.9, matColor(0xddeeff), 4.5, 0.4, 4.5);
+  mark(bath, "bath", "Ванночка");
+
+  // --- kitchen (x negative) ---
+  const fridge = box(1.2, 2.3, 0.85, matMap(metalTex), -6.2, 1.2, 2.5);
+  mark(fridge, "fridge", "Холодильник");
+  const water = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.1, 0.25, 12),
+    new THREE.MeshLambertMaterial({ color: 0x66ccff, transparent: true, opacity: 0.75 })
+  );
+  water.position.set(-5.2, 1.0, 3.5);
+  scene.add(water);
+  mark(water, "water", "Вода");
+  const table = box(2.2, 0.15, 1.2, matMap(woodTex), -5.5, 0.85, 4.2);
+  mark(table, "table", "Стол");
+  const battery = box(0.25, 0.12, 0.15, matColor(0x33aa55), -5.0, 1.0, 4.0, false);
+  mark(battery, "battery", "Батарейка");
+  const goggles = box(0.28, 0.1, 0.18, matColor(0x44c0ff), -5.5, 1.0, 3.8, false);
+  mark(goggles, "goggles", "Очки");
+  const coat = box(0.3, 0.45, 0.12, matColor(0xffffff), -6.5, 1.2, 4.8, false);
+  mark(coat, "coat", "Халатик");
+
+  // --- neighbor door (z small) ---
+  const door = box(1.5, 2.5, 0.15, matMap(woodTex), 0, 1.3, -1.5);
+  mark(door, "door", "Дверь");
+  const peep = new THREE.Mesh(new THREE.CircleGeometry(0.1, 16), matColor(0x111));
+  peep.position.set(0, 1.6, -1.4);
+  scene.add(peep);
+  mark(peep, "peep", "Глазок");
+  const yellow = makeBear(0xf0c000, state.yellowAsleep, 0.9);
+  yellow.position.set(2.2, 0, -0.5);
+  scene.add(yellow);
+  mark(yellow, "yellow", "Жёлтый мишка");
+
+  // --- robots (x positive) ---
+  const elik = box(0.55, 0.7, 0.4, matColor(0x6ec9ff), 6.5, 0.9, 2.5);
+  mark(elik, "elik", "Элик");
+  const kub = box(0.5, 0.5, 0.5, matColor(state.kubCharged ? 0x7dffb0 : 0x8899aa), 6.5, 0.8, 4.0);
+  mark(kub, "kub", "Робот Куб");
+  for (let i = 0; i < 3; i++) {
+    const cu = box(0.18, 0.18, 0.18, matColor([0xe51d30, 0x2f6fdb, 0xf0b429][i]), 5.8 + i * 0.25, 0.3, 3.2, false);
+    mark(cu, "cube", "Кубик");
   }
 
-  shell();
+  // --- beach (z < -12) ---
+  const sand = new THREE.Mesh(new THREE.PlaneGeometry(30, 20), matMap(sandTex));
+  sand.rotation.x = -Math.PI / 2;
+  sand.position.set(0, -0.02, -18);
+  scene.add(sand);
+  const waterPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 12),
+    new THREE.MeshLambertMaterial({ color: 0x3aa0d8 })
+  );
+  waterPlane.rotation.x = -Math.PI / 2;
+  waterPlane.position.set(0, -0.01, -26);
+  scene.add(waterPlane);
+  scene.background = new THREE.Color(0xffe566);
 
-  if (id === "bedroom") {
-    const bed = box(2.7, 0.5, 1.5, 0x8b5a2b, -0.4, 0.4, 0.1);
-    mark(bed, "bed", "Кровать");
-    box(2.7, 0.15, 1.5, 0xf5e6c8, -0.4, 0.68, 0.1);
-    const dresser = box(1.4, 1.2, 0.6, 0xa67c52, 2.3, 0.75, -0.85);
-    mark(dresser, "dresser", "Комод");
-    // books — nicer
-    const b1 = makeBook(0xe51d30, 2.05, 1.5, -0.7);
-    mark(b1, "book", "Красивая книжка");
-    const b2 = makeBook(0x2f6fdb, 2.3, 1.5, -0.7);
-    mark(b2, "book", "Синяя книжка");
-    const b3 = makeBook(0xf0b429, 2.55, 1.5, -0.7);
-    mark(b3, "book", "Жёлтая книжка");
-    if (state.bearHome) {
-      const bear = makeBear(0xe51d30, false);
-      bear.position.set(0.15, 0.55, 0.45);
-      world.add(bear);
-      mark(bear, "bear", "Красный желейный мишка");
-      // baby Angelina / Kroshka
-      const baby = makeBear(0xff8fab, false, 0.45);
-      baby.position.set(0.85, 0.55, 0.55);
-      if (state.babyDressed) {
-        const coat = new THREE.Mesh(
-          new THREE.BoxGeometry(0.35, 0.25, 0.2),
-          new THREE.MeshLambertMaterial({ color: 0xffffff })
-        );
-        coat.position.set(0, 0.95, 0.15);
-        baby.add(coat);
-      }
-      world.add(baby);
-      mark(baby, "baby", "Крошка · маленькая мишка");
-    }
-    const bag = box(0.6, 0.42, 0.42, 0x5a3d1a, -2.3, 0.35, 0.55);
-    mark(bag, "sea", "Чемодан → пляж");
-  }
-
-  if (id === "hall") {
-    box(2.1, 0.14, 0.5, 0xc48a18, -1.9, 1.75, -1.3);
-    box(2.1, 0.14, 0.5, 0xc48a18, 1.9, 1.75, -1.3);
-    for (let i = 0; i < 5; i++) {
-      const c = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 14, 12),
-        new THREE.MeshLambertMaterial({ color: i % 2 ? 0xe51d30 : 0xff6b6b })
-      );
-      c.position.set(-2.5 + i * 0.32, 1.95, -1.12);
-      world.add(c);
-      mark(c, "candy", "Конфета");
-    }
-    for (let i = 0; i < 5; i++) {
-      const c = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 14, 12),
-        new THREE.MeshLambertMaterial({ color: 0xf0c000 })
-      );
-      c.position.set(1.2 + i * 0.32, 1.95, -1.12);
-      world.add(c);
-      mark(c, "candy", "Жёлтая конфета");
-    }
-    const dump = makeDumpling();
-    dump.position.set(0.15, 1.45, -1.05);
-    world.add(dump);
-    mark(dump, "dumpling", "Дамплинг");
-    const bench = box(1.8, 0.3, 0.65, 0x8b5a2b, 0, 0.4, 0.7);
-    mark(bench, "sit", "Скамейка");
-    const coat = box(0.35, 0.55, 0.15, 0xffffff, -2.6, 1.2, 0.2);
-    mark(coat, "coat", "Халатик для Крошки");
-    if (state.bearHome) {
-      const bear = makeBear(0xe51d30, false);
-      bear.position.set(-1.15, 0.55, 0.5);
-      world.add(bear);
-      mark(bear, "bear", "Красный желейный мишка");
-    }
-  }
-
-  if (id === "kitchen") {
-    box(3.8, 0.22, 1.8, 0xe8c878, 0, 0.55, 0.25);
-    const fridge = box(1.25, 2.4, 0.9, 0xe8eef5, -2.6, 1.3, -0.65);
-    mark(fridge, "fridge", "Холодильник — заглянуть");
-    box(0.1, 0.8, 0.1, 0x777777, -1.98, 1.3, -0.2);
-    const shelf = box(1.8, 0.12, 0.45, 0xc48a18, 2.3, 1.7, -1.25);
-    mark(shelf, "shelf", "Полка");
-    const goggles = box(0.28, 0.12, 0.18, 0x44c0ff, 2.0, 1.85, -1.1);
-    mark(goggles, "goggles", "Очки для опыта");
-    const water = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.13, 0.13, 0.3, 14),
-      new THREE.MeshLambertMaterial({ color: 0x66ccff, transparent: true, opacity: 0.72 })
-    );
-    water.position.set(0.55, 0.8, 0.7);
-    world.add(water);
-    mark(water, "water", "Стакан воды");
-    const dump = makeDumpling();
-    dump.position.set(-0.55, 0.8, 0.75);
-    world.add(dump);
-    mark(dump, "dumpling", "Дамплинг");
-    const ball = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 14, 12),
-      new THREE.MeshLambertMaterial({ color: 0x4ec3ff })
-    );
-    ball.position.set(1.1, 0.74, 0.85);
-    world.add(ball);
-    mark(ball, "ball", "Мяч");
-    const bat = box(0.28, 0.14, 0.16, 0x33aa55, 1.6, 0.72, 0.45);
-    mark(bat, "charge", "Батарейка");
-    [-0.85, 0.85].forEach((x) => {
-      const hand = new THREE.Mesh(
-        new THREE.SphereGeometry(0.18, 14, 12),
-        new THREE.MeshLambertMaterial({ color: 0xf0c29a })
-      );
-      hand.position.set(x, 2.15, 1.1);
-      world.add(hand);
-    });
-    if (state.bearHome) {
-      const bear = makeBear(0xe51d30, false);
-      bear.position.set(0, 0.55, 0);
-      world.add(bear);
-      mark(bear, "bear", "Красный желейный мишка");
-      const baby = makeBear(0xff8fab, false, 0.42);
-      baby.position.set(0.9, 0.55, 0.15);
-      world.add(baby);
-      mark(baby, "baby", "Крошка");
-    }
-  }
-
-  if (id === "door") {
-    const door = box(1.7, 2.7, 0.18, 0x8b5a2b, 0, 1.4, -1.35);
-    mark(door, "door", "Дверь");
-    const peep = new THREE.Mesh(
-      new THREE.CircleGeometry(0.13, 20),
-      new THREE.MeshLambertMaterial({ color: 0x0a0a0a })
-    );
-    peep.position.set(0, 1.7, -1.24);
-    world.add(peep);
-    mark(peep, "peep", "Глазок — смотри сначала!");
-    const bell = box(0.18, 0.18, 0.14, 0xd4af37, 0.75, 1.4, -1.22);
-    mark(bell, "bell", "Звонок");
-    const yel = makeBear(0xf0c000, state.yellowAsleep, 0.95);
-    yel.position.set(1.55, 0.55, 0.2);
-    world.add(yel);
-    mark(yel, "yellow", "Жёлтый мишка");
-    if (state.bearHome) {
-      const bear = makeBear(0xe51d30, false);
-      bear.position.set(-1.45, 0.55, 0.45);
-      world.add(bear);
-      mark(bear, "bear", "Красный желейный мишка");
-    }
-  }
-
-  if (id === "robots") {
-    const elikBody = box(0.6, 0.75, 0.45, 0x6ec9ff, -1.2, 0.9, 0.25);
-    mark(elikBody, "elik", "Элик — игра");
-    const elikHead = new THREE.Mesh(
-      new THREE.SphereGeometry(0.3, 16, 12),
-      new THREE.MeshLambertMaterial({ color: 0xe8f7ff })
-    );
-    elikHead.position.set(-1.2, 1.5, 0.25);
-    world.add(elikHead);
-    mark(elikHead, "elik", "Элик");
-    const kub = box(0.55, 0.55, 0.55, state.kubCharged ? 0x7dffb0 : 0x8899aa, 1.2, 0.8, 0.25);
-    mark(kub, "kub", state.kubCharged ? "Робот Куб (заряжен)" : "Робот Куб (нужна батарейка)");
-    for (let i = 0; i < 4; i++) {
-      const c = box(0.22, 0.22, 0.22, [0xe51d30, 0x2f6fdb, 0xf0b429, 0x2a9d6e][i], -0.45 + i * 0.3, 0.35, 0.95);
-      mark(c, "cube", "Кубик");
-    }
-  }
+  // path to beach - opening
+  const path = box(3.5, 0.05, 8, matMap(sandTex), 0, 0.02, -6, false);
+  mark(path, "path", "Тропинка на пляж");
+  const umbrella = box(0.1, 1.5, 0.1, matColor(0xffffff), -1.5, 0.8, -16, false);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.3, 12), matColor(0xe51d30));
+  cone.position.set(-1.5, 1.6, -16);
+  scene.add(cone);
+  mark(umbrella, "umbrella", "Зонтик");
+  mark(cone, "umbrella", "Зонтик");
+  const beachBear = makeBear(0xe51d30, false);
+  beachBear.position.set(0.5, 0, -15.5);
+  scene.add(beachBear);
+  mark(beachBear, "bear", "Мишка на пляже");
 }
 
 function has(id) {
   return state.inv.includes(id);
 }
 function take(id) {
-  if (!ITEM_META[id]) return;
-  if (has(id)) {
-    say("Уже есть.");
+  if (!ITEM[id]) return;
+  // several same type allowed up to 5
+  const count = state.inv.filter((x) => x === id).length;
+  if (count >= 5) {
+    say("Много уже.");
     return;
   }
   state.inv.push(id);
   renderInv();
-  say("Взял: " + ITEM_META[id].name);
+  say("Взял: " + ITEM[id].name + (count ? " ×" + (count + 1) : ""));
 }
-function useUp(id) {
-  state.inv = state.inv.filter((x) => x !== id);
-  if (state.selected === id) state.selected = null;
+function useOne(id) {
+  const i = state.inv.indexOf(id);
+  if (i >= 0) state.inv.splice(i, 1);
+  if (state.selected === id && !has(id)) state.selected = null;
   renderInv();
 }
 
 function renderInv() {
   invEl.innerHTML = "";
-  if (!state.inv.length) {
-    invEl.innerHTML = "<span class='muted'>пусто</span>";
-    return;
-  }
+  const seen = {};
   state.inv.forEach((id) => {
+    seen[id] = (seen[id] || 0) + 1;
+  });
+  Object.keys(seen).forEach((id) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "item" + (state.selected === id ? " sel" : "");
-    b.innerHTML = ITEM_META[id].emoji + "<small>" + ITEM_META[id].name + "</small>";
-    b.onclick = () => {
+    b.innerHTML = ITEM[id].emoji + "<small>" + ITEM[id].name + (seen[id] > 1 ? "×" + seen[id] : "") + "</small>";
+    b.onclick = (e) => {
+      e.stopPropagation();
       state.selected = state.selected === id ? null : id;
       renderInv();
-      say(state.selected ? "Выбрано: " + ITEM_META[id].name : "Ок.");
     };
     invEl.appendChild(b);
   });
@@ -481,65 +390,57 @@ function askCandy() {
 }
 
 function openFridge() {
-  state.fridgeOpen = true;
+  state.fridgeBearSleep = Math.random() < 0.35;
+  fridgeExtra.textContent = state.fridgeBearSleep
+    ? "Ого… там кто-то спит между полками."
+    : "Холодно. Можно взять вещи.";
   fridgeIn.innerHTML = "";
-  FRIDGE_STOCK.forEach((it) => {
+  ["pizza", "water", "candy", "battery"].forEach((id) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.innerHTML = "<span class='e'>" + ITEM_META[it.id].emoji + "</span>" + it.label;
-    b.onclick = () => take(it.id);
+    b.textContent = ITEM[id].emoji + " " + ITEM[id].name;
+    b.onclick = () => take(id);
     fridgeIn.appendChild(b);
   });
+  if (state.fridgeBearSleep) {
+    const wake = document.createElement("button");
+    wake.type = "button";
+    wake.textContent = "😴 Разбудить";
+    wake.onclick = () => {
+      state.fridgeBearSleep = false;
+      fridgeExtra.textContent = "Проснулся. Дай конфетку.";
+      askCandy();
+    };
+    fridgeIn.appendChild(wake);
+  }
   fridgeModal.hidden = false;
-  say("Холодильник открыт. Бери что нужно.");
+  exitPointer();
 }
 document.getElementById("fridgeClose").onclick = () => {
   fridgeModal.hidden = true;
-  state.fridgeOpen = false;
 };
 
-function openElik() {
-  state.elikStep = 0;
-  elikStatus.textContent = "Жми 1 → 2 → 3 → 4";
-  elikGrid.innerHTML = "";
-  [1, 2, 3, 4].forEach((n) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = String(n);
-    b.onclick = () => {
-      if (n === state.elikStep + 1) {
-        state.elikStep++;
-        if (state.elikStep >= 4) {
-          elikStatus.textContent = "Победа!";
-          say("Получилось.");
-          take("cube");
-        } else elikStatus.textContent = state.elikStep + " из 4";
-      } else {
-        state.elikStep = 0;
-        elikStatus.textContent = "Снова с 1";
-      }
-    };
-    elikGrid.appendChild(b);
-  });
-  elikModal.hidden = false;
-}
-document.getElementById("elikClose").onclick = () => {
-  elikModal.hidden = true;
-};
-
-function onClickId(id) {
+function interact(id) {
   if (id === "bear") {
     if (state.selected === "candy") {
-      useUp("candy");
+      useOne("candy");
       say("Ммм… Дай конфетку, дай конфетку.");
       return;
     }
+    if (state.selected === "camera") {
+      say("Щёлк! Кадр сохранён в голове.");
+      return;
+    }
     if (state.selected === "dumpling") {
-      say("Хлюп. Дамплинг.");
+      say("Хлюп. Опыт с дамплингом.");
+      return;
+    }
+    if (state.selected === "candle") {
+      say("Свечка рядом. Тепло. Осторожно.");
       return;
     }
     if (state.selected === "water") {
-      useUp("water");
+      useOne("water");
       say("Бульк.");
       return;
     }
@@ -548,162 +449,170 @@ function onClickId(id) {
   }
   if (id === "baby") {
     if (state.selected === "coat") {
-      useUp("coat");
+      useOne("coat");
       state.babyDressed = true;
-      build();
-      say("Крошка в халатике. Можно к опыту.");
+      say("Крошка в халатике. К опыту готова.");
       return;
     }
     if (state.selected === "goggles") {
-      useUp("goggles");
-      say("Очки на Крошке. Готова к опыту.");
+      useOne("goggles");
+      say("Очки на Крошке.");
       return;
     }
-    say(state.babyDressed ? "Крошка готова." : "Крошку надо одеть: халатик или очки.");
+    say(state.babyDressed ? "Крошка тут. Всегда дома." : "Крошку можно одеть.");
     return;
   }
   if (id === "candy") take("candy");
   if (id === "dumpling") take("dumpling");
-  if (id === "ball") take("ball");
   if (id === "water") take("water");
-  if (id === "charge") take("charge");
+  if (id === "battery") take("battery");
   if (id === "cube") take("cube");
+  if (id === "book") take("book");
   if (id === "coat") take("coat");
   if (id === "goggles") take("goggles");
-  if (id === "book") take("book");
-  if (id === "sit") say("Сел.");
-  if (id === "bed") say("Кровать.");
-  if (id === "dresser") {
-    if (!has("coat")) take("coat");
-    else say("В комоде вещи Крошки.");
-  }
-  if (id === "shelf") say("Полка на кухне.");
+  if (id === "candle") take("candle");
+  if (id === "camera") take("camera");
   if (id === "fridge") openFridge();
-  if (id === "sea") {
-    state.bearHome = false;
-    state.room = ROOMS.indexOf("beach");
-    build();
-    say("Пляж. Можно поворачивать взгляд кнопками ⟲ ⟳");
+  if (id === "bath") {
+    state.bathing = !state.bathing;
+    say(state.bathing ? "Купается. Бульк-бульк." : "Вылез из ванны.");
   }
-  if (id === "towel") say("Полотенце на песке.");
-  if (id === "umbrella") say("Тень от зонтика.");
-  if (id === "shell") take("candy"); // fun: shell finds candy
   if (id === "peep") {
     state.peepDone = true;
-    state.yellowAsleep = Math.random() < 0.7;
-    build();
+    state.yellowAsleep = Math.random() < 0.65;
     say(state.yellowAsleep ? "В глазок: спит." : "В глазок: смотрит.");
   }
-  if (id === "bell") {
-    if (!state.peepDone) {
-      say("Сначала глазок.");
-      return;
-    }
-    say("Динь-дон.");
-  }
-  if (id === "door") say("Сначала глазок.");
+  if (id === "door") say(state.peepDone ? "Дверь." : "Сначала глазок.");
   if (id === "yellow") {
     if (!state.peepDone) {
       say("Сначала посмотри в глазок.");
       return;
     }
-    if (state.yellowAsleep) {
-      say("…хррр…");
-      return;
-    }
-    say("Чего надо? Конфеты мои.");
+    say(state.yellowAsleep ? "…хррр…" : "Чего надо? Конфеты мои.");
   }
-  if (id === "elik") openElik();
+  if (id === "elik") say("Бип! Мини-игра потом — пока просто бип.");
   if (id === "kub") {
-    if (state.selected === "charge") {
-      useUp("charge");
+    if (state.selected === "battery") {
+      useOne("battery");
       state.kubCharged = true;
-      build();
-      say("Батарейка вставлена. Заряжен.");
+      say("Батарейка вставлена.");
       return;
     }
-    if (!state.kubCharged) {
-      say("Мало энергии. Нужна батарейка.");
-      return;
-    }
-    if (state.selected === "cube") {
-      useUp("cube");
-      say("Кубик принят.");
-      return;
-    }
-    say("Дай кубик.");
+    say(state.kubCharged ? "Дай кубик." : "Нужна батарейка.");
+  }
+  if (id === "bed") say("Кровать.");
+  if (id === "dresser") {
+    if (!has("coat")) take("coat");
+    else say("Комод.");
+  }
+  if (id === "table" || id === "shelf") say("Можно ставить вещи.");
+  if (id === "umbrella" || id === "path") say("Пляж рядом. Иди вперёд к песку.");
+}
+
+function tryMove(dx, dz) {
+  const nx = player.x + dx;
+  const nz = player.z + dz;
+  for (const s of solids) {
+    if (nx > s.minX && nx < s.maxX && nz > s.minZ && nz < s.maxZ) return;
+  }
+  player.x = nx;
+  player.z = nz;
+}
+
+function updateCam() {
+  camera.position.set(player.x, 1.55, player.z);
+  const e = new THREE.Euler(state.pitch, state.yaw, 0, "YXZ");
+  camera.quaternion.setFromEuler(e);
+}
+
+const raycaster = new THREE.Raycaster();
+function shootInteract() {
+  raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
+  const hits = raycaster.intersectObjects(clickables, false);
+  if (hits[0] && hits[0].object.userData.clickId) {
+    interact(hits[0].object.userData.clickId);
   }
 }
 
-function getHit(ev) {
-  const rect = canvas.getBoundingClientRect();
-  pointer.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-  return raycaster.intersectObjects(clickables, false)[0] || null;
+function lockPointer() {
+  canvas.requestPointerLock();
+}
+function exitPointer() {
+  if (document.pointerLockElement) document.exitPointerLock();
 }
 
-canvas.addEventListener("pointermove", (ev) => {
-  const hit = getHit(ev);
-  if (hit && hit.object.userData.title) {
-    hoverLabel.hidden = false;
-    hoverLabel.textContent = hit.object.userData.title;
-    const rect = canvas.getBoundingClientRect();
-    hoverLabel.style.left = ev.clientX - rect.left + 12 + "px";
-    hoverLabel.style.top = ev.clientY - rect.top + 12 + "px";
-  } else hoverLabel.hidden = true;
-});
-canvas.addEventListener("click", (ev) => {
-  const hit = getHit(ev);
-  if (hit && hit.object.userData.clickId) onClickId(hit.object.userData.clickId);
+document.addEventListener("pointerlockchange", () => {
+  state.locked = document.pointerLockElement === canvas;
+  cross.hidden = !state.locked;
 });
 
-function go(d) {
-  const n = state.room + d;
-  if (n < 0 || n >= ROOMS.length) return;
-  state.room = n;
-  build();
-  say(TITLES[ROOMS[n]]);
-}
-prevBtn.onclick = () => go(-1);
-nextBtn.onclick = () => go(1);
-document.getElementById("lookL").onclick = () => {
-  state.lookYaw -= 0.35;
-  applyLook();
-};
-document.getElementById("lookR").onclick = () => {
-  state.lookYaw += 0.35;
-  applyLook();
-};
+canvas.addEventListener("click", () => {
+  if (fridgeModal.hidden === false) return;
+  if (!state.locked) lockPointer();
+  else shootInteract();
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!state.locked) return;
+  state.yaw -= e.movementX * 0.0022;
+  state.pitch -= e.movementY * 0.0022;
+  state.pitch = Math.max(-1.2, Math.min(1.2, state.pitch));
+});
+
 window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowLeft") go(-1);
-  if (e.key === "ArrowRight") go(1);
+  keys[e.code] = true;
+  if (e.code === "Escape") {
+    exitPointer();
+    fridgeModal.hidden = true;
+  }
 });
+window.addEventListener("keyup", (e) => {
+  keys[e.code] = false;
+});
+
+document.getElementById("startBtn").onclick = () => {
+  boot.hidden = true;
+  hud.hidden = false;
+  lockPointer();
+  say("Дай конфетку. WASD — ходить. Крошка всегда дома.");
+};
 
 function resize() {
-  const w = canvas.clientWidth || canvas.parentElement.clientWidth;
-  const h = canvas.clientHeight || Math.round((w * 9) / 16);
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   renderer.setSize(w, h, false);
   camera.aspect = w / Math.max(1, h);
   camera.updateProjectionMatrix();
 }
 window.addEventListener("resize", resize);
 
-const t0 = performance.now();
+buildWorld();
+renderInv();
+resize();
+updateCam();
+placeEl.textContent = zoneName();
+
+let last = performance.now();
 function loop(now) {
-  const t = (now - t0) / 1000;
-  world.traverse((ch) => {
-    if (ch.parent === world && ch.userData.clickId === "bear" && ch.children && ch.children.length > 4) {
-      ch.rotation.y = Math.sin(t * 0.8) * 0.1;
-    }
-  });
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  const forward = (keys.KeyW || keys.ArrowUp ? 1 : 0) + (keys.KeyS || keys.ArrowDown ? -1 : 0);
+  const strafe = (keys.KeyD || keys.ArrowRight ? 1 : 0) + (keys.KeyA || keys.ArrowLeft ? -1 : 0);
+  if (forward || strafe) {
+    const sp = player.speed * dt;
+    const fx = -Math.sin(state.yaw) * forward + Math.cos(state.yaw) * strafe;
+    const fz = -Math.cos(state.yaw) * forward - Math.sin(state.yaw) * strafe;
+    const len = Math.hypot(fx, fz) || 1;
+    tryMove((fx / len) * sp, (fz / len) * sp);
+    placeEl.textContent = zoneName();
+  }
+  // soft bounds
+  player.x = Math.max(-7.2, Math.min(7.2, player.x));
+  player.z = Math.max(-28, Math.min(9.0, player.z));
+  updateCam();
+  // beach sky
+  scene.background = new THREE.Color(player.z < -10 ? 0x87c8ef : 0xffe566);
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
-
-build();
-renderInv();
-resize();
-applyLook();
 requestAnimationFrame(loop);
-say("Дай конфетку. У двери — сначала глазок. Холодильник можно открыть.");

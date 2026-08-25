@@ -1,171 +1,79 @@
 :root {
-  --ink: #2a2218;
-  --soft: #6b5a48;
-  --deep: #3d2912;
   --font: "Nunito", system-ui, sans-serif;
+  --deep: #3d2912;
 }
 * { box-sizing: border-box; }
-body {
-  margin: 0;
-  min-height: 100dvh;
-  font-family: var(--font);
-  color: var(--ink);
+html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; font-family: var(--font); }
+#c { display: block; width: 100%; height: 100%; touch-action: none; }
+
+#boot {
+  position: fixed; inset: 0; z-index: 20;
+  display: grid; place-content: center; gap: 12px; text-align: center;
   background: linear-gradient(180deg, #ffe9a8, #f0c84a);
+  color: #2a2218; padding: 24px;
 }
-.app { max-width: 1100px; margin: 0 auto; padding: 10px 12px 24px; }
-.top { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
-.top a { color: var(--soft); font-weight: 800; text-decoration: none; }
-.top h1 { margin: 0; font-size: 1.5rem; }
-.hint {
-  margin: 8px 0 10px;
-  padding: 10px 12px;
-  background: #fff8e6;
-  border: 2px solid #c49a3a;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  line-height: 1.45;
+#boot h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.6rem); }
+#boot p { margin: 0; max-width: 36ch; font-weight: 700; line-height: 1.4; }
+#startBtn {
+  border: 0; border-radius: 999px; padding: 14px 22px;
+  background: var(--deep); color: #fff6df; font: 900 1.05rem var(--font); cursor: pointer;
 }
-.muted { font-weight: 700; color: var(--soft); font-size: 0.85rem; }
 
-.stage {
-  display: grid;
-  grid-template-columns: 52px 1fr 52px;
-  gap: 8px;
-  align-items: center;
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+.cross {
+  position: absolute; left: 50%; top: 50%; width: 14px; height: 14px;
+  margin: -7px 0 0 -7px; border: 2px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 0 1px #0008;
 }
-.nav {
-  height: 180px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--deep);
-  color: #fff6df;
-  font-size: 2.2rem;
-  font-weight: 900;
-  cursor: pointer;
-}
-.nav:disabled { opacity: 0.3; }
-
-.view-wrap {
-  position: relative;
-  border: 4px solid var(--deep);
-  border-radius: 16px;
-  overflow: hidden;
-  background: #111;
-  aspect-ratio: 16 / 9;
-  min-height: 460px;
-}
-.look {
-  position: absolute; top: 10px; right: 10px; z-index: 4;
-  display: flex; gap: 6px;
-}
-.look button {
-  width: 42px; height: 42px; border: 0; border-radius: 12px;
-  background: rgba(42,34,24,.88); color: #fff6df;
-  font-size: 1.2rem; font-weight: 900; cursor: pointer;
-}
-.fridge {
-  max-width: 480px;
-}
-.fridge-in {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin: 12px 0 16px;
-  padding: 14px;
-  background: linear-gradient(180deg, #e8f4ff, #cfe3f5);
-  border-radius: 14px;
-  border: 3px solid #8aa;
-  min-height: 160px;
-}
-.fridge-in button {
-  border: 2px solid #7a9;
-  border-radius: 12px;
-  background: #fff;
-  padding: 12px 8px;
-  font: 800 0.85rem var(--font);
-  cursor: pointer;
-}
-.fridge-in button .e { display: block; font-size: 1.8rem; }
-#c { display: block; width: 100%; height: 100%; touch-action: none; cursor: pointer; }
 .speech {
-  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
-  z-index: 3; max-width: 92%;
-  background: rgba(42,34,24,.93); color: #fff6df;
+  position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%);
+  max-width: min(92vw, 560px); pointer-events: none;
+  background: rgba(42,34,24,.92); color: #fff6df;
   padding: 12px 16px; border-radius: 14px; font-weight: 800; text-align: center;
-  font-size: 1.05rem;
 }
-.room-tag {
-  position: absolute; top: 10px; left: 10px; z-index: 3;
+.place {
+  position: absolute; top: 12px; left: 12px;
   background: rgba(42,34,24,.88); color: #fff6df;
-  padding: 7px 14px; border-radius: 999px; font-weight: 900;
+  padding: 8px 12px; border-radius: 999px; font-weight: 900;
 }
-.label {
-  position: absolute; z-index: 3; pointer-events: none;
-  background: #ffb020; color: #2a2218;
-  padding: 5px 10px; border-radius: 8px; font-weight: 900; font-size: 0.85rem;
+.inv {
+  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  pointer-events: auto; max-width: 96vw;
 }
-
-.inv-wrap {
-  margin-top: 12px;
-  padding: 12px;
-  background: #fff8e6;
-  border: 2px solid #c49a3a;
-  border-radius: 14px;
-}
-.inv { display: flex; flex-wrap: wrap; gap: 8px; min-height: 64px; margin-top: 8px; }
 .item {
-  width: 72px; height: 72px; border-radius: 12px;
-  border: 2px solid #c49a3a; background: #fff;
-  display: grid; place-items: center; cursor: pointer;
-  font-size: 1.85rem; position: relative;
+  width: 58px; height: 58px; border-radius: 12px; border: 2px solid #c49a3a;
+  background: #fff8e6; display: grid; place-items: center; cursor: pointer;
+  font-size: 1.5rem; position: relative;
 }
 .item.sel { outline: 3px solid #e51d30; }
-.item small {
-  position: absolute; bottom: 2px; font-size: 0.62rem; font-weight: 800;
+.item small { position: absolute; bottom: 1px; font-size: 0.55rem; font-weight: 800; color: #2a2218; }
+.help {
+  position: absolute; top: 12px; right: 12px; margin: 0;
+  color: #fff8; font-weight: 700; font-size: 0.8rem;
 }
 
 .modal {
-  position: fixed; inset: 0; z-index: 40;
+  position: fixed; inset: 0; z-index: 30;
   background: rgba(0,0,0,.55);
-  display: grid; place-items: center;
-  padding: 16px;
+  display: grid; place-items: center; padding: 16px;
 }
 .modal[hidden] { display: none !important; }
 .modal-card {
-  background: #fff8e6;
-  border: 4px solid var(--deep);
-  border-radius: 18px;
-  padding: 18px;
-  max-width: 420px;
-  width: 100%;
-  text-align: center;
+  background: #fff8e6; border: 4px solid var(--deep); border-radius: 18px;
+  padding: 18px; width: min(440px, 100%); text-align: center; color: #2a2218;
 }
-.elik-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 14px 0;
+.fridge-in {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  margin: 12px 0; padding: 12px; border-radius: 14px;
+  background: linear-gradient(180deg, #e8f4ff, #b9d7ea); border: 3px solid #7a9;
 }
-.elik-grid button {
-  height: 72px;
-  border: 0;
-  border-radius: 14px;
-  font: 900 1.4rem var(--font);
-  cursor: pointer;
-  color: #fff;
+.fridge-in button {
+  border: 2px solid #6a8; border-radius: 12px; background: #fff;
+  padding: 12px; font: 800 0.9rem var(--font); cursor: pointer;
 }
-.elik-grid button:nth-child(1) { background: #e51d30; }
-.elik-grid button:nth-child(2) { background: #2f6fdb; }
-.elik-grid button:nth-child(3) { background: #f0b429; color: #2a2218; }
-.elik-grid button:nth-child(4) { background: #2a9d6e; }
-#elikClose {
-  border: 0; border-radius: 999px; padding: 10px 18px;
+#fridgeClose, #startBtn { pointer-events: auto; }
+#fridgeClose {
+  border: 0; border-radius: 999px; padding: 10px 16px;
   background: var(--deep); color: #fff6df; font: 800 1rem var(--font); cursor: pointer;
-}
-
-@media (max-width: 700px) {
-  .stage { grid-template-columns: 40px 1fr 40px; }
-  .nav { height: 120px; }
-  .view-wrap { min-height: 300px; }
 }

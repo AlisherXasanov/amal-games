@@ -3,65 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Желейная хата — жизнь дома</title>
+  <title>Желейная хата — ходить и смотреть</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=7" />
+  <link rel="stylesheet" href="./style.css?v=8" />
 </head>
 <body>
-  <div class="app">
-    <header class="top">
-      <a href="../">← Каталог</a>
-      <h1>Желейная хата</h1>
-    </header>
-
-    <p class="hint">
-      Кликай крупные предметы. У двери — <b>сначала глазок</b>, иначе жёлтого мишку не разговорить.
-      На пляже можно поворачивать взгляд. Крошку (маленькую мишку) можно одеть к опыту.
-    </p>
-
-    <div class="stage">
-      <button type="button" class="nav" id="prev">‹</button>
-      <div class="view-wrap">
-        <canvas id="c"></canvas>
-        <div class="look">
-          <button type="button" id="lookL" title="Взгляд влево">⟲</button>
-          <button type="button" id="lookR" title="Взгляд вправо">⟳</button>
-        </div>
-        <div class="label" id="hoverLabel" hidden></div>
-        <div class="speech" id="speech">Кликай предметы</div>
-        <div class="room-tag" id="roomTag">Спальня</div>
-      </div>
-      <button type="button" class="nav" id="next">›</button>
-    </div>
-
-    <div class="inv-wrap">
-      <b>Инвентарь</b> <span class="muted">выбери → кликни по мишке / Крошке / роботу</span>
-      <div class="inv" id="inv"></div>
-    </div>
+  <div id="boot">
+    <h1>Желейная хата</h1>
+    <p>WASD / стрелки — ходить · мышь — смотреть · клик — взять / действие · Esc — показать курсор</p>
+    <button type="button" id="startBtn">▶ Войти в хату</button>
   </div>
+
+  <div id="hud" hidden>
+    <div class="cross" id="cross" hidden></div>
+    <div class="speech" id="speech">…</div>
+    <div class="place" id="place">Хата</div>
+    <div class="inv" id="inv"></div>
+    <p class="help">Esc — мышка · клик по предмету в прицеле</p>
+  </div>
+
+  <canvas id="c"></canvas>
 
   <div class="modal" id="fridgeModal" hidden>
-    <div class="modal-card fridge">
+    <div class="modal-card">
       <h2>Холодильник</h2>
       <div class="fridge-in" id="fridgeIn"></div>
+      <p id="fridgeExtra"></p>
       <button type="button" id="fridgeClose">Закрыть</button>
-    </div>
-  </div>
-
-  <div class="modal" id="elikModal" hidden>
-    <div class="modal-card">
-      <h2>Элик · игра</h2>
-      <p>Жми по порядку: 1 → 2 → 3 → 4</p>
-      <div class="elik-grid" id="elikGrid"></div>
-      <p id="elikStatus">Готов</p>
-      <button type="button" id="elikClose">Закрыть</button>
     </div>
   </div>
 
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=7"></script>
+  <script type="module" src="./game.js?v=8"></script>
 </body>
 </html>
