@@ -1,0 +1,14 @@
+{
+  "name": "Смотри без рекламы",
+  "short_name": "Смотри",
+  "description": "Умный поиск YouTube — Саквашин, Vlad A4, MrBeast и другие.",
+  "lang": "ru",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#cc0000",
+  "icons": [
+    { "src": "../icons/amal.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

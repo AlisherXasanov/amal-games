@@ -104,14 +104,22 @@
   <script src="../shared/amal-site-faq.js?v=1"></script>
   <script>
     const APPS = [
+      { href: "../youtube-free/", icon: "▶️", title: "Смотри без рекламы", desc: "YouTube-помощник: Саквашин, Vlad A4, MrBeast, Gravity Falls. Чат + быстрый поиск.", thumb: "linear-gradient(135deg,#cc0000,#212121)", public: true },
       { href: "../voice-ai-proposal/", icon: "🎤", title: "СкажиИгру", desc: "Голосовое приложение. Под замком для гостей.", thumb: "linear-gradient(135deg,#0d6e5f,#f0b429)" },
       { href: "../create-lab/", icon: "👂", title: "Create Lab", desc: "Создание анимаций и игр. Под замком для гостей.", thumb: "linear-gradient(135deg,#0d6e5f,#e25a3c)" },
     ];
     const admin = window.Amal3dLock && Amal3dLock.canEnter();
     if (admin) document.getElementById("adminNote").classList.add("on");
     document.getElementById("apps").innerHTML = APPS.map((g) => {
-      const u = admin ? " unlocked" : "";
-      const go = admin ? "👑 Войти" : "🔒 Закрыто";
+      const unlocked = g.public || admin;
+      const u = unlocked ? " unlocked" : "";
+      const go = unlocked ? (g.public ? "▶ Открыть" : "👑 Войти") : "🔒 Закрыто";
+      if (g.public) {
+        return `<a class="card${u}" href="${g.href}">
+        <div class="thumb" style="background:${g.thumb}">${g.icon}</div>
+        <div class="body"><h2>${g.title}</h2><p>${g.desc}</p><span class="go">${go}</span></div>
+      </a>`;
+      }
       return `<div class="card${u}" data-amal-3d-lock data-href="${g.href}" role="button" tabindex="0">
         <div class="chains">⛓ 🔒 ⛓</div>
         <div class="thumb" style="background:${g.thumb}">${g.icon}</div>
