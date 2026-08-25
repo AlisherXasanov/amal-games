@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Дом Валеры</title>
+  <title>Квартира Валеры</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=14" />
+  <link rel="stylesheet" href="./style.css?v=15" />
 </head>
 <body>
   <div id="boot">
-    <h1>Дом Валеры</h1>
-    <p>Ты в гостях у Валеры дома. Пляж далеко — только на машине.</p>
+    <h1>Квартира Валеры</h1>
+    <p>Гостиная · спальня · кухня · ванна · туалет. Предметы лежат на полу и полках.</p>
     <ol class="boot-steps">
       <li>Поздоровайся с Валерой</li>
-      <li>Дай конфету или мяч</li>
-      <li>Сними камерой → смотри на компе</li>
-      <li>Ручка двери → улица → красная машина</li>
+      <li>Поиграй — дай еду или мяч (есть баттерсквиш)</li>
+      <li>Отдых — диван или кровать</li>
+      <li>Желтобрюх иногда в гости (или клавиша G)</li>
     </ol>
     <p class="hint">WASD — ходить · мышь — смотреть · Esc — закрыть окна</p>
-    <button type="button" id="startBtn">▶ Войти в дом</button>
+    <button type="button" id="startBtn">▶ Войти</button>
   </div>
 
   <div id="hud" hidden>
@@ -28,7 +28,7 @@
     <div class="speech" id="speech">…</div>
     <div class="place" id="place">Дом</div>
     <div class="inv" id="inv"></div>
-    <p class="help">Esc — закрыть · клик снаружи окна</p>
+    <p class="help">Esc — закрыть · G — позвать гостя</p>
   </div>
 
   <canvas id="c"></canvas>
@@ -65,6 +65,6 @@
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=14"></script>
+  <script type="module" src="./game.js?v=15"></script>
 </body>
 </html>
