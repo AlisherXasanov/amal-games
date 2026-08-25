@@ -6368,16 +6368,26 @@
     try {
       if (global.__AMAL_NO_WORLD__) return;
       if (global.AmalWorld) return;
+      try {
+        var path = String(location.pathname || "").toLowerCase();
+        if (
+          /\/(obby|tower-defense|tycoon|murder-mystery|pet-simulator|flee-facility|build-boat|adopt-me|blox-fruits|brookhaven-rp|grow-garden|nights-forest|rivals-arena|speed-escape|steal-brainrot|minecraft|bed-wars|portal-3d|lab3d)(\/|$|\.html)/.test(
+            path
+          )
+        ) {
+          return;
+        }
+      } catch (_) {}
       if (document.querySelector('script[src*="amal-world-character.js"]')) return;
       var s = document.createElement("script");
       s.src = (function () {
         try {
           var p = location.pathname || "";
-          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=19";
-          if (/\/games\/?$/.test(p) || /\/games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=19";
-          return "../shared/amal-world-character.js?v=19";
+          if (/\/amal-games\/?$/.test(p) || /\/amal-games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=41";
+          if (/\/games\/?$/.test(p) || /\/games\/index\.html$/.test(p)) return "./shared/amal-world-character.js?v=41";
+          return "../shared/amal-world-character.js?v=41";
         } catch (e) {
-          return "../shared/amal-world-character.js?v=19";
+          return "../shared/amal-world-character.js?v=41";
         }
       })();
       s.defer = true;

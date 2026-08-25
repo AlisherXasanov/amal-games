@@ -215,9 +215,41 @@
     return !id || id === "portal";
   }
 
+  function isThreeStyleGame() {
+    try {
+      var p = String(location.pathname || "").toLowerCase();
+      var ids = [
+        "/obby",
+        "/tower-defense",
+        "/tycoon",
+        "/murder-mystery",
+        "/pet-simulator",
+        "/flee-facility",
+        "/build-boat",
+        "/adopt-me",
+        "/blox-fruits",
+        "/brookhaven-rp",
+        "/grow-garden",
+        "/nights-forest",
+        "/rivals-arena",
+        "/speed-escape",
+        "/steal-brainrot",
+        "/minecraft",
+        "/bed-wars",
+        "/portal-3d",
+        "/lab3d",
+      ];
+      for (var i = 0; i < ids.length; i++) {
+        if (p.indexOf(ids[i]) !== -1) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function shouldRunWorld() {
     if (global.__AMAL_NO_WORLD__) return false;
     if (isCatalogPage()) return false;
+    if (isThreeStyleGame()) return false;
     return isOwner();
   }
 
