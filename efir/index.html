@@ -2,38 +2,35 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>Мульт — короткий рисованный ролик</title>
-  <meta name="description" content="Короткий рисованный мульт на сайте. Смотри сразу — без рекламы." />
-  <meta name="theme-color" content="#f3e7d3" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Literata:opsz,wght@7..72,600;7..72,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>Эфир больше не здесь</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    body {
+      margin: 0; min-height: 100dvh; display: grid; place-items: center;
+      font-family: system-ui, sans-serif; text-align: center;
+      padding: 24px; color: #2a2218;
+      background: linear-gradient(180deg, #ffe9a8, #f0c84a);
+    }
+    .box { max-width: 34rem; }
+    h1 { margin: 0 0 10px; font-size: 1.8rem; }
+    p { margin: 0 0 12px; line-height: 1.45; opacity: 0.9; }
+    a.btn {
+      display: inline-block; margin: 6px; padding: 12px 18px;
+      border-radius: 999px; background: #3d2912; color: #fff6df;
+      text-decoration: none; font-weight: 800;
+    }
+    a.soft { color: #3d2912; font-weight: 700; }
+  </style>
 </head>
 <body>
-  <header class="top">
-    <a class="back" href="../">← Каталог</a>
-    <p class="hint">это не игра · просто мульт · смотри</p>
-  </header>
-
-  <main class="wrap">
-    <h1>Мульт</h1>
-    <p class="sub">Рисованная анимация. Жми «Смотреть» — начинается сразу.</p>
-
-    <div class="tv" aria-label="Рисованный мульт">
-      <canvas id="c" width="960" height="540" role="img" aria-label="Анимация: маленький герой идёт к солнцу"></canvas>
-      <div class="tv-bar">
-        <button type="button" class="go" id="btnPlay">▶ Смотреть</button>
-        <button type="button" class="ghost" id="btnAgain" hidden>↻ Ещё раз</button>
-        <span class="status" id="status">готов</span>
-      </div>
-    </div>
-
-    <p class="foot">Нарисовано линиями «от руки». Без рекламы. Без чужих вставок.</p>
-  </main>
-
-  <script src="./app.js?v=2" defer></script>
+  <div class="box">
+    <h1>«Эфир» — старое название</h1>
+    <p>Это была ранняя смотровая. Она путала и часто ломалась. Сейчас вместо неё другие страницы:</p>
+    <p><a class="btn" href="../jelly-lab/?v=1">🏠 Желейная хата — играть</a></p>
+    <p><a class="btn" href="../mult-studio/?v=2">🎬 Мульт-студия — ролики</a></p>
+    <p><a class="soft" href="../">← В каталог</a></p>
+  </div>
 </body>
 </html>
