@@ -194,28 +194,22 @@
 
   function setAltBtnLabel() {
     const alt = document.getElementById("btnAltPlayer");
-    const note = document.getElementById("adNote");
     if (alt) {
       alt.textContent = usingNoAds
-        ? "Если не играет — обычный YouTube"
-        : "🚫 Смотреть без рекламы";
-    }
-    if (note) {
-      note.textContent = usingNoAds
-        ? "Режим без рекламы: только мультик, без чужих сайтов. Если не загрузилось — жми кнопку."
-        : "⚠ Обычный YouTube — может быть реклама.";
+        ? "Обычный YouTube"
+        : "🚫 Без рекламы";
     }
   }
 
   function ensurePlayerTools() {
+    ensureWatchFloat();
     if (document.getElementById("playerTools")) return;
     const bar = document.createElement("div");
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
-      '<p class="ad-note" id="adNote"></p>' +
       '<button type="button" id="btnAltPlayer" class="sub-btn accent-ad"></button>' +
-      '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню роликов</button>' +
+      '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
     if (playerBox && playerBox.parentNode) {
       playerBox.parentNode.insertBefore(bar, playerBox.nextSibling);
@@ -235,6 +229,7 @@
       });
     };
     document.getElementById("btnToMenu").onclick = function () {
+      setWatching(false);
       const menu = document.getElementById("channelMenu");
       if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
       else if (videoGrid) videoGrid.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -409,7 +404,45 @@
     } else if (tip) tip.hidden = true;
   }
 
+  function setWatching(on) {
+    if (viewChannel) viewChannel.classList.toggle("watching", !!on);
+  }
+
+  function ensureWatchFloat() {
+    if (document.getElementById("watchFloat")) return;
+    const wrap = document.createElement("div");
+    wrap.id = "watchFloat";
+    wrap.className = "watch-float";
+    wrap.innerHTML =
+      '<button type="button" id="btnFloatMenu">📋 Меню</button>' +
+      '<button type="button" class="accent" id="btnFloatNoAds">🚫 Без рекламы</button>' +
+      '<button type="button" id="btnFloatExtra">⋯ Ещё</button>';
+    if (playerBox) playerBox.appendChild(wrap);
+    document.getElementById("btnFloatMenu").onclick = function () {
+      setWatching(false);
+      const menu = document.getElementById("channelMenu");
+      if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    document.getElementById("btnFloatNoAds").onclick = function () {
+      usingNoAds = true;
+      savePlayerPref();
+      if (!currentPlayId) return;
+      const title =
+        (nowPlaying && nowPlaying.textContent
+          ? nowPlaying.textContent.replace(/^Сейчас:\s*/, "")
+          : "Ролик") || "Ролик";
+      playId(currentPlayId, title, {
+        channelId: currentChannel && currentChannel.id,
+      });
+    };
+    document.getElementById("btnFloatExtra").onclick = function () {
+      document.body.classList.toggle("show-extra-panels");
+      setWatching(false);
+    };
+  }
+
   function ensureZoomBar() {
+    ensureWatchFloat();
     if (document.getElementById("zoomBar")) return;
     const bar = document.createElement("div");
     bar.id = "zoomBar";
@@ -419,7 +452,7 @@
       '<span id="zoomLabel">100%</span>' +
       '<button type="button" id="zoomIn">+</button>' +
       '<button type="button" id="zoomReset">1×</button>' +
-      '<span class="zoom-tip">зажми и тяни экран</span>';
+      '<span class="zoom-tip">зум</span>';
     playerBox.parentNode.insertBefore(bar, playerBox.nextSibling);
     document.getElementById("zoomIn").onclick = function () {
       setZoom(zoom + 0.35);
@@ -483,13 +516,15 @@
     refreshLikeUi();
     renderComments();
     setAltBtnLabel();
+    setWatching(true);
+    document.body.classList.remove("show-extra-panels");
 
     if (usingNoAds) {
       playerPh.hidden = false;
-      playerPh.textContent = "⏳ Грузим мультик без рекламы…";
+      playerPh.textContent = "⏳ Грузим без рекламы…";
       ytFrame.hidden = true;
       localVideo.hidden = true;
-      if (tvHint) tvHint.textContent = "▶ " + title + " · без рекламы";
+      if (tvHint) tvHint.textContent = "▶ " + title;
       fetchDirectStream(id).then(function (url) {
         if (gen !== playGen || currentPlayId !== id) return;
         if (url) {
@@ -501,20 +536,10 @@
           localVideo.play().catch(function () {});
           return;
         }
-        // поток не нашёлся — обычный YouTube, чтобы хоть играло
         playerPh.hidden = true;
         localVideo.hidden = true;
         ytFrame.hidden = false;
         ytFrame.src = embedUrl(id, true);
-        if (tvHint) {
-          tvHint.textContent =
-            "▶ " + title + " · зеркало не ответило, включил YouTube (может быть реклама)";
-        }
-        const note = document.getElementById("adNote");
-        if (note) {
-          note.textContent =
-            "Зеркало без рекламы сейчас не сработало — играет YouTube. Можно попробовать кнопку ещё раз позже.";
-        }
       });
       return;
     }
@@ -614,6 +639,8 @@
 
   function openHome() {
     currentChannel = null;
+    setWatching(false);
+    document.body.classList.remove("show-extra-panels");
     showView("home");
   }
 

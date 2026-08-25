@@ -362,11 +362,40 @@ body.watch-app .amal-side-quick {
   min-height: 0;
   overflow: hidden;
 }
-.player-area { background: #000; flex-shrink: 0; }
+.player-area { background: #000; flex-shrink: 0; position: relative; }
 .player-box {
-  position: relative; width: 100%; max-width: 960px; margin: 0 auto;
-  max-height: 36vh; aspect-ratio: 16/9; background: #111;
+  position: relative; width: 100%; max-width: 1100px; margin: 0 auto;
+  max-height: 56vh; aspect-ratio: 16/9; background: #111;
 }
+/* во время ролика — только экран, без нижней каши */
+#viewChannel.watching .channel-head,
+#viewChannel.watching .zoom-bar,
+#viewChannel.watching .player-tools,
+#viewChannel.watching .stats-bar,
+#viewChannel.watching .now,
+#viewChannel.watching .comments-box {
+  display: none !important;
+}
+#viewChannel.watching .player-box {
+  max-height: 62vh;
+}
+.watch-float {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
+  display: none; flex-wrap: wrap; gap: 6px; justify-content: center;
+  pointer-events: none;
+}
+#viewChannel.watching .watch-float { display: flex; }
+.watch-float button {
+  pointer-events: auto;
+  padding: 7px 12px; border-radius: 999px; border: 0;
+  background: rgba(0,0,0,.72); color: #fff;
+  font: 800 11px system-ui; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.watch-float button.accent {
+  background: linear-gradient(135deg, #cc0000, #ff4444);
+}
+.extra-panels[hidden] { display: none !important; }
 .channel-menu {
   flex: 1;
   min-height: 0;
@@ -392,10 +421,33 @@ body.watch-app .amal-side-quick {
 }
 #ytFrame, #localVideo { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
+.zoom-bar,
+.player-tools,
+.stats-bar,
+.now {
+  display: none; /* прячем по умолчанию — мешают смотреть */
+}
 .stats-bar {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  gap: 8px; align-items: center;
   padding: 10px 14px; background: #181818; border-bottom: 1px solid #2a2a2a;
 }
+.zoom-bar {
+  gap: 8px; align-items: center;
+  padding: 8px 14px; background: #121212; border-bottom: 1px solid #2a2a2a;
+}
+.player-tools {
+  gap: 8px; align-items: center;
+  padding: 8px 14px; background: #121212; border-bottom: 1px solid #2a2a2a;
+}
+.now { padding: 8px 14px; font-size: 12px; color: #aaa; background: #121212; }
+body.show-extra-panels .zoom-bar,
+body.show-extra-panels .player-tools,
+body.show-extra-panels .stats-bar,
+body.show-extra-panels .now {
+  display: flex;
+  flex-wrap: wrap;
+}
+body.show-extra-panels .now { display: block; }
 .like-btn, .sub-btn {
   padding: 8px 14px; border-radius: 999px; border: 1px solid #444;
   background: #2a2a2a; color: #fff; font: 800 12px system-ui; cursor: pointer;
