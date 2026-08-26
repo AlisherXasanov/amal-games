@@ -1215,10 +1215,7 @@
       return;
     }
     showToast("▶ Смотрим подряд · " + (autoQueuePos + 1) + "/" + autoQueue.length);
-    playId(v.id, v.title || "Ролик", {
-      channelId: ch.id,
-      likesLabel: v.likes,
-    });
+    playVideoObj(ch, v);
   }
 
   function playNextInQueue() {
@@ -1231,10 +1228,7 @@
     const v = autoQueue[autoQueuePos];
     if (!v || !currentChannel) return;
     showToast("⏭ Дальше · " + (autoQueuePos + 1) + "/" + autoQueue.length);
-    playId(v.id, v.title || "Ролик", {
-      channelId: currentChannel.id,
-      likesLabel: v.likes,
-    });
+    playVideoObj(currentChannel, v);
   }
 
   function setWatching(on) {
@@ -1366,6 +1360,7 @@
     try {
       localVideo.load();
     } catch (_) {}
+    hideStoryPlayer();
     playerPh.hidden = false;
     playerPh.textContent = "▶ Выбери видео из меню ниже";
     currentPlayId = "";
@@ -1507,6 +1502,7 @@
 
   function playVideoObj(ch, v) {
     if (v.local) return playLocal(v.url, v.title);
+    if (v.story) return playStory(ch, v);
     if (v.playlist || v.id === "playlist") {
       showToast("⏳ Гружу все ролики канала…");
       loadAllFromChannel(ch).then(function () {
@@ -1530,6 +1526,97 @@
       likesLabel: v.likes,
       live: isLiveVideo(v),
     });
+  }
+
+  function hideStoryPlayer() {
+    const box = document.getElementById("storyPlayer");
+    if (box) box.hidden = true;
+  }
+
+  function playStory(ch, v) {
+    ensureZoomBar();
+    ensurePlayerTools();
+    stopAllMedia();
+    hideStoryPlayer();
+    const pages = (v.pages || []).slice();
+    if (!pages.length) pages.push(v.title || "Серия");
+    let page = 0;
+    currentPlayId = v.id;
+    currentVideoKey = "duo::" + v.id;
+    currentLikesLabel = "∞";
+    const title = beepText(v.title || "Серия", false);
+    nowPlaying.textContent = "Сейчас: " + title;
+    setWatchTitle(title);
+    if (tvHint) tvHint.textContent = "✦ Наш канал · " + title;
+    playerPh.hidden = true;
+    ytFrame.hidden = true;
+    localVideo.hidden = true;
+    setCinemaPure(true);
+    setWatching(true);
+    refreshLikeUi();
+    renderComments();
+
+    let box = document.getElementById("storyPlayer");
+    if (!box && playerBox) {
+      box = document.createElement("div");
+      box.id = "storyPlayer";
+      box.className = "story-player";
+      playerBox.appendChild(box);
+    }
+    if (!box) return;
+
+    function paint() {
+      const openBtn = v.openWeTwo
+        ? '<a class="story-link" href="../we-two/">Открыть уголок ✦</a>'
+        : "";
+      box.hidden = false;
+      box.innerHTML =
+        '<div class="story-inner">' +
+        '<div class="story-badge">✦ Мы с тобой</div>' +
+        "<h3>" +
+        escapeHtml(title) +
+        "</h3>" +
+        '<p class="story-page">' +
+        escapeHtml(pages[page] || "") +
+        "</p>" +
+        '<div class="story-nav">' +
+        '<button type="button" id="storyPrev"' +
+        (page <= 0 ? " disabled" : "") +
+        ">←</button>" +
+        '<span>' +
+        (page + 1) +
+        " / " +
+        pages.length +
+        "</span>" +
+        '<button type="button" id="storyNext">' +
+        (page >= pages.length - 1 ? "✓" : "→") +
+        "</button>" +
+        "</div>" +
+        openBtn +
+        '<p class="story-foot">Канал Амаля и Курсора · внутри Смотри</p>' +
+        "</div>";
+      const prev = document.getElementById("storyPrev");
+      const next = document.getElementById("storyNext");
+      if (prev)
+        prev.onclick = function () {
+          if (page > 0) {
+            page -= 1;
+            paint();
+          }
+        };
+      if (next)
+        next.onclick = function () {
+          if (page < pages.length - 1) {
+            page += 1;
+            paint();
+          } else {
+            showToast("✦ Серия просмотрена");
+            playNextInQueue();
+          }
+        };
+    }
+    paint();
+    showToast("✦ Наша серия — листай стрелками");
   }
 
   function refreshLikeUi() {
@@ -1792,7 +1879,9 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vid-card";
-      const badge = isLiveVideo(v)
+      const badge = v.story
+        ? '<span class="badge duo">✦ наша</span>'
+        : isLiveVideo(v)
         ? '<span class="badge live">LIVE</span>'
         : v.streamVod
           ? '<span class="badge stream">стрим</span>'
@@ -1828,7 +1917,7 @@
     let warmed = 0;
     vids.forEach(function (v) {
       if (warmed >= 8) return;
-      if (!v.id || v.id === "playlist" || v.local || v.playlist) return;
+      if (!v.id || v.id === "playlist" || v.local || v.playlist || v.story) return;
       prefetchStream(v.id);
       warmed++;
     });
@@ -2408,24 +2497,11 @@
 
     if (autoPlay) {
       // всегда этот ролик в плеере канала (даже если short)
-      if (autoPlay.local) playLocal(autoPlay.url, autoPlay.title);
-      else if (autoPlay.playlist || autoPlay.id === "playlist") playVideoObj(ch, autoPlay);
-      else
-        playId(autoPlay.id, autoPlay.title || "Ролик", {
-          channelId: ch.id,
-          likesLabel: autoPlay.likes,
-          live: isLiveVideo(autoPlay),
-        });
+      playVideoObj(ch, autoPlay);
     } else {
       const liveFirst = ch.liveNow && isLiveVideo(ch.liveNow) ? ch.liveNow : null;
       const first = liveFirst || pickAutoPlay(vids);
-      if (first) {
-        playId(first.id, first.title || "Ролик", {
-          channelId: ch.id,
-          likesLabel: first.likes,
-          live: isLiveVideo(first),
-        });
-      }
+      if (first) playVideoObj(ch, first);
     }
     renderComments();
 
@@ -2757,10 +2833,13 @@
     );
   }
 
-  CHANNELS.forEach(function (ch) {
+  const shelfList = CHANNELS.slice().sort(function (a, b) {
+    return (b.pinShelf ? 1 : 0) - (a.pinShelf ? 1 : 0);
+  });
+  shelfList.forEach(function (ch) {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "ch-card";
+    b.className = "ch-card" + (ch.specialDuo ? " duo-card" : "");
     b.dataset.ch = ch.id;
     b.style.borderColor = ch.color;
     const ico = ch.icon
@@ -3009,6 +3088,7 @@
     { keys: ["простая наука", "лаборатор"], channel: "laber" },
     { keys: ["вилли", "вили", "willi", "villy", "кот вилли"], channel: "villy" },
     { keys: ["вилли теор", "теории вилли"], channel: "villy-theory" },
+    { keys: ["мы с тобой", "курсор", "наш канал", "amal duo", "duo"], channel: "amal-duo" },
     { keys: ["фази", "fazie"], channel: "fazie" },
     { keys: ["кекич"], channel: "kekich" },
     { keys: ["бравл топ", "brawl топ"], channel: "browl" },
