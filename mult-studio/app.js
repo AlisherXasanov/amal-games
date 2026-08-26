@@ -66,6 +66,172 @@ const EPISODES = [
 const SAVE_KEY = "mult-studio-mine-v1";
 const ASK_KEY = "mult-studio-asks-v1";
 const LIKES_KEY = "mult-studio-likes-v1";
+const CHANNEL_KEY = "mult-studio-channel-v1";
+
+const PLAY_BUTTONS = [
+  { id: "silver", name: "Серебряная", need: 100, cls: "silver", ico: "▶️" },
+  { id: "romantic", name: "Романтик", need: 500, cls: "romantic", ico: "💕" },
+  { id: "gold", name: "Золотая", need: 1000, cls: "gold", ico: "▶️" },
+  { id: "diamond", name: "Бриллиантовая", need: 10000, cls: "diamond", ico: "💎" }
+];
+
+const ACHIEVEMENTS = [
+  { id: "first_watch", title: "Первый просмотр", desc: "Посмотри любой ролик", check: (c) => c.watched >= 1 },
+  { id: "first_video", title: "Первый свой ролик", desc: "Выложи 1 ролик на полку", check: (c) => c.videos >= 1 },
+  { id: "videos_10", title: "10 роликов", desc: "Выложи 10 своих роликов", check: (c) => c.videos >= 10 },
+  { id: "hug", title: "Обнимашки", desc: "Обними мишку", check: (c) => c.hugs >= 1 },
+  { id: "gift", title: "Кастомный подарок", desc: "Открой подарок со своим именем", check: (c) => !!c.giftOpened },
+  { id: "silver", title: "Серебро", desc: "Набери 100 подписчиков", check: (c) => c.subs >= 100 },
+  { id: "romantic", title: "Романтик-кнопка", desc: "Набери 500 подписчиков", check: (c) => c.subs >= 500 },
+  { id: "gold", title: "Золото", desc: "Набери 1000 подписчиков", check: (c) => c.subs >= 1000 },
+  { id: "diamond", title: "Бриллиант", desc: "Набери 10 000 подписчиков", check: (c) => c.subs >= 10000 }
+];
+
+function defaultChannel() {
+  return {
+    subs: 0,
+    videos: 0,
+    watched: 0,
+    hugs: 0,
+    giftOpened: false,
+    hiddenButtons: {},
+    unlockedAnim: {},
+    achievements: {}
+  };
+}
+
+function loadChannel() {
+  try {
+    return { ...defaultChannel(), ...JSON.parse(localStorage.getItem(CHANNEL_KEY) || "{}") };
+  } catch (_) {
+    return defaultChannel();
+  }
+}
+
+function saveChannel(c) {
+  localStorage.setItem(CHANNEL_KEY, JSON.stringify(c));
+}
+
+let channel = loadChannel();
+let hugUntil = 0;
+
+function playerNick() {
+  try {
+    if (window.AmalHub?.getNick) {
+      const n = AmalHub.getNick();
+      if (n) return n;
+    }
+  } catch (_) {}
+  return (studioNick?.value || document.getElementById("askNick")?.value || "").trim() || "Друг";
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.hidden = false;
+  el.textContent = msg;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    el.hidden = true;
+  }, 2800);
+}
+
+function syncRemote() {
+  const remote = document.getElementById("remoteHud");
+  const nameEl = document.getElementById("remoteName");
+  const subEl = document.getElementById("remoteSub");
+  if (!remote) return;
+  const nick = playerNick();
+  remote.hidden = channel.subs < 50;
+  if (nameEl) nameEl.textContent = nick.toUpperCase().slice(0, 12);
+  if (subEl) subEl.textContent = channel.subs + " подп.";
+}
+
+function checkButtonsUnlock(prevSubs) {
+  PLAY_BUTTONS.forEach((b) => {
+    if (prevSubs < b.need && channel.subs >= b.need && !channel.unlockedAnim[b.id]) {
+      channel.unlockedAnim[b.id] = true;
+      toast("🎉 Новая кнопка: " + b.name + "!");
+    }
+  });
+}
+
+function checkAchievements() {
+  ACHIEVEMENTS.forEach((a) => {
+    if (!channel.achievements[a.id] && a.check(channel)) {
+      channel.achievements[a.id] = Date.now();
+      toast("🏅 Достижение: " + a.title);
+    }
+  });
+}
+
+function addSubs(n, reason) {
+  const prev = channel.subs;
+  channel.subs = Math.min(999999, channel.subs + Math.max(0, n | 0));
+  checkButtonsUnlock(prev);
+  checkAchievements();
+  saveChannel(channel);
+  renderChannel();
+  syncRemote();
+  if (reason && n > 0) toast((reason ? reason + " · " : "") + "+" + n + " подп.");
+}
+
+function renderChannel() {
+  const title = document.getElementById("chanTitle");
+  const count = document.getElementById("subsCount");
+  const nick = playerNick();
+  if (title) title.textContent = "Канал «" + nick + "»";
+  if (count) count.textContent = String(channel.subs);
+
+  const giftCard = document.getElementById("giftCard");
+  if (giftCard) {
+    giftCard.textContent = channel.giftOpened
+      ? "🎁 Подарок для " + nick + " · твой именной сюрприз"
+      : "🎁 Нажми «Открыть» — подарок с именем";
+  }
+
+  const row = document.getElementById("playButtons");
+  if (row) {
+    row.innerHTML = "";
+    PLAY_BUTTONS.forEach((b) => {
+      const unlocked = channel.subs >= b.need;
+      const hidden = !!channel.hiddenButtons[b.id];
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "play-btn " +
+        b.cls +
+        (unlocked ? "" : " locked") +
+        (hidden && unlocked ? " hidden-award" : "");
+      btn.innerHTML =
+        `<span class="ico">${b.ico}</span><strong>${b.name}</strong>` +
+        `<small>${unlocked ? (hidden ? "спрятана · жми показать" : "получена · жми спрятать") : "нужно " + b.need + " подп."}</small>`;
+      btn.disabled = !unlocked;
+      btn.addEventListener("click", () => {
+        if (!unlocked) return;
+        channel.hiddenButtons[b.id] = !channel.hiddenButtons[b.id];
+        saveChannel(channel);
+        renderChannel();
+        toast(channel.hiddenButtons[b.id] ? "Кнопка спрятана" : "Кнопка снова на полке");
+      });
+      row.appendChild(btn);
+    });
+  }
+
+  const ach = document.getElementById("achievements");
+  if (ach) {
+    ach.innerHTML = "";
+    ACHIEVEMENTS.forEach((a) => {
+      const done = !!channel.achievements[a.id] || a.check(channel);
+      const div = document.createElement("div");
+      div.className = "ach" + (done ? " done" : "");
+      div.innerHTML =
+        `<span class="mark">${done ? "✅" : "⬜"}</span><div><b>${a.title}</b><span>${a.desc}</span></div>`;
+      ach.appendChild(div);
+    });
+  }
+  syncRemote();
+}
 
 const canvas = document.getElementById("view");
 const shelf = document.getElementById("shelf");
@@ -176,6 +342,12 @@ function makeBear() {
 const bear = makeBear();
 scene.add(bear);
 
+const hugFriend = makeBear();
+hugFriend.scale.setScalar(0.72);
+hugFriend.position.set(0.55, 0.55, 0.55);
+hugFriend.visible = false;
+scene.add(hugFriend);
+
 function makeHand(x) {
   const g = new THREE.Group();
   const sleeve = new THREE.Mesh(
@@ -220,15 +392,26 @@ resize();
 let t0 = performance.now();
 function animate(now) {
   const t = (now - t0) / 1000;
-  bear.position.y = 0.55 + Math.abs(Math.sin(t * 3)) * 0.04;
-  bear.rotation.y = Math.sin(t * 1.2) * 0.15;
+  const hugging = now < hugUntil;
+  hugFriend.visible = hugging;
+  if (hugging) {
+    bear.position.x = -0.12;
+    hugFriend.position.x = 0.22;
+    bear.rotation.y = 0.25;
+    hugFriend.rotation.y = -0.35;
+    bear.position.y = 0.55 + Math.abs(Math.sin(t * 5)) * 0.03;
+  } else {
+    bear.position.x = 0;
+    bear.position.y = 0.55 + Math.abs(Math.sin(t * 3)) * 0.04;
+    bear.rotation.y = Math.sin(t * 1.2) * 0.15;
+  }
   handL.position.y = 1.95 + Math.sin(t * 2) * 0.03;
   handR.position.y = 1.95 + Math.cos(t * 2.1) * 0.03;
   candy.rotation.y = t;
   if (playing && current.id === "dance") {
     bear.rotation.z = Math.sin(t * 6) * 0.2;
   } else {
-    bear.rotation.z = 0;
+    bear.rotation.z = hugging ? Math.sin(t * 4) * 0.08 : 0;
   }
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
@@ -297,6 +480,8 @@ async function playEpisode(ep, linesOverride) {
   playing = false;
   btnPlay.textContent = "▶ Смотреть";
   setSubs(ep.title + " · конец · жми ещё раз");
+  channel.watched = (channel.watched || 0) + 1;
+  addSubs(8, "Просмотр");
 }
 
 function wait(ms) {
@@ -380,6 +565,7 @@ function renderShelf() {
       btn.querySelector(".like-row").textContent = "❤️ " + n;
       likeBtn.classList.add("pop");
       setTimeout(() => likeBtn.classList.remove("pop"), 280);
+      addSubs(2, "Лайк");
     });
     btn.appendChild(likeBtn);
     shelf.appendChild(btn);
@@ -465,8 +651,50 @@ document.getElementById("btnSaveMine").addEventListener("click", () => {
   const list = loadMine();
   list.unshift(shot);
   saveMine(list);
+  channel.videos = Math.max(channel.videos, list.length);
+  saveChannel(channel);
   renderShelf();
-  studioNote.textContent = "Сохранено в полку (в этом браузере).";
+  renderChannel();
+  addSubs(25, "Ролик выложен");
+  studioNote.textContent = "Выложено на полку! Подписчики +25. Ролик только у тебя в браузере.";
+});
+
+document.getElementById("btnHug")?.addEventListener("click", () => {
+  hugUntil = performance.now() + 2800;
+  channel.hugs = (channel.hugs || 0) + 1;
+  checkAchievements();
+  saveChannel(channel);
+  renderChannel();
+  setSubs("Обнимашки! Мишка рад.");
+  speak("Обнимаю тебя! Спасибо, что смотришь мои мульты.");
+  addSubs(5, "Обнимашки");
+});
+
+document.getElementById("btnGift")?.addEventListener("click", () => {
+  const nick = playerNick();
+  channel.giftOpened = true;
+  checkAchievements();
+  saveChannel(channel);
+  const giftCard = document.getElementById("giftCard");
+  if (giftCard) {
+    giftCard.classList.remove("open");
+    void giftCard.offsetWidth;
+    giftCard.classList.add("open");
+    giftCard.textContent = "🎁 Для " + nick + " · именной подарок канала";
+  }
+  toast("Подарок для «" + nick + "» открыт!");
+  addSubs(15, "Подарок");
+});
+
+document.getElementById("btnBoost")?.addEventListener("click", () => {
+  addSubs(50, "Праздник канала");
+});
+
+studioNick?.addEventListener("change", () => {
+  renderChannel();
+});
+studioNick?.addEventListener("input", () => {
+  syncRemote();
 });
 
 /* ——— asks / comments ——— */
@@ -545,5 +773,9 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 renderShelf();
 renderAsks();
+channel.videos = Math.max(channel.videos || 0, loadMine().length);
+checkAchievements();
+saveChannel(channel);
+renderChannel();
 setSubs("Жми «▶ Смотреть» или карточку ниже");
 requestAnimationFrame(resize);

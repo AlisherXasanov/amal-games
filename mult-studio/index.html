@@ -3,45 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Полка Валеры — свои мульты</title>
-  <meta name="description" content="Свои 3D-ролики про мишка-ведущего: смотри, ставь лайки, пиши комментарии, снимай в мастерской." />
+  <title>Полка Валеры — свои мульты и канал</title>
+  <meta name="description" content="Свои мульты: смотри, снимай, обнимай мишку, кнопки подписчиков, подарок с твоим именем. Не чужой YouTube." />
   <meta name="theme-color" content="#f5c93a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=3" />
+  <link rel="stylesheet" href="./style.css?v=4" />
 </head>
 <body>
   <header class="top">
     <a href="../">← Каталог</a>
     <h1>Полка Валеры</h1>
-    <p class="tag">свои мульты · лайки · комментарии · мастерская</p>
+    <p class="tag">свои мульты · канал · кнопки · подарок с именем</p>
   </header>
 
   <nav class="tabs" role="tablist">
     <button type="button" class="tab on" data-tab="watch">Смотреть</button>
     <button type="button" class="tab" data-tab="studio">Студия</button>
-    <button type="button" class="tab" data-tab="ask">Комменты и заказ</button>
+    <button type="button" class="tab" data-tab="channel">Канал</button>
+    <button type="button" class="tab" data-tab="ask">Комменты</button>
   </nav>
 
   <main>
     <section class="panel on" id="panel-watch">
-      <p class="lead">Свои ролики, как у ведущего на канале — только наши. Жми карточку или ▶, ставь ❤️.</p>
+      <p class="lead">Свои ролики, как у ведущего — только наши. Смотри, лайкай, обними мишку.</p>
       <div class="stage-wrap">
         <div class="stage-frame">
           <canvas id="view"></canvas>
           <div class="subtitles" id="subs">Жми «▶ Смотреть» или карточку ниже</div>
+          <div class="remote" id="remoteHud" hidden>
+            <span class="remote-name" id="remoteName">ПУЛЬТ</span>
+            <span class="remote-sub" id="remoteSub">0 подп.</span>
+          </div>
         </div>
         <div class="stage-bar">
           <button type="button" class="go" id="btnPlay">▶ Смотреть</button>
           <button type="button" class="ghost" id="btnStop">⏹</button>
-          <span id="nowTitle">выбери ролик справа</span>
+          <button type="button" class="go hug" id="btnHug">🤗 Обнять</button>
+          <span id="nowTitle">выбери ролик</span>
         </div>
       </div>
       <div class="shelf" id="shelf"></div>
     </section>
 
     <section class="panel" id="panel-studio">
-      <p class="lead">Собери свой ролик: выбери сцену, текст и имя — потом жми «Снять».</p>
+      <p class="lead">Сними свой мульт → сохрани на полку = «выложить» у себя в браузере.</p>
       <label>Сцена
         <select id="studioScene"></select>
       </label>
@@ -53,13 +59,40 @@
       </label>
       <div class="row">
         <button type="button" class="go" id="btnShoot">🎬 Снять ролик</button>
-        <button type="button" class="ghost" id="btnSaveMine">💾 В мою полку</button>
+        <button type="button" class="ghost" id="btnSaveMine">📤 Выложить на полку</button>
       </div>
-      <p class="note" id="studioNote">Ролик играет на вкладке «Смотреть». Сохранённые лежат только в этом браузере.</p>
+      <p class="note" id="studioNote">«Выложить» = сохранить ролик на твоей полке. Чужие видео с YouTube сюда не берём.</p>
+    </section>
+
+    <section class="panel" id="panel-channel">
+      <p class="lead">Твой игровой канал: подписчики растут от просмотров и роликов. Кнопки — награды, не настоящий YouTube.</p>
+
+      <div class="channel-head">
+        <div>
+          <p class="chan-label">Канал</p>
+          <h2 id="chanTitle">Канал Валеры</h2>
+          <p class="subs-line"><span id="subsCount">0</span> подписчиков</p>
+        </div>
+        <div class="gift-box" id="giftBox">
+          <p class="chan-label">Кастомный подарок</p>
+          <div class="gift-card" id="giftCard">🎁 Для тебя</div>
+          <button type="button" class="go" id="btnGift">Открыть подарок</button>
+        </div>
+      </div>
+
+      <h3 class="block-title">Кнопки канала</h3>
+      <p class="note">Серебро · золото · бриллиант · романтик. Можно показать или спрятать.</p>
+      <div class="buttons-row" id="playButtons"></div>
+      <div class="row">
+        <button type="button" class="ghost" id="btnBoost">+50 подписчиков (праздник)</button>
+      </div>
+
+      <h3 class="block-title">Достижения</h3>
+      <div class="achievements" id="achievements"></div>
     </section>
 
     <section class="panel" id="panel-ask">
-      <p class="lead">Напиши в комментарии: «можно ролик про меня» и своё имя с сайта. Потом можно сразу сгенерировать персональный ролик.</p>
+      <p class="lead">Коммент или «можно ролик про меня» — потом персональный выпуск с твоим именем.</p>
       <form id="askForm" class="ask-form">
         <input id="askNick" maxlength="24" placeholder="Имя / ник на сайте" required />
         <input id="askText" maxlength="160" placeholder="можно ролик про меня…" required />
@@ -69,14 +102,15 @@
         <button type="button" class="go" id="btnShout">🎁 Сделать ролик для этого имени</button>
       </div>
       <div class="comments" id="comments"></div>
-      <p class="note">Мишка скажет примерно: «Привет, [имя]! Спасибо, что подписался и поставил лайк. Я не настоящий Валера с YouTube, но этот ролик — для тебя.»</p>
     </section>
   </main>
+
+  <div id="toast" hidden></div>
 
   <script src="../shared/amal-hub.js?v=70" defer></script>
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./app.js?v=3"></script>
+  <script type="module" src="./app.js?v=4"></script>
 </body>
 </html>
