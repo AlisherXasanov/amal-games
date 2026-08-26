@@ -749,25 +749,21 @@ function screenTex(g, s) {
 
 
 function say(t) {
-
   speech.textContent = t;
+}
 
+/** Только реплики Валеры — коротко и с голосом (если браузер умеет). */
+function valeraSay(t) {
+  say(t);
   try {
-
     if (window.speechSynthesis) {
-
       window.speechSynthesis.cancel();
-
       const u = new SpeechSynthesisUtterance(t);
-
       u.lang = "ru-RU";
-
+      u.rate = 0.95;
       window.speechSynthesis.speak(u);
-
     }
-
   } catch (_) {}
-
 }
 
 
@@ -778,7 +774,7 @@ function updateQuest() {
 
   if (!state.greeted) questEl.textContent = "Найди красного мишку · кликни по нему";
 
-  else if (!state.played) questEl.textContent = "Кликни вещь, потом Валеру — или просто кликни Валеру (сам возьмёт еду из кармана)";
+  else if (!state.played) questEl.textContent = "Дай мишке еду или мяч";
 
   else questEl.textContent = "Гуляй по комнатам. Диван — отдых. Дверь — улица.";
 
@@ -1015,7 +1011,7 @@ function setDoorOpen(open, silent) {
 
   if (!silent) {
 
-    say(open ? "Дверь открыта! Смотри на коврик у двери и иди вперёд (W) на улицу." : "Дверь закрыта. E или ручка — открыть.");
+    say(open ? "Дверь открыта. Иди на зелёный коврик." : "Дверь закрыта. E — открыть.");
 
   }
 
@@ -2256,7 +2252,7 @@ function interact(id, mesh) {
     if (!state.greeted) {
       state.greeted = true;
       updateQuest();
-      say("Привет! Это квартира Валеры.");
+      valeraSay("Привет! Я Валера.");
       return;
     }
     const give = pickForValera();
@@ -2275,7 +2271,7 @@ function interact(id, mesh) {
 
       updateQuest();
 
-      say("Ммм, " + n + "! Поиграли.");
+      valeraSay("Вкусно! Спасибо!");
 
       return;
 
@@ -2289,7 +2285,7 @@ function interact(id, mesh) {
 
       updateQuest();
 
-      say("Кинули мяч! Играем.");
+      valeraSay("Ура, мяч!");
 
       return;
 
@@ -2297,7 +2293,7 @@ function interact(id, mesh) {
 
     
 
-    say("Кликни еду или мяч, потом меня — или просто кликни: возьму из кармана.");
+    valeraSay("Дай поесть или мячик?");
 
     return;
 
@@ -2725,17 +2721,15 @@ document.getElementById("startBtn").onclick = () => {
 
   hud.hidden = false;
 
-  cross.hidden = false;
+  cross.hidden = true;
 
   resize();
 
   updateCam();
 
-  lockPointer();
-
   updateQuest();
 
-  say("WASD — ходить. Кликни по красному мишке.");
+  say("Мышь на месте. Кликни по экрану — смотреть вокруг. Esc — вернуть мышь.");
 
 };
 
