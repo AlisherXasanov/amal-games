@@ -1,7 +1,7 @@
 {
-  "name": "Amaya Games",
-  "short_name": "Amaya Games",
-  "description": "Браузерные игры Amaya Games — можно играть и без интернета после первого открытия.",
+  "name": "Игры Амаля",
+  "short_name": "Игры Амаля",
+  "description": "Браузерные игры Амаля — можно играть и без интернета после первого открытия.",
   "lang": "ru",
   "start_url": "./index.html",
   "scope": "./",

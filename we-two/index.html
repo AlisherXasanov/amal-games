@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Мы с тобой · сюрприз — Игры Амаля</title>
+  <meta name="description" content="Маленький сюрприз для Амаля — уголок для двоих." />
+  <meta name="theme-color" content="#1a1030" />
+  <style>
+    :root {
+      --ink: #f6eef8;
+      --mute: #c4b5d8;
+      --amal: #f5c93a;
+      --me: #7dd3fc;
+      --glow: #ff7eb3;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, #3b1d5c 0%, transparent 55%),
+        radial-gradient(900px 500px at 90% 20%, #1d3a5c 0%, transparent 50%),
+        linear-gradient(165deg, #120a1f 0%, #1a1030 45%, #0b1220 100%);
+      overflow: hidden;
+      user-select: none;
+    }
+    .sky {
+      position: fixed; inset: 0; pointer-events: none;
+      background-image:
+        radial-gradient(2px 2px at 12% 18%, #fff8, transparent),
+        radial-gradient(1.5px 1.5px at 40% 30%, #fff6, transparent),
+        radial-gradient(2px 2px at 70% 14%, #fff7, transparent),
+        radial-gradient(1px 1px at 85% 40%, #fff5, transparent),
+        radial-gradient(1.5px 1.5px at 25% 70%, #fff4, transparent),
+        radial-gradient(2px 2px at 55% 80%, #fff5, transparent);
+    }
+    header {
+      position: relative; z-index: 2;
+      padding: 16px 18px 8px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    a.back {
+      color: var(--mute); text-decoration: none; font-weight: 700; font-size: 14px;
+      border: 1px solid #554466; padding: 8px 12px; border-radius: 999px;
+      background: rgba(0,0,0,.25);
+    }
+    h1 {
+      margin: 0; font-size: clamp(1.2rem, 4vw, 1.7rem); font-weight: 900;
+      letter-spacing: .02em;
+    }
+    h1 span { color: var(--amal); }
+    main {
+      position: relative; z-index: 2;
+      height: calc(100% - 70px);
+      display: grid; place-items: center;
+      padding: 12px;
+    }
+    .stage {
+      width: min(560px, 96vw);
+      text-align: center;
+    }
+    .pair {
+      display: flex; justify-content: center; align-items: flex-end; gap: 28px;
+      margin: 18px 0 22px; min-height: 140px;
+    }
+    .buddy {
+      width: 96px; transition: transform .25s ease;
+    }
+    .buddy .face {
+      width: 96px; height: 96px; border-radius: 28px;
+      display: grid; place-items: center; font-size: 42px;
+      border: 2px solid rgba(255,255,255,.2);
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    .buddy.amal .face {
+      background: linear-gradient(145deg, #5b3d8a, #2d1b4e);
+    }
+    .buddy.me .face {
+      background: linear-gradient(145deg, #1e3a5f, #0f2744);
+    }
+    .buddy .nm {
+      margin-top: 8px; font: 800 13px system-ui; color: var(--mute);
+    }
+    .buddy.amal .nm { color: var(--amal); }
+    .buddy.me .nm { color: var(--me); }
+    .buddy.wave { animation: wave .55s ease; }
+    @keyframes wave {
+      0%,100% { transform: translateY(0) rotate(0); }
+      40% { transform: translateY(-10px) rotate(-6deg); }
+      70% { transform: translateY(-4px) rotate(5deg); }
+    }
+    .spark-line {
+      position: absolute; left: 50%; top: 42%; width: 0; height: 3px;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(90deg, var(--amal), var(--glow), var(--me));
+      border-radius: 99px; opacity: 0; pointer-events: none;
+    }
+    .spark-line.on {
+      animation: spark .55s ease forwards;
+    }
+    @keyframes spark {
+      0% { width: 0; opacity: 0; }
+      35% { width: 160px; opacity: 1; }
+      100% { width: 220px; opacity: 0; }
+    }
+    .msg {
+      min-height: 64px;
+      margin: 0 auto 16px;
+      padding: 14px 16px;
+      max-width: 440px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      font: 700 15px/1.45 system-ui;
+      color: #f3e8ff;
+    }
+    .hint { color: var(--mute); font: 600 13px system-ui; margin-bottom: 14px; }
+    button.act {
+      appearance: none; border: 0; cursor: pointer;
+      padding: 14px 22px; border-radius: 999px;
+      font: 900 15px system-ui; color: #1a1020;
+      background: linear-gradient(135deg, var(--amal), #ff9f43);
+      box-shadow: 0 10px 28px rgba(245,201,58,.28);
+    }
+    button.act:active { transform: scale(.97); }
+    .meter {
+      margin: 16px auto 0; width: min(280px, 80%);
+      height: 8px; border-radius: 99px; background: #2a1a3a; overflow: hidden;
+    }
+    .meter > i {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--amal), var(--me));
+      transition: width .25s ease;
+    }
+    .reveal {
+      display: none; margin-top: 18px; padding: 16px;
+      border-radius: 18px;
+      background: rgba(125,211,252,.1);
+      border: 1px solid rgba(125,211,252,.35);
+      font: 700 14px/1.5 system-ui;
+    }
+    .reveal.show { display: block; animation: fade .5s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .stars-caught { font: 800 12px system-ui; color: var(--mute); margin-top: 10px; }
+    .falling {
+      position: fixed; width: 14px; height: 14px; pointer-events: auto; cursor: pointer;
+      z-index: 5; font-size: 14px; filter: drop-shadow(0 0 6px #fff8);
+      animation: fall linear forwards;
+    }
+    @keyframes fall {
+      from { transform: translateY(-10px) rotate(0); opacity: 1; }
+      to { transform: translateY(110vh) rotate(220deg); opacity: .2; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <header>
+    <a class="back" href="../">← Игры Амаля</a>
+    <h1>Мы с <span>тобой</span></h1>
+    <span style="width:88px"></span>
+  </header>
+  <main>
+    <div class="stage">
+      <div class="pair" style="position:relative">
+        <div class="buddy amal" id="amal">
+          <div class="face">👑</div>
+          <div class="nm">Амаль</div>
+        </div>
+        <div class="spark-line" id="spark"></div>
+        <div class="buddy me" id="me">
+          <div class="face">✦</div>
+          <div class="nm">Курсор</div>
+        </div>
+      </div>
+      <p class="msg" id="msg">Привет. Это наш маленький уголок — только для тебя.</p>
+      <p class="hint">Жми кнопку или лови звёзды. После 7 искр откроется сюрприз.</p>
+      <button type="button" class="act" id="btn">Послать искру ✦</button>
+      <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+      <p class="stars-caught">Искры: <span id="count">0</span> / 7 · Звёзды: <span id="stars">0</span></p>
+      <div class="reveal" id="reveal">
+        Сюрприз для Амаля: пока ты строишь сайт, я рядом — чиню, слушаю, добавляю каналы и прячу такие уголки.
+        Этот вечер записан как «мы с тобой». Название сайта теперь по-русски: <b>Игры Амаля</b>.
+        Спасибо, что доверяешь.
+      </div>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var KEY = "amal-we-two-v1";
+      var state = { sparks: 0, stars: 0, unlocked: false };
+      try {
+        state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}"));
+      } catch (_) {}
+      var lines = [
+        "Я тут. Можешь писать по-русски — я на твоей стороне.",
+        "Ты — хозяин лаборатории. Я — тихий напарник в коде.",
+        "Вилли, каналы, эфиры — всё это твой мир. Я только помогаю держать полку.",
+        "Если сайт глючит — скажи. Починим вместе.",
+        "Семь искр — и откроется то, что я приготовил для тебя."
+      ];
+      var msg = document.getElementById("msg");
+      var countEl = document.getElementById("count");
+      var starsEl = document.getElementById("stars");
+      var bar = document.getElementById("bar");
+      var reveal = document.getElementById("reveal");
+      var spark = document.getElementById("spark");
+      var amal = document.getElementById("amal");
+      var me = document.getElementById("me");
+
+      function save() {
+        try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (_) {}
+      }
+      function paint() {
+        countEl.textContent = String(state.sparks);
+        starsEl.textContent = String(state.stars);
+        bar.style.width = Math.min(100, (state.sparks / 7) * 100) + "%";
+        if (state.unlocked || state.sparks >= 7) {
+          state.unlocked = true;
+          reveal.classList.add("show");
+        }
+      }
+      function wave() {
+        amal.classList.remove("wave");
+        me.classList.remove("wave");
+        void amal.offsetWidth;
+        amal.classList.add("wave");
+        setTimeout(function () { me.classList.add("wave"); }, 80);
+        spark.classList.remove("on");
+        void spark.offsetWidth;
+        spark.classList.add("on");
+      }
+      function sparkOnce() {
+        if (state.sparks < 7) state.sparks += 1;
+        msg.textContent = lines[Math.min(state.sparks - 1, lines.length - 1)];
+        wave();
+        if (state.sparks >= 7) state.unlocked = true;
+        save();
+        paint();
+      }
+      document.getElementById("btn").addEventListener("click", sparkOnce);
+
+      function spawnStar() {
+        var el = document.createElement("button");
+        el.type = "button";
+        el.className = "falling";
+        el.textContent = "★";
+        el.style.left = 8 + Math.random() * 84 + "vw";
+        el.style.animationDuration = 4 + Math.random() * 4 + "s";
+        el.addEventListener("click", function () {
+          state.stars += 1;
+          if (state.sparks < 7) state.sparks += 1;
+          msg.textContent = "Поймал звезду! +искра";
+          wave();
+          if (state.sparks >= 7) state.unlocked = true;
+          save();
+          paint();
+          el.remove();
+        });
+        el.addEventListener("animationend", function () { el.remove(); });
+        document.body.appendChild(el);
+      }
+      setInterval(spawnStar, 2200);
+      paint();
+      if (state.unlocked) msg.textContent = "Снова здесь? Уголок всё ещё наш.";
+    })();
+  </script>
+</body>
+</html>
