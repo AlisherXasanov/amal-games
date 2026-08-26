@@ -2676,7 +2676,7 @@ document.addEventListener("pointerlockchange", () => {
 
     lookBtn.classList.toggle("on", state.locked);
 
-    lookBtn.textContent = state.locked ? "Мышь спрятана · Esc" : "👁 Смотреть вокруг";
+    lookBtn.textContent = state.locked ? "Esc" : "👁 Обзор";
 
   }
 

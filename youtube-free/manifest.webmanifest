@@ -1,13 +1,13 @@
 {
-  "name": "Смотри без рекламы",
+  "name": "Смотри · ТВ-спальня",
   "short_name": "Смотри",
-  "description": "Умный поиск YouTube — Саквашин, Vlad A4, MrBeast и другие.",
+  "description": "Спальня с каналами и лентой внутри Amaya Games.",
   "lang": "ru",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0f0f0f",
-  "theme_color": "#cc0000",
+  "background_color": "#2d1b4e",
+  "theme_color": "#2d1b4e",
   "icons": [
     { "src": "../icons/amal.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]

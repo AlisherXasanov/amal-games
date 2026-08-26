@@ -111,19 +111,20 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
   background: #f0c84a; border-radius: 4px; padding: 0 3px; line-height: 1.2;
 }
 .item small { position: absolute; bottom: 1px; font-size: 0.55rem; font-weight: 800; color: #2a2218; }
-.help {
-  position: absolute; top: 12px; right: 12px; margin: 0;
-  color: #fff8; font-weight: 700; font-size: 0.8rem;
-  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
-  pointer-events: auto; max-width: min(70vw, 360px); text-align: right;
-}
 .look-btn {
-  border: 0; border-radius: 999px; padding: 8px 12px;
-  background: #fff6df; color: var(--deep);
-  font: 800 0.82rem var(--font); cursor: pointer;
+  border: 0; border-radius: 8px; padding: 4px 8px;
+  background: rgba(255,246,223,.88); color: var(--deep);
+  font: 700 0.72rem var(--font); cursor: pointer;
   pointer-events: auto;
+  line-height: 1.2;
 }
 .look-btn.on { background: var(--jam); color: #fff; }
+.help {
+  position: absolute; top: 12px; right: 12px; margin: 0;
+  color: #fff8; font-weight: 700; font-size: 0.72rem;
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
+  pointer-events: auto; max-width: min(52vw, 280px); text-align: right;
+}
 
 #filmFlash {
   position: fixed; inset: 0; z-index: 25; pointer-events: none;
