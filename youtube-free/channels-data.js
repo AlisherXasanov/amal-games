@@ -7703,11 +7703,122 @@ window.YT_CHANNELS = [
       ]
   },
   {
+    "id": "eroxblox",
+    "name": "Ерокс · EroxBlox",
+    "emoji": "🥚",
+    "color": "#fd79a8",
+    "desc": "EroxBlox — Роблокс (тот Ерокс, которого смотришь сейчас).",
+    "subs": "1.6 млн",
+    "channelId": "UCMDSzea8f4CC53mZC3ViZug",
+    "uploads": "UUMDSzea8f4CC53mZC3ViZug",
+    "icon": "https://i.ytimg.com/vi/xRHXyhHWSr0/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "xRHXyhHWSr0",
+        "title": "МАЛЬЧИКИ vs ДЕВОЧКИ В УКРАДИ ЯЙЦО В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xRHXyhHWSr0/hqdefault.jpg"
+      },
+      {
+        "id": "q3VZteVC2Mc",
+        "title": "Я НЕ ЛЮБЛЮ МАШУ? Кто Знает Меня Лучше? МАША или СЕСТРА?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/q3VZteVC2Mc/hqdefault.jpg"
+      },
+      {
+        "id": "yTO6QKb8ndU",
+        "title": "🤯НИКОГДА НЕ ВОРУЙ ЭТО ЯЙЦО В УКРАДИ ЯЙЦО В РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yTO6QKb8ndU/hqdefault.jpg"
+      },
+      {
+        "id": "SbvXYgHIYaw",
+        "title": "🐉 Я УКРАЛ САМЫЕ ДОРОГИЕ ЯЙЦА У НОВОГО ДРАКОНА В УКРАДИ ЯЙЦО В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SbvXYgHIYaw/hqdefault.jpg"
+      },
+      {
+        "id": "Z-QJIHe1Yg4",
+        "title": "🤯 Я ПРОШЁЛ ВЕСЬ 3 МИР В +1 KEYBOARD ESCAPE В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Z-QJIHe1Yg4/hqdefault.jpg"
+      },
+      {
+        "id": "Hhkj049y0Ko",
+        "title": "😱Я ПРОИГРАЛ МАШЕ ЖЕЛАНИЕ… И ОНА ПОПРОСИЛА ЭТО",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Hhkj049y0Ko/hqdefault.jpg"
+      },
+      {
+        "id": "MP73Z5aqSfM",
+        "title": "🤯НАЧАЛИ С НУЛЯ, НО У НАС С МАШЕЙ МАКС СКОРОСТЬ В УКРАДИ ЯЙЦО! РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MP73Z5aqSfM/hqdefault.jpg"
+      },
+      {
+        "id": "H-8epBy8UtI",
+        "title": "УЧУ СВОЮ МЛАДШУЮ СЕСТРУ ИГРАТЬ В +1 KEYBOARD ESCAPE В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/H-8epBy8UtI/hqdefault.jpg"
+      },
+      {
+        "id": "nQeOSm3593w",
+        "title": "МЫ ПЕРЕЕХАЛИ... ПОКАЗЫВАЕМ, ГДЕ ТЕПЕРЬ ЖИВЁМ! 🏠 + ОТВЕТЫ НА ВОПРОСЫ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nQeOSm3593w/hqdefault.jpg"
+      },
+      {
+        "id": "bNpGU2tbIcw",
+        "title": "😱Я Зашёл в STEAL A BRAINROT Спустя 1 Год и БЫЛ в ШОКЕ... РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bNpGU2tbIcw/hqdefault.jpg"
+      },
+      {
+        "id": "zo2G_iZHRj0",
+        "title": "😱ПОСТРОИЛ ЛОВУШКУ ДЛЯ МАШИ В ASMR БАШНЕ В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zo2G_iZHRj0/hqdefault.jpg"
+      },
+      {
+        "id": "RkGU8nXQM0w",
+        "title": "😱Я УКРАЛ x9999 ЯИЦ и СТАЛ ТОП 1 ИГРОКОМ В УКРАДИ ЯЙЦО в РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RkGU8nXQM0w/hqdefault.jpg"
+      },
+      {
+        "id": "N0jCBqaOBuE",
+        "title": "😱 БАТЯ ВПЕРВЫЕ СЫГРАЛ ПРОТИВ 2 СЫНОВЕЙ В +1 MONKEY ESCAPE В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/N0jCBqaOBuE/hqdefault.jpg"
+      },
+      {
+        "id": "uJnEGRGMm0s",
+        "title": "😭МАША ЗАПЛАКАЛА ПОСЛЕ ТОГО, КАК Я ПРОКАЧАЛ ЕЁ В +1 MONKEY ESCAPE В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uJnEGRGMm0s/hqdefault.jpg"
+      },
+      {
+        "id": "aOPjROE4vSg",
+        "title": "😱НАЧАЛ С НУЛЯ, НО С АДМИН НАГРАДАМИ В +1 MONKEY ESCAPE В РОБЛОКС!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aOPjROE4vSg/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUMDSzea8f4CC53mZC3ViZug",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xRHXyhHWSr0/hqdefault.jpg"
+      }
+    ],
+    "pinShelf": true
+  },
+  {
     "id": "yaroks",
-    "name": "Ярокс Блог",
+    "name": "Ерокс · Standoff",
     "emoji": "🚀",
     "color": "#a29bfe",
-    "desc": "Standoff 2 и влоги.",
+    "desc": "Старый канал Ерокса — Standoff 2 (не Роблокс).",
     "subs": "2.3 млн",
     "channelId": "UCAHCkDpk5bjGEfsmiRIDEqA",
     "uploads": "UUAHCkDpk5bjGEfsmiRIDEqA",
