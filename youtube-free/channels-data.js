@@ -8763,6 +8763,1162 @@ window.YT_CHANNELS = [
     ]
   },
   {
+    "id": "kukutiki",
+    "name": "Кукутики",
+    "emoji": "🎵",
+    "color": "#e17055",
+    "desc": "Песенки и мультики для малышей.",
+    "subs": "6.7 млн",
+    "channelId": "UCwQVH2MqlzxN7t8ADcyFHHQ",
+    "uploads": "UUwQVH2MqlzxN7t8ADcyFHHQ",
+    "icon": "https://i.ytimg.com/vi/CLi1RE1gSrQ/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "CLi1RE1gSrQ",
+        "title": "АХАХАХА - Это нормально?  Кукутики шортс для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CLi1RE1gSrQ/hqdefault.jpg"
+      },
+      {
+        "id": "kU1lrbOtY2c",
+        "title": "Кукутики сошли с ума - Что Происходит? Кукутики шортс для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kU1lrbOtY2c/hqdefault.jpg"
+      },
+      {
+        "id": "8sj8SUqKhOQ",
+        "title": "КУКУТИКИ - Поймай и Слопай 2 #shorts #мультики #приколы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8sj8SUqKhOQ/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "VeXehom3AWM",
+        "title": "Ловись, рыбка! Все Мультики для детей малышей - Кукутики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VeXehom3AWM/hqdefault.jpg"
+      },
+      {
+        "id": "f5ql3lEBffU",
+        "title": "КУКУТИКИ - Смотри на Меня!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/f5ql3lEBffU/hqdefault.jpg"
+      },
+      {
+        "id": "xlYl94TXRAg",
+        "title": "Мышь и деньги - Это нормально?  Кукутики шортс для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xlYl94TXRAg/hqdefault.jpg"
+      },
+      {
+        "id": "BAjJUtJTwbw",
+        "title": "КУКУТИКИ - Поймай и Слопай! #shorts #мультики #приколы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BAjJUtJTwbw/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "U2CGSCRPWWQ",
+        "title": "КУКУТИКИ - Надуй и Лопни! #shorts #мультики #приколы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/U2CGSCRPWWQ/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "8un1ONgUqxQ",
+        "title": "Кукутики и Любаша Зебра в клеточку - ЗВЕРИ НА ФЕРМЕ - Учим как говорят животные",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8un1ONgUqxQ/hqdefault.jpg"
+      },
+      {
+        "id": "ItuMFOEcM5Q",
+        "title": "ПАРОВОЗИК - Кукутики Сборник Самые Любимые песенки для детей, малышей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ItuMFOEcM5Q/hqdefault.jpg"
+      },
+      {
+        "id": "Yy6ktgPha1Q",
+        "title": "АЛИСА, где ТЫ? - Кукутики шортс для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Yy6ktgPha1Q/hqdefault.jpg"
+      },
+      {
+        "id": "cURe6eJjtF4",
+        "title": "МИ-МИ-МИШКИ и КУКУТИКИ - Давай, дружить и играть вместе! Веселые детские песенки!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cURe6eJjtF4/hqdefault.jpg"
+      },
+      {
+        "id": "EaUlYiGibbE",
+        "title": "Кукутики - Песенки про Весну и Времена Года для детей малышей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/EaUlYiGibbE/hqdefault.jpg"
+      },
+      {
+        "id": "bBELcvawE2U",
+        "title": "ПАРКОВКА Машин - Кукутики - Учим право и лево Песенка мультик для малышей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bBELcvawE2U/hqdefault.jpg"
+      },
+      {
+        "id": "kuiD4J6Kcew",
+        "title": "МАШИНКИ КУКУТИКИ - Самые Популярные Песенки - ВОТ БУЛЬДОЗЕР в ГАРАЖЕ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kuiD4J6Kcew/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUwQVH2MqlzxN7t8ADcyFHHQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CLi1RE1gSrQ/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "tema-katya",
+    "name": "Тёма и Катя",
+    "emoji": "👧",
+    "color": "#fd79a8",
+    "desc": "Детский канал Тёмы и Кати.",
+    "subs": "7",
+    "channelId": "UCaS-XsTsazE-gmyOtJnDJ6g",
+    "uploads": "UUaS-XsTsazE-gmyOtJnDJ6g",
+    "icon": "https://i.ytimg.com/vi/46IG3_PxXys/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "46IG3_PxXys",
+        "title": "мои школьные пренодлежности",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/46IG3_PxXys/hqdefault.jpg"
+      },
+      {
+        "id": "tRiqXCE6-EY",
+        "title": "Я разыгралась свою лучшую подружку",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tRiqXCE6-EY/hqdefault.jpg"
+      },
+      {
+        "id": "LlcTJiH66Jo",
+        "title": "Меня появилась ручка стиральная ха-ха-ха",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LlcTJiH66Jo/hqdefault.jpg"
+      },
+      {
+        "id": "xucnWOp8V8s",
+        "title": "что вас будет ждать",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xucnWOp8V8s/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUaS-XsTsazE-gmyOtJnDJ6g",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/46IG3_PxXys/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "hardplay",
+    "name": "Hard Play",
+    "emoji": "🎧",
+    "color": "#6c5ce7",
+    "desc": "Игры и стримы.",
+    "subs": "2.8 млн",
+    "channelId": "UCAf-RYRpQgxpj8voC29ck7w",
+    "uploads": "UUAf-RYRpQgxpj8voC29ck7w",
+    "icon": "https://i.ytimg.com/vi/8HnCGEC7y3s/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "8HnCGEC7y3s",
+        "title": "А ГДЕ СЛОЖНЫЕ БОССЫ?! УБИТЬ 447 БОССОВ И ЗАБРАТЬ 4.000.000! #4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8HnCGEC7y3s/hqdefault.jpg"
+      },
+      {
+        "id": "mwUi5_PpF0E",
+        "title": "ОНИ СРЕДИ НАС? Самые Ужасные Видео #131 / Хард Плей реакция Коты Ютуберы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mwUi5_PpF0E/hqdefault.jpg"
+      },
+      {
+        "id": "SedhYMvXFUM",
+        "title": "ЛУЧШИЙ БИЛД НА МАГА ГОТОВ?! УБИВАЮ ВСЕХ ПОДРЯД ЗА 4.000.000! #3",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SedhYMvXFUM/hqdefault.jpg"
+      },
+      {
+        "id": "8vbiBSFUYlw",
+        "title": "ЛУЧШИЕ ПРИКОЛЫ 2026?! Хард Плей реакция Тёмная Сторона",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8vbiBSFUYlw/hqdefault.jpg"
+      },
+      {
+        "id": "JSU-wm1Dmig",
+        "title": "НОВЫЙ ПОСОХ! ?Челлендж УБИТЬ 447 БОССОВ И ЗАБРАТЬ 4.000.000! #2",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JSU-wm1Dmig/hqdefault.jpg"
+      },
+      {
+        "id": "JlFWEoWLsGw",
+        "title": "УБИТЬ 447 БОССОВ И ЗАБРАТЬ 4.000.000!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JlFWEoWLsGw/hqdefault.jpg"
+      },
+      {
+        "id": "GZTLONviQak",
+        "title": "Реальные случаи из сети которые вызвали панику / Хард Плей реакция Зомби Чез",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GZTLONviQak/hqdefault.jpg"
+      },
+      {
+        "id": "vDxI6Lb5Npc",
+        "title": "Вызываем Духов в Заброшенном Замке с привидениями. Ghostbuster.Хард плей реакция на Дима Масленн",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vDxI6Lb5Npc/hqdefault.jpg"
+      },
+      {
+        "id": "tqu0c0a0rpg",
+        "title": "КТО МОЙ НОВЫЙ ЛУЧШИЙ ДРУГ?! - ВЕЛИКИЙ КАМБЕК с @TheJoves",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tqu0c0a0rpg/hqdefault.jpg"
+      },
+      {
+        "id": "SvxyWf7tI68",
+        "title": "Самые Ужасные Видео со Всего Мира! #106 / Хард Плей реакция Коты Ютуберы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SvxyWf7tI68/hqdefault.jpg"
+      },
+      {
+        "id": "sTGjqNgxwPQ",
+        "title": "РЫБАЛКА НА ИСТРЕ НАЧАЛАСЬ! ПЕРВЫЙ ДЕНЬ СЕЗОНА",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sTGjqNgxwPQ/hqdefault.jpg"
+      },
+      {
+        "id": "W3PobjAuJiA",
+        "title": "ЛУЧШИЕ ПРИКОЛЫ 2026 /Тест на психику / Нарезки Смешные Видео / Хард Плей реакция Тёмная Сторона",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W3PobjAuJiA/hqdefault.jpg"
+      },
+      {
+        "id": "sIKn_Z-Qg2c",
+        "title": "ПОПРОБУЙТЕ НЕ СМЕЯТЬСЯ! / ЛУЧШИЕ ПРИКОЛЫ 2026 года #33 / Хард Плей реакция Балтимор",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sIKn_Z-Qg2c/hqdefault.jpg"
+      },
+      {
+        "id": "cHJPe6o0iro",
+        "title": "БОГ МОРЕЙ И ПИРАТОВ?! Assassins Creed Black Flag Resynced прохождение #6",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cHJPe6o0iro/hqdefault.jpg"
+      },
+      {
+        "id": "vpA3l3zMmdA",
+        "title": "ПОЛНАЯ БОЕВАЯ ГОТОВНОСТЬ К ЛЕГЕНДАРНЫМ ФРЕГАТАМ?! Assassins Creed Black Flag Resynced прохождени",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vpA3l3zMmdA/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUAf-RYRpQgxpj8voC29ck7w",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8HnCGEC7y3s/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "brius",
+    "name": "Брайн Мапс",
+    "emoji": "🧠",
+    "color": "#0984e3",
+    "desc": "Теории и разборы.",
+    "subs": "18.4 млн",
+    "channelId": "UCyJrhZm9KXrzRub3-wD2zWg",
+    "uploads": "UUyJrhZm9KXrzRub3-wD2zWg",
+    "icon": "https://i.ytimg.com/vi/dPhP61TR8QQ/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "dPhP61TR8QQ",
+        "title": "САМЫЕ МРАЧНЫЕ ТАЙНЫ ВИДЕОИГР",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/dPhP61TR8QQ/hqdefault.jpg"
+      },
+      {
+        "id": "3QPtbyMmr38",
+        "title": "Хотели начать новую жизнь.. а попали в СЕКТУ с Анастасиз | Fears to Fathom - Scratch Creek",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3QPtbyMmr38/hqdefault.jpg"
+      },
+      {
+        "id": "HFnB2valxTY",
+        "title": "Закрываю ГЕШТАЛЬТЫ ИЗ ДЕТСТВА.. *купил всё о чем мечтал*",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HFnB2valxTY/hqdefault.jpg"
+      },
+      {
+        "id": "zcVDjpy237g",
+        "title": "Я зашёл в ЗАБРОШЕННЫЕ соцсети.. (это было зря)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zcVDjpy237g/hqdefault.jpg"
+      },
+      {
+        "id": "KiqgzaXGvow",
+        "title": "За мной СЛЕДИЛИ по дороге домой.. | The Kidnap",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KiqgzaXGvow/hqdefault.jpg"
+      },
+      {
+        "id": "9us0l-TVWIY",
+        "title": "Я дал второй шанс вещам, которые меня разочаровали..",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9us0l-TVWIY/hqdefault.jpg"
+      },
+      {
+        "id": "S0Bbr4bKeCE",
+        "title": "Готовим ЕДУ ИЗ ВИДЕОИГР с Мамой *идеальный результат*",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/S0Bbr4bKeCE/hqdefault.jpg"
+      },
+      {
+        "id": "vzh81A9IO4c",
+        "title": "ТАЙНА ПРОКЛЯТОГО ТВ-ШОУ РАСКРЫТА | Amanda The Adventurer 3",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vzh81A9IO4c/hqdefault.jpg"
+      },
+      {
+        "id": "QmqVVDiO-_g",
+        "title": "Тебе 12, ты спускаешься в подъезд и видишь ЭТО.. | September 7",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QmqVVDiO-_g/hqdefault.jpg"
+      },
+      {
+        "id": "4I6DkThwjLk",
+        "title": "Я реально ШИЗЕЮ с ваших ТИКТОКОВ..",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4I6DkThwjLk/hqdefault.jpg"
+      },
+      {
+        "id": "E1bs0JDFi00",
+        "title": "РАЗОБРАЛ СВОЙ ГАРДЕРОБ с 2017 года (не стоило)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E1bs0JDFi00/hqdefault.jpg"
+      },
+      {
+        "id": "Y1pir23aiD8",
+        "title": "Работаю в БАБЛ-тишной, но с этим местом ЯВНО что-то не так..",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Y1pir23aiD8/hqdefault.jpg"
+      },
+      {
+        "id": "00EGkZyJ83I",
+        "title": "СТРИМ Спустя 2 года.. Нам есть о чём поговорить👀",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/00EGkZyJ83I/hqdefault.jpg"
+      },
+      {
+        "id": "OR3FaAJE3t4",
+        "title": "ТАЙНЫ И ЗАГАДКИ ИНТЕРНЕТА 3",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OR3FaAJE3t4/hqdefault.jpg"
+      },
+      {
+        "id": "7Ma8P9dDiDA",
+        "title": "Заказал свой ФЕЙК МЕРЧ на маркетплейсах (подаю в суд)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7Ma8P9dDiDA/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUyJrhZm9KXrzRub3-wD2zWg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/dPhP61TR8QQ/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "rat",
+    "name": "RAT",
+    "emoji": "🐀",
+    "color": "#636e72",
+    "desc": "Игровой канал RAT.",
+    "subs": "1.1 млн",
+    "channelId": "UCROkFwHWMk5QeZK_LHJPu5g",
+    "uploads": "UUROkFwHWMk5QeZK_LHJPu5g",
+    "icon": "https://i.ytimg.com/vi/6CBNf825MDY/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "6CBNf825MDY",
+        "title": "RAT's BIG Christmas Stream!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6CBNf825MDY/hqdefault.jpg"
+      },
+      {
+        "id": "jOjo3WRIMe8",
+        "title": "Turning Minecraft into a Train Murder Mystery Social Game",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jOjo3WRIMe8/hqdefault.jpg"
+      },
+      {
+        "id": "kNPDNK02m2M",
+        "title": "Saving a Minecraft SMP from Corruption with Mods",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kNPDNK02m2M/hqdefault.jpg"
+      },
+      {
+        "id": "lukk8SwpfOw",
+        "title": "Playing Content SMP and Neverend in VR",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lukk8SwpfOw/hqdefault.jpg"
+      },
+      {
+        "id": "VzNYQPQA5-s",
+        "title": "Exploring More of my Minecraft Space Mod (QnA)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VzNYQPQA5-s/hqdefault.jpg"
+      },
+      {
+        "id": "fqx-DgdeuMI",
+        "title": "Turning Minecraft into a Space Exploration Game",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fqx-DgdeuMI/hqdefault.jpg"
+      },
+      {
+        "id": "gDDKbB1JXzU",
+        "title": "Making a $50,000 Eldritch Minecraft Mod (for MrBeast)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gDDKbB1JXzU/hqdefault.jpg"
+      },
+      {
+        "id": "nKoR6xRkJXo",
+        "title": "Playing a Forgotten Minecraft Game: Fallen Kingdoms",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nKoR6xRkJXo/hqdefault.jpg"
+      },
+      {
+        "id": "j9arClwT26Y",
+        "title": "Coding a Custom Minecraft Horror Dimension to Keep a Secret",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/j9arClwT26Y/hqdefault.jpg"
+      },
+      {
+        "id": "s4POfzRYx3s",
+        "title": "Turning my Worst Enemy Into my Strongest Ally with One Minecraft Mod",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/s4POfzRYx3s/hqdefault.jpg"
+      },
+      {
+        "id": "O5e930bA4yg",
+        "title": "Adding a Rat Plague to Minecraft just to Crash a Party",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/O5e930bA4yg/hqdefault.jpg"
+      },
+      {
+        "id": "wLPfat-9_nI",
+        "title": "Coding Your Explosive Minecraft Ideas",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wLPfat-9_nI/hqdefault.jpg"
+      },
+      {
+        "id": "jfjs0MNpf8c",
+        "title": "Adding a Giant Airship to Minecraft to Trap an Entire Server",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jfjs0MNpf8c/hqdefault.jpg"
+      },
+      {
+        "id": "ygWA9dy6Q24",
+        "title": "Turning Minecraft into a Horror Game to Terrorize YouTubers",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ygWA9dy6Q24/hqdefault.jpg"
+      },
+      {
+        "id": "RJwjw8IHMG4",
+        "title": "He Cheated, so I got Rid of Him by Using Mods",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RJwjw8IHMG4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUROkFwHWMk5QeZK_LHJPu5g",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6CBNf825MDY/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "denchik",
+    "name": "Денчик",
+    "emoji": "🎮",
+    "color": "#e67e22",
+    "desc": "Денчик — игры и ролики.",
+    "subs": "848 тыс.",
+    "channelId": "UCzIToKUByTS5S3xD2liw68A",
+    "uploads": "UUzIToKUByTS5S3xD2liw68A",
+    "icon": "https://i.ytimg.com/vi/VRoIo5PVl2E/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "VRoIo5PVl2E",
+        "title": "10 ЛЕТ НА ЮТУБЕ  Я БОГАТ и СЧАСТЛИВ МЕЧТЫ СБЫВАЮТСЯ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VRoIo5PVl2E/hqdefault.jpg"
+      },
+      {
+        "id": "lSItBMoWyG4",
+        "title": "Ремонт и обслуживание двигателя Volkswagen Multivan. Готовим к Евротрипу!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lSItBMoWyG4/hqdefault.jpg"
+      },
+      {
+        "id": "3FCJdhvkf_I",
+        "title": "Проблема на заправке! #motorcycle #motovlog #bmw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3FCJdhvkf_I/hqdefault.jpg"
+      },
+      {
+        "id": "hXSvsMSPktU",
+        "title": "МотоБудни в Риге | Полиция,дрифт и необычная архитектура",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hXSvsMSPktU/hqdefault.jpg"
+      },
+      {
+        "id": "QI_Izr3sZtQ",
+        "title": "Мысли мотоциклиста #motorcycle #motovlog #motivation",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QI_Izr3sZtQ/hqdefault.jpg"
+      },
+      {
+        "id": "X4EBNSqaOWg",
+        "title": "Универсальный Мотоцикл для Новичка Moto Morini Alltrhike 450 тест драйв",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/X4EBNSqaOWg/hqdefault.jpg"
+      },
+      {
+        "id": "xK_HVY3dISg",
+        "title": "Цой Жив #legend  #latvia #vlog",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xK_HVY3dISg/hqdefault.jpg"
+      },
+      {
+        "id": "XDHb55beWdo",
+        "title": "Мотоцикл Jawa не соответствует евро нормам?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XDHb55beWdo/hqdefault.jpg"
+      },
+      {
+        "id": "o19zULoFhe0",
+        "title": "УЕХАЛ ИЗ ДУБАЯ В ЛАТВИЮ. Бизнес, Mercedes W140 и BMW 740 — реставрация",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/o19zULoFhe0/hqdefault.jpg"
+      },
+      {
+        "id": "WOcwvhiqjUI",
+        "title": "Китайский люкс? Мотоцикл  Motomorini 1200 X cape Обзор",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WOcwvhiqjUI/hqdefault.jpg"
+      },
+      {
+        "id": "0mTGtvPcny4",
+        "title": "Bmw X5 E53 #bmw #car #cars",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0mTGtvPcny4/hqdefault.jpg"
+      },
+      {
+        "id": "kKfUwZXOGbk",
+        "title": "Купил ИДЕАЛЬНЫЙ БУМЕР BMW X5 E53 в Латвии не у БЛОГЕРА!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kKfUwZXOGbk/hqdefault.jpg"
+      },
+      {
+        "id": "QW7LDgkjjjg",
+        "title": "Девочки на мотоциклах #motorcycle #girl #motovlog",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QW7LDgkjjjg/hqdefault.jpg"
+      },
+      {
+        "id": "W3VfSu9R4A0",
+        "title": "Купил Идеальный  BMW X5 E53 у блогера и ПОЖАЛЕЛ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W3VfSu9R4A0/hqdefault.jpg"
+      },
+      {
+        "id": "ZTJCvjVicGw",
+        "title": "Honda CBR из салона",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZTJCvjVicGw/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUzIToKUByTS5S3xD2liw68A",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VRoIo5PVl2E/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "ezhik",
+    "name": "Ёжик",
+    "emoji": "🦔",
+    "color": "#f39c12",
+    "desc": "Ёжик / детские ролики.",
+    "subs": "276 тыс.",
+    "channelId": "UCu6ULPUS8lWRpBw6ZTz7T5g",
+    "uploads": "UUu6ULPUS8lWRpBw6ZTz7T5g",
+    "icon": "https://i.ytimg.com/vi/6PUO5egOPt8/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "6PUO5egOPt8",
+        "title": "ГЛАВНАЯ ТАЙНА &quot;ОДИССЕИ&quot;",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6PUO5egOPt8/hqdefault.jpg"
+      },
+      {
+        "id": "zMkzLwSMiBA",
+        "title": "Как измерить БЫДЛОсть?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zMkzLwSMiBA/hqdefault.jpg"
+      },
+      {
+        "id": "J_WRWn5dKzo",
+        "title": "спидран по расам",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/J_WRWn5dKzo/hqdefault.jpg"
+      },
+      {
+        "id": "735goRTXCag",
+        "title": "Олег Комолов. Марксизм, как взгляд на мир и будущее.",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/735goRTXCag/hqdefault.jpg"
+      },
+      {
+        "id": "y7zDi7l2mCk",
+        "title": "МАРАЗМ УНИЧТОЖИЛ ТУПЫХ СОВКОВ... но тихо, не спеша (БубнЁж №2)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/y7zDi7l2mCk/hqdefault.jpg"
+      },
+      {
+        "id": "7QuygU8OyEE",
+        "title": "Правда о неандертальцах. Какими они были на самом деле?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7QuygU8OyEE/hqdefault.jpg"
+      },
+      {
+        "id": "1yGGW0PNKeI",
+        "title": "Как появился человек? (ЭЧ - №1: Палеолит. Антропогенез.)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1yGGW0PNKeI/hqdefault.jpg"
+      },
+      {
+        "id": "LRtXhtbyBgg",
+        "title": "ПОЧЕМУ ИСТОРИКИ ВРУТ О ЛЕНД-ЛИЗЕ????😱😱😱 (разбор хрендябликов)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LRtXhtbyBgg/hqdefault.jpg"
+      },
+      {
+        "id": "aJ44OLQY37U",
+        "title": "Прямая трансляция пользователя Ёжик Лисичкин",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aJ44OLQY37U/hqdefault.jpg"
+      },
+      {
+        "id": "A6AkHycvqyI",
+        "title": "Почему свернули НЭП?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/A6AkHycvqyI/hqdefault.jpg"
+      },
+      {
+        "id": "Sy0IcO4SGPk",
+        "title": "Тайна Александра - Федор Кузьмич",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Sy0IcO4SGPk/hqdefault.jpg"
+      },
+      {
+        "id": "ywSmY-6y1mI",
+        "title": "К проблеме норманнской теории",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ywSmY-6y1mI/hqdefault.jpg"
+      },
+      {
+        "id": "HH5y0n6stnc",
+        "title": "Петр не Великий",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HH5y0n6stnc/hqdefault.jpg"
+      },
+      {
+        "id": "hmOh1Q2AncE",
+        "title": "Двигатель прогресса",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hmOh1Q2AncE/hqdefault.jpg"
+      },
+      {
+        "id": "cIogsOlCcW4",
+        "title": "Косово - краткий обзор событий",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cIogsOlCcW4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUu6ULPUS8lWRpBw6ZTz7T5g",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6PUO5egOPt8/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "junior",
+    "name": "Junior Squad",
+    "emoji": "🧒",
+    "color": "#00cec9",
+    "desc": "Детский геймплей.",
+    "subs": "5.5 млн",
+    "channelId": "UCkOny4N1-Qn9UTx7pYnEL3A",
+    "uploads": "UUkOny4N1-Qn9UTx7pYnEL3A",
+    "icon": "https://i.ytimg.com/vi/7ODF5JH4MMg/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "7ODF5JH4MMg",
+        "title": "one two buckle my shoe #shorts #onetwobucklemyshoe",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7ODF5JH4MMg/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "2FWYIN5Xbgs",
+        "title": "Kaboochi! | Nursery Rhyme And  Kids  Dance Song for Toddlers",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2FWYIN5Xbgs/hqdefault.jpg"
+      },
+      {
+        "id": "GRMKDQDaRkI",
+        "title": "sleep time song #shorts #sleeptimesong",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GRMKDQDaRkI/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "fRs_8tmgWXU",
+        "title": "Who Stole My Toys? | Cute Nursery Rhyme for Kids | Fun Toy Song",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fRs_8tmgWXU/hqdefault.jpg"
+      },
+      {
+        "id": "pnhgzYcxh9w",
+        "title": "Three little kittens #shorts #kittens #littlekitty",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/pnhgzYcxh9w/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "-Eo3Z9ig6uU",
+        "title": "wheels on the ice cream truck #shorts #icecreamtrucksong",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-Eo3Z9ig6uU/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "XLCwAZ1C7e4",
+        "title": "Doctor checkup song #shorts #doctorcheckup",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XLCwAZ1C7e4/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "4y7NY7bfyeE",
+        "title": "row row row your boat #shorts #rowyourboat",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4y7NY7bfyeE/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "fBE_XjFHWm4",
+        "title": "Oopsie Doopsie #shorts #OopsieDoopsie #OopsieDoopsieSongs #kidssongs",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fBE_XjFHWm4/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "SvLJdS6Dscg",
+        "title": "Wheels on the Bus | The Wheels Go Round and Round | Nursery Rhyme for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SvLJdS6Dscg/hqdefault.jpg"
+      },
+      {
+        "id": "xtC2Ci4qdt8",
+        "title": "Peek a boo Song for Kids | Fun Hide and Seek Nursery Rhyme",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xtC2Ci4qdt8/hqdefault.jpg"
+      },
+      {
+        "id": "blDbokhLdHI",
+        "title": "five little ducks #shorts #fivelittleduckssong",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/blDbokhLdHI/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "3SYMUzOIkx0",
+        "title": "Wheels on the Tractor Go Round and Round | Fun Farm Nursery Rhyme &amp; Kids Song",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3SYMUzOIkx0/hqdefault.jpg"
+      },
+      {
+        "id": "99ivtPVxaW8",
+        "title": "Live - Finger Family Song  | Kids Nursery Rhymes &amp; Cartoon Show",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/99ivtPVxaW8/hqdefault.jpg"
+      },
+      {
+        "id": "KUqabfNtSuw",
+        "title": "Wheels On The Bus Go Round and Round #shorts #viral #bus #kidssongs #nurseryrhymes",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KUqabfNtSuw/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUkOny4N1-Qn9UTx7pYnEL3A",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7ODF5JH4MMg/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "cobel",
+    "name": "Кобяков",
+    "emoji": "🎤",
+    "color": "#2d3436",
+    "desc": "Кобяков — юмор и шоу.",
+    "subs": "335 тыс.",
+    "channelId": "UCceZn9GVb17enx3JFbl8KSA",
+    "uploads": "UUceZn9GVb17enx3JFbl8KSA",
+    "icon": "https://i.ytimg.com/vi/lrHz3_St9-U/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "lrHz3_St9-U",
+        "title": "Аркадий Кобяков - Ах, если бы знать @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lrHz3_St9-U/hqdefault.jpg"
+      },
+      {
+        "id": "E9hsxMabdm4",
+        "title": "Аркадий Кобяков - Шалава @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E9hsxMabdm4/hqdefault.jpg"
+      },
+      {
+        "id": "f3UK0UrQfhc",
+        "title": "Аркадий Кобяков - Парапет @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/f3UK0UrQfhc/hqdefault.jpg"
+      },
+      {
+        "id": "BnxkjP9MRcI",
+        "title": "Аркадий Кобяков - А ты сиди @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BnxkjP9MRcI/hqdefault.jpg"
+      },
+      {
+        "id": "XSR3VTtimEM",
+        "title": "Аркадий Кобяков - Журавли @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XSR3VTtimEM/hqdefault.jpg"
+      },
+      {
+        "id": "q6N76aCAW6g",
+        "title": "Аркадий Кобяков - Наедине @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/q6N76aCAW6g/hqdefault.jpg"
+      },
+      {
+        "id": "wp1W6sb9TiE",
+        "title": "Аркадий Кобяков - Малыш @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wp1W6sb9TiE/hqdefault.jpg"
+      },
+      {
+        "id": "iln8P4ScIq8",
+        "title": "Аркадий Кобяков - Арестанская душа@Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iln8P4ScIq8/hqdefault.jpg"
+      },
+      {
+        "id": "FdIntBOK8j8",
+        "title": "Аркадий Кобяков - Моя любимая @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/FdIntBOK8j8/hqdefault.jpg"
+      },
+      {
+        "id": "S50Ka7lDw4I",
+        "title": "Аркадий Кобяков - Королева снежная @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/S50Ka7lDw4I/hqdefault.jpg"
+      },
+      {
+        "id": "1osrXkxJIM0",
+        "title": "Аркадий Кобяков - Не забывай @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1osrXkxJIM0/hqdefault.jpg"
+      },
+      {
+        "id": "XLKp6_CQnro",
+        "title": "Аркадий Кобяков - Артист @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XLKp6_CQnro/hqdefault.jpg"
+      },
+      {
+        "id": "I1SGTYOpLeE",
+        "title": "Аркадий Кобяков - Бона Сэра @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/I1SGTYOpLeE/hqdefault.jpg"
+      },
+      {
+        "id": "_HiRDhiorLA",
+        "title": "Аркадий Кобяков - Воспоминания @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_HiRDhiorLA/hqdefault.jpg"
+      },
+      {
+        "id": "WBypVMgPGp4",
+        "title": "Аркадий Кобяков - О тебе @Аркадий_Кобяков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WBypVMgPGp4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUceZn9GVb17enx3JFbl8KSA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lrHz3_St9-U/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "wylsa",
+    "name": "Wylsacom",
+    "emoji": "📱",
+    "color": "#74b9ff",
+    "desc": "Техника и обзоры.",
+    "subs": "11.5 млн",
+    "channelId": "UCt7sv-NKh44rHAEb-qCCxvA",
+    "uploads": "UUt7sv-NKh44rHAEb-qCCxvA",
+    "icon": "https://i.ytimg.com/vi/7A01OhE3YHo/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "7A01OhE3YHo",
+        "title": "Это камера с прозрачным экраном!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7A01OhE3YHo/hqdefault.jpg"
+      },
+      {
+        "id": "4A9b6-UCp7U",
+        "title": "Широкое недоразумение или минусы Samsung Fold 8",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4A9b6-UCp7U/hqdefault.jpg"
+      },
+      {
+        "id": "2XmW0ncAoak",
+        "title": "iPhone X устарел официально - что он оставил после себя?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2XmW0ncAoak/hqdefault.jpg"
+      },
+      {
+        "id": "Kg7FFad7J_8",
+        "title": "Нелегальный смартфон из Северной Кореи",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Kg7FFad7J_8/hqdefault.jpg"
+      },
+      {
+        "id": "7dd_rgjInXI",
+        "title": "Самый безумный смартфон 2026 — Honor Robot Phone!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7dd_rgjInXI/hqdefault.jpg"
+      },
+      {
+        "id": "NbDWhdiiMfU",
+        "title": "LED, OLED, MINI LED, MINI RGB — ЧЕСТНЫЙ ТЕСТ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/NbDWhdiiMfU/hqdefault.jpg"
+      },
+      {
+        "id": "s3mZuRqIvQE",
+        "title": "Смартфон в самой большой коробке — что внутри?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/s3mZuRqIvQE/hqdefault.jpg"
+      },
+      {
+        "id": "xWgc221H10s",
+        "title": "iPhone 17 Pro за 46750 рублей из Дубая — не верьте!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xWgc221H10s/hqdefault.jpg"
+      },
+      {
+        "id": "CuYeT8YHFgs",
+        "title": "Робот Honor Flash - самый быстрый в мире против Wylsacom",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CuYeT8YHFgs/hqdefault.jpg"
+      },
+      {
+        "id": "fiOlU40v_gs",
+        "title": "iPhone для школьника с Авито от 9 000 до 45 000 рублей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fiOlU40v_gs/hqdefault.jpg"
+      },
+      {
+        "id": "IwUpn0NwsYc",
+        "title": "Очиститель воздуха... от кота!!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/IwUpn0NwsYc/hqdefault.jpg"
+      },
+      {
+        "id": "iSxef6s3MWY",
+        "title": "Смартфон Робот с выдвижной камерой",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iSxef6s3MWY/hqdefault.jpg"
+      },
+      {
+        "id": "cWc0TX0RuYw",
+        "title": "300 ЧАСОВ С GALAXY FOLD 8 - iPHONE НЕ НУЖЕН",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cWc0TX0RuYw/hqdefault.jpg"
+      },
+      {
+        "id": "2dZRRUkNmwQ",
+        "title": "НЕ ПОКУПАЙ iPHONE ЗА 20 000 РУБЛЕЙ В 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2dZRRUkNmwQ/hqdefault.jpg"
+      },
+      {
+        "id": "VhynFdwd8Zw",
+        "title": "Вот почему реклама на стадионе разная в разных странах",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VhynFdwd8Zw/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUt7sv-NKh44rHAEb-qCCxvA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7A01OhE3YHo/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "laber",
+    "name": "Лаборатория",
+    "emoji": "🔬",
+    "color": "#55efc4",
+    "desc": "Опыты и наука для детей.",
+    "subs": "254 тыс.",
+    "channelId": "UCzWnF-3UWAGNeK5fIkBmahg",
+    "uploads": "UUzWnF-3UWAGNeK5fIkBmahg",
+    "icon": "https://i.ytimg.com/vi/hx9uXIHNrwA/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "hx9uXIHNrwA",
+        "title": "Фараонова змея - набор для опытов Простая Наука - BlackBox",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hx9uXIHNrwA/hqdefault.jpg"
+      },
+      {
+        "id": "sf5ElB8ExAU",
+        "title": "Полимерные червяки - набор для опытов Простая Наука - BlackBox",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sf5ElB8ExAU/hqdefault.jpg"
+      },
+      {
+        "id": "E__3KuiGLqM",
+        "title": "Коллоидный сад - набор для опытов Простая Наука - BlackBox",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E__3KuiGLqM/hqdefault.jpg"
+      },
+      {
+        "id": "zxkjsPQgk9Q",
+        "title": "25Смешение красок",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zxkjsPQgk9Q/hqdefault.jpg"
+      },
+      {
+        "id": "346iXRUSW8M",
+        "title": "23Подводная салфетка",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/346iXRUSW8M/hqdefault.jpg"
+      },
+      {
+        "id": "AU6T1MzC8Ow",
+        "title": "28Лак на воде",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/AU6T1MzC8Ow/hqdefault.jpg"
+      },
+      {
+        "id": "BKX4lCNixlM",
+        "title": "13 Снег из подгузников",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BKX4lCNixlM/hqdefault.jpg"
+      },
+      {
+        "id": "I7od065t1ww",
+        "title": "27Рисуем на молоке",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/I7od065t1ww/hqdefault.jpg"
+      },
+      {
+        "id": "NNNI6C4md78",
+        "title": "16 Фараонова змея",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/NNNI6C4md78/hqdefault.jpg"
+      },
+      {
+        "id": "OKlQ3cD94j0",
+        "title": "15 Химические водоросли",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OKlQ3cD94j0/hqdefault.jpg"
+      },
+      {
+        "id": "_exelZ7czAI",
+        "title": "14 Много пены из ничего",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_exelZ7czAI/hqdefault.jpg"
+      },
+      {
+        "id": "i1bkQK_0_Uo",
+        "title": "14 Гидроуровень",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/i1bkQK_0_Uo/hqdefault.jpg"
+      },
+      {
+        "id": "nzUW2eMOTI8",
+        "title": "24Кипит   не кипятится",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nzUW2eMOTI8/hqdefault.jpg"
+      },
+      {
+        "id": "r_QVF17EO7U",
+        "title": "13 Архимедовы весы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/r_QVF17EO7U/hqdefault.jpg"
+      },
+      {
+        "id": "ssQPnCl23r4",
+        "title": "19Шарик лезет в банку",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ssQPnCl23r4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUzWnF-3UWAGNeK5fIkBmahg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hx9uXIHNrwA/hqdefault.jpg"
+      }
+    ]
+  },
+  {
     "id": "amal-room",
     "name": "Канал Amal",
     "emoji": "🌙",

@@ -217,7 +217,7 @@
             throw new Error("not-vtt");
           }
           const blobUrl = URL.createObjectURL(
-            new Blob([body], { type: "text/vtt" })
+            new Blob([beepText(body, false)], { type: "text/vtt" })
           );
           const track = document.createElement("track");
           track.kind = "subtitles";
@@ -248,6 +248,29 @@
           : pickDefaultCaptionLang(list));
       setCaptionMode(videoEl, chosen);
       updateCaptionBtn(list, chosen);
+      bindCaptionBeep(videoEl);
+    });
+  }
+
+  function bindCaptionBeep(videoEl) {
+    if (!videoEl || videoEl.dataset.beepBound === "1") return;
+    videoEl.dataset.beepBound = "1";
+    videoEl.addEventListener("cuechange", function () {
+      if (!beepOn) return;
+      try {
+        const tracks = videoEl.textTracks;
+        if (!tracks) return;
+        for (let i = 0; i < tracks.length; i++) {
+          const t = tracks[i];
+          if (t.mode !== "showing") continue;
+          const cues = t.activeCues;
+          if (!cues) continue;
+          for (let j = 0; j < cues.length; j++) {
+            const txt = cues[j] && (cues[j].text || "");
+            if (txt && beepText(txt, false) !== txt) playBeepSound();
+          }
+        }
+      } catch (_) {}
     });
   }
 
@@ -498,6 +521,82 @@
   }
   function escapeHtml(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  }
+
+  /** Запикивание мата в текстах (названия, комменты, титры). */
+  const BEEP_KEY = "amal-watch-beep-v1";
+  let beepOn = true;
+  try {
+    const saved = localStorage.getItem(BEEP_KEY);
+    if (saved === "0") beepOn = false;
+    if (saved === "1") beepOn = true;
+  } catch (_) {}
+  let lastBeepAt = 0;
+  // Частые «плохие» слова (RU + EN). Слово → ■■■ + короткий бип.
+  const BEEP_RE =
+    /(^|[^а-яёa-z0-9])((?:бля(?:ть|д\w*)?|сука|сучк\w*|хуй\w*|хуё\w*|хуе\w*|пизд\w*|ёб\w*|еб(?:ать|анул\w*|лан\w*|ись|ётся|ёт)|мудак\w*|гандон\w*|дроч\w*|говн\w*|дерьм\w*|fuck(?:ing|ed|er)?|shit|bitch|asshole|cunt|dick))(?=[^а-яёa-z0-9]|$)/gi;
+
+  function setBeepOn(on) {
+    beepOn = !!on;
+    try {
+      localStorage.setItem(BEEP_KEY, beepOn ? "1" : "0");
+    } catch (_) {}
+    const btn = document.getElementById("btnFloatBeep");
+    if (btn) {
+      btn.textContent = beepOn ? "🔇 Бип вкл" : "🔊 Бип выкл";
+      btn.title = beepOn
+        ? "Мат запикивается (нажми, чтобы выключить)"
+        : "Запикивание выкл (нажми, чтобы включить)";
+      btn.classList.toggle("accent", beepOn);
+    }
+  }
+
+  function playBeepSound() {
+    const now = Date.now();
+    if (now - lastBeepAt < 280) return;
+    lastBeepAt = now;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!playBeepSound._ctx) playBeepSound._ctx = new Ctx();
+      const ctx = playBeepSound._ctx;
+      if (ctx.state === "suspended") ctx.resume().catch(function () {});
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "square";
+      o.frequency.value = 780;
+      g.gain.value = 0.05;
+      o.connect(g);
+      g.connect(ctx.destination);
+      const t0 = ctx.currentTime;
+      o.start(t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.11);
+      o.stop(t0 + 0.12);
+    } catch (_) {}
+  }
+
+  function beepText(s, withSound) {
+    const raw = String(s == null ? "" : s);
+    if (!beepOn || !raw) return raw;
+    let hit = false;
+    BEEP_RE.lastIndex = 0;
+    const out = raw.replace(BEEP_RE, function (_m, lead) {
+      hit = true;
+      return (lead || "") + "■■■";
+    });
+    if (hit && withSound) playBeepSound();
+    return out;
+  }
+
+  function displayText(s) {
+    return escapeHtml(beepText(s, false));
+  }
+
+  function isLiveVideo(v) {
+    if (!v) return false;
+    if (v.live) return true;
+    if (v.duration === -1) return true;
+    return false;
   }
 
   function realVideos(ch) {
@@ -992,11 +1091,11 @@
       .map(function (c) {
         return (
           '<div class="comment-item"><span class="who">' +
-          escapeHtml(c.who) +
+          displayText(c.who) +
           '</span><span class="when">' +
           escapeHtml(c.when) +
           "</span><p>" +
-          escapeHtml(c.text) +
+          displayText(c.text) +
           "</p></div>"
         );
       })
@@ -1005,10 +1104,11 @@
 
   function addComment(who, text) {
     if (!currentVideoKey || !text.trim()) return;
+    const cleaned = beepText(text.trim().slice(0, 400), true);
     if (!comments[currentVideoKey]) comments[currentVideoKey] = [];
     comments[currentVideoKey].push({
-      who: (who || "Гость").trim().slice(0, 24) || "Гость",
-      text: text.trim().slice(0, 400),
+      who: beepText((who || "Гость").trim().slice(0, 24) || "Гость", false),
+      text: cleaned,
       when: new Date().toLocaleString("ru-RU", {
         day: "2-digit",
         month: "short",
@@ -1163,6 +1263,7 @@
       '<button type="button" id="btnFloatFs">⛶</button>' +
       '<button type="button" class="accent" id="btnFloatNoAds">🎬 Чистый экран</button>' +
       '<button type="button" id="btnFloatCc">🌐 Перевод</button>' +
+      '<button type="button" id="btnFloatBeep">🔇 Бип вкл</button>' +
       '<button type="button" id="btnFloatExtra">⋯</button>';
     if (playerBox) playerBox.appendChild(wrap);
     document.getElementById("btnFloatMenu").onclick = function () {
@@ -1194,6 +1295,15 @@
       }
       openCaptionPicker();
     };
+    document.getElementById("btnFloatBeep").onclick = function () {
+      setBeepOn(!beepOn);
+      showToast(
+        beepOn
+          ? "🔇 Мат запикивается в названиях, комментах и титрах"
+          : "🔊 Запикивание выключено"
+      );
+    };
+    setBeepOn(beepOn);
     document.getElementById("btnFloatExtra").onclick = function () {
       document.body.classList.toggle("show-extra-panels");
     };
@@ -1272,8 +1382,19 @@
     stopAllMedia();
     const gen = ++playGen;
     currentPlayId = id;
-    nowPlaying.textContent = "Сейчас: " + title;
-    setWatchTitle(title);
+    const playObj = { id: id, title: title };
+    ensureTitleRu(playObj).then(function (ru) {
+      if (currentPlayId !== id) return;
+      const safeTitle = beepText(ru || title, false);
+      nowPlaying.textContent = "Сейчас: " + safeTitle;
+      setWatchTitle(safeTitle);
+      if (tvHint) {
+        tvHint.textContent = (opts.live ? "🔴 Эфир · " : "▶ ") + safeTitle;
+      }
+    });
+    const safeTitle = beepText(shownTitle(playObj), false);
+    nowPlaying.textContent = "Сейчас: " + safeTitle;
+    setWatchTitle(safeTitle);
     currentVideoKey = (opts.channelId || "") + "::" + id;
     currentLikesLabel = formatLikes(opts.likesLabel);
     refreshLikeUi();
@@ -1281,7 +1402,10 @@
     setAltBtnLabel();
     setWatching(true);
     document.body.classList.remove("show-extra-panels");
-    if (tvHint) tvHint.textContent = "▶ " + title;
+    if (tvHint) {
+      tvHint.textContent = (opts.live ? "🔴 Эфир · " : "▶ ") + safeTitle;
+    }
+    if (opts.live) showToast("🔴 Прямой эфир — смотрим внутри приложения");
 
     // 1) кэш — сразу без рекламы
     const cached = streamCache[id];
@@ -1401,7 +1525,11 @@
         })
       );
     }
-    playId(v.id, v.title || "Ролик", { channelId: ch.id, likesLabel: v.likes });
+    playId(v.id, v.title || "Ролик", {
+      channelId: ch.id,
+      likesLabel: v.likes,
+      live: isLiveVideo(v),
+    });
   }
 
   function refreshLikeUi() {
@@ -1664,22 +1792,28 @@
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "vid-card";
-      const badge = v.short
-        ? '<span class="badge">Shorts</span>'
-        : v.part
-          ? '<span class="badge">ч.' + v.part + "</span>"
-          : v.playlist
-            ? '<span class="badge">все</span>'
-            : "";
+      const badge = isLiveVideo(v)
+        ? '<span class="badge live">LIVE</span>'
+        : v.streamVod
+          ? '<span class="badge stream">стрим</span>'
+          : v.short
+            ? '<span class="badge">Shorts</span>'
+            : v.part
+              ? '<span class="badge">ч.' + v.part + "</span>"
+              : v.playlist
+                ? '<span class="badge">все</span>'
+                : "";
       const likeLine = formatLikes(v.likes);
+      btn.dataset.vid = v.id || "";
       btn.innerHTML =
         '<div class="vid-thumb">' +
         badge +
         thumbHtml(v.thumb, v.local ? "🌙" : ch.emoji) +
         "</div><b>" +
-        escapeHtml(v.title || "Ролик") +
+        displayText(shownTitle(v)) +
         "</b>" +
         (likeLine ? '<div class="vl">👍 ' + escapeHtml(likeLine) + "</div>" : '<div class="vl"></div>');
+      if (isLiveVideo(v)) btn.classList.add("is-live");
       btn.addEventListener("click", function () {
         playVideoObj(ch, v);
       });
@@ -1688,6 +1822,7 @@
       });
       videoGrid.appendChild(btn);
     });
+    translateVisibleTitles(vids);
 
     // заранее греем первые ролики — кнопка «без рекламы» сработает мгновеннее
     let warmed = 0;
@@ -1723,9 +1858,110 @@
       playerBox.appendChild(el);
     }
     if (!el) return;
-    const t = String(title || "").replace(/^Сейчас:\s*/, "").trim();
+    const t = beepText(String(title || "").replace(/^Сейчас:\s*/, "").trim(), false);
     el.textContent = t;
     el.hidden = !t;
+  }
+
+  /** Названия всегда по-русски: если латиница — переводим и кэшируем. */
+  const TITLE_RU_KEY = "amal-watch-title-ru-v1";
+  let titleRuCache = {};
+  try {
+    titleRuCache = JSON.parse(localStorage.getItem(TITLE_RU_KEY) || "{}") || {};
+  } catch (_) {
+    titleRuCache = {};
+  }
+  function saveTitleRuCache() {
+    try {
+      const keys = Object.keys(titleRuCache);
+      if (keys.length > 400) {
+        keys.slice(0, keys.length - 300).forEach(function (k) {
+          delete titleRuCache[k];
+        });
+      }
+      localStorage.setItem(TITLE_RU_KEY, JSON.stringify(titleRuCache));
+    } catch (_) {}
+  }
+  function looksEnglishTitle(s) {
+    const t = String(s || "").trim();
+    if (!t || t.length < 3) return false;
+    const lat = (t.match(/[A-Za-z]/g) || []).length;
+    const cyr = (t.match(/[А-Яа-яЁё]/g) || []).length;
+    return lat >= 4 && lat > cyr * 1.2;
+  }
+  function videoTitleKey(v) {
+    if (!v) return "";
+    return String(v.id || v.title || "").slice(0, 80);
+  }
+  function shownTitle(v) {
+    if (!v) return "Ролик";
+    const key = videoTitleKey(v);
+    if (key && titleRuCache[key]) return titleRuCache[key];
+    if (v.titleRu) return v.titleRu;
+    return v.title || "Ролик";
+  }
+  function applyRuTitleEverywhere(v, ru) {
+    if (!v || !ru) return;
+    v.titleRu = ru;
+    const key = videoTitleKey(v);
+    if (key) {
+      titleRuCache[key] = ru;
+      saveTitleRuCache();
+    }
+    // обновить видимые карточки с этим id
+    if (!v.id) return;
+    document.querySelectorAll(".vid-card, .feed-card, .live-card").forEach(function (card) {
+      if (card.dataset.vid !== v.id) return;
+      const b = card.querySelector("b");
+      if (b) b.innerHTML = displayText(ru);
+    });
+    if (currentPlayId === v.id) {
+      const safe = beepText(ru, false);
+      if (nowPlaying) nowPlaying.textContent = "Сейчас: " + safe;
+      setWatchTitle(safe);
+    }
+  }
+  function ensureTitleRu(v) {
+    if (!v || !v.title) return Promise.resolve(v.title || "Ролик");
+    const key = videoTitleKey(v);
+    if (v.titleRu) return Promise.resolve(v.titleRu);
+    if (key && titleRuCache[key]) {
+      v.titleRu = titleRuCache[key];
+      return Promise.resolve(v.titleRu);
+    }
+    if (!looksEnglishTitle(v.title)) {
+      v.titleRu = v.title;
+      return Promise.resolve(v.title);
+    }
+    const q = encodeURIComponent(String(v.title).slice(0, 180));
+    const url =
+      "https://api.mymemory.translated.net/get?q=" +
+      q +
+      "&langpair=en|ru";
+    return fetch(url, { signal: AbortSignal.timeout(8000) })
+      .then(function (r) {
+        if (!r.ok) throw new Error("tr");
+        return r.json();
+      })
+      .then(function (data) {
+        const ru =
+          (data &&
+            data.responseData &&
+            data.responseData.translatedText &&
+            String(data.responseData.translatedText).trim()) ||
+          "";
+        if (!ru || /MYMEMORY WARNING/i.test(ru)) throw new Error("empty");
+        applyRuTitleEverywhere(v, ru);
+        return ru;
+      })
+      .catch(function () {
+        return v.title;
+      });
+  }
+  function translateVisibleTitles(list) {
+    (list || []).slice(0, 24).forEach(function (v) {
+      if (v && looksEnglishTitle(v.title) && !v.titleRu) ensureTitleRu(v);
+    });
   }
 
   function applyChannelAvatar(ch, url) {
@@ -1775,6 +2011,10 @@
         if (v.thumb) old.thumb = v.thumb;
         if (v.short) old.short = true;
         if (v.likes) old.likes = v.likes;
+        if (v.live) old.live = true;
+        else if (v.live === false) old.live = false;
+        if (v.streamVod) old.streamVod = true;
+        if (v.duration != null) old.duration = v.duration;
         return;
       }
       byId[v.id] = v;
@@ -1831,13 +2071,32 @@
     if (!id) return null;
     const title = s.title || "Ролик";
     const short = !!s.isShort || isShortVideo({ title: title });
+    const duration =
+      typeof s.duration === "number"
+        ? s.duration
+        : typeof s.lengthSeconds === "number"
+          ? s.lengthSeconds
+          : null;
+    const live =
+      duration === -1 ||
+      !!s.livestream ||
+      s.type === "livestream" ||
+      (s.type === "stream" && (duration == null || duration < 0));
     const out = {
       id: id,
       title: String(title).slice(0, 100),
       likes: formatLikes(s.likes) || "",
       thumb: s.thumbnail || "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg",
     };
+    if (duration != null) out.duration = duration;
     if (short) out.short = true;
+    if (live) out.live = true;
+    else if (
+      s.type === "livestream" ||
+      /прямой\s*эфир|#live|\blive\b|стрим\s*сейчас/i.test(title)
+    ) {
+      out.streamVod = true;
+    }
     return out;
   }
 
@@ -1872,11 +2131,13 @@
             data.authorThumbnails.length &&
             data.authorThumbnails[data.authorThumbnails.length - 1].url) ||
           "";
-        if (vids.length || avatar) {
+        if (vids.length || avatar || (data.tabs && data.tabs.length)) {
           return {
             videos: vids,
             nextpage: data.nextpage || null,
             avatar: avatar || "",
+            tabs: data.tabs || [],
+            base: base,
           };
         }
       } catch (_) {}
@@ -1885,10 +2146,124 @@
     if (!nextpage) {
       try {
         const rssVids = await fetchYoutubeRss(channelId);
-        if (rssVids.length) return { videos: rssVids, nextpage: null, avatar: "" };
+        if (rssVids.length) return { videos: rssVids, nextpage: null, avatar: "", tabs: [], base: "" };
       } catch (_) {}
     }
-    return { videos: [], nextpage: null, avatar: "" };
+    return { videos: [], nextpage: null, avatar: "", tabs: [], base: "" };
+  }
+
+  /** Прямые эфиры канала (вкладка livestreams у Piped). */
+  async function fetchPipedLivestreams(channelId, pageHint) {
+    const out = [];
+    const bases = [];
+    if (pageHint && pageHint.base) bases.push(pageHint.base);
+    PIPED_APIS.forEach(function (b) {
+      if (bases.indexOf(b) < 0) bases.push(b);
+    });
+    for (let bi = 0; bi < bases.length; bi++) {
+      const base = bases[bi];
+      try {
+        let tabs = (pageHint && pageHint.tabs) || [];
+        if (!tabs.length) {
+          const res = await fetch(base + "/channel/" + encodeURIComponent(channelId), {
+            signal: AbortSignal.timeout(10000),
+          });
+          if (!res.ok) continue;
+          const data = await res.json();
+          tabs = data.tabs || [];
+        }
+        const liveTab = tabs.find(function (t) {
+          return String(t.name || "").toLowerCase() === "livestreams";
+        });
+        if (!liveTab || !liveTab.data) continue;
+        const tabRes = await fetch(
+          base + "/channels/tabs?data=" + encodeURIComponent(liveTab.data),
+          { signal: AbortSignal.timeout(12000) }
+        );
+        if (!tabRes.ok) continue;
+        const tabData = await tabRes.json();
+        const content = tabData.content || tabData.relatedStreams || [];
+        content.forEach(function (s) {
+          const v = parsePipedStream(s);
+          if (!v) return;
+          // вкладка эфиров: без длительности или -1 → сейчас в эфире
+          if (v.duration == null || v.duration < 0) v.live = true;
+          else v.streamVod = true;
+          out.push(v);
+        });
+        if (out.length) return out;
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  function pickLiveNow(ch, liveList) {
+    const fromList = (liveList || []).find(isLiveVideo);
+    if (fromList) return fromList;
+    return realVideos(ch).find(isLiveVideo) || null;
+  }
+
+  function updateShelfLiveBadges() {
+    if (!channelShelf) return;
+    channelShelf.querySelectorAll(".ch-card").forEach(function (card) {
+      const id = card.dataset.ch;
+      const ch = id ? findChannel(id) : null;
+      let badge = card.querySelector(".live-dot");
+      if (ch && ch.liveNow && isLiveVideo(ch.liveNow)) {
+        if (!badge) {
+          badge = document.createElement("span");
+          badge.className = "live-dot";
+          badge.textContent = "LIVE";
+          card.appendChild(badge);
+        }
+        card.classList.add("is-live");
+      } else {
+        if (badge) badge.remove();
+        card.classList.remove("is-live");
+      }
+    });
+  }
+
+  function renderLiveShelf() {
+    const row = document.getElementById("liveNowRow");
+    const strip = document.getElementById("liveNowStrip");
+    if (!row || !strip) return;
+    strip.innerHTML = "";
+    const lives = [];
+    CHANNELS.forEach(function (ch) {
+      if (ch.liveNow && isLiveVideo(ch.liveNow)) {
+        lives.push({ ch: ch, v: ch.liveNow });
+      }
+    });
+    if (!lives.length) {
+      row.hidden = true;
+      return;
+    }
+    row.hidden = false;
+    lives.forEach(function (item) {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "feed-card live-card";
+      card.innerHTML =
+        '<div class="feed-thumb">' +
+        '<span class="badge live">LIVE</span>' +
+        thumbHtml(item.v.thumb, item.ch.emoji) +
+        '</div><div class="feed-meta"><b>' +
+        displayText(shownTitle(item.v) || "Прямой эфир") +
+        '</b><div class="ch">' +
+        displayText(item.ch.name) +
+        " · эфир</div></div>";
+      card.dataset.vid = item.v.id || "";
+      card.addEventListener("click", function () {
+        openChannel(item.ch.id, item.v);
+      });
+      strip.appendChild(card);
+    });
+    translateVisibleTitles(
+      lives.map(function (x) {
+        return x.v;
+      })
+    );
   }
 
   async function fetchChannelAvatar(channelId) {
@@ -2035,11 +2410,21 @@
       // всегда этот ролик в плеере канала (даже если short)
       if (autoPlay.local) playLocal(autoPlay.url, autoPlay.title);
       else if (autoPlay.playlist || autoPlay.id === "playlist") playVideoObj(ch, autoPlay);
-      else playId(autoPlay.id, autoPlay.title || "Ролик", { channelId: ch.id, likesLabel: autoPlay.likes });
+      else
+        playId(autoPlay.id, autoPlay.title || "Ролик", {
+          channelId: ch.id,
+          likesLabel: autoPlay.likes,
+          live: isLiveVideo(autoPlay),
+        });
     } else {
-      const first = pickAutoPlay(vids);
+      const liveFirst = ch.liveNow && isLiveVideo(ch.liveNow) ? ch.liveNow : null;
+      const first = liveFirst || pickAutoPlay(vids);
       if (first) {
-        playId(first.id, first.title || "Ролик", { channelId: ch.id, likesLabel: first.likes });
+        playId(first.id, first.title || "Ролик", {
+          channelId: ch.id,
+          likesLabel: first.likes,
+          live: isLiveVideo(first),
+        });
       }
     }
     renderComments();
@@ -2049,10 +2434,16 @@
         if (page.avatar) applyChannelAvatar(ch, page.avatar);
         if (page.videos && page.videos.length) {
           mergeVideos(ch, page.videos);
+        }
+        return fetchPipedLivestreams(ch.channelId, page).then(function (lives) {
+          if (lives && lives.length) mergeVideos(ch, lives);
+          ch.liveNow = pickLiveNow(ch, lives);
+          updateShelfLiveBadges();
+          renderLiveShelf();
           if (currentChannel && currentChannel.id === ch.id) {
             refreshChannelGrid(ch);
           }
-        }
+        });
       });
       loadAllFromChannel(ch);
     }
@@ -2309,6 +2700,7 @@
   function buildFeed() {
     feed.innerHTML = "";
     shortsRow.innerHTML = "";
+    renderLiveShelf();
     const all = [];
     CHANNELS.forEach(function (ch) {
       if (ch.allowUpload) return;
@@ -2319,6 +2711,10 @@
         });
     });
     all.sort(function (a, b) {
+      // живые эфиры — выше
+      const la = isLiveVideo(a.v) ? 0 : 1;
+      const lb = isLiveVideo(b.v) ? 0 : 1;
+      if (la !== lb) return la - lb;
       return (a.order % 3) - (b.order % 3);
     });
 
@@ -2328,31 +2724,44 @@
       const card = document.createElement("button");
       card.type = "button";
       card.className = isShortVideo(v) ? "short-card" : "feed-card";
+      if (isLiveVideo(v)) card.classList.add("live-card");
+      card.dataset.vid = v.id || "";
+      const liveBadge = isLiveVideo(v)
+        ? '<span class="badge live">LIVE</span>'
+        : "";
       card.innerHTML =
         '<div class="feed-thumb">' +
+        liveBadge +
         thumbHtml(v.thumb, ch.emoji) +
         '</div><div class="feed-meta"><b>' +
-        escapeHtml(v.title || "Ролик") +
+        displayText(shownTitle(v)) +
         '</b><div class="ch">' +
-        escapeHtml(ch.name) +
+        displayText(ch.name) +
+        (isLiveVideo(v) ? " · эфир" : "") +
         "</div></div>";
       card.addEventListener("click", function () {
         // короткое — в ленту шортов внутри приложения, без ухода на YouTube
-        if (isShortVideo(v)) {
+        if (isShortVideo(v) && !isLiveVideo(v)) {
           openShorts(v.id);
           return;
         }
         openChannel(ch.id, v);
       });
-      if (isShortVideo(v)) shortsRow.appendChild(card);
+      if (isShortVideo(v) && !isLiveVideo(v)) shortsRow.appendChild(card);
       else feed.appendChild(card);
     });
+    translateVisibleTitles(
+      all.map(function (x) {
+        return x.v;
+      })
+    );
   }
 
   CHANNELS.forEach(function (ch) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "ch-card";
+    b.dataset.ch = ch.id;
     b.style.borderColor = ch.color;
     const ico = ch.icon
       ? '<img class="ch-ico-img" src="' + ch.icon + '" alt="" />'
@@ -2370,6 +2779,7 @@
     });
     channelShelf.appendChild(b);
   });
+  updateShelfLiveBadges();
 
   function setupChannelShelfScroll() {
     if (!channelShelf || channelShelf.dataset.scrollBound === "1") return;
@@ -2464,18 +2874,29 @@
   async function refreshAllChannelsLive(silent) {
     if (!silent && tvHint) tvHint.textContent = "⏳ Подтягиваю новые ролики с каналов…";
     let addedTotal = 0;
+    let liveCount = 0;
     for (let i = 0; i < CHANNELS.length; i++) {
       const ch = CHANNELS[i];
       if (!ch.channelId || ch.allowUpload) continue;
       try {
         let vids = [];
         let avatar = "";
+        let page = null;
         // Piped: свежие ролики + аватар канала
         try {
-          const page = await fetchPipedChannel(ch.channelId, null);
+          page = await fetchPipedChannel(ch.channelId, null);
           vids = page.videos || [];
           avatar = page.avatar || "";
         } catch (_) {}
+        // Прямые эфиры (вкладка livestreams)
+        let lives = [];
+        try {
+          lives = await fetchPipedLivestreams(ch.channelId, page);
+        } catch (_) {}
+        if (lives.length) {
+          // эфиры — в начало списка
+          vids = lives.concat(vids);
+        }
         // RSS дополняет, если Piped молчит
         if (!vids.length) {
           try {
@@ -2496,9 +2917,13 @@
         if (!avatar && vids[0] && vids[0].thumb) avatar = vids[0].thumb;
         if (avatar) applyChannelAvatar(ch, avatar);
         addedTotal += mergeVideos(ch, vids);
+        ch.liveNow = pickLiveNow(ch, lives);
+        if (ch.liveNow) liveCount++;
       } catch (_) {}
     }
     updateShelfCounts();
+    updateShelfLiveBadges();
+    renderLiveShelf();
     if (viewHome && viewHome.classList.contains("active")) {
       buildFeed();
     }
@@ -2506,7 +2931,10 @@
       refreshChannelGrid(currentChannel);
     }
     if (tvHint) {
-      if (addedTotal) {
+      if (liveCount) {
+        tvHint.textContent =
+          "🔴 Сейчас в эфире: " + liveCount + " канал(ов). Смотри полку «Прямой эфир».";
+      } else if (addedTotal) {
         tvHint.textContent =
           "✓ Новые ролики с каналов: +" + addedTotal + ". Смотри в ленте.";
       } else if (!silent) {
@@ -2570,6 +2998,15 @@
     { keys: ["вэлл", "вэл", "well", "vell"], channel: "vell" },
     { keys: ["биллиент", "billy", "билли"], channel: "billionent" },
     { keys: ["ярокс", "ерокс", "erox", "стандофф"], channel: "yaroks" },
+    { keys: ["кукутик"], channel: "kukutiki" },
+    { keys: ["тёма", "тема и катя", "тема катя"], channel: "tema-katya" },
+    { keys: ["hard play", "хард плей", "хардплей"], channel: "hardplay" },
+    { keys: ["брайн", "brain maps", "теори"], channel: "brius" },
+    { keys: ["денчик"], channel: "denchik" },
+    { keys: ["junior", "джуниор"], channel: "junior" },
+    { keys: ["кобяков"], channel: "cobel" },
+    { keys: ["wylsa", "вилса", "уайса"], channel: "wylsa" },
+    { keys: ["простая наука", "лаборатор"], channel: "laber" },
     { keys: ["мой канал", "амал", "загруз"], channel: "amal-room" },
   ];
 

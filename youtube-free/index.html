@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=32" />
+  <link rel="stylesheet" href="./style.css?v=34" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -38,10 +38,15 @@
         <button type="button" class="shelf-arrow" id="chScrollRight" aria-label="Вправо">›</button>
       </div>
 
+      <div class="live-now-row" id="liveNowRow" hidden>
+        <div class="shelf-label live-label">🔴 Прямой эфир · жми и смотри внутри</div>
+        <div class="feed-row live-strip" id="liveNowStrip"></div>
+      </div>
+
       <div class="search-dock" id="searchDock">
         <div class="shelf-label">🔎 Напиши по-русски — найду канал или ролик</div>
         <form class="search-form" id="searchForm">
-          <input id="searchInput" type="search" maxlength="120" placeholder="Например: фиксики, пляж, сладости…" autocomplete="off" />
+          <input id="searchInput" type="search" maxlength="120" placeholder="Например: фиксики, пляж, сладости…" autocomplete="off" lang="ru" spellcheck="true" inputmode="search" />
           <button type="submit">Найти</button>
         </form>
         <div class="search-reply" id="searchReply">Пиши словами: «хочу фиксиков», «три кота на пляже»…</div>
@@ -138,8 +143,8 @@
           <div class="shelf-label pad">💬 Комментарии к этому ролику</div>
           <div class="comments-list" id="commentsList"></div>
           <form class="comment-form" id="commentForm">
-            <input id="commentNick" maxlength="24" placeholder="Твоё имя" autocomplete="nickname" />
-            <input id="commentText" maxlength="400" placeholder="Напиши нормальный комментарий…" required />
+            <input id="commentNick" maxlength="24" placeholder="Твоё имя" autocomplete="nickname" lang="ru" />
+            <input id="commentText" maxlength="400" placeholder="Напиши нормальный комментарий…" required lang="ru" spellcheck="true" />
             <button type="submit">Отправить</button>
           </form>
         </div>
@@ -161,11 +166,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=32&fresh=" + Date.now());
+      location.replace("./index.html?v=34&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=32"></script>
-  <script src="./main.js?v=32"></script>
+  <script src="./channels-data.js?v=34"></script>
+  <script src="./main.js?v=34"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
