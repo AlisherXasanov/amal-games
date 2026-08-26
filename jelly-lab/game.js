@@ -184,7 +184,7 @@ const state = {
 
 
 
-const player = { x: 0, z: 1.5, speed: 4.5 };
+const player = { x: 0, z: 0.5, speed: 4.5 };
 
 const keys = {};
 
@@ -822,6 +822,36 @@ function addSolid(x, z, w, d, tag) {
 
 
 
+const PLAYER_R = 0.28;
+
+function hitsSolid(x, z) {
+
+  for (const s of solids) {
+
+    if (
+
+      x > s.minX - PLAYER_R &&
+
+      x < s.maxX + PLAYER_R &&
+
+      z > s.minZ - PLAYER_R &&
+
+      z < s.maxZ + PLAYER_R
+
+    ) {
+
+      return true;
+
+    }
+
+  }
+
+  return false;
+
+}
+
+
+
 /** Коробка: низ на полу, если y не задан — ставим по высоте */
 
 function box(w, h, d, material, x, y, z, solid = true, tag) {
@@ -832,17 +862,21 @@ function box(w, h, d, material, x, y, z, solid = true, tag) {
 
   scene.add(m);
 
-  if (solid) addSolid(x, z, w * 0.9, d * 0.9, tag);
+  if (solid) addSolid(x, z, w * 0.95, d * 0.95, tag);
 
   return m;
 
 }
 
-/** Мебель: низ касается пола (y = h/2) */
+/** Мебель: низ касается пола (y = h/2). Коллизия уже уже визуала — можно обойти. */
 
 function furniture(w, h, d, material, x, z, solid = true) {
 
-  return box(w, h, d, material, x, h / 2, z, solid);
+  const m = box(w, h, d, material, x, h / 2, z, false);
+
+  if (solid) addSolid(x, z, w * 0.55, d * 0.55);
+
+  return m;
 
 }
 
@@ -1289,7 +1323,7 @@ function buildWorld() {
 
   const tableH = 0.45;
 
-  const coffee = furniture(1.1, tableH, 0.55, wood, 0.3, 2.0);
+  const coffee = furniture(1.1, tableH, 0.55, wood, 1.35, 2.35);
 
   mark(coffee, "table", "Столик");
 
@@ -1349,15 +1383,15 @@ function buildWorld() {
 
 
 
-  spawnLootBox("remote", 0.22, 0.06, 0.1, 0x333, -0.1, tableH, 2.0);
+  spawnLootBox("remote", 0.22, 0.06, 0.1, 0x333, 1.1, tableH, 2.35);
 
-  spawnLootBox("phone", 0.12, 0.02, 0.22, 0x111, 0.4, tableH, 1.9);
+  spawnLootBox("phone", 0.12, 0.02, 0.22, 0x111, 1.5, tableH, 2.25);
 
-  spawnLootSphere("dumpling", 0.6, tableH, 2.15, 0xf5e6c8, 0.12);
+  spawnLootSphere("dumpling", 1.55, tableH, 2.5, 0xf5e6c8, 0.12);
 
   const valCandleBear = makeBear(0xe51d30, 0.25);
 
-  valCandleBear.position.set(-0.35, 0, 2.15);
+  valCandleBear.position.set(1.05, 0, 2.5);
 
   putOn(valCandleBear, tableH);
 
@@ -2403,25 +2437,33 @@ function interact(id, mesh) {
 
 function tryMove(dx, dz) {
 
-  const nx = player.x + dx;
-
-  const nz = player.z + dz;
-
   // открытая дверь: свободный коридор через проём
 
-  const inDoorCorridor =
+  const freeAt = (x, z) => {
 
-    state.doorOpen && nx > -0.95 && nx < 0.95 && nz > -3.4 && nz < 0.2;
+    const inDoorCorridor =
 
-  if (!inDoorCorridor) {
+      state.doorOpen && x > -0.95 && x < 0.95 && z > -3.4 && z < 0.2;
 
-    for (const s of solids) {
+    if (inDoorCorridor) return true;
 
-      if (nx > s.minX && nx < s.maxX && nz > s.minZ && nz < s.maxZ) return;
+    return !hitsSolid(x, z);
 
-    }
+  };
 
-  }
+
+
+  // скольжение по осям — не застревать в мебели
+
+  let nx = player.x;
+
+  let nz = player.z;
+
+  if (dx && freeAt(player.x + dx, player.z)) nx = player.x + dx;
+
+  if (dz && freeAt(nx, player.z + dz)) nz = player.z + dz;
+
+
 
   if (!state.atBeach && nz < -9.5) {
 
@@ -2432,6 +2474,8 @@ function tryMove(dx, dz) {
   }
 
   if (state.atBeach && nz > -46) return;
+
+
 
   player.x = nx;
 
@@ -2453,7 +2497,7 @@ function updateCam() {
 
 const raycaster = new THREE.Raycaster();
 
-const INTERACT_MAX = 3.4;
+const INTERACT_MAX = 5.5;
 
 function doRayInteract(nx, ny) {
 
@@ -2625,7 +2669,7 @@ canvas.addEventListener("pointerup", (e) => {
 
     skipNextClick = true;
 
-    lockPointer();
+    // мышь НЕ прячем — иначе кажется, что «играть нельзя»
 
   }
 
@@ -2643,9 +2687,9 @@ canvas.addEventListener("click", () => {
 
   }
 
-  if (state.locked) doRayInteract(0, 0);
+  // только в режиме «прицел» (после зажатия мыши / pointer lock)
 
-  else lockPointer();
+  if (state.locked) doRayInteract(0, 0);
 
 });
 
@@ -2729,7 +2773,7 @@ document.getElementById("startBtn").onclick = () => {
 
   updateQuest();
 
-  say("Мышь на месте. Кликни по экрану — смотреть вокруг. Esc — вернуть мышь.");
+  say("WASD — ходить. Кликни по красному мишке. Зажми мышь и тяни — смотреть.");
 
 };
 
