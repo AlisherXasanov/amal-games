@@ -2396,8 +2396,8 @@ window.YT_CHANNELS = [
     "name": "Познаватель",
     "emoji": "🐻",
     "color": "#e17055",
-    "desc": "Желейный медведь Валера.",
-    "subs": "14.8 млн",
+    "desc": "Главный канал Познавателя · жёлтый значок, Валера.",
+    "subs": "20.5 млн",
     "channelId": "UCXTMoE1XgvxN4iCt5-gZzCw",
     "uploads": "UUXTMoE1XgvxN4iCt5-gZzCw",
     "icon": "https://i.ytimg.com/vi/ehKaf87Yc8k/hqdefault.jpg",
@@ -3008,6 +3008,1887 @@ window.YT_CHANNELS = [
         "playlist": "UUXTMoE1XgvxN4iCt5-gZzCw",
         "likes": "—",
         "thumb": "https://i.ytimg.com/vi/ehKaf87Yc8k/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "prostokvashino",
+    "name": "Простоквашино",
+    "emoji": "🐄",
+    "color": "#f4a261",
+    "desc": "Матроскин, Дядя Фёдор и Шарик — новое и классика.",
+    "subs": "—",
+    "channelId": "UCHS2LM1n3f5cyL-ebgkqyLw",
+    "uploads": "UUHS2LM1n3f5cyL-ebgkqyLw",
+    "icon": "https://i.ytimg.com/vi/APy0ziPwGW4/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "APy0ziPwGW4",
+        "title": "Новое Простоквашино ВСЕ серии подряд (1-30) - Союзмультфильм HD",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/APy0ziPwGW4/hqdefault.jpg"
+      },
+      {
+        "id": "ZmxuSSPeNVQ",
+        "title": "Новое Простоквашино ⭐ Умный помощник ⭐ ПРЕМЬЕРА на канале Союзмультфильм 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZmxuSSPeNVQ/hqdefault.jpg"
+      },
+      {
+        "id": "b9WuhnSN-OY",
+        "title": "Новое Простоквашино ⭐ Сальто Марго ⭐ ПРЕМЬЕРА на канале Союзмультфильм 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/b9WuhnSN-OY/hqdefault.jpg"
+      },
+      {
+        "id": "GvyXItfVYvY",
+        "title": "Новое Простоквашино ⭐ Иван Купала ⭐ ПРЕМЬЕРА на канале Союзмультфильм 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GvyXItfVYvY/hqdefault.jpg"
+      },
+      {
+        "id": "BF6TjdsfV_M",
+        "title": "Простоквашино. Все серии (Prostokvashino) — Советские мультики — Золотая коллекция Soyuzmulfilm",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BF6TjdsfV_M/hqdefault.jpg"
+      },
+      {
+        "id": "BcOzm2FaJDk",
+        "title": "Новое Простоквашино ⭐ Телепорт 🐮 Премьера на канале Союзмультфильм 2025",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BcOzm2FaJDk/hqdefault.jpg"
+      },
+      {
+        "id": "CkH2-BO2Ch8",
+        "title": "Новое Простоквашино ⭐ Звёзды в Простоквашино ⭐ Союзмультфильм 2024",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CkH2-BO2Ch8/hqdefault.jpg"
+      },
+      {
+        "id": "MBckjH2_kLY",
+        "title": "Новое ПРОСТОКВАШИНО 🐶🐱 Кулинарная битва 🍴 Новая серия ⭐ Сборник мультфильмов | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MBckjH2_kLY/hqdefault.jpg"
+      },
+      {
+        "id": "ZFqLAaZxPKQ",
+        "title": "Новое Простоквашино 🐶 Неспящие в Простоквашино 🐱 Классные Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZFqLAaZxPKQ/hqdefault.jpg"
+      },
+      {
+        "id": "w1FjnKgzYYc",
+        "title": "Новое Простоквашино 🎤 Молниеносный сюрприз 🎤 ПРЕМЬЕРА на канале Союзмультфильм 2025",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/w1FjnKgzYYc/hqdefault.jpg"
+      },
+      {
+        "id": "qD3EkvqcRRI",
+        "title": "Новое Простоквашино  😼  День Да  🐶  Лучшие мультфильмы для детей 🎬 Даша ТВ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/qD3EkvqcRRI/hqdefault.jpg"
+      },
+      {
+        "id": "gS5QSh3zjKE",
+        "title": "Новое Простоквашино ⭐ Танец фей ⭐ ПРЕМЬЕРА на канале Союзмультфильм 2025",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gS5QSh3zjKE/hqdefault.jpg"
+      },
+      {
+        "id": "_LIlCECtjkQ",
+        "title": "Новое Простоквашино 🌸 Деревенский романс 🌸 ПРЕМЬЕРА на канале Союзмультфильм 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_LIlCECtjkQ/hqdefault.jpg"
+      },
+      {
+        "id": "vMoavNdDONo",
+        "title": "Новое Простоквашино 🐱 ЛУЧШИЕ СЕРИИ 2024 🐶 Союзмультфильм",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vMoavNdDONo/hqdefault.jpg"
+      },
+      {
+        "id": "zzr6Dpii_QI",
+        "title": "Новое Простоквашино ⭐ Сборник самых чилловых серий ⭐ Союзмультфильм 2024",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zzr6Dpii_QI/hqdefault.jpg"
+      },
+      {
+        "id": "HDqT-zZD3LE",
+        "title": "Новое Простоквашино ⭐ Страшилки 👻 Премьера на канале Союзмультфильм 2023",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HDqT-zZD3LE/hqdefault.jpg"
+      },
+      {
+        "id": "_F_Va2nwxss",
+        "title": "Новое Простоквашино ВСЕ серии подряд (71-80) - Союзмультфильм HD",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_F_Va2nwxss/hqdefault.jpg"
+      },
+      {
+        "id": "gYO9VhFaAos",
+        "title": "Новое Простоквашино - Что в посылке? сборник Союзмультфильм HD",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gYO9VhFaAos/hqdefault.jpg"
+      },
+      {
+        "id": "HRxNN5ZytiE",
+        "title": "Новое Простоквашино ⭐ Золотая карта 💳 премьера на канале Союзмультфильм 2022",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HRxNN5ZytiE/hqdefault.jpg"
+      },
+      {
+        "id": "yaOKr7fQoK0",
+        "title": "Новое Простоквашино ⭐ Битва инструментов ⭐ ПРЕМЬЕРА на канале Союзмультфильм 2025",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yaOKr7fQoK0/hqdefault.jpg"
+      },
+      {
+        "id": "4cWjDk6-uHg",
+        "title": "Трое из Простоквашино. Все серии - Советские мультфильмы - Золотая коллекция СССР",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4cWjDk6-uHg/hqdefault.jpg"
+      },
+      {
+        "id": "Tujf1Q2CtFs",
+        "title": "Трое из Простоквашино — все серии",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Tujf1Q2CtFs/hqdefault.jpg"
+      },
+      {
+        "id": "IVL1sk_2xM4",
+        "title": "Трое из простоквашино (все серии)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/IVL1sk_2xM4/hqdefault.jpg"
+      },
+      {
+        "id": "U8qG-HJHIIM",
+        "title": "Трое из Простоквашино (Troe iz Prostokvashino) - Золотая коллекция Союзмультфильм",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/U8qG-HJHIIM/hqdefault.jpg"
+      },
+      {
+        "id": "GczLkYL9HgE",
+        "title": "\"ТРОЕ ИЗ ПРОСТОКВАШИНО\" - Жуткая тайна мультфильма.",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GczLkYL9HgE/hqdefault.jpg"
+      },
+      {
+        "id": "axXU5xZDoPw",
+        "title": "Трое из Простоквашино в HD качестве",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/axXU5xZDoPw/hqdefault.jpg"
+      },
+      {
+        "id": "2LU4ZGulDvI",
+        "title": "Каникулы в Простоквашино (1980)  —  Советские мультфильмы  —  Золотая коллекция Soyuzmulfilm",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2LU4ZGulDvI/hqdefault.jpg"
+      },
+      {
+        "id": "rpR3rwytWkQ",
+        "title": "Three from Prostokvashino (1978)🔥 Full Version in HD | Soviet Cartoons | Matroskin, Sharik, Uncl",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/rpR3rwytWkQ/hqdefault.jpg"
+      },
+      {
+        "id": "4ZDHjWgzxpc",
+        "title": "Трое из Простоквашино задом наперед",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4ZDHjWgzxpc/hqdefault.jpg"
+      },
+      {
+        "id": "vhfsE7ABj20",
+        "title": "Новое Простоквашино ⭐ Матроскошарик 🐮 Премьера на канале Союзмультфильм 2023",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vhfsE7ABj20/hqdefault.jpg"
+      },
+      {
+        "id": "jqiJjyAVV8g",
+        "title": "Новое Простоквашино ⭐ Матроскин в сахаре 🐮 Премьера на канале Союзмультфильм 2023",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jqiJjyAVV8g/hqdefault.jpg"
+      },
+      {
+        "id": "DplwcR8FF8E",
+        "title": "Новое Простоквашино ⭐ Розыгрыш - Новая серия! ⭐ Премьера на канале Классные Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/DplwcR8FF8E/hqdefault.jpg"
+      },
+      {
+        "id": "jFj0YKTMjyc",
+        "title": "Новое Простоквашино ⭐ Два Матроскина 🐮 Премьера на канале Союзмультфильм 2023",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jFj0YKTMjyc/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUHS2LM1n3f5cyL-ebgkqyLw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/APy0ziPwGW4/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "poznavatel-lp",
+    "name": "Любопытный Познаватель",
+    "emoji": "🧪",
+    "color": "#fd79a8",
+    "desc": "Второй канал Познавателя — опыты, роботы, антистрессы.",
+    "subs": "2 млн",
+    "channelId": "UC8aM33vIJaCUdEcVPf72s0g",
+    "uploads": "UU8aM33vIJaCUdEcVPf72s0g",
+    "icon": "https://i.ytimg.com/vi/_JvpPu7D1V4/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "_JvpPu7D1V4",
+        "title": "ДЕЛАЮ КИНДЕР ДЖОЙ АНТИСТРЕСС! ПОЛУЧИТСЯ ЛИ?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_JvpPu7D1V4/hqdefault.jpg"
+      },
+      {
+        "id": "JMV1CrHNeMA",
+        "title": "Я НАШЕЛ ЭТО ВНУТРИ РОБОТА EILIKO",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JMV1CrHNeMA/hqdefault.jpg"
+      },
+      {
+        "id": "1w4KnGt_PKY",
+        "title": "ЭТОГО РОБОТА ELIKO ЗАХОЧЕТ КАЖДЫЙ ?!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1w4KnGt_PKY/hqdefault.jpg"
+      },
+      {
+        "id": "tSvNM_ccvEw",
+        "title": "УНИТАЗ-КОНДИТЕР? Пропустил шоколад Киндер через Шоколадную Фабрику!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tSvNM_ccvEw/hqdefault.jpg"
+      },
+      {
+        "id": "YLSobxXKjrk",
+        "title": "Сделал ОГРОМНЫЙ ЖЕЛЕЙНЫЙ АРБУЗ И ЦВЕТНОЙ ПОПКОРН | ЛП",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YLSobxXKjrk/hqdefault.jpg"
+      },
+      {
+        "id": "lSmMo-JmKDA",
+        "title": "СДЕЛАЛ СЛАДКУЮ ВАТУ ИЗ ЖЕЛЕЙНОГО МЕДВЕДЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lSmMo-JmKDA/hqdefault.jpg"
+      },
+      {
+        "id": "v-qO1YFA2mY",
+        "title": "ЧТО ЕСЛИ СДЕЛАТЬ ШОКОЛАДНЫЙ ФОНТАН ИЗ 35 КИНДЕР СЮРПРИЗОВ! ЛП",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/v-qO1YFA2mY/hqdefault.jpg"
+      },
+      {
+        "id": "_1ys0AxUo1c",
+        "title": "СДЕЛАЛ ВАФЛИ AMONG US. ИХ ВООБЩЕ ЕСТЬ МОЖНО?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_1ys0AxUo1c/hqdefault.jpg"
+      },
+      {
+        "id": "3GmOJRJrg-w",
+        "title": "ЧТО ВНУТРИ У 36 АНТИСТРЕССОВ???",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3GmOJRJrg-w/hqdefault.jpg"
+      },
+      {
+        "id": "5mBHVgsjy4o",
+        "title": "ЧТО ВНУТРИ? Проверяем антистрессы на прочность блендером",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5mBHVgsjy4o/hqdefault.jpg"
+      },
+      {
+        "id": "MMdsrCZ7GQ8",
+        "title": "СЛАДКАЯ СОЛОМКА ПРОТИВ ШОКОЛАДНЫЙ ФОНТАН | РЕЦЕПТЫ ОТ ЛП",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MMdsrCZ7GQ8/hqdefault.jpg"
+      },
+      {
+        "id": "CtQLZzwFIDc",
+        "title": "Я ЗАЖАРИЛ ЖЕЛЕЙНОГО МЕДВЕДЯ | ВАФЕЛЬНИЦА ПРОТИВ КОНФЕТ ЭКСПЕРИМЕНТ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CtQLZzwFIDc/hqdefault.jpg"
+      },
+      {
+        "id": "Q2BMcMI-xOQ",
+        "title": "ЧТО ВНУТРИ У POP IT АНТИСТРЕССА ИЛИ 13 АНТИСТРЕССОВ | ОПЫТЫ И ЭКСПЕРИМЕНТЫ ПОЗНАВАТЕЛЬ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Q2BMcMI-xOQ/hqdefault.jpg"
+      },
+      {
+        "id": "EsV7sM545II",
+        "title": "ЧТО ВНУТРИ У АНТИСТРЕССА  ?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/EsV7sM545II/hqdefault.jpg"
+      },
+      {
+        "id": "E5pnnTk7GlU",
+        "title": "ЧТО ЕСЛИ СДЕЛАТЬ ЖЕЛЕЙНЫЙ АРБУЗ | РЕЦЕПТ ЖЕЛЕЙНОГО АРБУЗА | ОПЫТ И ЭКСПЕРИМЕНТ ЖЕЛЕЙНЫЙ АРБУЗ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E5pnnTk7GlU/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU8aM33vIJaCUdEcVPf72s0g",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_JvpPu7D1V4/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "masha",
+    "name": "Маша и Медведь",
+    "emoji": "🐻",
+    "color": "#e74c3c",
+    "desc": "Серии про Машу и Медведя.",
+    "subs": "60.5 млн",
+    "channelId": "UCRv76wLBC73jiP7LX4C3l8Q",
+    "uploads": "UURv76wLBC73jiP7LX4C3l8Q",
+    "icon": "https://i.ytimg.com/vi/4xl1ESCGmRI/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "4xl1ESCGmRI",
+        "title": "И во сне такое не приснится... 💫🐟 #Shorts #машаимедведь #ЛовисьРыбка #MashaandtheBear #ТриЖелани",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4xl1ESCGmRI/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "xasz8xv5vrk",
+        "title": "Маша и Медведь 🔴 Больше всего просмотров на Youtube! ▶️ Коллекция серий про Машу 🎬Мультики для д",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xasz8xv5vrk/hqdefault.jpg"
+      },
+      {
+        "id": "eJcFdSbYVA8",
+        "title": "У ты, моя деточка! 🥰👶 #Shorts #машаимедведь #БольшаяСтирка #MashaandtheBear #cartoon #kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eJcFdSbYVA8/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "7aMoH_-h2vw",
+        "title": "🔴 ПРЯМОЙ ЭФИР! LIVE Маша и Медведь 👱‍♀️🐻 Какой Мишка настоящий? 🐻🐻‍❄️🐼",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7aMoH_-h2vw/hqdefault.jpg"
+      },
+      {
+        "id": "YMjCxidMYsU",
+        "title": "🔴 ПРЯМОЙ ЭФИР! LIVE Маша и Медведь 💥 СЕКРЕТНАЯ СЕРИЯ! 💥 Бум-бум-барашек 🐏 🤗",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YMjCxidMYsU/hqdefault.jpg"
+      },
+      {
+        "id": "JxcG3ntI9qg",
+        "title": "Газ в пол — перелетел через забор! 🌪️🚧 #Shorts #машаимедведь #КарусельКарусель #MashaandtheBear",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JxcG3ntI9qg/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "Q3vC2Q-pB7w",
+        "title": "Маша и Медведь 💥 НОВАЯ СЕРИЯ + 1! 💥 День варенья 🍎🍒  Коллекция мультиков про Машу",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Q3vC2Q-pB7w/hqdefault.jpg"
+      },
+      {
+        "id": "HUANVIe6tuE",
+        "title": "Уступил по-джентльменски 🎩🤝 #Shorts #машаимедведь #ДеньВаренья #MashaandtheBear #cartoon #kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HUANVIe6tuE/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "u4nWjsGeZNk",
+        "title": "Маша и Медведь 💥 НОВАЯ СЕРИЯ! 💥 Карусель, карусель 🎠🐺🥨 Коллекция мультиков про Машу",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/u4nWjsGeZNk/hqdefault.jpg"
+      },
+      {
+        "id": "I8DTVDb79rQ",
+        "title": "Почему видео бесконечное? 😳♾️ #Shorts #машаимедведь #ДоЧегоДошёлПрогресс #MashaandtheBear #kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/I8DTVDb79rQ/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "jpJcGbJTu5I",
+        "title": "Маша и Медведь 😇✅ Плохиш или Умница? 😈❌ Коллекция лучших серий про Машу 🎬 Мультики для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jpJcGbJTu5I/hqdefault.jpg"
+      },
+      {
+        "id": "Pq1Zld8Q1oM",
+        "title": "🔴 ПРЯМОЙ ЭФИР! LIVE Маша и Медведь💥 НОВАЯ СЕРИЯ 💥 Карусель, карусель 🎠🐺🥨",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Pq1Zld8Q1oM/hqdefault.jpg"
+      },
+      {
+        "id": "7yQePy3iNfY",
+        "title": "1, 2, 3, 4, 5… ⏳ 🕒 #Shorts #машаимедведь #ЧтоВнутри #MashaandtheBear #cartoon #kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7yQePy3iNfY/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "T_TvUkzptYU",
+        "title": "Самая ЖУТКАЯ комната в Парке чудес! 👻👹 #Shorts #машаимедведь #КарусельКарусель #MashaandtheBear",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/T_TvUkzptYU/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "8DbYQBBq8G0",
+        "title": "Смотри до конца! Волки или Бык? 🐺🐂 #Shorts #машаимедведь #КарусельКарусель #MashaandtheBear #car",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8DbYQBBq8G0/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UURv76wLBC73jiP7LX4C3l8Q",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4xl1ESCGmRI/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "siniy-traktor",
+    "name": "Синий трактор",
+    "emoji": "🚜",
+    "color": "#3498db",
+    "desc": "Песенки и мультики для малышей.",
+    "subs": "11.6 млн",
+    "channelId": "UCAC2gMyB4R2hCBTU3nitSCg",
+    "uploads": "UUAC2gMyB4R2hCBTU3nitSCg",
+    "icon": "https://i.ytimg.com/vi/1MZr0TB6uHA/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "1MZr0TB6uHA",
+        "title": "Синий трактор в деревне - ЧЕМПИОНАТ ПО ПАХОТЕ - Мультфильм для детей малышей про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1MZr0TB6uHA/hqdefault.jpg"
+      },
+      {
+        "id": "v5kRUeSxK-M",
+        "title": "Синий трактор - Ссора - Мультик про машинки на детской площадке",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/v5kRUeSxK-M/hqdefault.jpg"
+      },
+      {
+        "id": "iLhgwAzMVNY",
+        "title": "Синий трактор в Деревне - БОЛЬШОЙ ПРАЗДНИК - Мультфильм для детей малышей про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iLhgwAzMVNY/hqdefault.jpg"
+      },
+      {
+        "id": "GPkO0e6xDLw",
+        "title": "Синий трактор - ПЛАСТЫРЬ - Синий трактор на детской площадке",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GPkO0e6xDLw/hqdefault.jpg"
+      },
+      {
+        "id": "yqqpilhRsRY",
+        "title": "Синий трактор - ДЕНЬ РОЖДЕНИЯ - Песенка мультик для детей малышей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yqqpilhRsRY/hqdefault.jpg"
+      },
+      {
+        "id": "l-_zYIEcm1k",
+        "title": "Синий трактор на детской площадке - Большой Секрет - Мультики для детей про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/l-_zYIEcm1k/hqdefault.jpg"
+      },
+      {
+        "id": "61mJgX7cliA",
+        "title": "Синий трактор По полям #мультик #пополям #синийтрактор #kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/61mJgX7cliA/hqdefault.jpg"
+      },
+      {
+        "id": "ldqVslqMbaU",
+        "title": "Синий трактор на детской площадке - Потерянный болтик - Мультики про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ldqVslqMbaU/hqdefault.jpg"
+      },
+      {
+        "id": "VST6mWRktog",
+        "title": "Синий трактор и Грузовик | Волшебный КУБИК | Игры Синего трактора",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VST6mWRktog/hqdefault.jpg"
+      },
+      {
+        "id": "f14OLz8fzbA",
+        "title": "Синий трактор - Соска Уникальный видеосервис Биг Папа Гифтс",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/f14OLz8fzbA/hqdefault.jpg"
+      },
+      {
+        "id": "6QBxhMXEEtw",
+        "title": "Синий трактор - Гусеница | Новая серия мультик про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6QBxhMXEEtw/hqdefault.jpg"
+      },
+      {
+        "id": "Jk2o20aq72A",
+        "title": "Синий трактор | Робот 3 | Мультики про машинки на детской площадке",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Jk2o20aq72A/hqdefault.jpg"
+      },
+      {
+        "id": "5qkkHsc41dM",
+        "title": "Синий трактор и Друзья Машинки Учатся дружить - Дружба",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5qkkHsc41dM/hqdefault.jpg"
+      },
+      {
+        "id": "Q8Vb09yz9Zg",
+        "title": "Синий трактор - Полицейский Грузовик - Мультики про машинки для детей малышей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Q8Vb09yz9Zg/hqdefault.jpg"
+      },
+      {
+        "id": "wlcqMDx-fgQ",
+        "title": "Синий трактор на детской площадке - ТУМАН - мультики про машинки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wlcqMDx-fgQ/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUAC2gMyB4R2hCBTU3nitSCg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1MZr0TB6uHA/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "mimishki",
+    "name": "Ми-ми-мишки",
+    "emoji": "🐼",
+    "color": "#9b59b6",
+    "desc": "Кеша, Тучка и их друзья.",
+    "subs": "5.6 млн",
+    "channelId": "UCM3vklq_KgWZDmbfg_0Yg_A",
+    "uploads": "UUM3vklq_KgWZDmbfg_0Yg_A",
+    "icon": "https://i.ytimg.com/vi/QLSEotBVrC8/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "QLSEotBVrC8",
+        "title": "Джи Джи Бонд: Супергонщик — Боевой дух крепнет — серия 23 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QLSEotBVrC8/hqdefault.jpg"
+      },
+      {
+        "id": "01VcqOmLhyw",
+        "title": "НОВАЯ 257 серия — Руконог  — Ми-ми-мишки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/01VcqOmLhyw/hqdefault.jpg"
+      },
+      {
+        "id": "_qqYgNTVTzA",
+        "title": "Как Жоржик всё перепутал — КОШЕЧКИ-СОБАЧКИ — Сборник летних серий",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_qqYgNTVTzA/hqdefault.jpg"
+      },
+      {
+        "id": "AplGJ-Cq0og",
+        "title": "Джи Джи Бонд: Супергонщик — Лучший напарник — серия 22 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/AplGJ-Cq0og/hqdefault.jpg"
+      },
+      {
+        "id": "SI1J6-m5Mi0",
+        "title": "Джи Джи Бонд: Супергонщик — Союз сильнейших — серия 21 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SI1J6-m5Mi0/hqdefault.jpg"
+      },
+      {
+        "id": "ZakVw23-Zy4",
+        "title": "Джи Джи Бонд: Супергонщик — Пилот и болид едины — серия 20 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZakVw23-Zy4/hqdefault.jpg"
+      },
+      {
+        "id": "edzwJpCHmyI",
+        "title": "Джи Джи Бонд: Супергонщик — Идеально подходящий болид — серия 19 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/edzwJpCHmyI/hqdefault.jpg"
+      },
+      {
+        "id": "o9h2bFb3P8c",
+        "title": "Джи Джи Бонд: Супергонщик — Крах в шаге от успеха — серия 18 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/o9h2bFb3P8c/hqdefault.jpg"
+      },
+      {
+        "id": "i4st1-ag0wY",
+        "title": "Джи Джи Бонд: Супергонщик — Дружба двух команд  — серия 17 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/i4st1-ag0wY/hqdefault.jpg"
+      },
+      {
+        "id": "aV0H7ri34zk",
+        "title": "Джи Джи Бонд: Супергонщик — Снег в июне  — серия 16 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aV0H7ri34zk/hqdefault.jpg"
+      },
+      {
+        "id": "LvMuSkbL2Zw",
+        "title": "НОВАЯ 256 серия — Обманщики — Ми-ми-мишки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LvMuSkbL2Zw/hqdefault.jpg"
+      },
+      {
+        "id": "TL1Ytl8UG0w",
+        "title": "Джи Джи Бонд: Супергонщик — Обещания и договорённости — серия 26 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TL1Ytl8UG0w/hqdefault.jpg"
+      },
+      {
+        "id": "sr88ydWEakk",
+        "title": "Джи Джи Бонд: Супергонщик — Призрак барханов — серия 25 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sr88ydWEakk/hqdefault.jpg"
+      },
+      {
+        "id": "hSCRpJNQ2Oo",
+        "title": "Джи Джи Бонд: Супергонщик — Раскрывается заговор — серия 24 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hSCRpJNQ2Oo/hqdefault.jpg"
+      },
+      {
+        "id": "jBMa8WdMUg8",
+        "title": "Джи Джи Бонд: Супергонщик — Команда «Фортуна» — серия 15 сезон 10",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jBMa8WdMUg8/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUM3vklq_KgWZDmbfg_0Yg_A",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QLSEotBVrC8/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "luntik",
+    "name": "Лунтик",
+    "emoji": "🟣",
+    "color": "#8e44ad",
+    "desc": "Лунтик и его друзья.",
+    "subs": "9.2 млн",
+    "channelId": "UCdgDIIKpFlpHB1L0LZnh5EQ",
+    "uploads": "UUdgDIIKpFlpHB1L0LZnh5EQ",
+    "icon": "https://i.ytimg.com/vi/WmiWSFWKgRI/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "WmiWSFWKgRI",
+        "title": "Лунтик. Обратная сторона луны | В кино с 27 августа #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WmiWSFWKgRI/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "Ruzd0bubXbA",
+        "title": "Лунтик ☀️ Последние деньки лета 👒 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Ruzd0bubXbA/hqdefault.jpg"
+      },
+      {
+        "id": "5WZCYIaFz7I",
+        "title": "Лунтик. Обратная сторона луны | В кино с 27 августа #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5WZCYIaFz7I/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "fKOGPq5C2DM",
+        "title": "Лунтик. Обратная сторона луны | В кино с 27 августа #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fKOGPq5C2DM/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "H34Ty7az6IA",
+        "title": "Лунтик. Обратная сторона луны | В кино с 27 августа #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/H34Ty7az6IA/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "STAI-Zww-Ow",
+        "title": "Лунтик 📖 Скоро в школу ✏️ Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/STAI-Zww-Ow/hqdefault.jpg"
+      },
+      {
+        "id": "RXvARBLUOFo",
+        "title": "Лунтик 🔭 Лунный альбом 🌕📷 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RXvARBLUOFo/hqdefault.jpg"
+      },
+      {
+        "id": "fBpyfY4jVJA",
+        "title": "Лунтик 💃 Танцы на поляне 💃 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fBpyfY4jVJA/hqdefault.jpg"
+      },
+      {
+        "id": "_aIN5xBoT-Q",
+        "title": "Лунтик 🌈 Что скрывает лес? 🌲 30 минут любимых приключений | Мультики для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_aIN5xBoT-Q/hqdefault.jpg"
+      },
+      {
+        "id": "TxcUnJKUIsA",
+        "title": "Лунтик ⚡ Гроза на поляне ⛈️ Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TxcUnJKUIsA/hqdefault.jpg"
+      },
+      {
+        "id": "TGITb9I0BbI",
+        "title": "Лунтик 👵 Баба Капа: Самые добрые моменты 🧁 Сборник для всей семьи",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TGITb9I0BbI/hqdefault.jpg"
+      },
+      {
+        "id": "xygDQGc5mbQ",
+        "title": "Лунтик 🌟 Мечты Вупсеня и Пупсеня 🦋 Сборник мультиков для детей 🍃",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xygDQGc5mbQ/hqdefault.jpg"
+      },
+      {
+        "id": "ubRkR2cC4RM",
+        "title": "Лунтик 🌲 По грибы и ягоды 🍄🍓 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ubRkR2cC4RM/hqdefault.jpg"
+      },
+      {
+        "id": "JLlc2FfDRI8",
+        "title": "Лунтик ⚓ Морские сокровища 💎 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JLlc2FfDRI8/hqdefault.jpg"
+      },
+      {
+        "id": "O6WItatCXk8",
+        "title": "Лунтик ✨ Секреты добрых дел и большие приключения друзей 🌟 Мультики для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/O6WItatCXk8/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUdgDIIKpFlpHB1L0LZnh5EQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WmiWSFWKgRI/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "barboskiny",
+    "name": "Барбоскины",
+    "emoji": "🐕",
+    "color": "#e67e22",
+    "desc": "Семья Барбоскиных.",
+    "subs": "8.9 млн",
+    "channelId": "UC2el0G8cIcOOdjlHy2KOBkQ",
+    "uploads": "UU2el0G8cIcOOdjlHy2KOBkQ",
+    "icon": "https://i.ytimg.com/vi/V5Isdf4XaYg/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "V5Isdf4XaYg",
+        "title": "Барбоскины 🎒 Все, что нужно для школы 📚 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/V5Isdf4XaYg/hqdefault.jpg"
+      },
+      {
+        "id": "OL1LeBfUB1s",
+        "title": "Барбоскины 👗 Школьная мода 🎒 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OL1LeBfUB1s/hqdefault.jpg"
+      },
+      {
+        "id": "jizepRQB264",
+        "title": "Барбоскины 🎒 Скоро в школу! 📚 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jizepRQB264/hqdefault.jpg"
+      },
+      {
+        "id": "i14NmEQGKaU",
+        "title": "Барбоскины 🍂 Последние дни каникул 🎒 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/i14NmEQGKaU/hqdefault.jpg"
+      },
+      {
+        "id": "gg5a0h7jKtY",
+        "title": "Барбоскины: Марафон серий на 30 минут 🏃‍♂️🏆 Мультики для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gg5a0h7jKtY/hqdefault.jpg"
+      },
+      {
+        "id": "k5Sv1tkTxMY",
+        "title": "Барбоскины ✨ Эликсир хорошего настроения ✨ Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/k5Sv1tkTxMY/hqdefault.jpg"
+      },
+      {
+        "id": "SJmbkQZ7_B0",
+        "title": "Барбоскины 🍦🍨🍧 Готовим мороженое 🍧🍨🍦 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SJmbkQZ7_B0/hqdefault.jpg"
+      },
+      {
+        "id": "jwsRy4u-Dmo",
+        "title": "Барбоскины | Домашние приключения 🏠 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jwsRy4u-Dmo/hqdefault.jpg"
+      },
+      {
+        "id": "BdBi0J1xasM",
+        "title": "Барбоскины: Улётные каникулы! 🎢🍦 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BdBi0J1xasM/hqdefault.jpg"
+      },
+      {
+        "id": "K-q00Rbx5_g",
+        "title": "Барбоскины | Лучшие игры ⚽🎮🏀 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/K-q00Rbx5_g/hqdefault.jpg"
+      },
+      {
+        "id": "CCj2RvIIwk0",
+        "title": "Барбоскины: Большая битва за урожай! 🍎🚜 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CCj2RvIIwk0/hqdefault.jpg"
+      },
+      {
+        "id": "swWB2smUTMU",
+        "title": "Барбоскины 🎬 Такие разные истории 📚 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/swWB2smUTMU/hqdefault.jpg"
+      },
+      {
+        "id": "eI97gqPM9Ec",
+        "title": "Барбоскины 🏡🌿 Дачный переполох 🗑🧹 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eI97gqPM9Ec/hqdefault.jpg"
+      },
+      {
+        "id": "ApWF_6Dc_uA",
+        "title": "Барбоскины 🍫🍫🍫 Шоколадный день 🍫🍫🍫 Сборник мультиков для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ApWF_6Dc_uA/hqdefault.jpg"
+      },
+      {
+        "id": "U9R3s8IjLLU",
+        "title": "Барбоскины 🔥 Тайна ночи на Ивана Купалу 💦 Сборник для всей семьи",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/U9R3s8IjLLU/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU2el0G8cIcOOdjlHy2KOBkQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/V5Isdf4XaYg/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "buba",
+    "name": "Буба",
+    "emoji": "👻",
+    "color": "#1abc9c",
+    "desc": "Буба — смешные серии.",
+    "subs": "5.2 млн",
+    "channelId": "UCoP1_wpRZj-qmmVUCGz3_Aw",
+    "uploads": "UUoP1_wpRZj-qmmVUCGz3_Aw",
+    "icon": "https://i.ytimg.com/vi/FrnnD0p07AQ/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "FrnnD0p07AQ",
+        "title": "⭕ БУБА LIVE: НОВЫЕ ВЕСЕЛЫЕ СЕРИИ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/FrnnD0p07AQ/hqdefault.jpg"
+      },
+      {
+        "id": "QdzowNh0vWg",
+        "title": "🔴 ПРЯМОЙ ЭФИР БУБЫ! ВСЕ ПРИКЛЮЧЕНИЯ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QdzowNh0vWg/hqdefault.jpg"
+      },
+      {
+        "id": "xp9hGEERuG4",
+        "title": "Буба - Чердак VS Подвал - Мультфильм для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xp9hGEERuG4/hqdefault.jpg"
+      },
+      {
+        "id": "AKnIrXFsjRA",
+        "title": "⭕ ПРЯМОЙ ЭФИР: БУБА И ЕГО ВЕСЕЛЫЕ ПРОДЕЛКИ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/AKnIrXFsjRA/hqdefault.jpg"
+      },
+      {
+        "id": "A9T-Vvo-uYA",
+        "title": "Счастливые питомцы - Мультфильм для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/A9T-Vvo-uYA/hqdefault.jpg"
+      },
+      {
+        "id": "syDGWP4j36M",
+        "title": "🔴 БУБА - ПОДБОРКА ВСЕХ СЕРИЙ ОНЛАЙН",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/syDGWP4j36M/hqdefault.jpg"
+      },
+      {
+        "id": "CNDs_Vk3uhY",
+        "title": "🔴 БУБА - ПОДБОРКА ВСЕХ СЕРИЙ ОНЛАЙН",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CNDs_Vk3uhY/hqdefault.jpg"
+      },
+      {
+        "id": "FQhvxfNrMA4",
+        "title": "⭕ БУБА LIVE: ВЕСЁЛЫЕ ШАЛОСТИ БУБЫ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/FQhvxfNrMA4/hqdefault.jpg"
+      },
+      {
+        "id": "gcKZRR4ZCUk",
+        "title": "⭕ БУБА LIVE: ВЕСЁЛЫЕ ШАЛОСТИ БУБЫ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gcKZRR4ZCUk/hqdefault.jpg"
+      },
+      {
+        "id": "jU_CG8dlrRQ",
+        "title": "Буба - Урожай яблок - Мультфильм для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jU_CG8dlrRQ/hqdefault.jpg"
+      },
+      {
+        "id": "kcUOKSrgOrQ",
+        "title": "⭕ БУБА LIVE: ВЕСЁЛЫЕ ШАЛОСТИ БУБЫ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kcUOKSrgOrQ/hqdefault.jpg"
+      },
+      {
+        "id": "21tbPNZZBRQ",
+        "title": "🔴 БУБА - ПОДБОРКА ВСЕХ СЕРИЙ ОНЛАЙН",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/21tbPNZZBRQ/hqdefault.jpg"
+      },
+      {
+        "id": "SWrvpFmCNF8",
+        "title": "🔴 БУБА - ПОДБОРКА ВСЕХ СЕРИЙ ОНЛАЙН",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SWrvpFmCNF8/hqdefault.jpg"
+      },
+      {
+        "id": "qr7DDDSaY2A",
+        "title": "🔴 СМОТРИ БУБУ LIVE: ПРИКЛЮЧЕНИЯ БЕЗ КОНЦА!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/qr7DDDSaY2A/hqdefault.jpg"
+      },
+      {
+        "id": "8uZC-MBtPJY",
+        "title": "Буба открывает мир! 🌍 Мультфильм для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8uZC-MBtPJY/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUoP1_wpRZj-qmmVUCGz3_Aw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/FrnnD0p07AQ/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "skaz-patrul",
+    "name": "Сказочный патруль",
+    "emoji": "✨",
+    "color": "#e84393",
+    "desc": "Алёнка, Варя, Снежка и Маша.",
+    "subs": "155 тыс.",
+    "channelId": "UC5N5IWYyTXfRfcxm3iF3k0Q",
+    "uploads": "UU5N5IWYyTXfRfcxm3iF3k0Q",
+    "icon": "https://i.ytimg.com/vi/ubog2ib_VaY/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "ubog2ib_VaY",
+        "title": "Лайк, ￼если любите Кешу🤎 #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ubog2ib_VaY/hqdefault.jpg"
+      },
+      {
+        "id": "g2gF6EvJ6t4",
+        "title": "🤖🎪 #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/g2gF6EvJ6t4/hqdefault.jpg"
+      },
+      {
+        "id": "5XYDJU9nKVg",
+        "title": "Как оценили бы песню от 1 до 10?🎪#студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5XYDJU9nKVg/hqdefault.jpg"
+      },
+      {
+        "id": "Z8JZdCTQPGM",
+        "title": "Уже посмотрели новую серию?❤️#студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Z8JZdCTQPGM/hqdefault.jpg"
+      },
+      {
+        "id": "S9Vi_7wFdEg",
+        "title": "🎪🎡🤹 #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/S9Vi_7wFdEg/hqdefault.jpg"
+      },
+      {
+        "id": "-T_F12UylUU",
+        "title": "Как оцениваете Отли?🤖 #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-T_F12UylUU/hqdefault.jpg"
+      },
+      {
+        "id": "OrqTZeCPdzw",
+        "title": "А у вас есть такой друг?✨ #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OrqTZeCPdzw/hqdefault.jpg"
+      },
+      {
+        "id": "nm75EuMtu_o",
+        "title": "А вы долго обдумываете свои действия или чаще поступаете, как Алиса?✨#студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nm75EuMtu_o/hqdefault.jpg"
+      },
+      {
+        "id": "wdYqSO5ZZVA",
+        "title": "Какой сериал смотрите сейчас? #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wdYqSO5ZZVA/hqdefault.jpg"
+      },
+      {
+        "id": "1X0xlpHo4dI",
+        "title": "🙃🙃🙃 #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1X0xlpHo4dI/hqdefault.jpg"
+      },
+      {
+        "id": "e8CAMB2GoxI",
+        "title": "Настроение: отдыхать и смотреть СП❤️ #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/e8CAMB2GoxI/hqdefault.jpg"
+      },
+      {
+        "id": "eZXeFvI8QSQ",
+        "title": "Уже посмотрели новую серию?✨ #студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eZXeFvI8QSQ/hqdefault.jpg"
+      },
+      {
+        "id": "VO38B2nfpLU",
+        "title": "Какие они милые!❤️",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VO38B2nfpLU/hqdefault.jpg"
+      },
+      {
+        "id": "VJ-cBpLox_4",
+        "title": "Один из самых эпичных моментов в истории мультипликации💔#студияпаровоз",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VJ-cBpLox_4/hqdefault.jpg"
+      },
+      {
+        "id": "qHwhd3liRmU",
+        "title": "Какие моменты в фильме впечатлили вас больше всего?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/qHwhd3liRmU/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU5N5IWYyTXfRfcxm3iF3k0Q",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ubog2ib_VaY/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "kapuki",
+    "name": "Капуки Кануки",
+    "emoji": "👶",
+    "color": "#00cec9",
+    "desc": "Игрушки и сюрпризы для детей.",
+    "subs": "5.2 млн",
+    "channelId": "UCBNXKrniCm4Qd9v5tTzY-aA",
+    "uploads": "UUBNXKrniCm4Qd9v5tTzY-aA",
+    "icon": "https://i.ytimg.com/vi/Vc8IOeqMxIU/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "Vc8IOeqMxIU",
+        "title": "Багажная лента готова — коробка мамы Свинки уже здесь!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Vc8IOeqMxIU/hqdefault.jpg"
+      },
+      {
+        "id": "DDJRGiNZ6b8",
+        "title": "Маша Капуки и машинки на пляже - все серии подряд 🔴 ПРЯМОЙ ЭФИР",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/DDJRGiNZ6b8/hqdefault.jpg"
+      },
+      {
+        "id": "qOcg62YtahU",
+        "title": "Игры с машинками МОКАС 🔴 Игры для детей Капуки Кануки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/qOcg62YtahU/hqdefault.jpg"
+      },
+      {
+        "id": "X9T3_60HIUU",
+        "title": "Акулёнок Шарки 🔴 Весёлые игры и морские приключения!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/X9T3_60HIUU/hqdefault.jpg"
+      },
+      {
+        "id": "HCFSZFbAEF4",
+        "title": "Машинки и зайчик Лаки 🔴 Маша Капуки Кануки онлайн | Видео для детей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HCFSZFbAEF4/hqdefault.jpg"
+      },
+      {
+        "id": "PFNJ8acsIgs",
+        "title": "Маша Капуки и свинки строят аэропорт из конструктора",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/PFNJ8acsIgs/hqdefault.jpg"
+      },
+      {
+        "id": "e7-l_9DipJc",
+        "title": "Капуки Машины – железная дорога для паровозика!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/e7-l_9DipJc/hqdefault.jpg"
+      },
+      {
+        "id": "4t3_zmhiMtM",
+        "title": "Маша Капуки и Машинки - Видео сборник с Плей До - все серии 🔴Прямой Эфир",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4t3_zmhiMtM/hqdefault.jpg"
+      },
+      {
+        "id": "0YWCCNk39e4",
+        "title": "Игрушки и Маша Капуки учатся читать — Давай почитаем 🔴 Развивающее видео с игрушками и машинкам",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0YWCCNk39e4/hqdefault.jpg"
+      },
+      {
+        "id": "eTSQpBAjktQ",
+        "title": "Пиранья распугала друзей акулёнка Шарки. Маша спасает рыбок — заманивает злодейку в клетку",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eTSQpBAjktQ/hqdefault.jpg"
+      },
+      {
+        "id": "52Kq1ps5AlQ",
+        "title": "Игры для малышей с машинками Мокас 🔴 Весёлые истории с Машей Капуки и её друзьями",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/52Kq1ps5AlQ/hqdefault.jpg"
+      },
+      {
+        "id": "Hr1qG1e9qck",
+        "title": "Что быстрее поезда? Маша и свинки ищут ответ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Hr1qG1e9qck/hqdefault.jpg"
+      },
+      {
+        "id": "hTgXH0DvxAQ",
+        "title": "Поезд отправляется! Игрушечные свинки едут на поезде и поют",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hTgXH0DvxAQ/hqdefault.jpg"
+      },
+      {
+        "id": "xDlUNYsBbDs",
+        "title": "Песенка Мимилэнд про правила гигиены! Почему важно мыть фрукты и овощи, чтобы оставаться здоровы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xDlUNYsBbDs/hqdefault.jpg"
+      },
+      {
+        "id": "dl4PDwjMEZc",
+        "title": "Игрушки свинки отправляются на море — поезд уже ждёт!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/dl4PDwjMEZc/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUBNXKrniCm4Qd9v5tTzY-aA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Vc8IOeqMxIU/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "like-nastya",
+    "name": "Like Nastya",
+    "emoji": "🎀",
+    "color": "#fd79a8",
+    "desc": "Настя и весёлые приключения.",
+    "subs": "133 млн",
+    "channelId": "UCJplp5SjeGSdVdwsfb9Q7lQ",
+    "uploads": "UUJplp5SjeGSdVdwsfb9Q7lQ",
+    "icon": "https://i.ytimg.com/vi/1w0pmLmDqc8/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "1w0pmLmDqc8",
+        "title": "Nastya and a fictional story about toys coming to life at school",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1w0pmLmDqc8/hqdefault.jpg"
+      },
+      {
+        "id": "agN7hD8eZik",
+        "title": "Nastya and Friends teach how to save water",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/agN7hD8eZik/hqdefault.jpg"
+      },
+      {
+        "id": "W6NIUlCMlto",
+        "title": "Nastya and Active Games VS phone with friends ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W6NIUlCMlto/hqdefault.jpg"
+      },
+      {
+        "id": "ssPXTpzCJ98",
+        "title": "Nastya and Super heroes escape story",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ssPXTpzCJ98/hqdefault.jpg"
+      },
+      {
+        "id": "jH41oN_LYvQ",
+        "title": "Nastya's friends are making healthy ice cream",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jH41oN_LYvQ/hqdefault.jpg"
+      },
+      {
+        "id": "xx_PLduZCHs",
+        "title": "Funny short with Nastya and her Friend Ezra",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xx_PLduZCHs/hqdefault.jpg"
+      },
+      {
+        "id": "9kHDhG6e0_g",
+        "title": "Nastya and funny DAY with family",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9kHDhG6e0_g/hqdefault.jpg"
+      },
+      {
+        "id": "TeE2tulJHHQ",
+        "title": "Nastya and funny short trend",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TeE2tulJHHQ/hqdefault.jpg"
+      },
+      {
+        "id": "y31micGTsvM",
+        "title": "Nastya and the maze challenge for friends",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/y31micGTsvM/hqdefault.jpg"
+      },
+      {
+        "id": "S_DrRX6m7og",
+        "title": "Nastya is teaching her friend how to make the right decisions",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/S_DrRX6m7og/hqdefault.jpg"
+      },
+      {
+        "id": "T9iMFweIu4k",
+        "title": "Nastya and Ezra - funny challenge with cups",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/T9iMFweIu4k/hqdefault.jpg"
+      },
+      {
+        "id": "iGnJci6RmPA",
+        "title": "Nastya and her friends come up with the most creative ideas DIY",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iGnJci6RmPA/hqdefault.jpg"
+      },
+      {
+        "id": "VMIUHIfgVJY",
+        "title": "Nastya and Evelyn- best friends #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VMIUHIfgVJY/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "7jG1SWPKhlk",
+        "title": "Hide and seek challenge",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7jG1SWPKhlk/hqdefault.jpg"
+      },
+      {
+        "id": "VmveG5Zk0v0",
+        "title": "Nastya created activity camp with friends",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VmveG5Zk0v0/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUJplp5SjeGSdVdwsfb9Q7lQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1w0pmLmDqc8/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vlad-nikita",
+    "name": "Влад и Никита",
+    "emoji": "🎒",
+    "color": "#0984e3",
+    "desc": "Влад и Никита — детский канал.",
+    "subs": "150 млн",
+    "channelId": "UCvlE5gTbOvjiolFlEm-c_Ow",
+    "uploads": "UUvlE5gTbOvjiolFlEm-c_Ow",
+    "icon": "https://i.ytimg.com/vi/VCS4d_krNko/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "VCS4d_krNko",
+        "title": "Superheroes Four Colors Playhouse Challenge",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VCS4d_krNko/hqdefault.jpg"
+      },
+      {
+        "id": "nLWmOvirBWQ",
+        "title": "Elevator Mall Adventure - Kids Learn Safety Rules",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nLWmOvirBWQ/hqdefault.jpg"
+      },
+      {
+        "id": "k1KGBzealWA",
+        "title": "Kids Make Noodles Together | Teamwork Adventures",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/k1KGBzealWA/hqdefault.jpg"
+      },
+      {
+        "id": "PZxxgafKqqk",
+        "title": "Balloon Cars Challenge for kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/PZxxgafKqqk/hqdefault.jpg"
+      },
+      {
+        "id": "W6atV9i5dM8",
+        "title": "Vlad and Niki Restoration Spiderman toy car",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W6atV9i5dM8/hqdefault.jpg"
+      },
+      {
+        "id": "kqdNsJU2KjE",
+        "title": "Explore Dino World with New Paw Patrol game!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kqdNsJU2KjE/hqdefault.jpg"
+      },
+      {
+        "id": "b-FyWoqiNfI",
+        "title": "Hot vs Cold Challenge and Other Fun Stories for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/b-FyWoqiNfI/hqdefault.jpg"
+      },
+      {
+        "id": "5MKDkbhQDoc",
+        "title": "Vlad and Niki - GIANT Fridge Escape Adventure for kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5MKDkbhQDoc/hqdefault.jpg"
+      },
+      {
+        "id": "OwH4gGM1BaU",
+        "title": "Kids built GIANT Lego House with colorful toy blocks!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OwH4gGM1BaU/hqdefault.jpg"
+      },
+      {
+        "id": "11QsI9_cn5U",
+        "title": "Superhero Team Challenge | Fun Adventures for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/11QsI9_cn5U/hqdefault.jpg"
+      },
+      {
+        "id": "RF8HvnPilkk",
+        "title": "Chris and Mike Learn to share - Funny stories with toy ride on cars",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RF8HvnPilkk/hqdefault.jpg"
+      },
+      {
+        "id": "nU6Ne0Vadec",
+        "title": "Mike teaches how to make the right decisions",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nU6Ne0Vadec/hqdefault.jpg"
+      },
+      {
+        "id": "kADI0ecBOYg",
+        "title": "REAL Cardboard Train Challenge for kids!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kADI0ecBOYg/hqdefault.jpg"
+      },
+      {
+        "id": "6JsrntGEDIs",
+        "title": "Kids Learn to Always Be Honest - Funny Car Service Adventures!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6JsrntGEDIs/hqdefault.jpg"
+      },
+      {
+        "id": "iC9OgJGI_YA",
+        "title": "Chris and Mike - Robot Best Friend Story for kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iC9OgJGI_YA/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUvlE5gTbOvjiolFlEm-c_Ow",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VCS4d_krNko/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "smeshariki",
+    "name": "Смешарики",
+    "emoji": "🟡",
+    "color": "#f1c40f",
+    "desc": "Круглые смешарики.",
+    "subs": "4.4 млн",
+    "channelId": "UC5A-Wp9ujcr5g9sYagAafEA",
+    "uploads": "UU5A-Wp9ujcr5g9sYagAafEA",
+    "icon": "https://i.ytimg.com/vi/aGlpJ-jKTnw/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "aGlpJ-jKTnw",
+        "title": "Истории Кроша. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aGlpJ-jKTnw/hqdefault.jpg"
+      },
+      {
+        "id": "CaWjsFNk730",
+        "title": "Дружба у Смешариков. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CaWjsFNk730/hqdefault.jpg"
+      },
+      {
+        "id": "9hydKmGevbk",
+        "title": "География со Смешариками. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9hydKmGevbk/hqdefault.jpg"
+      },
+      {
+        "id": "WMZOy7P92qo",
+        "title": "«Смешарики» и Ozon запустили космический розыгрыш!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WMZOy7P92qo/hqdefault.jpg"
+      },
+      {
+        "id": "210Uibg7gwk",
+        "title": "Работа у Cмешариков. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/210Uibg7gwk/hqdefault.jpg"
+      },
+      {
+        "id": "o99R-TTTMKc",
+        "title": "Интервью с Элли на маковом поле &amp; Максимом Лутчаком о совместном релизе «Фанерное солнце»",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/o99R-TTTMKc/hqdefault.jpg"
+      },
+      {
+        "id": "Ad9zpDxprS4",
+        "title": "Изобретения со Смешариками. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Ad9zpDxprS4/hqdefault.jpg"
+      },
+      {
+        "id": "VZ8HQPShIew",
+        "title": "Ужасные истории Смешариков. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VZ8HQPShIew/hqdefault.jpg"
+      },
+      {
+        "id": "bRUxJT4Sd8g",
+        "title": "ЛУТЧАК, Элли на маковом поле, Смешарики — Фанерное солнце",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bRUxJT4Sd8g/hqdefault.jpg"
+      },
+      {
+        "id": "MtpxIVt--Kw",
+        "title": "Вопрос-ответ с Максимом Лутчаком: о совместном релизе с Элли на маковом поле «Фанерное солнце»",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MtpxIVt--Kw/hqdefault.jpg"
+      },
+      {
+        "id": "0h8lC-YTgBg",
+        "title": "Вопрос-ответ с Максимом Лутчаком: о совместном релизе с Элли на маковом поле «Фанерное солнце»",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0h8lC-YTgBg/hqdefault.jpg"
+      },
+      {
+        "id": "mzMbs1O1T8Y",
+        "title": "Вкусная еда со Смешариками. Лучшие серии - Смешарики 2D. Сборник 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mzMbs1O1T8Y/hqdefault.jpg"
+      },
+      {
+        "id": "bX3_Ip8i9LQ",
+        "title": "СМЕШАРИКИ СКВОЗЬ ВСЕЛЕННЫЕ | Трейлер №2| ПРЕМЬЕРА. В кино с 6 августа",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bX3_Ip8i9LQ/hqdefault.jpg"
+      },
+      {
+        "id": "Lp8oW6PJjEs",
+        "title": "Вопрос-ответ с Элли на маковом поле: о совместном релизе со Смешариками и ЛУТЧАКОМ «Фанерное сол",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Lp8oW6PJjEs/hqdefault.jpg"
+      },
+      {
+        "id": "1RMj44GuaRU",
+        "title": "Вопрос-ответ с Элли на маковом поле: о совместном релизе со Смешариками и ЛУТЧАКОМ «Фанерное сол",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1RMj44GuaRU/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU5A-Wp9ujcr5g9sYagAafEA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aGlpJ-jKTnw/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "soyuzmult",
+    "name": "Союзмультфильм",
+    "emoji": "🎬",
+    "color": "#c0392b",
+    "desc": "Классика и новые серии студии.",
+    "subs": "3.4 млн",
+    "channelId": "UCHS2LM1n3f5cyL-ebgkqyLw",
+    "uploads": "UUHS2LM1n3f5cyL-ebgkqyLw",
+    "icon": "https://i.ytimg.com/vi/6beDWvd0Eco/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "6beDWvd0Eco",
+        "title": "Когда кот хочет с утра поесть 🤣 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6beDWvd0Eco/hqdefault.jpg"
+      },
+      {
+        "id": "3UzP7MJNJLE",
+        "title": "Акира разыграла Маугли 🥹 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3UzP7MJNJLE/hqdefault.jpg"
+      },
+      {
+        "id": "lXwzIONp7Es",
+        "title": "Акира, это просто приколы 😒 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lXwzIONp7Es/hqdefault.jpg"
+      },
+      {
+        "id": "U_LspNhw6AQ",
+        "title": "Походу она училась в другой школе 😅 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/U_LspNhw6AQ/hqdefault.jpg"
+      },
+      {
+        "id": "qz1YE77c6Pw",
+        "title": "Маугли попал в ловушку тигра 🫨 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/qz1YE77c6Pw/hqdefault.jpg"
+      },
+      {
+        "id": "WsEYPwR1ssE",
+        "title": "Когда решили помириться 😇 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WsEYPwR1ssE/hqdefault.jpg"
+      },
+      {
+        "id": "kzuc11xmwO0",
+        "title": "Наш чатик 😋 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kzuc11xmwO0/hqdefault.jpg"
+      },
+      {
+        "id": "IWRr21IpskU",
+        "title": "Как они там оказались? 😳 Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/IWRr21IpskU/hqdefault.jpg"
+      },
+      {
+        "id": "H4s42GB4KMA",
+        "title": "Тигр купил сквиш? 🧐  Маугли и Акира #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/H4s42GB4KMA/hqdefault.jpg"
+      },
+      {
+        "id": "-0-9zOl9-WE",
+        "title": "😼 Знакомьтесь с Мотей — маленьким Матроскиным и главным любителем порядка в мультсериале «Крошки",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-0-9zOl9-WE/hqdefault.jpg"
+      },
+      {
+        "id": "gIcYW6hqUhs",
+        "title": "И они оказались хорошими 🤩 Я Приключения Пети и Волка #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gIcYW6hqUhs/hqdefault.jpg"
+      },
+      {
+        "id": "o7mMHnhl8pU",
+        "title": "Когда таксист не доехал до места 👀 Приключения Пети и Волка #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/o7mMHnhl8pU/hqdefault.jpg"
+      },
+      {
+        "id": "7fPzOKdqjV8",
+        "title": "Когда кот просит есть с утра 🤪 Приключения Пети и Волка #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7fPzOKdqjV8/hqdefault.jpg"
+      },
+      {
+        "id": "ssm6ltELMoU",
+        "title": "Это я съел 😅 Приключения Пети и Волка #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ssm6ltELMoU/hqdefault.jpg"
+      },
+      {
+        "id": "kuG52fV7SRI",
+        "title": "Нет, такое желание нельзя 🥲 Приключения Пети и Волка #союзмультфильм #мультик",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kuG52fV7SRI/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUHS2LM1n3f5cyL-ebgkqyLw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6beDWvd0Eco/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "peppa",
+    "name": "Свинка Пеппа",
+    "emoji": "🐷",
+    "color": "#ff7675",
+    "desc": "Пеппа и друзья на русском.",
+    "subs": "5.5 млн",
+    "channelId": "UCnenDeyXGv5IRYsa3QAGdhQ",
+    "uploads": "UUnenDeyXGv5IRYsa3QAGdhQ",
+    "icon": "https://i.ytimg.com/vi/ROHzDVuy2Ss/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "ROHzDVuy2Ss",
+        "title": "Общая игрушка? | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ROHzDVuy2Ss/hqdefault.jpg"
+      },
+      {
+        "id": "cM6Pi52dzeQ",
+        "title": "Тени  | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cM6Pi52dzeQ/hqdefault.jpg"
+      },
+      {
+        "id": "nOj2qAyvkS0",
+        "title": "Новый динозавр Джорджа | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nOj2qAyvkS0/hqdefault.jpg"
+      },
+      {
+        "id": "U2i7LL7ijl0",
+        "title": "Гоночная машина Джорджа | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/U2i7LL7ijl0/hqdefault.jpg"
+      },
+      {
+        "id": "HifPIVuBFiI",
+        "title": "Пустынный остров | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HifPIVuBFiI/hqdefault.jpg"
+      },
+      {
+        "id": "CRF5bdUNgR0",
+        "title": "Первое Слово Малыша Александрa Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CRF5bdUNgR0/hqdefault.jpg"
+      },
+      {
+        "id": "jYmeyW7oS1M",
+        "title": "Давай поиграем | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jYmeyW7oS1M/hqdefault.jpg"
+      },
+      {
+        "id": "wdNtSzmpkaA",
+        "title": "Новая Игрушка Пеппы | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wdNtSzmpkaA/hqdefault.jpg"
+      },
+      {
+        "id": "nejhXQZ46Cg",
+        "title": "Важное дело Мистера Кролика | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nejhXQZ46Cg/hqdefault.jpg"
+      },
+      {
+        "id": "eQRwnZr_tOw",
+        "title": "Картофельный город | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eQRwnZr_tOw/hqdefault.jpg"
+      },
+      {
+        "id": "ticsYC1GQpk",
+        "title": "Важное дело Мистера Кролика | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ticsYC1GQpk/hqdefault.jpg"
+      },
+      {
+        "id": "uv_uHiHKroc",
+        "title": "Мисс Кролик страхуют все! | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uv_uHiHKroc/hqdefault.jpg"
+      },
+      {
+        "id": "ZnagBiLk0Q8",
+        "title": "Компьютер дедушки Свина | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZnagBiLk0Q8/hqdefault.jpg"
+      },
+      {
+        "id": "51IVbLKOJog",
+        "title": "Ковбойский Лагерь Пони Педро | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/51IVbLKOJog/hqdefault.jpg"
+      },
+      {
+        "id": "fvHqzxnb8lQ",
+        "title": "Огромный телефон Пеппы | Свинка Пеппа на русском все серии подряд | Мультики",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fvHqzxnb8lQ/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUnenDeyXGv5IRYsa3QAGdhQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ROHzDVuy2Ss/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pawpatrol",
+    "name": "Щенячий патруль",
+    "emoji": "🐾",
+    "color": "#0984e3",
+    "desc": "Щенки спасают мир.",
+    "subs": "477 тыс.",
+    "channelId": "UCNE2KyQPXQYo886tMFOOMOA",
+    "uploads": "UUNE2KyQPXQYo886tMFOOMOA",
+    "icon": "https://i.ytimg.com/vi/oQ0F4SErGK0/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "oQ0F4SErGK0",
+        "title": "Recycle Hose  | Rocky's Garage | Rocky - PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/oQ0F4SErGK0/hqdefault.jpg"
+      },
+      {
+        "id": "nnJaWeYdcZ8",
+        "title": "Card Game or Upgrade Skye's Grabber? | Rocky's Garage | Rocky - PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nnJaWeYdcZ8/hqdefault.jpg"
+      },
+      {
+        "id": "gnD3OKgq-A0",
+        "title": "Welcome, Tracker! | Rocky - PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gnD3OKgq-A0/hqdefault.jpg"
+      },
+      {
+        "id": "9GLhgLXud3M",
+        "title": "Rocky's Workshop | Rocky's Garage | Rocky - PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9GLhgLXud3M/hqdefault.jpg"
+      },
+      {
+        "id": "HFwG6P2LiYQ",
+        "title": "Adventure Bays Coolest Rescue Pup! | Rocky's Garage | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HFwG6P2LiYQ/hqdefault.jpg"
+      },
+      {
+        "id": "_mgFoU2A07Q",
+        "title": "Ready for Dino Action | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_mgFoU2A07Q/hqdefault.jpg"
+      },
+      {
+        "id": "TQpXyg1DjwM",
+        "title": "Helicopter Glow Up | Rocky's Garage | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TQpXyg1DjwM/hqdefault.jpg"
+      },
+      {
+        "id": "1cRK9--u0h4",
+        "title": "Rocky's Epic Dinosaur Mission | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1cRK9--u0h4/hqdefault.jpg"
+      },
+      {
+        "id": "7lktsLh7Ixg",
+        "title": "Ryder vs Jump Scare! #short",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7lktsLh7Ixg/hqdefault.jpg"
+      },
+      {
+        "id": "AiMnfD9pGA4",
+        "title": "Huge Recycling Task | Rocky's Garage | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/AiMnfD9pGA4/hqdefault.jpg"
+      },
+      {
+        "id": "zAbiAWqVOxo",
+        "title": "Pups Matching Game! #short",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zAbiAWqVOxo/hqdefault.jpg"
+      },
+      {
+        "id": "Jb-vU0WSfLM",
+        "title": "New Music Siren 🚨 | Marshall PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Jb-vU0WSfLM/hqdefault.jpg"
+      },
+      {
+        "id": "i_C3LFe1Aws",
+        "title": "Pups Roar Trend! #short",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/i_C3LFe1Aws/hqdefault.jpg"
+      },
+      {
+        "id": "5VsW6eAT9_0",
+        "title": "Jungle Jeep 🌲🐵🚙 | Rocky's Garage | Rocky PAW Patrol | Cartoons for Kids",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5VsW6eAT9_0/hqdefault.jpg"
+      },
+      {
+        "id": "-74r_BcQN1E",
+        "title": "Pups Make a Mess with Paint #short",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-74r_BcQN1E/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUNE2KyQPXQYo886tMFOOMOA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/oQ0F4SErGK0/hqdefault.jpg"
       }
     ]
   },
@@ -5488,626 +7369,6 @@ window.YT_CHANNELS = [
         "playlist": "UUX6OQ3DkcsbYNE6H8uQQuVA",
         "likes": "—",
         "thumb": "https://i.ytimg.com/vi/5mU6SRS2Bxo/hqdefault.jpg"
-      }
-    ]
-  },
-  {
-    "id": "sakvashin",
-    "name": "Саквашин",
-    "emoji": "🥒",
-    "color": "#84cc16",
-    "desc": "Саша Квашеная.",
-    "subs": "1.1 млн",
-    "channelId": "UCLTgbvgydbIU3OQ0Z-PpTpA",
-    "uploads": "UULTgbvgydbIU3OQ0Z-PpTpA",
-    "icon": "https://i.ytimg.com/vi/Qj1sRip-ai4/hqdefault.jpg",
-    "videos": [
-      {
-        "id": "Qj1sRip-ai4",
-        "title": "Спела свою песню на концерте🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Qj1sRip-ai4/hqdefault.jpg"
-      },
-      {
-        "id": "Kk6zneMg8RU",
-        "title": "Green Apelsin и Квашеная поют!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Kk6zneMg8RU/hqdefault.jpg"
-      },
-      {
-        "id": "PmZ0I8wNs9E",
-        "title": "Green Apelsin и Квашеная поют!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/PmZ0I8wNs9E/hqdefault.jpg"
-      },
-      {
-        "id": "JPapby4T-KQ",
-        "title": "И мне без тебя - скоро в твоем плейлисте💔",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/JPapby4T-KQ/hqdefault.jpg"
-      },
-      {
-        "id": "iGjqHekHcwQ",
-        "title": "Соседка не удержалась и подпела😳",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/iGjqHekHcwQ/hqdefault.jpg"
-      },
-      {
-        "id": "FIlWFSBFIlE",
-        "title": "Про кого подумали услышав первую строчку?💔",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/FIlWFSBFIlE/hqdefault.jpg"
-      },
-      {
-        "id": "FeHkGikZlNU",
-        "title": "The Ketchup Song на русском!💃🏻😂",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/FeHkGikZlNU/hqdefault.jpg"
-      },
-      {
-        "id": "UeWZFr7MCZ0",
-        "title": "ПЕСЕННЫЙ СТРИМ 🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/UeWZFr7MCZ0/hqdefault.jpg"
-      },
-      {
-        "id": "L1JyV02x-LA",
-        "title": "🐈Что мне спеть?🐈",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/L1JyV02x-LA/hqdefault.jpg"
-      },
-      {
-        "id": "2sQqbQn1CMU",
-        "title": "Если на первой строчке ты уже подумал о ком-то… соболезную💔",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/2sQqbQn1CMU/hqdefault.jpg"
-      },
-      {
-        "id": "byLt1ZOSJdk",
-        "title": "🌞ПОЕМ ЛЮБИМЫЕ ПЕСНИ Квашеная и Ариша Ростовская🌞",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/byLt1ZOSJdk/hqdefault.jpg"
-      },
-      {
-        "id": "RVCqXNFX3TE",
-        "title": "🌷ПЕСНИ У КВАШЕНОЙ🌷",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/RVCqXNFX3TE/hqdefault.jpg"
-      },
-      {
-        "id": "owss7E4LRYI",
-        "title": "❤️Квашеная песенки поет❤️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/owss7E4LRYI/hqdefault.jpg"
-      },
-      {
-        "id": "4cFZrQAIQoM",
-        "title": "🐇пижамная вечеринка у Квашеной🐇",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/4cFZrQAIQoM/hqdefault.jpg"
-      },
-      {
-        "id": "Y0nxU45U3V4",
-        "title": "🎁У КВАШЕНОЙ ДР🎁",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Y0nxU45U3V4/hqdefault.jpg"
-      },
-      {
-        "id": "Ofaq-9pqq9E",
-        "title": "Вот это встреча…🥹",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Ofaq-9pqq9E/hqdefault.jpg"
-      },
-      {
-        "id": "f1mncmfyhZU",
-        "title": "✨КВАШЕНАЯ СНОВА ПОЕТ✨",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/f1mncmfyhZU/hqdefault.jpg"
-      },
-      {
-        "id": "mF3DSKSayCQ",
-        "title": "💚КВАШЕНАЯ ОПЯТЬ ПОЕТ💚",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/mF3DSKSayCQ/hqdefault.jpg"
-      },
-      {
-        "id": "w34uwZxpjRU",
-        "title": "Квашеная спела свою песню на стриме😳",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/w34uwZxpjRU/hqdefault.jpg"
-      },
-      {
-        "id": "pE-SIZ9_ZgQ",
-        "title": "🍒КВАШЕНАЯ ТУТ ПОЕТ🍒",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/pE-SIZ9_ZgQ/hqdefault.jpg"
-      },
-      {
-        "id": "dl_ThL0bKCQ",
-        "title": "Tarkan Sımarık с турецкого на русский!😋",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/dl_ThL0bKCQ/hqdefault.jpg"
-      },
-      {
-        "id": "ekURniX-0Qw",
-        "title": "🧡КВАШЕНАЯ ПОЕТ🧡",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/ekURniX-0Qw/hqdefault.jpg"
-      },
-      {
-        "id": "r7im5CthsNM",
-        "title": "Мы и не думали, что штука с вб сделает просто КЛИП😭🤌🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/r7im5CthsNM/hqdefault.jpg"
-      },
-      {
-        "id": "Ail-4ln404Q",
-        "title": "Квашеная - Фиолетово (Lyric Video)",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Ail-4ln404Q/hqdefault.jpg"
-      },
-      {
-        "id": "JTICm4jkeCY",
-        "title": "Как вам такой Tokyo Drift?🔥😆",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/JTICm4jkeCY/hqdefault.jpg"
-      },
-      {
-        "id": "0XvIstHnjxI",
-        "title": "💜КВАШЕНАЯ ФИО ПЕСЕНКИ ПОЕТ💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/0XvIstHnjxI/hqdefault.jpg"
-      },
-      {
-        "id": "OTQwbdUEEwo",
-        "title": "Waka Waka на русском🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/OTQwbdUEEwo/hqdefault.jpg"
-      },
-      {
-        "id": "7DMdAnsaQio",
-        "title": "Чуть не задохнулась, пока пела😂🙏🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/7DMdAnsaQio/hqdefault.jpg"
-      },
-      {
-        "id": "JaOuobPCmkg",
-        "title": "💜КВАШЕНАЯ ФИО ПЕСЕНКИ ПОЕТ💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/JaOuobPCmkg/hqdefault.jpg"
-      },
-      {
-        "id": "y082vH2TXDM",
-        "title": "Теперь мне всё ФИОЛЕТОВО!💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/y082vH2TXDM/hqdefault.jpg"
-      },
-      {
-        "id": "HHO9XuZNSlE",
-        "title": "Eiffel 65 - Blue (Da Ba Dee) на русском🥹🩵",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/HHO9XuZNSlE/hqdefault.jpg"
-      },
-      {
-        "id": "phg6asbVoaI",
-        "title": "💜КВАШЕНАЯ ПОЕТ ВСЯКОЕ💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/phg6asbVoaI/hqdefault.jpg"
-      },
-      {
-        "id": "O-2Pox4MwHM",
-        "title": "САША ПОЕТ ПЕСНИ 💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/O-2Pox4MwHM/hqdefault.jpg"
-      },
-      {
-        "id": "Tr7U7bD0XRc",
-        "title": "Чуть не улетела на шариках, но допела 😂💜!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Tr7U7bD0XRc/hqdefault.jpg"
-      },
-      {
-        "id": "o5frspCVLco",
-        "title": "КВАШЕНАЯ САША ПОЕТ ПЕСНИ 💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/o5frspCVLco/hqdefault.jpg"
-      },
-      {
-        "id": "9DBmFWchZnM",
-        "title": "КВАШЕНАЯ ПОЕТ ЛЮБИМЫЕ ПЕСНИ 💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/9DBmFWchZnM/hqdefault.jpg"
-      },
-      {
-        "id": "vbhN_n_W8_4",
-        "title": "Спела ФИО песенку!💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/vbhN_n_W8_4/hqdefault.jpg"
-      },
-      {
-        "id": "h_ILRA9a7_U",
-        "title": "СТРИМ С ПЕСНЯМИ 💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/h_ILRA9a7_U/hqdefault.jpg"
-      },
-      {
-        "id": "L2e1z1TzAXk",
-        "title": "Напевает фио песенку свою💜😏",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/L2e1z1TzAXk/hqdefault.jpg"
-      },
-      {
-        "id": "UuO1Lhp_gtI",
-        "title": "Теперь ей все фиолетово!😄💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/UuO1Lhp_gtI/hqdefault.jpg"
-      },
-      {
-        "id": "HaJE2nU78eA",
-        "title": "Квашеная Музыкотерапия 💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/HaJE2nU78eA/hqdefault.jpg"
-      },
-      {
-        "id": "iPGasSBOz6w",
-        "title": "Такую Habanera вы ещё не слышали!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/iPGasSBOz6w/hqdefault.jpg"
-      },
-      {
-        "id": "CXeEpf8c95M",
-        "title": "Спела Eminem Mockingbird на русском💔",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/CXeEpf8c95M/hqdefault.jpg"
-      },
-      {
-        "id": "_tPa_MVkqkA",
-        "title": "Музыкотерапия с Квашеной💜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/_tPa_MVkqkA/hqdefault.jpg"
-      },
-      {
-        "id": "ONNp5l4q3rw",
-        "title": "Как же они спели Hit the road Jack🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/ONNp5l4q3rw/hqdefault.jpg"
-      },
-      {
-        "id": "pwseI_ecT8g",
-        "title": "КВАШЕНАЯ поет ВЖИВУЮ",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/pwseI_ecT8g/hqdefault.jpg"
-      },
-      {
-        "id": "2FMZEGzbNUI",
-        "title": "Квашеная, Небраска - ВЕРНИ МЕНЯ ДОМОЙ (Lyric Video)",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/2FMZEGzbNUI/hqdefault.jpg"
-      },
-      {
-        "id": "21M1yxTYOHU",
-        "title": "Прекрасное далеко в РОКЕ🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/21M1yxTYOHU/hqdefault.jpg"
-      },
-      {
-        "id": "n6Xq3kCG7Ts",
-        "title": "Мы написали саундтрек к мультфильму Дисней🙏🏻😭",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/n6Xq3kCG7Ts/hqdefault.jpg"
-      },
-      {
-        "id": "iiCRo80S25o",
-        "title": "Как же душераздирающе она спела Круги на воде🔥!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/iiCRo80S25o/hqdefault.jpg"
-      },
-      {
-        "id": "8sdcpWKRIys",
-        "title": "Дарья БЛОХИНА и Саша КВАШЕНАЯ поют РОЦК🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/8sdcpWKRIys/hqdefault.jpg"
-      },
-      {
-        "id": "DQN_1pXTFrc",
-        "title": "Тот самый момент в песне💔",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/DQN_1pXTFrc/hqdefault.jpg"
-      },
-      {
-        "id": "Cmtp3NqiF4Q",
-        "title": "Саша КВАШЕНАЯ поет ЛЮБИМЫЕ песни!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Cmtp3NqiF4Q/hqdefault.jpg"
-      },
-      {
-        "id": "oig4gjY27kU",
-        "title": "Спели спустя 4 года!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/oig4gjY27kU/hqdefault.jpg"
-      },
-      {
-        "id": "pyUrGAnPy_M",
-        "title": "NEMIGA и Саша КВАШЕНАЯ поют!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/pyUrGAnPy_M/hqdefault.jpg"
-      },
-      {
-        "id": "dI-C4bVHB2I",
-        "title": "Он показал, как надо спеть Moby 🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/dI-C4bVHB2I/hqdefault.jpg"
-      },
-      {
-        "id": "_I_-XS-L64U",
-        "title": "Одна песня, две версии.. 2023 или 2026?🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/_I_-XS-L64U/hqdefault.jpg"
-      },
-      {
-        "id": "L4Vl9FJyNy0",
-        "title": "Научиться бы не париться по пустякам!😜",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/L4Vl9FJyNy0/hqdefault.jpg"
-      },
-      {
-        "id": "bEU44YpC8T4",
-        "title": "Стас ЯРУШИН и Саша КВАШЕНАЯ поют!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/bEU44YpC8T4/hqdefault.jpg"
-      },
-      {
-        "id": "e35CV3617I4",
-        "title": "Он спел «на заре» как в оригинале..😳",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/e35CV3617I4/hqdefault.jpg"
-      },
-      {
-        "id": "7sWv15DpboU",
-        "title": "Внезапно начала петь, пока никто не ожидал 😂",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/7sWv15DpboU/hqdefault.jpg"
-      },
-      {
-        "id": "HmMAPL8dyns",
-        "title": "Кирилл NECHAEV и Саша КВАШЕНАЯ поют!🎙️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/HmMAPL8dyns/hqdefault.jpg"
-      },
-      {
-        "id": "K9zw3v45Tlw",
-        "title": "Спели Sonne в подъезде🖤",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/K9zw3v45Tlw/hqdefault.jpg"
-      },
-      {
-        "id": "C5LMtV0fJfk",
-        "title": "Квашеная - НОЧНОЙ АВТОБУС (Lyric Video)",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/C5LMtV0fJfk/hqdefault.jpg"
-      },
-      {
-        "id": "MV7iFYFm6HE",
-        "title": "видео, после которого обо мне узнал весь интернет 😂🙏🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/MV7iFYFm6HE/hqdefault.jpg"
-      },
-      {
-        "id": "9rVRL_f79OQ",
-        "title": "КВАШЕНАЯ САША поет для ВАС!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/9rVRL_f79OQ/hqdefault.jpg"
-      },
-      {
-        "id": "NGGjEKp-ofs",
-        "title": "Beggin с переводом!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/NGGjEKp-ofs/hqdefault.jpg"
-      },
-      {
-        "id": "O5YcTtS-4Zo",
-        "title": "КВАШЕНАЯ и АНТОН ТОКАРЕВ поют для ВАС!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/O5YcTtS-4Zo/hqdefault.jpg"
-      },
-      {
-        "id": "ZyhDJ24WIWc",
-        "title": "Финская полька на русском🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/ZyhDJ24WIWc/hqdefault.jpg"
-      },
-      {
-        "id": "rMr7jdjacq0",
-        "title": "КВАШЕНАЯ поет ОНЛАЙН!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/rMr7jdjacq0/hqdefault.jpg"
-      },
-      {
-        "id": "LEU2YS8wfOo",
-        "title": "Спела свою песню в переходе🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/LEU2YS8wfOo/hqdefault.jpg"
-      },
-      {
-        "id": "-eba4LpKG20",
-        "title": "Спела на стриме Ai Se Eu Te Pego!♥️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/-eba4LpKG20/hqdefault.jpg"
-      },
-      {
-        "id": "y46Z1IMxcso",
-        "title": "Спела свою песню на остановке🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/y46Z1IMxcso/hqdefault.jpg"
-      },
-      {
-        "id": "jOLI7LRCtog",
-        "title": "«Бяки - буки» в два голоса!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/jOLI7LRCtog/hqdefault.jpg"
-      },
-      {
-        "id": "qIuk82JmCEw",
-        "title": "Она не ожидала такого ответа в конце 😂🙌🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/qIuk82JmCEw/hqdefault.jpg"
-      },
-      {
-        "id": "FLOpsVbNwSE",
-        "title": "Спели Dernière danse на двух языках!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/FLOpsVbNwSE/hqdefault.jpg"
-      },
-      {
-        "id": "sr4OxXUMxzE",
-        "title": "Ночь, улица, фонарь… НОВАЯ ПЕСНЯ🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/sr4OxXUMxzE/hqdefault.jpg"
-      },
-      {
-        "id": "DYd7xoHnRQM",
-        "title": "КВАШЕНАЯ ПОЕТ ТВОИ ЛЮБИМЫЕ ПЕСНИ!",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/DYd7xoHnRQM/hqdefault.jpg"
-      },
-      {
-        "id": "5SSCC5CtvPU",
-        "title": "Спели в два голоса🙏🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/5SSCC5CtvPU/hqdefault.jpg"
-      },
-      {
-        "id": "bXKefNLi7Vw",
-        "title": "КВАШЕНАЯ И ДИАНА АНКУДИНОВА ПОЮТ ЛЮБИМЫЕ ПЕСНИ",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/bXKefNLi7Vw/hqdefault.jpg"
-      },
-      {
-        "id": "dy7Mk0GLfs8",
-        "title": "Почему любая песня в подъезде звучит круто?😅",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/dy7Mk0GLfs8/hqdefault.jpg"
-      },
-      {
-        "id": "yturixPq1No",
-        "title": "Эту песню поймут только те, кто пережил свою грозу⚡️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/yturixPq1No/hqdefault.jpg"
-      },
-      {
-        "id": "IhdJ70axDsc",
-        "title": "спела ФИЛЯЙ ФИЛЯЙ на русском!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/IhdJ70axDsc/hqdefault.jpg"
-      },
-      {
-        "id": "Q55VHhhxwOo",
-        "title": "Квашеная - ГРОЗА⚡ (Lyric video 2026)",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Q55VHhhxwOo/hqdefault.jpg"
-      },
-      {
-        "id": "LDqW1JIECXo",
-        "title": "Спела свою песню под ДОЖДЕМ💦 Как вам?",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/LDqW1JIECXo/hqdefault.jpg"
-      },
-      {
-        "id": "hTtgHTR_zJY",
-        "title": "Спела свою песню в ДЖУНГЛЯХ! Как вам звук?🍀",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/hTtgHTR_zJY/hqdefault.jpg"
-      },
-      {
-        "id": "hIViO00jnUw",
-        "title": "фонк NO BATIDÃO на русском!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/hIViO00jnUw/hqdefault.jpg"
-      },
-      {
-        "id": "MMyJkfoK3h8",
-        "title": "Квашеная поет СВОЮ песню, а не КАВЕР! Как вам такое?⛈️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/MMyJkfoK3h8/hqdefault.jpg"
-      },
-      {
-        "id": "kjUraV4TfPk",
-        "title": "Пою по заказу соседа с бессонницей из 15 квартиры🙏🏻😅",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/kjUraV4TfPk/hqdefault.jpg"
-      },
-      {
-        "id": "nhAMNL2bjLA",
-        "title": "А потом я сняла второй дубль и он залетел на 34 млн просмотров😳",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/nhAMNL2bjLA/hqdefault.jpg"
-      },
-      {
-        "id": "rUJns0pX2KI",
-        "title": "Это было сложно…😂🤌🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/rUJns0pX2KI/hqdefault.jpg"
-      },
-      {
-        "id": "7FYsNOmWV_s",
-        "title": "Какой год вы выберете — 2020 или 2025?",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/7FYsNOmWV_s/hqdefault.jpg"
-      },
-      {
-        "id": "Tbfhj5LSu58",
-        "title": "Снегурочку заказывали?😂🙏🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Tbfhj5LSu58/hqdefault.jpg"
-      },
-      {
-        "id": "VySZeP7xwHs",
-        "title": "видео, после которого меня узнал весь интернет😂🙏🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/VySZeP7xwHs/hqdefault.jpg"
-      },
-      {
-        "id": "9rCQHj16KoA",
-        "title": "Как все сразу оживились😂🤌🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/9rCQHj16KoA/hqdefault.jpg"
-      },
-      {
-        "id": "gws7L44ZNHA",
-        "title": "Все видосы примерно так и делаются😄🤌🏻",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/gws7L44ZNHA/hqdefault.jpg"
-      },
-      {
-        "id": "w87Eyml4170",
-        "title": "Может нам сделать фит?😂",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/w87Eyml4170/hqdefault.jpg"
-      },
-      {
-        "id": "BbFluk1CVpI",
-        "title": "Так понравилось, что даже подпел😂",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/BbFluk1CVpI/hqdefault.jpg"
-      },
-      {
-        "id": "W4625vrAH_Y",
-        "title": "Обожаю финскую польку!🔥",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/W4625vrAH_Y/hqdefault.jpg"
-      },
-      {
-        "id": "5mxse73mB9c",
-        "title": "Может оставим след в этих серых дворах?♥️",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/5mxse73mB9c/hqdefault.jpg"
-      },
-      {
-        "id": "playlist",
-        "title": "▶ Все ролики канала (полная лента)",
-        "playlist": "UULTgbvgydbIU3OQ0Z-PpTpA",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Qj1sRip-ai4/hqdefault.jpg"
       }
     ]
   },
