@@ -1,15 +1,21 @@
 :root {
   --font: "Nunito", system-ui, sans-serif;
+  --display: "Fredoka", "Nunito", system-ui, sans-serif;
   --deep: #3d2912;
+  --sun: #ffe566;
+  --jam: #e51d30;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; font-family: var(--font); }
-#c { display: block; width: 100%; height: 100%; touch-action: none; }
+#c { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
 
 #boot {
   position: fixed; inset: 0; z-index: 20;
-  display: grid; place-content: center; gap: 10px; text-align: center;
-  background: linear-gradient(180deg, #ffe9a8, #f0c84a);
+  display: grid; place-content: center; gap: 12px; text-align: center;
+  background:
+    radial-gradient(circle at 20% 15%, rgba(255,255,255,.45), transparent 28%),
+    repeating-linear-gradient(90deg, rgba(229,29,48,.06) 0 12px, transparent 12px 24px),
+    linear-gradient(180deg, #fff3b0, #f0c84a 55%, #e8a23a);
   color: #2a2218; padding: 24px;
 }
 .to-catalog {
@@ -56,17 +62,24 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
   background: rgba(255, 232, 160, 0.92);
   color: #2a2218; font: 900 1.2rem var(--font);
 }
-#boot h1 { margin: 0; font-size: clamp(1.8rem, 5vw, 2.6rem); }
-#boot p { margin: 0; max-width: 38ch; font-weight: 700; line-height: 1.4; }
+#boot h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(2rem, 6vw, 3rem);
+  text-shadow: 0 2px 0 rgba(255,255,255,.35);
+}
+#boot p { margin: 0 auto; max-width: 38ch; font-weight: 700; line-height: 1.4; }
 #boot .hint { opacity: 0.85; font-size: 0.92rem; }
 .boot-steps {
   margin: 0 auto; padding: 0 0 0 1.2em; text-align: left; max-width: 34ch;
   font-weight: 800; line-height: 1.45;
 }
 #startBtn {
-  border: 0; border-radius: 999px; padding: 14px 22px;
-  background: var(--deep); color: #fff6df; font: 900 1.05rem var(--font); cursor: pointer;
+  border: 0; border-radius: 999px; padding: 14px 26px;
+  background: var(--jam); color: #fff8f0; font: 900 1.1rem var(--display); cursor: pointer;
+  box-shadow: 0 6px 0 #8b1e1e;
 }
+#startBtn:active { transform: translateY(2px); box-shadow: 0 4px 0 #8b1e1e; }
 
 #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
 .cross {
@@ -79,6 +92,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
   max-width: min(92vw, 560px); pointer-events: none;
   background: rgba(42,34,24,.92); color: #fff6df;
   padding: 12px 16px; border-radius: 14px; font-weight: 800; text-align: center;
+  border: 2px solid rgba(245,201,58,.35);
 }
 .inv {
   position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
@@ -100,7 +114,16 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1208; fon
 .help {
   position: absolute; top: 12px; right: 12px; margin: 0;
   color: #fff8; font-weight: 700; font-size: 0.8rem;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
+  pointer-events: auto; max-width: min(70vw, 360px); text-align: right;
 }
+.look-btn {
+  border: 0; border-radius: 999px; padding: 8px 12px;
+  background: #fff6df; color: var(--deep);
+  font: 800 0.82rem var(--font); cursor: pointer;
+  pointer-events: auto;
+}
+.look-btn.on { background: var(--jam); color: #fff; }
 
 #filmFlash {
   position: fixed; inset: 0; z-index: 25; pointer-events: none;

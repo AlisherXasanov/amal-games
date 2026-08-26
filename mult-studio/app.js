@@ -771,6 +771,13 @@ document.querySelectorAll(".tab").forEach((tab) => {
   });
 });
 
+try {
+  const tabQ = new URLSearchParams(location.search).get("tab");
+  if (tabQ && document.querySelector(`.tab[data-tab="${tabQ}"]`)) {
+    document.querySelector(`.tab[data-tab="${tabQ}"]`).click();
+  }
+} catch (_) {}
+
 renderShelf();
 renderAsks();
 channel.videos = Math.max(channel.videos || 0, loadMine().length);

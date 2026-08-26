@@ -2670,6 +2670,16 @@ document.addEventListener("pointerlockchange", () => {
 
   cross.hidden = !state.locked;
 
+  const lookBtn = document.getElementById("lookBtn");
+
+  if (lookBtn) {
+
+    lookBtn.classList.toggle("on", state.locked);
+
+    lookBtn.textContent = state.locked ? "Мышь спрятана · Esc" : "👁 Смотреть вокруг";
+
+  }
+
 });
 
 
@@ -2860,9 +2870,19 @@ document.getElementById("startBtn").onclick = () => {
 
   updateQuest();
 
-  say("WASD — ходить. Мишки сами говорят. Кликни — поболтать.");
+  say("Курсор на месте. Кликай мишек. «Смотреть вокруг» — спрятать мышь.");
 
 };
+
+document.getElementById("lookBtn")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (state.locked) exitPointer();
+  else {
+    say("Мышь спрятана — крути головой. Esc — вернуть курсор.");
+    lockPointer();
+  }
+});
 
 document.getElementById("catalogBtn")?.addEventListener("click", () => {
   try {
