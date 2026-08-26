@@ -164,6 +164,8 @@ const state = {
 
   rested: false,
 
+  valeraLying: false,
+
   doorOpen: false,
 
   atBeach: false,
@@ -196,11 +198,21 @@ let yellowRef = null;
 
 let doorGroup = null;
 
+let valeraRef = null;
+
+let babyRef = null;
+
 let guestTimer = 0;
+
+let chatTimer = 0;
+
+let lieTimer = 0;
 
 let interactBusyUntil = 0;
 
 let skipNextClick = false;
+
+let ruVoice = null;
 
 
 
@@ -752,32 +764,117 @@ function say(t) {
   speech.textContent = t;
 }
 
-/** Только реплики Валеры — коротко и с голосом (если браузер умеет). */
-function valeraSay(t) {
-  say(t);
+function pickRuVoice() {
   try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(t);
-      u.lang = "ru-RU";
-      u.rate = 0.95;
-      window.speechSynthesis.speak(u);
+    const voices = window.speechSynthesis?.getVoices?.() || [];
+    const ru = voices.filter((v) => /ru/i.test(v.lang) || /russian|русск/i.test(v.name));
+    // предпочитаем женский/детский мягкий — звучит живее для мишки
+    ruVoice =
+      ru.find((v) => /milena|irina|elena|tanya|katya|female|жен/i.test(v.name)) ||
+      ru.find((v) => v.localService) ||
+      ru[0] ||
+      null;
+  } catch (_) {
+    ruVoice = null;
+  }
+}
+
+if (typeof speechSynthesis !== "undefined") {
+  pickRuVoice();
+  speechSynthesis.addEventListener?.("voiceschanged", pickRuVoice);
+}
+
+/** Кто говорит: Валера / Крошка / Желтобрюх / другие */
+function speakAs(who, t) {
+  const label =
+    who === "valera" ? "Валера" :
+    who === "baby" ? "Крошка" :
+    who === "yellow" ? "Желтобрюх" :
+    who || "Мишка";
+  say(label + ": " + t);
+  try {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = "ru-RU";
+    if (ruVoice) u.voice = ruVoice;
+    if (who === "baby") {
+      u.pitch = 1.35;
+      u.rate = 1.05;
+    } else if (who === "yellow") {
+      u.pitch = 0.85;
+      u.rate = 0.92;
+    } else {
+      u.pitch = 1.05;
+      u.rate = 0.98;
     }
+    window.speechSynthesis.speak(u);
   } catch (_) {}
 }
 
+function valeraSay(t) {
+  speakAs("valera", t);
+}
 
+const VALERA_CHAT = [
+  "Привет! Мне хорошо дома.",
+  "Сегодня спокойный день.",
+  "Люблю эту квартиру.",
+  "Можно просто погулять по комнатам.",
+  "Крошка рядом. Мы вместе.",
+  "Хочешь — посиди со мной. Ничего не надо приносить.",
+  "Я иногда ложусь отдохнуть.",
+  "На кухне вкусно пахнет.",
+  "Дверь ведёт на улицу, если интересно.",
+  "Спасибо, что зашёл в гости."
+];
+
+const BABY_CHAT = [
+  "Агу!",
+  "Я маленькая.",
+  "Валера рядом.",
+  "Мне тут нравится."
+];
+
+const YELLOW_CHAT = [
+  "Привет! Я просто в гостях.",
+  "У Валеры уютно.",
+  "Можно поиграть, если хочешь.",
+  "Я потом снова на улицу."
+];
+
+const YELLOW_OUT_CHAT = [
+  "Я гуляю на улице.",
+  "Иногда захожу к Валере.",
+  "Солнышко светит."
+];
+
+let chatI = 0;
+
+function nextLine(arr) {
+  const t = arr[chatI % arr.length];
+  chatI++;
+  return t;
+}
+
+function setValeraLie(lying) {
+  if (!valeraRef) return;
+  state.valeraLying = !!lying;
+  if (lying) {
+    valeraRef.rotation.x = Math.PI / 2;
+    valeraRef.position.y = 0.35;
+    valeraRef.rotation.y = Math.PI * 0.15;
+  } else {
+    valeraRef.rotation.x = 0;
+    valeraRef.position.y = 0;
+    valeraRef.rotation.y = Math.PI;
+  }
+}
 
 function updateQuest() {
-
   if (!questEl) return;
-
-  if (!state.greeted) questEl.textContent = "Найди красного мишку · кликни по нему";
-
-  else if (!state.played) questEl.textContent = "Дай мишке еду или мяч";
-
-  else questEl.textContent = "Гуляй по комнатам. Диван — отдых. Дверь — улица.";
-
+  if (state.valeraLying) questEl.textContent = "Валера отдыхает. Можно тихо погулять.";
+  else questEl.textContent = "Гуляй как хочешь. Кликни мишку — поговорить.";
 }
 
 
@@ -1435,25 +1532,25 @@ function buildWorld() {
 
   // Валера на полу
 
-  const valera = makeBear(0xe51d30, 1);
+  valeraRef = makeBear(0xe51d30, 1);
 
-  valera.position.set(0.2, 0, 3.6);
+  valeraRef.position.set(0.2, 0, 3.6);
 
-  valera.rotation.y = Math.PI;
+  valeraRef.rotation.y = Math.PI;
 
-  scene.add(valera);
+  scene.add(valeraRef);
 
-  mark(valera, "valera", "Валера");
+  mark(valeraRef, "valera", "Валера");
 
 
 
-  const baby = makeBear(0xff8fab, 0.38);
+  babyRef = makeBear(0xff8fab, 0.38);
 
-  baby.position.set(1.1, 0, 3.9);
+  babyRef.position.set(1.1, 0, 3.9);
 
-  scene.add(baby);
+  scene.add(babyRef);
 
-  mark(baby, "baby", "Крошка");
+  mark(babyRef, "baby", "Крошка");
 
 
 
@@ -2194,7 +2291,9 @@ function bringGuest() {
 
   setDoorOpen(true, true);
 
-  say("В гости пришёл желтобрюх!");
+  speakAs("yellow", "Привет! Я в гости зашёл.");
+
+  valeraSay("О, желтобрюх! Заходи.");
 
   updateQuest();
 
@@ -2210,7 +2309,7 @@ function sendGuestOut() {
 
   yellowRef.rotation.y = -0.4;
 
-  say("Желтобрюх ушёл на улицу.");
+  speakAs("yellow", "Пойду погуляю. Пока!");
 
 }
 
@@ -2283,10 +2382,11 @@ function interact(id, mesh) {
   }
 
   if (id === "valera") {
-    if (!state.greeted) {
-      state.greeted = true;
+    state.greeted = true;
+    if (state.valeraLying) {
+      setValeraLie(false);
       updateQuest();
-      valeraSay("Привет! Я Валера.");
+      valeraSay("Ой, я вздремнул. Привет!");
       return;
     }
     const give = pickForValera();
@@ -2294,43 +2394,23 @@ function interact(id, mesh) {
       state.selected = "camera";
       if (state.camOn && tryFilm("valera")) return;
     }
-
+    // еду/мяч можно дать — но Валера сам не просит
     if (give && FOOD.has(give)) {
-
-      const n = ITEM[give].name;
-
       useOne(give);
-
       state.played = true;
-
       updateQuest();
-
-      valeraSay("Вкусно! Спасибо!");
-
+      valeraSay("Ого, угощение! Спасибо. Ты добрый.");
       return;
-
     }
-
     if (give === "ball") {
-
       useOne("ball");
-
       state.played = true;
-
       updateQuest();
-
-      valeraSay("Ура, мяч!");
-
+      valeraSay("Мячик! Давай поиграем.");
       return;
-
     }
-
-    
-
-    valeraSay("Дай поесть или мячик?");
-
+    valeraSay(nextLine(VALERA_CHAT));
     return;
-
   }
 
   if (id === "sofa" || id === "bed") {
@@ -2339,7 +2419,14 @@ function interact(id, mesh) {
 
     updateQuest();
 
-    say(id === "sofa" ? "Отдыхаем на диване с Валерой." : "Отдых в спальне.");
+    if (id === "sofa") {
+      setValeraLie(true);
+      lieTimer = 0;
+      updateQuest();
+      valeraSay("Полежу на диване. Мне хорошо.");
+    } else {
+      say("Тихая спальня. Можно отдохнуть.");
+    }
 
     return;
 
@@ -2351,13 +2438,13 @@ function interact(id, mesh) {
 
       useOne("coat");
 
-      say("Крошка в халатике.");
+      speakAs("baby", "Халатик! Тёпло.");
 
       return;
 
     }
 
-    say("Крошка дома.");
+    speakAs("baby", nextLine(BABY_CHAT));
 
     return;
 
@@ -2373,19 +2460,19 @@ function interact(id, mesh) {
 
         useOne("butter");
 
-        say("Желтобрюх: баттерсквиш! Спасибо.");
+        speakAs("yellow", "Баттерсквиш! Ммм, спасибо.");
 
         return;
 
       }
 
-      say("Я в гостях. Дай баттерсквиш?");
+      speakAs("yellow", nextLine(YELLOW_CHAT));
 
       return;
 
     }
 
-    say("Я на улице. Иногда захожу в гости.");
+    speakAs("yellow", nextLine(YELLOW_OUT_CHAT));
 
     return;
 
@@ -2395,7 +2482,7 @@ function interact(id, mesh) {
 
     if (tryFilm(id)) return;
 
-    say("Привет с пляжа! Валера дома.");
+    speakAs(id, "Привет с пляжа! Валера дома, а мы тут загораем.");
 
     return;
 
@@ -2773,7 +2860,7 @@ document.getElementById("startBtn").onclick = () => {
 
   updateQuest();
 
-  say("WASD — ходить. Кликни по красному мишке. Зажми мышь и тяни — смотреть.");
+  say("WASD — ходить. Мишки сами говорят. Кликни — поболтать.");
 
 };
 
@@ -2824,6 +2911,58 @@ function loop(now) {
   last = now;
 
   guestTimer += dt;
+
+  chatTimer += dt;
+
+  lieTimer += dt;
+
+
+
+  // иногда Валера сам говорит — без просьб подойти
+
+  if (!state.atBeach && !anyModalOpen() && chatTimer > 22) {
+
+    chatTimer = 0;
+
+    if (Math.random() < 0.55 && !state.valeraLying) {
+
+      valeraSay(nextLine(VALERA_CHAT));
+
+    } else if (Math.random() < 0.35 && babyRef) {
+
+      speakAs("baby", nextLine(BABY_CHAT));
+
+    }
+
+  }
+
+
+
+  // иногда спокойно ложится отдохнуть
+
+  if (!state.atBeach && !state.valeraLying && lieTimer > 55 && Math.random() < 0.4) {
+
+    lieTimer = 0;
+
+    setValeraLie(true);
+
+    updateQuest();
+
+    valeraSay("Полежу немного… Мне хорошо.");
+
+  } else if (state.valeraLying && lieTimer > 28) {
+
+    lieTimer = 0;
+
+    setValeraLie(false);
+
+    updateQuest();
+
+    if (Math.random() < 0.5) valeraSay("Встаю. Продолжаем день.");
+
+  }
+
+
 
   if (!state.atBeach && !state.guestHere && guestTimer > 45) {
 
