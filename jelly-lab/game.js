@@ -1,4 +1,4 @@
-﻿import * as THREE from "three";
+import * as THREE from "three";
 
 const canvas = document.getElementById("c");
 const speech = document.getElementById("speech");
@@ -91,7 +91,7 @@ const state = {
   pitch: 0
 };
 
-const player = { x: 0, z: 2.5, speed: 4.5 };
+const player = { x: 0, z: 1.5, speed: 4.5 };
 const keys = {};
 const clickables = [];
 const solids = [];
@@ -424,11 +424,19 @@ function furniture(w, h, d, material, x, z, solid = true) {
   return box(w, h, d, material, x, h / 2, z, solid);
 }
 /** Предмет на поверхности: surfaceY = верх полки/стола */
-function putOn(mesh, surfaceY) {
-  mesh.geometry.computeBoundingBox();
-  const bb = mesh.geometry.boundingBox;
-  const half = Math.max(0.01, -bb.min.y * (mesh.scale.y || 1));
-  mesh.position.y = surfaceY + half + 0.01;
+function putOn(mesh, surfaceY) {
+  let half = 0;
+  if (mesh.isMesh && mesh.geometry) {
+    mesh.geometry.computeBoundingBox();
+    const bb = mesh.geometry.boundingBox;
+    half = Math.max(0.01, -bb.min.y * (mesh.scale.y || 1));
+  } else if (mesh.isGroup) {
+    // jelly bears already stand with feet at local y~0
+    half = 0;
+  } else {
+    half = 0.05;
+  }
+  mesh.position.y = surfaceY + half + 0.01;
 }
 
 function mark(obj, id, title) {
@@ -869,12 +877,11 @@ function take(id) {
   }
   return true;
 }
-function pickForValera() {
-  if (state.selected && (FOOD.has(state.selected) || state.selected === "ball" || state.selected === "camera")) return state.selected;
-  for (const id of state.inv) if (FOOD.has(id)) return id;
-  if (has("ball")) return "ball";
-  if (has("camera")) return "camera";
-  return null;
+function pickForValera() {
+  if (state.selected && (FOOD.has(state.selected) || state.selected === "ball" || state.selected === "camera")) return state.selected;
+  for (const id of state.inv) if (FOOD.has(id)) return id;
+  if (has("ball")) return "ball";
+  return null;
 }
 function takeWorld(mesh, id) {
   if (!take(id)) return;
@@ -1125,11 +1132,17 @@ function interact(id, mesh) {
     goHomeStreet();
     return;
   }
-  if (id === "valera") {
-    const give = pickForValera();
-    if (give === "camera") {
-      state.selected = "camera";
-      if (tryFilm("valera")) return;
+  if (id === "valera") {
+    if (!state.greeted) {
+      state.greeted = true;
+      updateQuest();
+      say("Привет! Это квартира Валеры.");
+      return;
+    }
+    const give = pickForValera();
+    if (give === "camera") {
+      state.selected = "camera";
+      if (state.camOn && tryFilm("valera")) return;
     }
     if (give && FOOD.has(give)) {
       const n = ITEM[give].name;
@@ -1146,12 +1159,7 @@ function interact(id, mesh) {
       say("Кинули мяч! Играем.");
       return;
     }
-    if (!state.greeted) {
-      state.greeted = true;
-      updateQuest();
-      say("Привет! Это квартира Валеры.");
-      return;
-    }
+    
     say("Кликни еду или мяч, потом меня — или просто кликни: возьму из кармана.");
     return;
   }
@@ -1362,11 +1370,17 @@ function resize() {
 }
 window.addEventListener("resize", resize);
 
-buildWorld();
-renderInv();
-resize();
-updateCam();
-updateQuest();
+try {
+  buildWorld();
+} catch (err) {
+  console.error(err);
+  scene.background = new THREE.Color(0xffe8a0);
+  say("Ошибка загрузки комнаты. Обнови Ctrl+F5.");
+}
+renderInv();
+resize();
+updateCam();
+updateQuest();
 placeEl.textContent = zoneName();
 
 let last = performance.now();
