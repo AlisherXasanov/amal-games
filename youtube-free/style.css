@@ -167,6 +167,8 @@ body.watch-app .amal-side-quick {
 }
 .live-now-row { margin: 10px 0 4px; }
 .live-label { color: #fda4af !important; }
+.new-rail-card { outline: 1px solid rgba(253,224,71,.55); }
+#clearNewRail { color: #c4b5fd; border-color: #554466; }
 .live-strip { gap: 10px; }
 .feed-card.live-card,
 .vid-card.is-live {

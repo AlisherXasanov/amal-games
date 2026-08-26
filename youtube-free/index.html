@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=39" />
+  <link rel="stylesheet" href="./style.css?v=40" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -41,6 +41,14 @@
       <div class="live-now-row" id="liveNowRow" hidden>
         <div class="shelf-label live-label">🔴 Прямой эфир · жми и смотри внутри</div>
         <div class="feed-row live-strip" id="liveNowStrip"></div>
+      </div>
+
+      <div class="live-now-row" id="newRailRow" hidden>
+        <div class="shelf-label live-label" style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <span>✨ Только что · новые ролики с твоих каналов</span>
+          <button type="button" id="clearNewRail" class="btn ghost" style="padding:4px 10px;font-size:11px">Очистить</button>
+        </div>
+        <div class="feed-row live-strip" id="newRailStrip"></div>
       </div>
 
       <div class="search-dock" id="searchDock">
@@ -166,11 +174,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=39&fresh=" + Date.now());
+      location.replace("./index.html?v=40&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=39"></script>
-  <script src="./main.js?v=39"></script>
+  <script src="./channels-data.js?v=40"></script>
+  <script src="./main.js?v=40"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

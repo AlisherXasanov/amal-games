@@ -1251,6 +1251,138 @@
     }, ms || 2400);
   }
 
+  /** Новые ролики: полка + звук/уведомление браузера */
+  const NEW_KEY = "amal-watch-new-rail-v1";
+  let newRailItems = [];
+  try {
+    newRailItems = JSON.parse(localStorage.getItem(NEW_KEY) || "[]") || [];
+  } catch (_) {
+    newRailItems = [];
+  }
+  function saveNewRail() {
+    try {
+      localStorage.setItem(NEW_KEY, JSON.stringify(newRailItems.slice(0, 40)));
+    } catch (_) {}
+  }
+  function ensureNotifyPerm() {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(function () {});
+    }
+  }
+  function pingNewVideos(batch) {
+    if (!batch || !batch.length) return;
+    batch.forEach(function (item) {
+      newRailItems.unshift({
+        id: item.v.id,
+        title: item.v.title || "Новый ролик",
+        thumb: item.v.thumb || "",
+        chId: item.ch.id,
+        chName: item.ch.name,
+        at: Date.now(),
+      });
+    });
+    // убрать дубли по id
+    const seen = {};
+    newRailItems = newRailItems.filter(function (x) {
+      if (!x.id || seen[x.id]) return false;
+      seen[x.id] = 1;
+      return true;
+    });
+    saveNewRail();
+    renderNewRail();
+    const first = batch[0];
+    const more = batch.length > 1 ? " · ещё +" + (batch.length - 1) : "";
+    showToast(
+      "✨ Новое: " +
+        (first.ch.name || "канал") +
+        " — " +
+        String(first.v.title || "ролик").slice(0, 42) +
+        more,
+      4200
+    );
+    if (tvHint) {
+      tvHint.textContent =
+        "✨ Новые ролики: +" + batch.length + " — смотри полку «Только что»";
+    }
+    try {
+      if ("Notification" in window && Notification.permission === "granted") {
+        const n = new Notification("Смотри · новый ролик", {
+          body:
+            (first.ch.name || "") +
+            ": " +
+            String(first.v.title || "").slice(0, 80),
+          tag: "amal-watch-new",
+          silent: false,
+        });
+        n.onclick = function () {
+          window.focus();
+          openChannel(first.ch.id, first.v);
+          try {
+            n.close();
+          } catch (_) {}
+        };
+      }
+    } catch (_) {}
+    // короткий «динь»
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!pingNewVideos._ctx) pingNewVideos._ctx = new Ctx();
+      const ctx = pingNewVideos._ctx;
+      if (ctx.state === "suspended") ctx.resume().catch(function () {});
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = 880;
+      g.gain.value = 0.04;
+      o.connect(g);
+      g.connect(ctx.destination);
+      const t0 = ctx.currentTime;
+      o.start(t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+      o.stop(t0 + 0.2);
+    } catch (_) {}
+  }
+  function renderNewRail() {
+    const row = document.getElementById("newRailRow");
+    const strip = document.getElementById("newRailStrip");
+    if (!row || !strip) return;
+    strip.innerHTML = "";
+    if (!newRailItems.length) {
+      row.hidden = true;
+      return;
+    }
+    row.hidden = false;
+    newRailItems.slice(0, 16).forEach(function (item) {
+      const ch = findChannel(item.chId);
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "feed-card new-rail-card";
+      card.innerHTML =
+        '<div class="feed-thumb"><span class="badge live">NEW</span>' +
+        thumbHtml(item.thumb, (ch && ch.emoji) || "✨") +
+        '</div><div class="feed-meta"><b>' +
+        displayText(item.title) +
+        '</b><div class="ch">' +
+        displayText(item.chName || (ch && ch.name) || "") +
+        "</div></div>";
+      card.addEventListener("click", function () {
+        if (ch) {
+          const v =
+            (ch.videos || []).find(function (x) {
+              return x.id === item.id;
+            }) || {
+              id: item.id,
+              title: item.title,
+              thumb: item.thumb,
+            };
+          openChannel(ch.id, v);
+        }
+      });
+      strip.appendChild(card);
+    });
+  }
+
   let autoQueue = [];
   let autoQueuePos = -1;
 
@@ -2150,13 +2282,14 @@
         return;
       }
       byId[v.id] = v;
+      v._isNew = true;
       fresh.push(v);
       added++;
     });
     if (fresh.length) {
       ch.videos = fresh.concat(ch.videos);
     }
-    return added;
+    return { added: added, fresh: fresh };
   }
 
   async function fetchYoutubeRss(channelId) {
@@ -2453,7 +2586,7 @@
       const page = await fetchPipedChannel(ch.channelId, channelNextpage);
       channelNextpage = page.nextpage;
       if (page.avatar) applyChannelAvatar(ch, page.avatar);
-      added = mergeVideos(ch, page.videos);
+      added = mergeVideos(ch, page.videos).added;
       refreshChannelGrid(ch);
       if (tvHint) {
         tvHint.textContent = added
@@ -2997,29 +3130,26 @@
     if (!silent && tvHint) tvHint.textContent = "⏳ Подтягиваю новые ролики с каналов…";
     let addedTotal = 0;
     let liveCount = 0;
+    const freshBatch = [];
+    // первая тихая загрузка — не орём уведомлениями (старые ролики)
+    const announce = !!refreshAllChannelsLive._warmed;
     for (let i = 0; i < CHANNELS.length; i++) {
       const ch = CHANNELS[i];
-      if (!ch.channelId || ch.allowUpload) continue;
+      if (!ch.channelId || ch.allowUpload || ch.specialDuo) continue;
       try {
         let vids = [];
         let avatar = "";
         let page = null;
-        // Piped: свежие ролики + аватар канала
         try {
           page = await fetchPipedChannel(ch.channelId, null);
           vids = page.videos || [];
           avatar = page.avatar || "";
         } catch (_) {}
-        // Прямые эфиры (вкладка livestreams)
         let lives = [];
         try {
           lives = await fetchPipedLivestreams(ch.channelId, page);
         } catch (_) {}
-        if (lives.length) {
-          // эфиры — в начало списка
-          vids = lives.concat(vids);
-        }
-        // RSS дополняет, если Piped молчит
+        if (lives.length) vids = lives.concat(vids);
         if (!vids.length) {
           try {
             vids = await fetchYoutubeRss(ch.channelId);
@@ -3035,17 +3165,25 @@
             avatar = await fetchChannelAvatar(ch.channelId);
           } catch (_) {}
         }
-        // если аватарки нет — берём превью самого нового ролика
         if (!avatar && vids[0] && vids[0].thumb) avatar = vids[0].thumb;
         if (avatar) applyChannelAvatar(ch, avatar);
-        addedTotal += mergeVideos(ch, vids);
+        const merged = mergeVideos(ch, vids);
+        addedTotal += merged.added;
+        if (announce && merged.fresh && merged.fresh.length) {
+          merged.fresh.slice(0, 3).forEach(function (v) {
+            freshBatch.push({ ch: ch, v: v });
+          });
+        }
         ch.liveNow = pickLiveNow(ch, lives);
         if (ch.liveNow) liveCount++;
       } catch (_) {}
     }
+    refreshAllChannelsLive._warmed = true;
     updateShelfCounts();
     updateShelfLiveBadges();
     renderLiveShelf();
+    if (freshBatch.length) pingNewVideos(freshBatch);
+    else renderNewRail();
     if (viewHome && viewHome.classList.contains("active")) {
       buildFeed();
     }
@@ -3053,10 +3191,12 @@
       refreshChannelGrid(currentChannel);
     }
     if (tvHint) {
-      if (liveCount) {
+      if (freshBatch.length) {
+        /* toast уже сказал */
+      } else if (liveCount) {
         tvHint.textContent =
           "🔴 Сейчас в эфире: " + liveCount + " канал(ов). Смотри полку «Прямой эфир».";
-      } else if (addedTotal) {
+      } else if (addedTotal && !silent) {
         tvHint.textContent =
           "✓ Новые ролики с каналов: +" + addedTotal + ". Смотри в ленте.";
       } else if (!silent) {
@@ -3069,15 +3209,37 @@
   }
 
   buildFeed();
+  renderNewRail();
+  ensureNotifyPerm();
   refreshAllChannelsLive(true);
+  // каждые ~90 сек, пока вкладка открыта
   setInterval(function () {
+    if (document.visibilityState === "hidden") return;
     refreshAllChannelsLive(true);
-  }, 2 * 60 * 1000);
+  }, 90 * 1000);
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible") {
+      ensureNotifyPerm();
       refreshAllChannelsLive(true);
     }
   });
+  document.addEventListener(
+    "click",
+    function oncePerm() {
+      ensureNotifyPerm();
+      document.removeEventListener("click", oncePerm, true);
+    },
+    true
+  );
+  const clearNewBtn = document.getElementById("clearNewRail");
+  if (clearNewBtn) {
+    clearNewBtn.addEventListener("click", function () {
+      newRailItems = [];
+      saveNewRail();
+      renderNewRail();
+      showToast("Полка «Только что» очищена");
+    });
+  }
 
   btnHome.addEventListener("click", openHome);
 
