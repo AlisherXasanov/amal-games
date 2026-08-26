@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=25" />
+  <link rel="stylesheet" href="./style.css?v=26" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -100,7 +100,7 @@
         <div class="player-box" id="playerBox">
           <div class="player-ph" id="playerPh">▶ Выбери видео из меню ниже</div>
           <video id="localVideo" controls playsinline hidden></video>
-          <iframe id="ytFrame" title="Видео" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
+          <iframe id="ytFrame" title="Видео" sandbox="allow-scripts allow-same-origin allow-presentation" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen hidden></iframe>
         </div>
         <div class="stats-bar" id="statsBar">
           <button type="button" class="like-btn" id="likeBtn">👍 <span id="likeCount">лайк</span></button>
@@ -148,11 +148,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=25&fresh=" + Date.now());
+      location.replace("./index.html?v=26&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=25"></script>
-  <script src="./main.js?v=25"></script>
+  <script src="./channels-data.js?v=26"></script>
+  <script src="./main.js?v=26"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

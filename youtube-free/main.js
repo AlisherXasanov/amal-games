@@ -86,6 +86,78 @@
     }, 1100);
   }
 
+  function disableVideoCaptions() {
+    if (!localVideo) return;
+    try {
+      const tracks = localVideo.textTracks;
+      if (!tracks) return;
+      for (let i = 0; i < tracks.length; i++) {
+        tracks[i].mode = "disabled";
+      }
+    } catch (_) {}
+  }
+
+  function setYtChromeTip(show) {
+    let tip = document.getElementById("ytChromeTip");
+    if (!show) {
+      if (tip) tip.hidden = true;
+      if (viewChannel) viewChannel.classList.remove("yt-chrome");
+      return;
+    }
+    if (!tip && playerBox) {
+      tip = document.createElement("div");
+      tip.id = "ytChromeTip";
+      tip.className = "yt-chrome-tip";
+      tip.innerHTML =
+        '<button type="button" id="btnCleanScreen" class="accent">🎬 Чистый экран</button>' +
+        "<p>Убрать титры по бокам, шайбу, субтитры и значок паузы</p>";
+      playerBox.appendChild(tip);
+      tip.querySelector("#btnCleanScreen").onclick = function () {
+        forceCleanScreen();
+      };
+    }
+    if (tip) tip.hidden = false;
+    if (viewChannel) viewChannel.classList.add("yt-chrome");
+  }
+
+  function setCinemaPure(on) {
+    if (viewChannel) viewChannel.classList.toggle("cinema-pure", !!on);
+    if (playerBox) playerBox.classList.toggle("cinema-pure", !!on);
+  }
+
+  function forceCleanScreen() {
+    usingNoAds = true;
+    savePlayerPref();
+    setAltBtnLabel();
+    if (!currentPlayId) return;
+    const title =
+      (nowPlaying && nowPlaying.textContent
+        ? nowPlaying.textContent.replace(/^Сейчас:\s*/, "")
+        : "Ролик") || "Ролик";
+    const id = currentPlayId;
+    const btn = document.getElementById("btnCleanScreen");
+    const floatBtn = document.getElementById("btnFloatNoAds");
+    if (btn) btn.textContent = "⏳ Убираю…";
+    if (floatBtn) floatBtn.textContent = "⏳ Убираю…";
+    const hit = streamCache[id];
+    if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
+      playGen++;
+      const gen = playGen;
+      currentPlayId = id;
+      applyCleanStream(hit.url, gen, id);
+      if (btn) btn.textContent = "🎬 Чистый экран";
+      if (floatBtn) floatBtn.textContent = "🎬 Чистый экран";
+      return;
+    }
+    playId(id, title, {
+      channelId: currentChannel && currentChannel.id,
+    });
+    setTimeout(function () {
+      if (btn) btn.textContent = "🎬 Чистый экран";
+      if (floatBtn) floatBtn.textContent = "🎬 Чистый экран";
+    }, 1600);
+  }
+
   function applyCleanStream(url, gen, videoId) {
     if (gen !== playGen) return;
     if (videoId && currentPlayId !== videoId) return;
@@ -98,7 +170,13 @@
       localVideo.src = url;
     }
     localVideo.play().catch(function () {});
+    disableVideoCaptions();
+    localVideo.onloadedmetadata = function () {
+      disableVideoCaptions();
+    };
     usingNoAds = true;
+    setYtChromeTip(false);
+    setCinemaPure(true);
     try {
       savePlayerPref();
     } catch (_) {}
@@ -211,10 +289,11 @@
 
   function embedUrl(id, autoplay) {
     const ap = autoplay === false ? "0" : "1";
+    // cc_load_policy=0 — без субтитров; шайбу/титры YouTube всё равно рисует — нужен чистый поток
     return (
       EMBED_WORKS +
       encodeURIComponent(id) +
-      "?rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&autoplay=" +
+      "?rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&autoplay=" +
       ap
     );
   }
@@ -430,8 +509,86 @@
 
   function stopShortsPlayers() {
     if (!shortsFeed) return;
+    shortsFeed.querySelectorAll("video.shorts-vid").forEach(function (vid) {
+      try {
+        vid.pause();
+        vid.removeAttribute("src");
+        vid.load();
+      } catch (_) {}
+    });
     shortsFeed.querySelectorAll("iframe").forEach(function (fr) {
       fr.src = "";
+    });
+  }
+
+  /** Один шорт в ленте — свой <video>, без ухода на YouTube */
+  function playShortSlide(slide) {
+    if (!slide || !shortsFeed) return;
+    const video = slide.querySelector("video.shorts-vid");
+    const vid = slide.dataset.vid;
+    const loadEl = slide.querySelector(".shorts-loading");
+    if (!video || !vid) return;
+
+    shortsFeed.querySelectorAll("video.shorts-vid").forEach(function (other) {
+      if (other === video) return;
+      try {
+        other.pause();
+        other.removeAttribute("src");
+        other.load();
+      } catch (_) {}
+    });
+
+    function showLoad(on) {
+      if (loadEl) loadEl.hidden = !on;
+    }
+
+    function startUrl(url) {
+      if (!url || slide.dataset.vid !== vid) return;
+      showLoad(false);
+      if (video.getAttribute("src") !== url) {
+        video.src = url;
+      }
+      video.play().catch(function () {});
+      try {
+        const tracks = video.textTracks;
+        if (tracks) {
+          for (let i = 0; i < tracks.length; i++) tracks[i].mode = "disabled";
+        }
+      } catch (_) {}
+    }
+
+    const hit = streamCache[vid];
+    if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
+      startUrl(hit.url);
+      fetchDirectStream(vid).catch(function () {});
+      return;
+    }
+
+    showLoad(true);
+    fetchDirectStream(vid).then(function (url) {
+      if (slide.dataset.vid !== vid) return;
+      if (url) {
+        startUrl(url);
+        return;
+      }
+      // запасной путь: embed, но без кликов по YouTube-хромке
+      showLoad(false);
+      let fr = slide.querySelector("iframe.shorts-fallback");
+      if (!fr) {
+        fr = document.createElement("iframe");
+        fr.className = "shorts-fallback";
+        fr.title = "Шорт";
+        fr.setAttribute(
+          "sandbox",
+          "allow-scripts allow-same-origin allow-presentation"
+        );
+        fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+        video.hidden = true;
+        slide.querySelector(".shorts-player").appendChild(fr);
+      }
+      video.hidden = true;
+      fr.hidden = false;
+      fr.src = embedUrl(vid, true);
     });
   }
 
@@ -554,7 +711,7 @@
     wrap.className = "watch-float";
     wrap.innerHTML =
       '<button type="button" id="btnFloatMenu">📋 Меню</button>' +
-      '<button type="button" class="accent" id="btnFloatNoAds">🚫 Без рекламы</button>' +
+      '<button type="button" class="accent" id="btnFloatNoAds">🎬 Чистый экран</button>' +
       '<button type="button" id="btnFloatExtra">⋯ Ещё</button>';
     if (playerBox) playerBox.appendChild(wrap);
     document.getElementById("btnFloatMenu").onclick = function () {
@@ -563,39 +720,7 @@
       if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
     };
     document.getElementById("btnFloatNoAds").onclick = function () {
-      const btn = this;
-      usingNoAds = true;
-      savePlayerPref();
-      if (!currentPlayId) return;
-      btn.textContent = "⏳ Секунду…";
-      const title =
-        (nowPlaying && nowPlaying.textContent
-          ? nowPlaying.textContent.replace(/^Сейчас:\s*/, "")
-          : "Ролик") || "Ролик";
-      const id = currentPlayId;
-      // если уже в кэше — играем сразу без полного stop/reload-задержки
-      const hit = streamCache[id];
-      if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
-        playGen++;
-        const gen = playGen;
-        currentPlayId = id;
-        ytFrame.hidden = true;
-        ytFrame.src = "about:blank";
-        playerPh.hidden = true;
-        localVideo.hidden = false;
-        localVideo.src = hit.url;
-        localVideo.play().catch(function () {});
-        setWatching(true);
-        btn.textContent = "🚫 Без рекламы";
-        if (gen) {/* keep */}
-        return;
-      }
-      playId(id, title, {
-        channelId: currentChannel && currentChannel.id,
-      });
-      setTimeout(function () {
-        btn.textContent = "🚫 Без рекламы";
-      }, 1200);
+      forceCleanScreen();
     };
     document.getElementById("btnFloatExtra").onclick = function () {
       document.body.classList.toggle("show-extra-panels");
@@ -663,6 +788,8 @@
     playerPh.hidden = false;
     playerPh.textContent = "▶ Выбери видео из меню ниже";
     currentPlayId = "";
+    setYtChromeTip(false);
+    setCinemaPure(false);
     resetZoom();
   }
 
@@ -705,8 +832,10 @@
       localVideo.hidden = true;
       ytFrame.hidden = false;
       ytFrame.src = embedUrl(id, true);
+      setCinemaPure(false);
+      setYtChromeTip(true);
       startAdRescue(id, gen);
-    }, 1600);
+    }, 2200);
 
     fetchDirectStream(id).then(function (url) {
       if (gen !== playGen || currentPlayId !== id) return;
@@ -723,6 +852,8 @@
       localVideo.hidden = true;
       ytFrame.hidden = false;
       ytFrame.src = embedUrl(id, true);
+      setCinemaPure(false);
+      setYtChromeTip(true);
       startAdRescue(id, gen);
     });
   }
@@ -1255,11 +1386,16 @@
       slide.dataset.vid = item.v.id;
       slide.dataset.idx = String(idx);
       slide.dataset.chid = item.ch.id;
+      const poster = item.v.thumb
+        ? ' poster="' + escapeHtml(item.v.thumb) + '"'
+        : "";
       slide.innerHTML =
-        '<div class="shorts-player"><iframe title="' +
-        escapeHtml(item.v.title) +
-        '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>' +
-        '<div class="shorts-tap"><span class="shorts-enable">▶ Управление видео</span></div></div>' +
+        '<div class="shorts-player">' +
+        '<video class="shorts-vid" playsinline controls loop' +
+        poster +
+        "></video>" +
+        '<div class="shorts-loading" hidden>⏳ Загрузка…</div>' +
+        "</div>" +
         '<div class="shorts-meta"><b>' +
         escapeHtml(item.v.title) +
         '</b><div class="ch">' +
@@ -1268,16 +1404,7 @@
         escapeHtml(item.ch.id) +
         '">Канал</button></div>';
       shortsFeed.appendChild(slide);
-    });
-
-    shortsFeed.querySelectorAll(".shorts-enable").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const player = btn.closest(".shorts-player");
-        if (!player) return;
-        player.classList.add("controls-on");
-        btn.textContent = "Мотай ленту колёсиком сбоку";
-      });
+      prefetchStream(item.v.id);
     });
 
     shortsFeed.querySelectorAll(".shorts-ch-btn").forEach(function (btn) {
@@ -1293,18 +1420,17 @@
       function (entries) {
         entries.forEach(function (entry) {
           const slide = entry.target;
-          const fr = slide.querySelector("iframe");
-          if (!fr) return;
           if (entry.isIntersecting && entry.intersectionRatio > 0.55) {
-            shortsFeed.querySelectorAll("iframe").forEach(function (other) {
-              if (other !== fr) other.src = "";
-            });
-            const vid = slide.dataset.vid;
-            if (vid && (!fr.src || fr.src.indexOf(vid) < 0)) {
-              fr.src = embedUrl(vid, true);
-            }
+            playShortSlide(slide);
           } else if (!entry.isIntersecting) {
-            fr.src = "";
+            const video = slide.querySelector("video.shorts-vid");
+            if (video) {
+              try {
+                video.pause();
+              } catch (_) {}
+            }
+            const fr = slide.querySelector("iframe.shorts-fallback");
+            if (fr) fr.src = "";
           }
         });
       },
@@ -1322,23 +1448,13 @@
       if (found >= 0) startIdx = found;
     }
     const target = shortsFeed.querySelector('.shorts-slide[data-idx="' + startIdx + '"]');
-    function playSlide(slide) {
-      if (!slide) return;
-      const fr = slide.querySelector("iframe");
-      const vid = slide.dataset.vid;
-      if (!fr || !vid) return;
-      shortsFeed.querySelectorAll("iframe").forEach(function (other) {
-        if (other !== fr) other.src = "";
-      });
-      fr.src = embedUrl(vid, true);
-    }
     if (target) {
       requestAnimationFrame(function () {
         target.scrollIntoView({ behavior: "instant", block: "start" });
-        playSlide(target);
+        playShortSlide(target);
       });
     } else {
-      playSlide(shortsFeed.querySelector(".shorts-slide"));
+      playShortSlide(shortsFeed.querySelector(".shorts-slide"));
     }
 
     setupFeedWheel();
@@ -1368,16 +1484,7 @@
         const target = slides[clamped];
         if (target) {
           target.scrollIntoView({ behavior: "smooth", block: "start" });
-          const fr = target.querySelector("iframe");
-          const vid = target.dataset.vid;
-          if (fr && vid) {
-            shortsFeed.querySelectorAll("iframe").forEach(function (other) {
-              if (other !== fr) other.src = "";
-            });
-            fr.src = embedUrl(vid, true);
-          }
-          const player = target.querySelector(".shorts-player");
-          if (player) player.classList.remove("controls-on");
+          playShortSlide(target);
         }
         setTimeout(function () {
           feedWheelLock = false;
@@ -1425,7 +1532,11 @@
         escapeHtml(ch.name) +
         "</div></div>";
       card.addEventListener("click", function () {
-        // именно этот ролик на своём канале — не чужая лента
+        // короткое — в ленту шортов внутри приложения, без ухода на YouTube
+        if (isShortVideo(v)) {
+          openShorts(v.id);
+          return;
+        }
         openChannel(ch.id, v);
       });
       if (isShortVideo(v)) shortsRow.appendChild(card);
