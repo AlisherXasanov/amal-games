@@ -3132,6 +3132,7 @@
     { keys: ["вилли", "вили", "willi", "villy", "кот вилли"], channel: "villy" },
     { keys: ["вилли теор", "теории вилли"], channel: "villy-theory" },
     { keys: ["мы с тобой", "курсор", "наш канал", "amal duo", "duo"], channel: "amal-duo" },
+    { keys: ["синие очки", "синий очк", "blas", "блас", "파란안경", "퍼런안경", "meccha", "chameleon"], channel: "blas" },
     { keys: ["фази", "fazie"], channel: "fazie" },
     { keys: ["кекич"], channel: "kekich" },
     { keys: ["бравл топ", "brawl топ"], channel: "browl" },

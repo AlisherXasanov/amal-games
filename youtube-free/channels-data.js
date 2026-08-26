@@ -10677,6 +10677,117 @@ window.YT_CHANNELS = [
     ]
   },
   {
+    "id": "blas",
+    "name": "Синие очки · BLAS",
+    "emoji": "👓",
+    "color": "#4dabf7",
+    "desc": "Любимый канал: синие очки BLAS — пародии и анимации (퍼런안경_BLAS).",
+    "subs": "1.9 млн",
+    "channelId": "UCSQkftbg2z4kz4NNBVs6CIQ",
+    "uploads": "UUSQkftbg2z4kz4NNBVs6CIQ",
+    "icon": "https://i.ytimg.com/vi/E8HR-KKZiJs/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "E8HR-KKZiJs",
+        "title": "An extraordinary guys",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E8HR-KKZiJs/hqdefault.jpg"
+      },
+      {
+        "id": "7x0MQAyg2YI",
+        "title": "A CHAOTIC CHAMELEON 혼돈의 카멜레온",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7x0MQAyg2YI/hqdefault.jpg"
+      },
+      {
+        "id": "K4H_pBluhiY",
+        "title": "Feel fear in MECCHA CHAMELEON",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/K4H_pBluhiY/hqdefault.jpg"
+      },
+      {
+        "id": "zy2-DqD8YmE",
+        "title": "let's go!! potatoes!!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zy2-DqD8YmE/hqdefault.jpg"
+      },
+      {
+        "id": "NK9ShNIbTsI",
+        "title": "Rhythm Hell Groove 리듬지옥 미라클 스타즈",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/NK9ShNIbTsI/hqdefault.jpg"
+      },
+      {
+        "id": "8jOBGFXwIu4",
+        "title": "Supercell sent me SOMETHING",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8jOBGFXwIu4/hqdefault.jpg"
+      },
+      {
+        "id": "LekI0OOIMOY",
+        "title": "ヤラララ/YARARARA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LekI0OOIMOY/hqdefault.jpg"
+      },
+      {
+        "id": "ygbD6OQChiU",
+        "title": "SPIKE!!!!!!!!! I CHOOSE YOU!!!!!! #fomulabrawl",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ygbD6OQChiU/hqdefault.jpg"
+      },
+      {
+        "id": "80yEFoyQw10",
+        "title": "BRAWLSTARS ANIMATION:METAL HEARTA MadEvil Tale 한글자막 있음",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/80yEFoyQw10/hqdefault.jpg"
+      },
+      {
+        "id": "KdFpDvQo31o",
+        "title": "HELLOOO I'm Mortis.",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KdFpDvQo31o/hqdefault.jpg"
+      },
+      {
+        "id": "YvR9ly7FhCg",
+        "title": "Revenge for six years",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YvR9ly7FhCg/hqdefault.jpg"
+      },
+      {
+        "id": "2X55YmyMoK4",
+        "title": "SHOWDOWN OF CHAOS 9",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2X55YmyMoK4/hqdefault.jpg"
+      },
+      {
+        "id": "2KJ-nOWLSXk",
+        "title": "Split Dance /スプリットダンス",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2KJ-nOWLSXk/hqdefault.jpg"
+      },
+      {
+        "id": "0TZCkjYHDGU",
+        "title": "Furious Frank",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0TZCkjYHDGU/hqdefault.jpg"
+      },
+      {
+        "id": "CfvrUbfQacA",
+        "title": "PERFECT!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CfvrUbfQacA/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUSQkftbg2z4kz4NNBVs6CIQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E8HR-KKZiJs/hqdefault.jpg"
+      }
+    ],
+    "pinShelf": true
+  },
+  {
     "id": "amal-duo",
     "name": "Мы с тобой · ТВ",
     "emoji": "✦",
