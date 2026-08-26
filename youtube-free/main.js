@@ -3007,6 +3007,13 @@
     { keys: ["кобяков"], channel: "cobel" },
     { keys: ["wylsa", "вилса", "уайса"], channel: "wylsa" },
     { keys: ["простая наука", "лаборатор"], channel: "laber" },
+    { keys: ["вилли", "вили", "willi", "villy", "кот вилли"], channel: "villy" },
+    { keys: ["вилли теор", "теории вилли"], channel: "villy-theory" },
+    { keys: ["фази", "fazie"], channel: "fazie" },
+    { keys: ["кекич"], channel: "kekich" },
+    { keys: ["бравл топ", "brawl топ"], channel: "browl" },
+    { keys: ["саймон", "simon cat", "кот саймон"], channel: "kot-simona" },
+    { keys: ["гофман"], channel: "gofman" },
     { keys: ["мой канал", "амал", "загруз"], channel: "amal-room" },
   ];
 

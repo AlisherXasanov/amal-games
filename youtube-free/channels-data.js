@@ -9919,6 +9919,764 @@ window.YT_CHANNELS = [
     ]
   },
   {
+    "id": "villy",
+    "name": "Вилли",
+    "emoji": "🐱",
+    "color": "#fd79a8",
+    "desc": "Кот Вилли — игры, вирусы, сказки и истории. Показывает себя как котик.",
+    "subs": "816 тыс.",
+    "channelId": "UCqwLnjSqJk-mHduLawQsOzg",
+    "uploads": "UUqwLnjSqJk-mHduLawQsOzg",
+    "icon": "https://i.ytimg.com/vi/TSnsFNrdjOE/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "TSnsFNrdjOE",
+        "title": "😥Я НАШЕЛ ВЕРИТИ КОТОРЫЙ ЗНАЕТ ГДЕ Я ЖИВУ...",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TSnsFNrdjOE/hqdefault.jpg"
+      },
+      {
+        "id": "rNmOxDKMSYo",
+        "title": "😥ЭТИ МИЛЫЕ ИГРЫ ОКАЗАЛИСЬ НАСТОЯЩИМ ХОРРОРОМ... 2",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/rNmOxDKMSYo/hqdefault.jpg"
+      },
+      {
+        "id": "P_upbYAHaJc",
+        "title": "😮ЭТОГО ТЫ ТОЧНО НЕ ЗНАЛ ОБ Fears to Fathom® - Scratch Creek",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/P_upbYAHaJc/hqdefault.jpg"
+      },
+      {
+        "id": "9ilQzUoXXm0",
+        "title": "😥Эти ИГРЫ оказались ЗАРАЖЕНЫ ВИРУСОМ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9ilQzUoXXm0/hqdefault.jpg"
+      },
+      {
+        "id": "bEPl93BTD3o",
+        "title": "В ЭТОЙ ИГРЕ КУЛЬТ ПОХИЩАЕТ ЛЮДЕЙ.. - Fears to Fathom: Scratch Creek",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bEPl93BTD3o/hqdefault.jpg"
+      },
+      {
+        "id": "W1wLuLjcaPI",
+        "title": "😥ЭТИ МИЛЫЕ ИГРЫ ОКАЗАЛИСЬ НАСТОЯЩИМ ХОРРОРОМ...",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W1wLuLjcaPI/hqdefault.jpg"
+      },
+      {
+        "id": "OzeGwE3Q7I4",
+        "title": "😨Я ПРОШЕЛ САМУЮ СТРАШНУЮ ХОРРОР СБОРКУ MINECRAFT",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OzeGwE3Q7I4/hqdefault.jpg"
+      },
+      {
+        "id": "P4AzoC-oWP8",
+        "title": "😥ЭТИ МОНСТРЫ ХОТЯТ МЕНЯ СЪЕСТЬ.. - Dark Pals: The 1st Floor",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/P4AzoC-oWP8/hqdefault.jpg"
+      },
+      {
+        "id": "95PqgAOg1wI",
+        "title": "😮ЭТОГО ТЫ ТОЧНО НЕ ЗНАЛ О Winion Virus",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/95PqgAOg1wI/hqdefault.jpg"
+      },
+      {
+        "id": "DAE0EwjbWpk",
+        "title": "😥АЙСБЕРГ ИГРОВЫХ ВИРУСОВ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/DAE0EwjbWpk/hqdefault.jpg"
+      },
+      {
+        "id": "ep2DQ2kXd_M",
+        "title": "😨БЕЗУМНЫЕ ТЕОРИИ Poppy Playtime 5",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ep2DQ2kXd_M/hqdefault.jpg"
+      },
+      {
+        "id": "wsNOgymAYNY",
+        "title": "😥ЭТА МИЛАЯ ИГРА ЗАРАЖЕНА ВИРУСОМ - Winion Virus",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wsNOgymAYNY/hqdefault.jpg"
+      },
+      {
+        "id": "DFt6ePeMIQk",
+        "title": "😨О чем была Poppy Playtime 5? + Теории",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/DFt6ePeMIQk/hqdefault.jpg"
+      },
+      {
+        "id": "avLpK50qYoM",
+        "title": "😨СОСЕД, КОТОРОГО МЫ ПОТЕРЯЛИ… (ОТМЕНЁННЫЕ СЮЖЕТЫ)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/avLpK50qYoM/hqdefault.jpg"
+      },
+      {
+        "id": "DAkfqTbjte4",
+        "title": "😨.EXE ИГРЫ КОТОРЫЕ ТЕБЯ НАПУГАЮТ 3",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/DAkfqTbjte4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUqwLnjSqJk-mHduLawQsOzg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TSnsFNrdjOE/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "villy-theory",
+    "name": "Вилли — Теории",
+    "emoji": "🧠",
+    "color": "#e84393",
+    "desc": "Теории и разборы от Вилли (Roblox и игры).",
+    "subs": "102 тыс.",
+    "channelId": "UCrz2AazGSmL0y6Ia3uHLtFg",
+    "uploads": "UUrz2AazGSmL0y6Ia3uHLtFg",
+    "icon": "https://i.ytimg.com/vi/w4ghUEJYu4o/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "w4ghUEJYu4o",
+        "title": "😨В ЭТОМ РОБЛОКС-ХОРРОРЕ ПРОПАДАЮТ ЛЮДИ.. - Pine Fall",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/w4ghUEJYu4o/hqdefault.jpg"
+      },
+      {
+        "id": "GsBQfcaxy9M",
+        "title": "😨В ЭТОЙ БОЛЬНИЦЕ НУЖНО ИЗГОНЯТЬ ДЕМОНОВ! Night At The Infirmary",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GsBQfcaxy9M/hqdefault.jpg"
+      },
+      {
+        "id": "iIzJh0NwUXc",
+        "title": "😢В ЭТОЙ МИЛОЙ БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ ТВОРИТСЯ ЧТО-ТО СТРАННОЕ... Animal Hospital",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iIzJh0NwUXc/hqdefault.jpg"
+      },
+      {
+        "id": "-_IxNXZzvnA",
+        "title": "В ЭТОМ ХОРРОРЕ У НАС ШИЗОФРЕНИЯ - THE MOON I ROT BEHIND",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-_IxNXZzvnA/hqdefault.jpg"
+      },
+      {
+        "id": "lyUHWsV3WLY",
+        "title": "😨КАЖДЫЙ НАШ ВЫБОР ВЛИЯЕТ НА ИГРУ - Egg Kevin's House",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lyUHWsV3WLY/hqdefault.jpg"
+      },
+      {
+        "id": "6JMyXUTHcZk",
+        "title": "😢ЭТО САМЫЙ ГРУСТНЫЙ ХОРРОР - Let Him Go",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6JMyXUTHcZk/hqdefault.jpg"
+      },
+      {
+        "id": "LBl3JR67pQw",
+        "title": "😨ЭТА ЯМА ПОЕДАЕТ ЛЮДЕЙ.. - игра It knows im here",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LBl3JR67pQw/hqdefault.jpg"
+      },
+      {
+        "id": "Mzk90b59jzo",
+        "title": "😨В ЭТОЙ ХОРРОР ИГРЕ МАМА С#ЕЛА СВОИХ ДЕТЕЙ И.. - Mother's Care",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Mzk90b59jzo/hqdefault.jpg"
+      },
+      {
+        "id": "mVWj8w2SpP8",
+        "title": "😨Я ЗАВЕЛ СЕБЕ ПОМОЩНИКА И ЭТО... - The Assistant",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mVWj8w2SpP8/hqdefault.jpg"
+      },
+      {
+        "id": "omnblBMJUKM",
+        "title": "😨В ЭТОЙ ГОНОЧНОЙ ИГРЕ СИДИТ ВИРУС — Bunny 64",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/omnblBMJUKM/hqdefault.jpg"
+      },
+      {
+        "id": "XxhcFNBU6DE",
+        "title": "😢ЭТОТ КОМПЬЮТЕР СВЕДЁТ ТЕБЯ С УМА.. — Jim’s Computer",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XxhcFNBU6DE/hqdefault.jpg"
+      },
+      {
+        "id": "HLRzAV0wTwg",
+        "title": "😨ЭТОТ ХОРРОР В РОБЛОКС НИКОГДА НЕ ВЫЙДЕТ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HLRzAV0wTwg/hqdefault.jpg"
+      },
+      {
+        "id": "wcwi9thcIEo",
+        "title": "😢ДЕНЬ РОЖДЕНИЯ, ЗАКОНЧИВШЕЕСЯ НАСТОЯЩИМ УЖАСОМ!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wcwi9thcIEo/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUrz2AazGSmL0y6Ia3uHLtFg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/w4ghUEJYu4o/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "fazie",
+    "name": "Fazie",
+    "emoji": "👁️",
+    "color": "#6c5ce7",
+    "desc": "Страшные игры и истории.",
+    "subs": "604 тыс.",
+    "channelId": "UC8uYStXS2ElBFLZVfuYzIxg",
+    "uploads": "UU8uYStXS2ElBFLZVfuYzIxg",
+    "icon": "https://i.ytimg.com/vi/HxlznUJ7_HE/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "HxlznUJ7_HE",
+        "title": "JP II w Afryce #afryka #tTogo",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HxlznUJ7_HE/hqdefault.jpg"
+      },
+      {
+        "id": "ub4JabbKdFw",
+        "title": "Ryby w Afryce #afryka",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ub4JabbKdFw/hqdefault.jpg"
+      },
+      {
+        "id": "et2QVNpznkg",
+        "title": "Afrykańska plaża #afryka #togo",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/et2QVNpznkg/hqdefault.jpg"
+      },
+      {
+        "id": "L8lBrvBHowY",
+        "title": "#205 Przez Świat na Fazie - Afrykańska przygoda  | Abomey, BENIN",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/L8lBrvBHowY/hqdefault.jpg"
+      },
+      {
+        "id": "Z-NfYRYnw0U",
+        "title": "Składniki do rytuału Voodoo #voodoo #afryka #Togo",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Z-NfYRYnw0U/hqdefault.jpg"
+      },
+      {
+        "id": "ZevVQkGY2us",
+        "title": "#204 Przez Świat na Fazie - Afrykańska Wenecja | Ganvié BENIN",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZevVQkGY2us/hqdefault.jpg"
+      },
+      {
+        "id": "SrqBIYpTFE8",
+        "title": "#203 Przez Świat na Fazie - Targ fetyszy i portowe slumsy | TOGO",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SrqBIYpTFE8/hqdefault.jpg"
+      },
+      {
+        "id": "q9PYgBluncg",
+        "title": "Ukraina w Unii Eurpejskiej? #wołyń",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/q9PYgBluncg/hqdefault.jpg"
+      },
+      {
+        "id": "S1rH0_ixfUs",
+        "title": "Dziwne zachowanie sarny #przyroda #wołyń  #faza",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/S1rH0_ixfUs/hqdefault.jpg"
+      },
+      {
+        "id": "eiAj0QB3Zo0",
+        "title": "Zbrodnia w Kisielinie (Wołyń) #wołyń",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/eiAj0QB3Zo0/hqdefault.jpg"
+      },
+      {
+        "id": "ledH6Fqsxj8",
+        "title": "jak wyglądały mieszkania w Prypeci (Czarnobyl) #czarnobyl",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ledH6Fqsxj8/hqdefault.jpg"
+      },
+      {
+        "id": "fZGEnSpfhK4",
+        "title": "Emerytura za parę minut pracy w Czarnobylu #czarnobyl",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fZGEnSpfhK4/hqdefault.jpg"
+      },
+      {
+        "id": "Ls6RYKNjr-M",
+        "title": "Szpital w Czarnobylu  #urbex #czarnobyl #stalker",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Ls6RYKNjr-M/hqdefault.jpg"
+      },
+      {
+        "id": "3OS1pUBgILM",
+        "title": "#202 Przez Świat na Fazie - Wołyń | UKRAINA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3OS1pUBgILM/hqdefault.jpg"
+      },
+      {
+        "id": "75YTE00rP18",
+        "title": "Rosjanie w Czarnobylu",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/75YTE00rP18/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU8uYStXS2ElBFLZVfuYzIxg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HxlznUJ7_HE/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "kekich",
+    "name": "Кекич",
+    "emoji": "🎮",
+    "color": "#00cec9",
+    "desc": "Игры и весёлые ролики.",
+    "subs": "188 тыс.",
+    "channelId": "UC-gqubY7nb5vtsogxKJE79w",
+    "uploads": "UU-gqubY7nb5vtsogxKJE79w",
+    "icon": "https://i.ytimg.com/vi/bN5xcSG5_vs/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "bN5xcSG5_vs",
+        "title": "ИГРАЕМ В БЕТА-ТЕСТ MODERN WARFARE 4 WARZONE СТРИМ ОНЛАЙН!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bN5xcSG5_vs/hqdefault.jpg"
+      },
+      {
+        "id": "9Tkwu7nMhCY",
+        "title": "ЛЮДЯМ ПРОСТО НРАВИТСЯ ИГРАТЬ В MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9Tkwu7nMhCY/hqdefault.jpg"
+      },
+      {
+        "id": "ZkLoM2dPbVs",
+        "title": "ГИПЕРФИКС НА АИМ АССИСТ В MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZkLoM2dPbVs/hqdefault.jpg"
+      },
+      {
+        "id": "MBWeMWpiBfs",
+        "title": "ТТК В MODERN WARFARE 4 СЛОМАН?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MBWeMWpiBfs/hqdefault.jpg"
+      },
+      {
+        "id": "w2xB3bYCFMs",
+        "title": "ACTIVISION НА САМО ДЕЛЕ НИКОГО НЕ СЛУШАЮТ MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/w2xB3bYCFMs/hqdefault.jpg"
+      },
+      {
+        "id": "ZOnl9kb6O0k",
+        "title": "ПОЧЕМУ Я МАЛО ИГРАЮ НА СТРИМАХ MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZOnl9kb6O0k/hqdefault.jpg"
+      },
+      {
+        "id": "6fg2ACzkgWs",
+        "title": "БАТТЛФИЛДЕР ПРО MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6fg2ACzkgWs/hqdefault.jpg"
+      },
+      {
+        "id": "MvfCIJLidXQ",
+        "title": "БЕТА ТЕСТ MODERN WARFARE 4 ЭТО ФИНАЛЬНАЯ ВЕРСИЯ ИГРЫ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MvfCIJLidXQ/hqdefault.jpg"
+      },
+      {
+        "id": "Xewzxckleic",
+        "title": "СТОИТ ЛИ ПОКУПАТЬ MODERN WARFARE 4 В 2026",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Xewzxckleic/hqdefault.jpg"
+      },
+      {
+        "id": "zAy1xbA77_I",
+        "title": "НИГДЕ НЕТ РАВЕНСТВА УСТРОЙСТВ СРЕДИ ШУТЕРОВ MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zAy1xbA77_I/hqdefault.jpg"
+      },
+      {
+        "id": "OIeNnyNqGc8",
+        "title": "APEX МОДУЛИ В MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OIeNnyNqGc8/hqdefault.jpg"
+      },
+      {
+        "id": "jby_IYzp1mw",
+        "title": "ОНИ ИЗМЕНИЛИ МУВМЕНТ В MODERN WARFARE 4!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/jby_IYzp1mw/hqdefault.jpg"
+      },
+      {
+        "id": "pKx118v4lYQ",
+        "title": "ИГРАЕМ В БЕТА-ТЕСТ MODERN WARFARE 4 WARZONE СТРИМ ОНЛАЙН!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/pKx118v4lYQ/hqdefault.jpg"
+      },
+      {
+        "id": "0Xq4ZL6jaJ8",
+        "title": "ИГРАЕМ В БЕТА-ТЕСТ MODERN WARFARE 4 WARZONE СТРИМ ОНЛАЙН!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0Xq4ZL6jaJ8/hqdefault.jpg"
+      },
+      {
+        "id": "-x-cjLlX6HU",
+        "title": "АИМ АССИСТ СТАЛ СИЛЬНЕЕ! ЛУЧШИЕ НАСТРОЙКИ ГЕЙМПАДА В MODERN WARFARE 4",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-x-cjLlX6HU/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU-gqubY7nb5vtsogxKJE79w",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bN5xcSG5_vs/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "browl",
+    "name": "Бравл Топ",
+    "emoji": "⭐",
+    "color": "#0984e3",
+    "desc": "Бравл Старс и обзоры.",
+    "subs": "43 тыс.",
+    "channelId": "UCaZEYN0H4qcFChmuVplLzMw",
+    "uploads": "UUaZEYN0H4qcFChmuVplLzMw",
+    "icon": "https://i.ytimg.com/vi/KaOXAcPLsOQ/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "KaOXAcPLsOQ",
+        "title": "БЕЗ БАБ! Покупаю СКИНЫ и АПАЮ на них 2.000 Кубков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KaOXAcPLsOQ/hqdefault.jpg"
+      },
+      {
+        "id": "HwOt76XAIVA",
+        "title": "ДУЭЛЬ! Цель выполнена…",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HwOt76XAIVA/hqdefault.jpg"
+      },
+      {
+        "id": "PE0takLeoG8",
+        "title": "ПУТЬ К ТОП 1 МИРА! Потратил 50.000 Блингов на СКИНЫ! ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/PE0takLeoG8/hqdefault.jpg"
+      },
+      {
+        "id": "5Xe4lVixzLY",
+        "title": "БЕЗ БАБ! Награды, Прокачка, Скины, Кубки, Праймы! (легендарный пуш)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5Xe4lVixzLY/hqdefault.jpg"
+      },
+      {
+        "id": "g2wMD67yZA0",
+        "title": "ДУЭЛЬ! 24 Часа в Обновлении (открыл всех бойцов)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/g2wMD67yZA0/hqdefault.jpg"
+      },
+      {
+        "id": "tCqalo31NMk",
+        "title": "ПУТЬ К ТОП 1 МИРА! Покупаю СКИНЫ на Каждый ВТОРОЙ Прайм!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tCqalo31NMk/hqdefault.jpg"
+      },
+      {
+        "id": "3MYMx9NYHOw",
+        "title": "ПУТЬ К ТОП 1 МИРА! Возвращение…",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3MYMx9NYHOw/hqdefault.jpg"
+      },
+      {
+        "id": "STE8EYNoo2A",
+        "title": "ДУЭЛЬ! 24 Часа ФАРМ ПОБЕД в Ивенте!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/STE8EYNoo2A/hqdefault.jpg"
+      },
+      {
+        "id": "1PU17cSrGxo",
+        "title": "ДУЭЛЬ! 100.000 Кубков за 24 Часа - Прошел Бравл Старс!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1PU17cSrGxo/hqdefault.jpg"
+      },
+      {
+        "id": "CLJVYSm5t8c",
+        "title": "ДУЭЛЬ! 24 Часа на МЕТОВЫХ Бойцах!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CLJVYSm5t8c/hqdefault.jpg"
+      },
+      {
+        "id": "Tm5ZdbdAM_c",
+        "title": "ДУЭЛЬ! 24 Часа НЕИГРАБЕЛЬНЫМИ Бойцами! ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Tm5ZdbdAM_c/hqdefault.jpg"
+      },
+      {
+        "id": "009zxQMUHZU",
+        "title": "ДУЭЛЬ! 24 Часа ДЕВУШКА дает ЗАДАНИЯ в Бравл Старс!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/009zxQMUHZU/hqdefault.jpg"
+      },
+      {
+        "id": "iaiE1dSptOI",
+        "title": "ДУЭЛЬ! 24 Часа ПОКУПАЮ Все в ЛАВКЕ Джу Джу в Бравл Старс!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/iaiE1dSptOI/hqdefault.jpg"
+      },
+      {
+        "id": "0RvqoowMKCA",
+        "title": "ДУЭЛЬ! 24 Часа ТОЛЬКО на Эпических Бойцах против ЮТУБЕРА!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0RvqoowMKCA/hqdefault.jpg"
+      },
+      {
+        "id": "ABiYZ34kztk",
+        "title": "ДУЭЛЬ! Новый БОЕЦ против ЮТУБЕРА в Бравл Старс!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ABiYZ34kztk/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUaZEYN0H4qcFChmuVplLzMw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KaOXAcPLsOQ/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "kot-simona",
+    "name": "Кот Саймона",
+    "emoji": "😺",
+    "color": "#fab1a0",
+    "desc": "Мульт про кота Саймона.",
+    "subs": "6.6 млн",
+    "channelId": "UCH6vXjt-BA7QHl0KnfL-7RQ",
+    "uploads": "UUH6vXjt-BA7QHl0KnfL-7RQ",
+    "icon": "https://i.ytimg.com/vi/HXQ96HH9o6M/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "HXQ96HH9o6M",
+        "title": "Bathroom Fun",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HXQ96HH9o6M/hqdefault.jpg"
+      },
+      {
+        "id": "WMkJ3wEhJ4Q",
+        "title": "New Film Out Now",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WMkJ3wEhJ4Q/hqdefault.jpg"
+      },
+      {
+        "id": "ptsN8vQidLY",
+        "title": "Why Do Cats Need Constant Attention? - Caturday Film Club",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ptsN8vQidLY/hqdefault.jpg"
+      },
+      {
+        "id": "yyC4A3s-XTY",
+        "title": "Laser Toy - 4K",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yyC4A3s-XTY/hqdefault.jpg"
+      },
+      {
+        "id": "3Esr_XUW3u4",
+        "title": "Tale's End - Kitten Quest Final Part",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3Esr_XUW3u4/hqdefault.jpg"
+      },
+      {
+        "id": "xnswHACStSI",
+        "title": "TALE'S END - KITTEN QUEST PT.4 - The final instalment!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xnswHACStSI/hqdefault.jpg"
+      },
+      {
+        "id": "O0QpKyG5WoM",
+        "title": "Coming Soon!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/O0QpKyG5WoM/hqdefault.jpg"
+      },
+      {
+        "id": "ZAiZ6ox-u5U",
+        "title": "Will you OPEN the door?! MEOW",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZAiZ6ox-u5U/hqdefault.jpg"
+      },
+      {
+        "id": "wIZtaR2GiXE",
+        "title": "Happy Black Cat Appreciation Day!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wIZtaR2GiXE/hqdefault.jpg"
+      },
+      {
+        "id": "vOLHdI5YQ1A",
+        "title": "Kitten Quest - Catch Up On Our Hero's Quest So Far!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vOLHdI5YQ1A/hqdefault.jpg"
+      },
+      {
+        "id": "BZkwZPtsruI",
+        "title": "WAKE UP human. It's breakfast time!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BZkwZPtsruI/hqdefault.jpg"
+      },
+      {
+        "id": "zkw_tLlCQTc",
+        "title": "Pizza Cat - 4K",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zkw_tLlCQTc/hqdefault.jpg"
+      },
+      {
+        "id": "erH3KiF6vng",
+        "title": "The Cat wants to help but makes it WORSE",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/erH3KiF6vng/hqdefault.jpg"
+      },
+      {
+        "id": "61NzAGewi_M",
+        "title": "Why is the Cat so OBSESSED with this box?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/61NzAGewi_M/hqdefault.jpg"
+      },
+      {
+        "id": "1e0vn5wZpiQ",
+        "title": "The Secret Language of Cats - Caturday Film Club",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1e0vn5wZpiQ/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUH6vXjt-BA7QHl0KnfL-7RQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HXQ96HH9o6M/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "gofman",
+    "name": "Гофман",
+    "emoji": "🧩",
+    "color": "#a29bfe",
+    "desc": "Загадки, теории и странные игры.",
+    "subs": "2.5 млн",
+    "channelId": "UCMb0O2CdPBNi-QqPk5T3gsQ",
+    "uploads": "UUMb0O2CdPBNi-QqPk5T3gsQ",
+    "icon": "https://i.ytimg.com/vi/7gzKVDDTeyo/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "7gzKVDDTeyo",
+        "title": "Coffee Like A Local Ep1: Lima, Peru",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7gzKVDDTeyo/hqdefault.jpg"
+      },
+      {
+        "id": "mAYbmcqPphc",
+        "title": "The Fellow ES1 Espresso Machine Review",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mAYbmcqPphc/hqdefault.jpg"
+      },
+      {
+        "id": "WtlE3BW9Nqs",
+        "title": "The Surprising Things We Discovered In The Cost Of A Cappuccino",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WtlE3BW9Nqs/hqdefault.jpg"
+      },
+      {
+        "id": "Iq34gq2ihMk",
+        "title": "I Went To Guatemala To Explain Why All Coffee Is Fermented",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Iq34gq2ihMk/hqdefault.jpg"
+      },
+      {
+        "id": "XcoDb_4s4y8",
+        "title": "The Philips Baristina - I'm Not Angry, Just Disappointed",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XcoDb_4s4y8/hqdefault.jpg"
+      },
+      {
+        "id": "4S87o1l5BL8",
+        "title": "Grab your copy of Cherry Bones issue two now!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4S87o1l5BL8/hqdefault.jpg"
+      },
+      {
+        "id": "MurmAcAQNtg",
+        "title": "Wendougee: The Most Interesting Manufacturer in China?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MurmAcAQNtg/hqdefault.jpg"
+      },
+      {
+        "id": "0HdzJz_evNw",
+        "title": "The Truly Absurd Secrets of An Incredible Americano",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0HdzJz_evNw/hqdefault.jpg"
+      },
+      {
+        "id": "mMwscUNKbPk",
+        "title": "How To Avoid A Bad Pour Over Brew",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mMwscUNKbPk/hqdefault.jpg"
+      },
+      {
+        "id": "HVec3aAlWkg",
+        "title": "We Spent $1,850 On Coffee Scales. What’s Actually Good?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HVec3aAlWkg/hqdefault.jpg"
+      },
+      {
+        "id": "UGf7mtfhOFM",
+        "title": "The MokaBot Brews Better Coffee Than Me",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/UGf7mtfhOFM/hqdefault.jpg"
+      },
+      {
+        "id": "hEiI4jZuUn4",
+        "title": "Lab Testing Big Brands Vs Specialty Coffee Vs &quot;Healthy&quot; Coffee",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hEiI4jZuUn4/hqdefault.jpg"
+      },
+      {
+        "id": "LZnAQ-PWQdg",
+        "title": "I Need To Tell You Why Coffee Makes You Poop",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LZnAQ-PWQdg/hqdefault.jpg"
+      },
+      {
+        "id": "-g_Bcng41Js",
+        "title": "The Hoop Brewer Review: Almost A Slam Dunk",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-g_Bcng41Js/hqdefault.jpg"
+      },
+      {
+        "id": "g5v5AMiW9A4",
+        "title": "Stones In Coffee: An Ill-Advised Investigation",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/g5v5AMiW9A4/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUMb0O2CdPBNi-QqPk5T3gsQ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7gzKVDDTeyo/hqdefault.jpg"
+      }
+    ]
+  },
+  {
     "id": "amal-room",
     "name": "Канал Amal",
     "emoji": "🌙",
