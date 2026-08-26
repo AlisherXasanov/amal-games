@@ -176,7 +176,7 @@ const state = {
 
   experimentsDone: [],
 
-  yaw: 0,
+  yaw: Math.PI,
 
   pitch: 0
 
