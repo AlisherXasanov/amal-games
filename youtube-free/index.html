@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=30" />
+  <link rel="stylesheet" href="./style.css?v=31" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -74,11 +74,15 @@
       <h2>Мой канал</h2>
       <p class="mine-lead">Свои ролики, кнопки и достижения — здесь, в «Смотри».</p>
       <p class="subs-line"><span id="mineSubs">0</span> подписчиков · канал «<span id="mineNick">Друг</span>»</p>
+      <label class="game-nick-row">Игровое имя для клуба
+        <input id="mineGameNick" maxlength="24" placeholder="Например: ValeraPro" autocomplete="nickname" />
+      </label>
+      <div class="mine-club locked" id="mineClub"></div>
       <div class="gift-row">
         <div class="gift-card" id="mineGift">🎁 Подарок с твоим именем</div>
         <button type="button" class="btn accent" id="btnMineGift">Открыть подарок</button>
       </div>
-      <div class="shelf-label">Кнопки</div>
+      <div class="shelf-label">Кнопки · жми, чтобы снова увидеть анимацию</div>
       <div class="buttons-row" id="mineButtons"></div>
       <div class="row-actions">
         <button type="button" class="btn ghost" id="btnMineBoost">+50 подписчиков</button>
@@ -152,11 +156,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=30&fresh=" + Date.now());
+      location.replace("./index.html?v=31&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=30"></script>
-  <script src="./main.js?v=30"></script>
+  <script src="./channels-data.js?v=31"></script>
+  <script src="./main.js?v=31"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

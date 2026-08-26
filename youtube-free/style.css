@@ -603,12 +603,23 @@ body.show-extra-panels .now { display: block; }
 .upload-label { display: inline-block; cursor: pointer; }
 
 .video-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px; padding: 14px 14px 40px; max-width: 1100px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 14px 14px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 720px) {
+  .video-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+}
+@media (max-width: 420px) {
+  .video-grid { grid-template-columns: 1fr; }
 }
 .vid-card {
   border: 0; cursor: pointer; text-align: left; padding: 0; border-radius: 14px;
   overflow: hidden; background: #2a1a3a; color: #fff;
+  min-width: 0;
 }
 .vid-thumb {
   aspect-ratio: 16/9; background: linear-gradient(135deg, #444, #222);
@@ -626,6 +637,25 @@ body.show-extra-panels .now { display: block; }
 .mine-wrap h2 { font-size: 1.4rem; margin-bottom: 6px; }
 .mine-lead { color: #c4b5fd; font-size: 13px; margin-bottom: 12px; }
 .subs-line { font-weight: 800; margin: 8px 0 14px; }
+.game-nick-row {
+  display: flex; flex-direction: column; gap: 6px;
+  font: 700 12px system-ui; color: #c4b5fd; margin-bottom: 12px;
+}
+.game-nick-row input {
+  padding: 10px 12px; border-radius: 12px; border: 1px solid #554466;
+  background: #1a1028; color: #fff; font: 800 14px system-ui;
+}
+.mine-club {
+  margin: 0 0 14px; padding: 14px; border-radius: 16px;
+  border: 1px solid #554466; background: #1a1028;
+}
+.mine-club.open {
+  border-color: #fde68a;
+  background: linear-gradient(135deg, #3d2a5c, #1a1028 60%);
+}
+.mine-club h3 { margin: 0 0 6px; font-size: 16px; }
+.mine-club p { margin: 0; font-size: 13px; color: #c4b5fd; line-height: 1.4; }
+.mine-club.locked { opacity: 0.85; }
 .gift-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
 .gift-card {
   flex: 1; min-width: 180px; padding: 14px; border-radius: 14px; text-align: center; font-weight: 800;
@@ -637,11 +667,17 @@ body.show-extra-panels .now { display: block; }
   cursor: pointer; text-align: center; font: 700 12px system-ui; min-height: 88px;
 }
 .play-award.locked { opacity: 0.45; }
-.play-award.hidden-award { outline: 2px dashed #888; }
+.play-award.hidden-award { outline: 2px dashed #888; opacity: 0.55; }
+.play-award.bronze { background: linear-gradient(180deg,#a67c52,#5c3d24); }
 .play-award.silver { background: linear-gradient(180deg,#4a4e55,#2c3036); }
 .play-award.gold { background: linear-gradient(180deg,#c9a227,#7a5a10); }
 .play-award.diamond { background: linear-gradient(180deg,#6ec9ff,#2a5a80); }
 .play-award.romantic { background: linear-gradient(180deg,#ff8fab,#8b1e4a); }
+.play-award.ruby { background: linear-gradient(180deg,#ff4d6d,#7a1028); }
+.play-award.opal { background: linear-gradient(180deg,#e0c3fc,#8ec5fc); color: #1a1028; }
+.play-award.rainbow { background: linear-gradient(120deg,#ff6b6b,#feca57,#48dbfb,#5f27cd); }
+.play-award.neural { background: linear-gradient(180deg,#2d3436,#00b894); }
+.play-award.mythic { background: linear-gradient(180deg,#6c5ce7,#2d1b4e); box-shadow: 0 0 18px rgba(108,92,231,.45); }
 .play-award small { display: block; margin-top: 4px; opacity: 0.8; font-weight: 600; }
 .achievements { display: grid; gap: 6px; margin: 8px 0 16px; }
 .ach { background: #2a1a3a; border-radius: 10px; padding: 8px 10px; font-size: 13px; }
@@ -649,3 +685,63 @@ body.show-extra-panels .now { display: block; }
 .row-actions { margin: 8px 0 16px; }
 #mineUpload { margin: 8px 0; padding: 12px; background: rgba(0,0,0,.35); border-radius: 12px; }
 #mineUpload p { font-size: 13px; color: #c4b5fd; margin-bottom: 8px; }
+
+.caption-panel {
+  position: absolute; left: 10px; right: 10px; bottom: 52px; z-index: 9;
+  padding: 12px; border-radius: 14px;
+  background: rgba(20,12,32,.94); border: 1px solid #554466;
+  color: #fff;
+}
+.caption-panel[hidden] { display: none !important; }
+.caption-panel b { display: block; margin-bottom: 8px; font-size: 13px; }
+.caption-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.caption-list button {
+  padding: 7px 10px; border-radius: 999px; border: 1px solid #554466;
+  background: #2a1a3a; color: #fff; font: 700 11px system-ui; cursor: pointer;
+}
+.caption-list button.on { border-color: #fde68a; background: #3d2a5c; }
+.caption-hint { margin: 8px 0 0; font-size: 11px; color: #9988aa; line-height: 1.35; }
+#localVideo::cue {
+  background: rgba(0,0,0,.72); color: #fff;
+  font: 700 15px/1.35 system-ui; text-shadow: 0 1px 2px #000;
+}
+
+.award-anim {
+  position: fixed; inset: 0; z-index: 200;
+  display: grid; place-items: center;
+  background: rgba(0,0,0,.72);
+  pointer-events: auto;
+}
+.award-anim[hidden] { display: none !important; }
+.award-anim-card {
+  position: relative; min-width: 240px; max-width: 90vw;
+  padding: 28px 24px 20px; border-radius: 20px; text-align: center;
+  color: #fff; font: 800 22px system-ui;
+  background: #2a1a3a; border: 2px solid #fde68a;
+  animation: awardPop .55s cubic-bezier(.2,1.4,.4,1);
+}
+.award-anim.gold .award-anim-card { background: linear-gradient(180deg,#c9a227,#7a5a10); }
+.award-anim.silver .award-anim-card { background: linear-gradient(180deg,#6b7280,#374151); }
+.award-anim.diamond .award-anim-card { background: linear-gradient(180deg,#6ec9ff,#2a5a80); }
+.award-anim.romantic .award-anim-card { background: linear-gradient(180deg,#ff8fab,#8b1e4a); }
+.award-anim.bronze .award-anim-card { background: linear-gradient(180deg,#a67c52,#5c3d24); }
+.award-anim.ruby .award-anim-card { background: linear-gradient(180deg,#ff4d6d,#7a1028); }
+.award-anim.opal .award-anim-card { background: linear-gradient(180deg,#e0c3fc,#8ec5fc); color: #1a1028; }
+.award-anim.rainbow .award-anim-card { background: linear-gradient(120deg,#ff6b6b,#feca57,#48dbfb,#5f27cd); }
+.award-anim.neural .award-anim-card { background: linear-gradient(180deg,#2d3436,#00b894); }
+.award-anim.mythic .award-anim-card { background: linear-gradient(180deg,#6c5ce7,#2d1b4e); }
+.award-anim-card p { margin: 8px 0 14px; font: 600 13px system-ui; opacity: .9; }
+.award-burst {
+  position: absolute; inset: -20%;
+  background: radial-gradient(circle, rgba(253,230,138,.35), transparent 55%);
+  animation: awardBurst .8s ease-out;
+  pointer-events: none;
+}
+@keyframes awardPop {
+  from { transform: scale(.4) rotate(-8deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes awardBurst {
+  from { transform: scale(.6); opacity: 0; }
+  to { transform: scale(1.2); opacity: 1; }
+}

@@ -11,25 +11,40 @@
   const REPORT_KEY = "amal-watch-reports-v1";
   const MINE_KEY = "amal-watch-mychannel-v1";
   const PLAY_BUTTONS = [
+    { id: "bronze", name: "Бронзовая", need: 50, cls: "bronze" },
     { id: "silver", name: "Серебряная", need: 100, cls: "silver" },
+    { id: "silver2", name: "Серебро+", need: 250, cls: "silver" },
     { id: "romantic", name: "Романтик", need: 500, cls: "romantic" },
     { id: "gold", name: "Золотая", need: 1000, cls: "gold" },
-    { id: "diamond", name: "Бриллиантовая", need: 10000, cls: "diamond" }
+    { id: "gold2", name: "Золото+", need: 2500, cls: "gold" },
+    { id: "ruby", name: "Рубиновая", need: 5000, cls: "ruby" },
+    { id: "diamond", name: "Бриллиант", need: 10000, cls: "diamond" },
+    { id: "diamond2", name: "Бриллиант+", need: 25000, cls: "diamond" },
+    { id: "opal", name: "Опал", need: 50000, cls: "opal" },
+    { id: "rainbow", name: "Радуга", need: 100000, cls: "rainbow" },
+    { id: "neural", name: "Нейросеть", need: 250000, cls: "neural" },
+    { id: "mythic", name: "Миф", need: 500000, cls: "mythic" },
   ];
+  const CLUB_NEED = 1000;
   const ACHS = [
     { id: "first_up", title: "Первый ролик", check: function (c) { return (c.videos || 0) >= 1; } },
     { id: "ten", title: "10 роликов", check: function (c) { return (c.videos || 0) >= 10; } },
     { id: "gift", title: "Именной подарок", check: function (c) { return !!c.giftOpened; } },
+    { id: "club", title: "Свой клуб", check: function (c) { return (c.subs || 0) >= CLUB_NEED; } },
     { id: "silver", title: "Серебро", check: function (c) { return (c.subs || 0) >= 100; } },
     { id: "romantic", title: "Романтик", check: function (c) { return (c.subs || 0) >= 500; } },
     { id: "gold", title: "Золото", check: function (c) { return (c.subs || 0) >= 1000; } },
-    { id: "diamond", title: "Бриллиант", check: function (c) { return (c.subs || 0) >= 10000; } }
+    { id: "diamond", title: "Бриллиант", check: function (c) { return (c.subs || 0) >= 10000; } },
+    { id: "neural", title: "Нейро-кнопка", check: function (c) { return (c.subs || 0) >= 250000; } },
   ];
   function loadMineCh() {
     try {
-      return Object.assign({ subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {} }, JSON.parse(localStorage.getItem(MINE_KEY) || "{}"));
+      return Object.assign(
+        { subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {}, gameNick: "" },
+        JSON.parse(localStorage.getItem(MINE_KEY) || "{}")
+      );
     } catch (_) {
-      return { subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {} };
+      return { subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {}, gameNick: "" };
     }
   }
   function saveMineCh() {
@@ -95,6 +110,226 @@
         tracks[i].mode = "disabled";
       }
     } catch (_) {}
+  }
+
+  let captionLangPref = "ru";
+  try {
+    const saved = localStorage.getItem("amal-watch-cc-lang");
+    if (saved) captionLangPref = saved;
+  } catch (_) {}
+
+  const LANG_LABELS = {
+    ru: "Русский",
+    uk: "Українська",
+    be: "Беларуская",
+    en: "English",
+    es: "Español",
+    de: "Deutsch",
+    fr: "Français",
+    it: "Italiano",
+    pt: "Português",
+    tr: "Türkçe",
+    pl: "Polski",
+    kk: "Қазақша",
+    uz: "Oʻzbekcha",
+    ar: "العربية",
+    hi: "हिन्दी",
+    ja: "日本語",
+    ko: "한국어",
+    zh: "中文",
+  };
+
+  function normLang(code) {
+    return String(code || "")
+      .toLowerCase()
+      .replace("_", "-")
+      .split("-")[0];
+  }
+
+  function langTitle(code, fallback) {
+    const c = normLang(code);
+    return LANG_LABELS[c] || fallback || code || "Субтитры";
+  }
+
+  function clearVideoTracks(videoEl) {
+    if (!videoEl) return;
+    videoEl.querySelectorAll("track").forEach(function (t) {
+      try {
+        if (t.src && t.src.indexOf("blob:") === 0) URL.revokeObjectURL(t.src);
+      } catch (_) {}
+      t.remove();
+    });
+  }
+
+  function setCaptionMode(videoEl, langOrOff) {
+    if (!videoEl || !videoEl.textTracks) return;
+    const want = langOrOff === "off" || !langOrOff ? "" : normLang(langOrOff);
+    for (let i = 0; i < videoEl.textTracks.length; i++) {
+      const tr = videoEl.textTracks[i];
+      const code = normLang(tr.language);
+      if (want && (code === want || tr.label.toLowerCase().indexOf(want) >= 0)) {
+        tr.mode = "showing";
+      } else {
+        tr.mode = "disabled";
+      }
+    }
+  }
+
+  function pickDefaultCaptionLang(list) {
+    if (!list || !list.length) return "off";
+    const pref = normLang(captionLangPref);
+    const codes = list.map(function (s) {
+      return normLang(s.code);
+    });
+    const order = [pref, "ru", "uk", "en"].filter(Boolean);
+    for (let i = 0; i < order.length; i++) {
+      if (codes.indexOf(order[i]) >= 0) return order[i];
+    }
+    return codes[0] || "off";
+  }
+
+  /** Вешаем дорожки субтитров (с переводом/автопереводом, если есть у ролика). */
+  function attachCaptions(videoEl, subtitles, opts) {
+    opts = opts || {};
+    if (!videoEl) return Promise.resolve();
+    clearVideoTracks(videoEl);
+    const list = (subtitles || []).filter(function (s) {
+      return s && s.url;
+    });
+    if (!list.length) {
+      updateCaptionBtn(null);
+      return Promise.resolve();
+    }
+    const jobs = list.map(function (s) {
+      return fetch(s.url, { signal: AbortSignal.timeout(8000) })
+        .then(function (res) {
+          if (!res.ok) throw new Error("cc");
+          return res.text();
+        })
+        .then(function (text) {
+          // иногда приходит XML/SRV3 — браузер ждёт VTT
+          let body = text;
+          if (text.indexOf("WEBVTT") < 0 && text.indexOf("-->") >= 0) {
+            body = "WEBVTT\n\n" + text;
+          }
+          if (text.indexOf("WEBVTT") < 0 && text.indexOf("<") === 0) {
+            // сырой xml без конвертации — пропускаем
+            throw new Error("not-vtt");
+          }
+          const blobUrl = URL.createObjectURL(
+            new Blob([body], { type: "text/vtt" })
+          );
+          const track = document.createElement("track");
+          track.kind = "subtitles";
+          track.label =
+            langTitle(s.code, s.name) + (s.autoGenerated ? " · авто" : "");
+          track.srclang = normLang(s.code) || "und";
+          track.src = blobUrl;
+          videoEl.appendChild(track);
+        })
+        .catch(function () {
+          // прямая ссылка, если CORS/формат ок
+          try {
+            const track = document.createElement("track");
+            track.kind = "subtitles";
+            track.label =
+              langTitle(s.code, s.name) + (s.autoGenerated ? " · авто" : "");
+            track.srclang = normLang(s.code) || "und";
+            track.src = s.url;
+            videoEl.appendChild(track);
+          } catch (_) {}
+        });
+    });
+    return Promise.all(jobs).then(function () {
+      const chosen =
+        opts.lang ||
+        (captionLangPref === "off"
+          ? "off"
+          : pickDefaultCaptionLang(list));
+      setCaptionMode(videoEl, chosen);
+      updateCaptionBtn(list, chosen);
+    });
+  }
+
+  function updateCaptionBtn(list, chosen) {
+    const btn = document.getElementById("btnFloatCc");
+    if (!btn) return;
+    if (!list || !list.length) {
+      btn.textContent = "🌐 Перевод";
+      btn.disabled = true;
+      btn.title = "У этого ролика нет дорожек перевода";
+      return;
+    }
+    btn.disabled = false;
+    btn.title = "Субтитры / перевод";
+    if (chosen && chosen !== "off") {
+      btn.textContent = "🌐 " + (LANG_LABELS[chosen] || chosen);
+    } else {
+      btn.textContent = "🌐 Перевод";
+    }
+  }
+
+  function ensureCaptionPanel() {
+    let panel = document.getElementById("captionPanel");
+    if (panel) return panel;
+    panel = document.createElement("div");
+    panel.id = "captionPanel";
+    panel.className = "caption-panel";
+    panel.hidden = true;
+    panel.innerHTML =
+      "<b>Перевод / субтитры</b><div class=\"caption-list\" id=\"captionList\"></div>" +
+      "<p class=\"caption-hint\">Берём дорожки с ролика (в т.ч. автоперевод). Голоса не меняем — только текст.</p>";
+    if (playerBox) playerBox.appendChild(panel);
+    return panel;
+  }
+
+  function openCaptionPicker() {
+    const panel = ensureCaptionPanel();
+    const listEl = document.getElementById("captionList");
+    const hit = currentPlayId && streamCache[currentPlayId];
+    const list = (hit && hit.subtitles) || [];
+    if (!listEl) return;
+    listEl.innerHTML = "";
+    const off = document.createElement("button");
+    off.type = "button";
+    off.textContent = "Выкл";
+    off.className = captionLangPref === "off" ? "on" : "";
+    off.onclick = function () {
+      captionLangPref = "off";
+      try {
+        localStorage.setItem("amal-watch-cc-lang", "off");
+      } catch (_) {}
+      setCaptionMode(localVideo, "off");
+      updateCaptionBtn(list, "off");
+      panel.hidden = true;
+    };
+    listEl.appendChild(off);
+    const seen = {};
+    list.forEach(function (s) {
+      const code = normLang(s.code);
+      if (!code || seen[code]) return;
+      seen[code] = 1;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent =
+        langTitle(code, s.name) + (s.autoGenerated ? " · авто" : "");
+      if (captionLangPref === code) b.className = "on";
+      b.onclick = function () {
+        captionLangPref = code;
+        try {
+          localStorage.setItem("amal-watch-cc-lang", code);
+        } catch (_) {}
+        setCaptionMode(localVideo, code);
+        updateCaptionBtn(list, code);
+        panel.hidden = true;
+      };
+      listEl.appendChild(b);
+    });
+    if (!list.length) {
+      listEl.innerHTML =
+        "<p>Пока нет дорожек — включи «Чистый экран», чтобы подтянуть перевод.</p>";
+    }
+    panel.hidden = false;
   }
 
   function setYtChromeTip(show) {
@@ -170,10 +405,8 @@
       localVideo.src = url;
     }
     localVideo.play().catch(function () {});
-    disableVideoCaptions();
-    localVideo.onloadedmetadata = function () {
-      disableVideoCaptions();
-    };
+    const hit = videoId && streamCache[videoId];
+    attachCaptions(localVideo, (hit && hit.subtitles) || []);
     usingNoAds = true;
     setYtChromeTip(false);
     setCinemaPure(true);
@@ -325,11 +558,43 @@
     return (mid && mid.url) || formats[formats.length - 1].url || null;
   }
 
+  function pickSubsFromPiped(data) {
+    return (data && data.subtitles ? data.subtitles : [])
+      .map(function (s) {
+        return {
+          url: s.url,
+          name: s.name || s.code || "CC",
+          code: s.code || "",
+          autoGenerated: !!s.autoGenerated,
+        };
+      })
+      .filter(function (s) {
+        return !!s.url;
+      });
+  }
+
+  function pickSubsFromInv(data, base) {
+    return (data && data.captions ? data.captions : [])
+      .map(function (c) {
+        let url = c.url || "";
+        if (url && url.indexOf("http") !== 0) url = base + url;
+        return {
+          url: url,
+          name: c.label || c.language_code || "CC",
+          code: c.language_code || "",
+          autoGenerated: /auto/i.test(c.label || ""),
+        };
+      })
+      .filter(function (s) {
+        return !!s.url;
+      });
+  }
+
   function fetchWithTimeout(url, ms) {
     return fetch(url, { signal: AbortSignal.timeout(ms || 4500) });
   }
 
-  /** Параллельно стучимся во все зеркала — берём первое живое (с кэшем). */
+  /** Параллельно зеркала — первое живое (url + субтитры в кэше). */
   function fetchDirectStream(videoId) {
     const hit = streamCache[videoId];
     if (hit && Date.now() - hit.t < STREAM_CACHE_MS && hit.url) {
@@ -344,7 +609,12 @@
             if (!res.ok) throw new Error("bad");
             return res.json();
           })
-          .then(pickStreamFromPiped)
+          .then(function (data) {
+            return {
+              url: pickStreamFromPiped(data),
+              subtitles: pickSubsFromPiped(data),
+            };
+          })
       );
     });
     INV_APIS.forEach(function (base) {
@@ -354,7 +624,12 @@
             if (!res.ok) throw new Error("bad");
             return res.json();
           })
-          .then(pickStreamFromInv)
+          .then(function (data) {
+            return {
+              url: pickStreamFromInv(data),
+              subtitles: pickSubsFromInv(data, base),
+            };
+          })
       );
     });
 
@@ -367,15 +642,20 @@
       }
       jobs.forEach(function (job) {
         job
-          .then(function (url) {
+          .then(function (pack) {
             if (finished) return;
+            const url = pack && pack.url;
             if (!url) {
               pending--;
               if (pending <= 0) resolve(null);
               return;
             }
             finished = true;
-            streamCache[videoId] = { url: url, t: Date.now() };
+            streamCache[videoId] = {
+              url: url,
+              subtitles: (pack && pack.subtitles) || [],
+              t: Date.now(),
+            };
             resolve(url);
           })
           .catch(function () {
@@ -755,6 +1035,7 @@
     wrap.innerHTML =
       '<button type="button" id="btnFloatMenu">📋 Меню</button>' +
       '<button type="button" class="accent" id="btnFloatNoAds">🎬 Чистый экран</button>' +
+      '<button type="button" id="btnFloatCc">🌐 Перевод</button>' +
       '<button type="button" id="btnFloatExtra">⋯ Ещё</button>';
     if (playerBox) playerBox.appendChild(wrap);
     document.getElementById("btnFloatMenu").onclick = function () {
@@ -764,6 +1045,14 @@
     };
     document.getElementById("btnFloatNoAds").onclick = function () {
       forceCleanScreen();
+    };
+    document.getElementById("btnFloatCc").onclick = function () {
+      const panel = document.getElementById("captionPanel");
+      if (panel && !panel.hidden) {
+        panel.hidden = true;
+        return;
+      }
+      openCaptionPicker();
     };
     document.getElementById("btnFloatExtra").onclick = function () {
       document.body.classList.toggle("show-extra-panels");
@@ -1001,6 +1290,9 @@
   }
 
   function mineNick() {
+    if (mineCh.gameNick && String(mineCh.gameNick).trim()) {
+      return String(mineCh.gameNick).trim().slice(0, 24);
+    }
     try {
       if (window.AmalHub && AmalHub.getNick) {
         const n = AmalHub.getNick();
@@ -1010,13 +1302,64 @@
     return "Друг";
   }
 
+  function playAwardAnim(b) {
+    let overlay = document.getElementById("awardAnim");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "awardAnim";
+      overlay.className = "award-anim";
+      document.body.appendChild(overlay);
+    }
+    overlay.className = "award-anim show " + (b.cls || "");
+    overlay.innerHTML =
+      '<div class="award-anim-card">' +
+      '<div class="award-burst"></div>' +
+      "<strong>" +
+      escapeHtml(b.name) +
+      "</strong>" +
+      "<p>Кнопка для «" +
+      escapeHtml(mineNick()) +
+      "»</p>" +
+      '<button type="button" class="btn accent" id="awardAnimClose">Ещё раз / закрыть</button>' +
+      "</div>";
+    overlay.hidden = false;
+    clearTimeout(overlay._t);
+    const close = function () {
+      overlay.classList.remove("show");
+      overlay.hidden = true;
+    };
+    const closeBtn = document.getElementById("awardAnimClose");
+    if (closeBtn) {
+      closeBtn.onclick = function () {
+        // повтор анимации
+        overlay.classList.remove("show");
+        void overlay.offsetWidth;
+        overlay.classList.add("show");
+        clearTimeout(overlay._t);
+        overlay._t = setTimeout(close, 4200);
+      };
+      closeBtn.ondblclick = close;
+    }
+    overlay.onclick = function (e) {
+      if (e.target === overlay) close();
+    };
+    overlay._t = setTimeout(close, 4200);
+  }
+
   function bumpMine(n) {
-    mineCh.subs = Math.min(999999, (mineCh.subs || 0) + (n | 0));
+    const before = mineCh.subs || 0;
+    mineCh.subs = Math.min(999999, before + (n | 0));
     ACHS.forEach(function (a) {
       if (!mineCh.achievements[a.id] && a.check(mineCh)) mineCh.achievements[a.id] = Date.now();
     });
+    // если только что открыли новую кнопку — показать анимацию самой сильной новой
+    let best = null;
+    PLAY_BUTTONS.forEach(function (b) {
+      if (before < b.need && mineCh.subs >= b.need) best = b;
+    });
     saveMineCh();
     renderMine();
+    if (best) playAwardAnim(best);
   }
 
   function renderMine() {
@@ -1024,12 +1367,33 @@
     const nickEl = document.getElementById("mineNick");
     const subsEl = document.getElementById("mineSubs");
     const gift = document.getElementById("mineGift");
+    const gameNickIn = document.getElementById("mineGameNick");
     if (nickEl) nickEl.textContent = nick;
     if (subsEl) subsEl.textContent = String(mineCh.subs || 0);
+    if (gameNickIn && document.activeElement !== gameNickIn) {
+      gameNickIn.value = mineCh.gameNick || "";
+    }
     if (gift) {
       gift.textContent = mineCh.giftOpened
         ? "🎁 Для " + nick + " · именной подарок"
         : "🎁 Подарок с твоим именем";
+    }
+    const club = document.getElementById("mineClub");
+    if (club) {
+      const open = (mineCh.subs || 0) >= CLUB_NEED;
+      club.hidden = false;
+      club.className = "mine-club" + (open ? " open" : " locked");
+      club.innerHTML = open
+        ? "<h3>🏠 Клуб «" +
+          escapeHtml(nick) +
+          "»</h3><p>Твой именной клуб на сайте — за " +
+          CLUB_NEED +
+          "+ подписчиков. Сюда можно возвращаться и смотреть кнопки снова.</p>"
+        : "<h3>🔒 Клуб закроется позже</h3><p>Нужно " +
+          CLUB_NEED +
+          " подписчиков. Сейчас: " +
+          (mineCh.subs || 0) +
+          ". Имя клуба = твоё игровое имя.</p>";
     }
     const row = document.getElementById("mineButtons");
     if (row) {
@@ -1040,15 +1404,35 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className =
-          "play-award " + b.cls + (unlocked ? "" : " locked") + (hidden && unlocked ? " hidden-award" : "");
+          "play-award " +
+          b.cls +
+          (unlocked ? "" : " locked") +
+          (hidden && unlocked ? " hidden-award" : "");
         btn.innerHTML =
           "<strong>" +
           b.name +
           "</strong><small>" +
-          (unlocked ? (hidden ? "спрятана · жми" : "получена · жми спрятать") : "нужно " + b.need) +
+          (unlocked
+            ? hidden
+              ? "спрятана · жми показать"
+              : "жми — снова анимация"
+            : "нужно " + b.need) +
           "</small>";
         btn.disabled = !unlocked;
         btn.addEventListener("click", function () {
+          if (!unlocked) return;
+          // длинный клик/второй режим: спрятать; обычный — пересмотреть анимацию
+          if (btn.dataset.mode === "hide") {
+            mineCh.hiddenButtons = mineCh.hiddenButtons || {};
+            mineCh.hiddenButtons[b.id] = !mineCh.hiddenButtons[b.id];
+            saveMineCh();
+            renderMine();
+            return;
+          }
+          playAwardAnim(b);
+        });
+        btn.addEventListener("contextmenu", function (e) {
+          e.preventDefault();
           if (!unlocked) return;
           mineCh.hiddenButtons = mineCh.hiddenButtons || {};
           mineCh.hiddenButtons[b.id] = !mineCh.hiddenButtons[b.id];
@@ -1073,7 +1457,8 @@
     if (grid) {
       grid.innerHTML = "";
       if (!myVideos.length) {
-        grid.innerHTML = '<p style="color:#999;font-size:13px">Пока нет своих роликов — загрузи выше.</p>';
+        grid.innerHTML =
+          '<p style="color:#999;font-size:13px">Пока нет своих роликов — загрузи выше.</p>';
       } else {
         myVideos.forEach(function (v) {
           const btn = document.createElement("button");
@@ -2252,6 +2637,21 @@
     document.getElementById("btnMineBoost").addEventListener("click", function () {
       bumpMine(50);
     });
+
+  const mineGameNick = document.getElementById("mineGameNick");
+  if (mineGameNick) {
+    mineGameNick.addEventListener("change", function () {
+      mineCh.gameNick = String(mineGameNick.value || "").trim().slice(0, 24);
+      saveMineCh();
+      renderMine();
+    });
+    mineGameNick.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        mineGameNick.blur();
+      }
+    });
+  }
 
   let deferredPrompt = null;
   const installBtn = document.getElementById("installBtn");
