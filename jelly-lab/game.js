@@ -2864,6 +2864,12 @@ document.getElementById("startBtn").onclick = () => {
 
 };
 
+document.getElementById("catalogBtn")?.addEventListener("click", () => {
+  try {
+    if (document.pointerLockElement) document.exitPointerLock();
+  } catch (_) {}
+});
+
 
 
 function resize() {

@@ -6,10 +6,11 @@
   <title>Квартира Валеры</title>
   <meta name="theme-color" content="#f5c93a" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=27" />
+  <link rel="stylesheet" href="./style.css?v=28" />
 </head>
 <body>
   <div id="boot">
+    <a class="to-catalog" href="../">← Каталог</a>
     <h1>Квартира Валеры</h1>
     <p>Жми «Войти». Гуляй как хочешь — мишки сами разговаривают.</p>
     <p class="hint">WASD · клик по мишке — диалог · зажми мышь — смотреть</p>
@@ -17,6 +18,7 @@
   </div>
 
   <div id="hud" hidden>
+    <a class="to-catalog in-game" href="../" id="catalogBtn">← Каталог</a>
     <div class="cross" id="cross" hidden></div>
     <div class="quest" id="quest">…</div>
     <div class="speech" id="speech">…</div>
@@ -68,6 +70,6 @@
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./game.js?v=27"></script>
+  <script type="module" src="./game.js?v=28"></script>
 </body>
 </html>
