@@ -65,6 +65,7 @@ const EPISODES = [
 
 const SAVE_KEY = "mult-studio-mine-v1";
 const ASK_KEY = "mult-studio-asks-v1";
+const LIKES_KEY = "mult-studio-likes-v1";
 
 const canvas = document.getElementById("view");
 const shelf = document.getElementById("shelf");
@@ -325,6 +326,21 @@ function saveMine(list) {
   localStorage.setItem(SAVE_KEY, JSON.stringify(list.slice(0, 40)));
 }
 
+function loadLikes() {
+  try {
+    return JSON.parse(localStorage.getItem(LIKES_KEY) || "{}");
+  } catch (_) {
+    return {};
+  }
+}
+
+function bumpLike(id) {
+  const likes = loadLikes();
+  likes[id] = (likes[id] || 0) + 1;
+  localStorage.setItem(LIKES_KEY, JSON.stringify(likes));
+  return likes[id];
+}
+
 function allCards() {
   const mine = loadMine().map((m) => ({
     id: m.id,
@@ -337,13 +353,15 @@ function allCards() {
 }
 
 function renderShelf() {
+  const likes = loadLikes();
   shelf.innerHTML = "";
   allCards().forEach((ep) => {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "card" + (current && current.id === ep.id ? " active" : "");
     btn.dataset.id = ep.id;
-    btn.innerHTML = `<strong>${ep.title}</strong><span>${ep.blurb}</span>`;
+    const likeN = likes[ep.id] || 0;
+    btn.innerHTML = `<strong>${ep.title}</strong><span>${ep.blurb}</span><span class="like-row">❤️ ${likeN}</span>`;
     btn.addEventListener("click", () => {
       current = ep;
       customLines = ep.mine ? ep.lines : null;
@@ -351,6 +369,19 @@ function renderShelf() {
       highlightShelf();
       playEpisode(ep, ep.mine ? ep.lines : null);
     });
+    const likeBtn = document.createElement("button");
+    likeBtn.type = "button";
+    likeBtn.className = "like-btn";
+    likeBtn.textContent = "❤️";
+    likeBtn.title = "Лайк";
+    likeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const n = bumpLike(ep.id);
+      btn.querySelector(".like-row").textContent = "❤️ " + n;
+      likeBtn.classList.add("pop");
+      setTimeout(() => likeBtn.classList.remove("pop"), 280);
+    });
+    btn.appendChild(likeBtn);
     shelf.appendChild(btn);
   });
 }

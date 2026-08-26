@@ -108,17 +108,26 @@ main { padding: 0 clamp(14px, 3vw, 28px) 36px; }
   margin-top: 12px;
 }
 .card {
+  position: relative;
   text-align: left;
   border: 2px solid var(--line);
   background: var(--card);
   border-radius: 14px;
-  padding: 12px;
+  padding: 12px 44px 12px 12px;
   cursor: pointer;
   font: inherit;
   color: inherit;
 }
 .card strong { display: block; font-size: 0.98rem; }
 .card span { display: block; margin-top: 4px; color: var(--soft); font-size: 0.82rem; }
+.card .like-row { color: #b83a2e; font-weight: 800; }
+.card .like-btn {
+  position: absolute; top: 8px; right: 8px;
+  border: 0; background: #fff8e6; border-radius: 999px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 1rem;
+  box-shadow: 0 2px 0 #c49a3a44;
+}
+.card .like-btn.pop { transform: scale(1.2); transition: transform 0.2s ease; }
 .card.active { outline: 3px solid var(--deep); }
 
 label {

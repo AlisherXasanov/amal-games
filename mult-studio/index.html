@@ -3,29 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Мульт-студия — свои ролики без рекламы</title>
-  <meta name="description" content="Свои 3D-ролики про мишку: смотри без рекламы, создавай в студии, закажи персональный ролик по имени." />
+  <title>Полка Валеры — свои мульты</title>
+  <meta name="description" content="Свои 3D-ролики про мишка-ведущего: смотри, ставь лайки, пиши комментарии, снимай в мастерской." />
   <meta name="theme-color" content="#f5c93a" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Caveat:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <header class="top">
     <a href="../">← Каталог</a>
-    <h1>Мульт-студия</h1>
-    <p class="tag">только своё · без рекламы · не чужой YouTube</p>
+    <h1>Полка Валеры</h1>
+    <p class="tag">свои мульты · лайки · комментарии · мастерская</p>
   </header>
 
   <nav class="tabs" role="tablist">
     <button type="button" class="tab on" data-tab="watch">Смотреть</button>
     <button type="button" class="tab" data-tab="studio">Студия</button>
-    <button type="button" class="tab" data-tab="ask">Заказать ролик</button>
+    <button type="button" class="tab" data-tab="ask">Комменты и заказ</button>
   </nav>
 
   <main>
     <section class="panel on" id="panel-watch">
-      <p class="lead">Полка своих роликов. Жми — играет 3D-сцена. Рекламы нет.</p>
+      <p class="lead">Свои ролики, как у ведущего на канале — только наши. Жми карточку или ▶, ставь ❤️.</p>
       <div class="stage-wrap">
         <div class="stage-frame">
           <canvas id="view"></canvas>
@@ -77,6 +77,6 @@
   <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./app.js?v=2"></script>
+  <script type="module" src="./app.js?v=3"></script>
 </body>
 </html>
