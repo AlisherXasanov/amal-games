@@ -290,13 +290,16 @@ body.watch-app .amal-side-quick {
   height: calc(100dvh - 52px);
   overflow: hidden;
   background: #000;
+  position: relative;
 }
 .shorts-feed {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   background: #000;
   overscroll-behavior: contain;
 }
@@ -312,14 +315,45 @@ body.watch-app .amal-side-quick {
 }
 .shorts-player {
   flex: 1; min-height: 0; position: relative; background: #111;
+  touch-action: pan-y;
 }
 .shorts-player video.shorts-vid,
 .shorts-player iframe.shorts-fallback {
   position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
   background: #000; object-fit: contain;
+  touch-action: pan-y;
+}
+/* на телефоне свайп не должен залипать в полоске управления видео */
+.shorts-feed.touch-swipe video.shorts-vid {
+  pointer-events: none;
+}
+.shorts-feed.touch-swipe .shorts-tap-play {
+  display: grid;
+}
+.shorts-tap-play {
+  display: none;
+  position: absolute; inset: 0; z-index: 3;
+  place-items: center;
+  pointer-events: auto;
+  touch-action: pan-y;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.shorts-tap-play span {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(0,0,0,.45);
+  color: #fff; font-size: 22px;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.shorts-tap-play.show-icon span,
+.shorts-slide.is-paused .shorts-tap-play span {
+  opacity: 1;
 }
 .shorts-player iframe.shorts-fallback {
-  pointer-events: none; /* не даём уйти на YouTube кликом по шайбе/титрам */
+  pointer-events: none;
 }
 .shorts-loading {
   position: absolute; inset: 0; z-index: 2;
@@ -332,6 +366,7 @@ body.watch-app .amal-side-quick {
 .shorts-meta {
   padding: 10px 14px 16px; background: linear-gradient(#0a0a0a, #1a1028);
   border-top: 1px solid #2a2a2a;
+  flex-shrink: 0;
 }
 .shorts-meta b { display: block; font-size: 14px; margin-bottom: 4px; }
 .shorts-meta .ch { font-size: 12px; color: #c4b5fd; margin-bottom: 8px; }
@@ -340,6 +375,35 @@ body.watch-app .amal-side-quick {
   background: #2a1a3a; color: #fff; font: 800 12px system-ui; cursor: pointer;
 }
 .shorts-empty { padding: 24px; text-align: center; color: #9988aa; }
+
+/* стрелки только на компьютере с мышью */
+.shorts-nav {
+  display: none;
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  flex-direction: column;
+  gap: 10px;
+}
+#viewShorts.active .shorts-nav { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  #viewShorts.active .shorts-nav:not([hidden]) {
+    display: flex;
+  }
+}
+.shorts-nav button {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid #554466;
+  background: rgba(26, 16, 40, .92);
+  color: #fff; font-size: 18px; cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.shorts-nav button:hover {
+  background: #3d2a5c;
+  border-color: #fde68a;
+}
 
 .yt-chrome-tip {
   position: absolute; left: 8px; right: 8px; top: 8px; z-index: 8;
@@ -398,13 +462,39 @@ body.watch-app .amal-side-quick {
 #viewChannel.watching .zoom-bar,
 #viewChannel.watching .player-tools,
 #viewChannel.watching .stats-bar,
-#viewChannel.watching .now,
 #viewChannel.watching .comments-box {
   display: none !important;
+}
+/* название ролика видно и во время просмотра */
+#viewChannel.watching .now {
+  display: block !important;
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 8px 12px 44px;
+  background: linear-gradient(transparent, rgba(0,0,0,.82));
+  color: #fff;
+  font: 800 13px/1.35 system-ui;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+#viewChannel.watching .player-area {
+  position: relative;
 }
 #viewChannel.watching .player-box {
   max-height: 62vh;
 }
+.watch-title {
+  position: absolute; left: 10px; right: 10px; top: 8px; z-index: 7;
+  padding: 8px 12px; border-radius: 10px;
+  background: rgba(0,0,0,.62);
+  color: #fff; font: 800 13px/1.3 system-ui;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,.7);
+}
+.watch-title[hidden] { display: none !important; }
+#viewChannel.yt-chrome .watch-title { top: 64px; }
 .watch-float {
   position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
   display: none; flex-wrap: wrap; gap: 6px; justify-content: center;

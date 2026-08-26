@@ -790,6 +790,7 @@
     currentPlayId = "";
     setYtChromeTip(false);
     setCinemaPure(false);
+    setWatchTitle("");
     resetZoom();
   }
 
@@ -801,6 +802,7 @@
     const gen = ++playGen;
     currentPlayId = id;
     nowPlaying.textContent = "Сейчас: " + title;
+    setWatchTitle(title);
     currentVideoKey = (opts.channelId || "") + "::" + id;
     currentLikesLabel = formatLikes(opts.likesLabel);
     refreshLikeUi();
@@ -867,6 +869,7 @@
     ytFrame.hidden = false;
     ytFrame.src = playlistUrl(list);
     nowPlaying.textContent = "Сейчас: " + title;
+    setWatchTitle(title);
     if (tvHint) tvHint.textContent = "▶ " + title + " · вся лента канала";
     currentVideoKey = "pl::" + list;
     currentLikesLabel = "—";
@@ -882,6 +885,7 @@
     localVideo.src = url;
     localVideo.play().catch(function () {});
     nowPlaying.textContent = "Сейчас: " + title;
+    setWatchTitle(title);
     if (tvHint) tvHint.textContent = "▶ " + title;
     currentVideoKey = "local::" + title;
     currentLikesLabel = "—";
@@ -1131,18 +1135,70 @@
     }
   }
 
+  function setWatchTitle(title) {
+    let el = document.getElementById("watchTitle");
+    if (!el && playerBox) {
+      el = document.createElement("div");
+      el.id = "watchTitle";
+      el.className = "watch-title";
+      playerBox.appendChild(el);
+    }
+    if (!el) return;
+    const t = String(title || "").replace(/^Сейчас:\s*/, "").trim();
+    el.textContent = t;
+    el.hidden = !t;
+  }
+
+  function applyChannelAvatar(ch, url) {
+    if (!ch || !url) return false;
+    const next = String(url).trim();
+    if (!next || next === ch.icon) return false;
+    ch.icon = next;
+    if (channelShelf) {
+      channelShelf.querySelectorAll(".ch-card").forEach(function (card) {
+        const nm = card.querySelector(".nm");
+        if (!nm || nm.textContent !== ch.name) return;
+        let img = card.querySelector(".ch-ico-img");
+        if (img) {
+          img.src = next;
+        } else {
+          const ico = card.querySelector(".ico");
+          if (ico) {
+            img = document.createElement("img");
+            img.className = "ch-ico-img";
+            img.alt = "";
+            img.src = next;
+            ico.replaceWith(img);
+          }
+        }
+      });
+    }
+    if (currentChannel && currentChannel.id === ch.id && channelHead) {
+      const av = channelHead.querySelector(".ch-avatar");
+      if (av && av.tagName === "IMG") av.src = next;
+    }
+    return true;
+  }
+
   function mergeVideos(ch, incoming) {
     if (!ch.videos) ch.videos = [];
-    const have = {};
+    const byId = {};
     ch.videos.forEach(function (v) {
-      if (v.id) have[v.id] = true;
+      if (v && v.id) byId[v.id] = v;
     });
     let added = 0;
-    // новые сверху (RSS/Piped отдают свежие первыми)
     const fresh = [];
     (incoming || []).forEach(function (v) {
-      if (!v || !v.id || have[v.id] || v.id === "playlist") return;
-      have[v.id] = true;
+      if (!v || !v.id || v.id === "playlist") return;
+      const old = byId[v.id];
+      if (old) {
+        if (v.title) old.title = v.title;
+        if (v.thumb) old.thumb = v.thumb;
+        if (v.short) old.short = true;
+        if (v.likes) old.likes = v.likes;
+        return;
+      }
+      byId[v.id] = v;
       fresh.push(v);
       added++;
     });
@@ -1180,6 +1236,7 @@
         title: title,
         likes: "",
         thumb: "https://i.ytimg.com/vi/" + id + "/hqdefault.jpg",
+        short: /#shorts|shorts/i.test(title),
       });
     }
     return vids;
@@ -1229,8 +1286,19 @@
           const v = parsePipedStream(s);
           if (v) vids.push(v);
         });
-        if (vids.length) {
-          return { videos: vids, nextpage: data.nextpage || null };
+        const avatar =
+          data.avatarUrl ||
+          data.avatar ||
+          (data.authorThumbnails &&
+            data.authorThumbnails.length &&
+            data.authorThumbnails[data.authorThumbnails.length - 1].url) ||
+          "";
+        if (vids.length || avatar) {
+          return {
+            videos: vids,
+            nextpage: data.nextpage || null,
+            avatar: avatar || "",
+          };
         }
       } catch (_) {}
     }
@@ -1238,10 +1306,36 @@
     if (!nextpage) {
       try {
         const rssVids = await fetchYoutubeRss(channelId);
-        if (rssVids.length) return { videos: rssVids, nextpage: null };
+        if (rssVids.length) return { videos: rssVids, nextpage: null, avatar: "" };
       } catch (_) {}
     }
-    return { videos: [], nextpage: null };
+    return { videos: [], nextpage: null, avatar: "" };
+  }
+
+  async function fetchChannelAvatar(channelId) {
+    if (!channelId) return "";
+    for (let i = 0; i < INV_APIS.length; i++) {
+      try {
+        const res = await fetchWithTimeout(
+          INV_APIS[i] + "/api/v1/channels/" + encodeURIComponent(channelId),
+          8000
+        );
+        if (!res.ok) continue;
+        const data = await res.json();
+        const thumbs = data.authorThumbnails || [];
+        if (thumbs.length) {
+          thumbs.sort(function (a, b) {
+            return (a.width || 0) - (b.width || 0);
+          });
+          const best = thumbs[Math.min(thumbs.length - 1, thumbs.length - 1)];
+          // берём крупнее среднего
+          const pick = thumbs[Math.max(0, thumbs.length - 2)] || best;
+          if (pick && pick.url) return pick.url;
+        }
+        if (data.authorAvatar) return data.authorAvatar;
+      } catch (_) {}
+    }
+    return "";
   }
 
   function refreshChannelGrid(ch) {
@@ -1272,6 +1366,7 @@
     try {
       const page = await fetchPipedChannel(ch.channelId, channelNextpage);
       channelNextpage = page.nextpage;
+      if (page.avatar) applyChannelAvatar(ch, page.avatar);
       added = mergeVideos(ch, page.videos);
       refreshChannelGrid(ch);
       if (tvHint) {
@@ -1368,6 +1463,15 @@
     renderComments();
 
     if (ch.channelId && !ch.allowUpload) {
+      fetchPipedChannel(ch.channelId, null).then(function (page) {
+        if (page.avatar) applyChannelAvatar(ch, page.avatar);
+        if (page.videos && page.videos.length) {
+          mergeVideos(ch, page.videos);
+          if (currentChannel && currentChannel.id === ch.id) {
+            refreshChannelGrid(ch);
+          }
+        }
+      });
       loadAllFromChannel(ch);
     }
   }
@@ -1379,6 +1483,10 @@
       shortsFeed.innerHTML = '<p class="shorts-empty">Пока пусто — зайди позже.</p>';
       return;
     }
+    const touchSwipe =
+      window.matchMedia &&
+      window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    shortsFeed.classList.toggle("touch-swipe", !!touchSwipe);
     shortsFeed.innerHTML = "";
     allShorts.forEach(function (item, idx) {
       const slide = document.createElement("div");
@@ -1389,11 +1497,16 @@
       const poster = item.v.thumb
         ? ' poster="' + escapeHtml(item.v.thumb) + '"'
         : "";
+      const controlsAttr = touchSwipe ? "" : " controls";
       slide.innerHTML =
         '<div class="shorts-player">' +
-        '<video class="shorts-vid" playsinline controls loop' +
+        '<video class="shorts-vid" playsinline loop' +
+        controlsAttr +
         poster +
         "></video>" +
+        (touchSwipe
+          ? '<button type="button" class="shorts-tap-play" aria-label="Пауза"><span>❚❚</span></button>'
+          : "") +
         '<div class="shorts-loading" hidden>⏳ Загрузка…</div>' +
         "</div>" +
         '<div class="shorts-meta"><b>' +
@@ -1412,6 +1525,29 @@
         e.stopPropagation();
         const id = btn.getAttribute("data-ch");
         if (id) openChannel(id);
+      });
+    });
+
+    shortsFeed.querySelectorAll(".shorts-tap-play").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const slide = btn.closest(".shorts-slide");
+        const video = slide && slide.querySelector("video.shorts-vid");
+        if (!video) return;
+        if (video.paused) {
+          video.play().catch(function () {});
+          slide.classList.remove("is-paused");
+          btn.querySelector("span").textContent = "❚❚";
+        } else {
+          video.pause();
+          slide.classList.add("is-paused");
+          btn.querySelector("span").textContent = "▶";
+        }
+        btn.classList.add("show-icon");
+        clearTimeout(btn._hideT);
+        btn._hideT = setTimeout(function () {
+          btn.classList.remove("show-icon");
+        }, 700);
       });
     });
 
@@ -1457,41 +1593,93 @@
       playShortSlide(shortsFeed.querySelector(".shorts-slide"));
     }
 
-    setupFeedWheel();
+    setupShortsNav();
   }
 
   let feedWheelLock = false;
-  function setupFeedWheel() {
-    if (!shortsFeed || shortsFeed.dataset.wheelBound === "1") return;
-    shortsFeed.dataset.wheelBound = "1";
-    shortsFeed.addEventListener(
-      "wheel",
-      function (e) {
-        if (Math.abs(e.deltaY) < 8) return;
-        e.preventDefault();
-        if (feedWheelLock) return;
-        feedWheelLock = true;
-        const slides = Array.prototype.slice.call(shortsFeed.querySelectorAll(".shorts-slide"));
-        if (!slides.length) {
-          feedWheelLock = false;
-          return;
-        }
-        const h = Math.max(1, shortsFeed.clientHeight);
-        let idx = Math.round(shortsFeed.scrollTop / h);
-        idx = Math.max(0, Math.min(slides.length - 1, idx));
-        const next = e.deltaY > 0 ? idx + 1 : idx - 1;
-        const clamped = Math.max(0, Math.min(slides.length - 1, next));
-        const target = slides[clamped];
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
-          playShortSlide(target);
-        }
-        setTimeout(function () {
-          feedWheelLock = false;
-        }, 420);
-      },
-      { passive: false }
+  function currentShortIndex() {
+    if (!shortsFeed) return 0;
+    const slides = shortsFeed.querySelectorAll(".shorts-slide");
+    if (!slides.length) return 0;
+    const h = Math.max(1, shortsFeed.clientHeight);
+    return Math.max(
+      0,
+      Math.min(slides.length - 1, Math.round(shortsFeed.scrollTop / h))
     );
+  }
+
+  function goShortBy(delta) {
+    if (!shortsFeed || !viewShorts || !viewShorts.classList.contains("active")) {
+      return;
+    }
+    const slides = Array.prototype.slice.call(
+      shortsFeed.querySelectorAll(".shorts-slide")
+    );
+    if (!slides.length) return;
+    const next = Math.max(
+      0,
+      Math.min(slides.length - 1, currentShortIndex() + delta)
+    );
+    const target = slides[next];
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    playShortSlide(target);
+  }
+
+  function setupShortsNav() {
+    const nav = document.getElementById("shortsNav");
+    if (nav) nav.hidden = false;
+
+    if (!shortsFeed) return;
+
+    if (shortsFeed.dataset.wheelBound !== "1") {
+      shortsFeed.dataset.wheelBound = "1";
+      shortsFeed.addEventListener(
+        "wheel",
+        function (e) {
+          if (Math.abs(e.deltaY) < 8) return;
+          e.preventDefault();
+          if (feedWheelLock) return;
+          feedWheelLock = true;
+          goShortBy(e.deltaY > 0 ? 1 : -1);
+          setTimeout(function () {
+            feedWheelLock = false;
+          }, 380);
+        },
+        { passive: false }
+      );
+    }
+
+    if (document.body.dataset.shortsKeys !== "1") {
+      document.body.dataset.shortsKeys = "1";
+      document.addEventListener("keydown", function (e) {
+        if (!viewShorts || !viewShorts.classList.contains("active")) return;
+        const tag = (e.target && e.target.tagName) || "";
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        if (e.key === "ArrowDown" || e.key === "PageDown" || e.key === "j") {
+          e.preventDefault();
+          goShortBy(1);
+        } else if (e.key === "ArrowUp" || e.key === "PageUp" || e.key === "k") {
+          e.preventDefault();
+          goShortBy(-1);
+        }
+      });
+    }
+
+    const prev = document.getElementById("shortsPrev");
+    const next = document.getElementById("shortsNext");
+    if (prev && prev.dataset.bound !== "1") {
+      prev.dataset.bound = "1";
+      prev.addEventListener("click", function () {
+        goShortBy(-1);
+      });
+    }
+    if (next && next.dataset.bound !== "1") {
+      next.dataset.bound = "1";
+      next.addEventListener("click", function () {
+        goShortBy(1);
+      });
+    }
   }
 
   function openShorts(startId) {
@@ -1664,13 +1852,32 @@
       if (!ch.channelId || ch.allowUpload) continue;
       try {
         let vids = [];
+        let avatar = "";
+        // Piped: свежие ролики + аватар канала
         try {
-          vids = await fetchYoutubeRss(ch.channelId);
-        } catch (_) {}
-        if (!vids.length) {
           const page = await fetchPipedChannel(ch.channelId, null);
           vids = page.videos || [];
+          avatar = page.avatar || "";
+        } catch (_) {}
+        // RSS дополняет, если Piped молчит
+        if (!vids.length) {
+          try {
+            vids = await fetchYoutubeRss(ch.channelId);
+          } catch (_) {}
+        } else {
+          try {
+            const rss = await fetchYoutubeRss(ch.channelId);
+            if (rss.length) vids = rss.concat(vids);
+          } catch (_) {}
         }
+        if (!avatar) {
+          try {
+            avatar = await fetchChannelAvatar(ch.channelId);
+          } catch (_) {}
+        }
+        // если аватарки нет — берём превью самого нового ролика
+        if (!avatar && vids[0] && vids[0].thumb) avatar = vids[0].thumb;
+        if (avatar) applyChannelAvatar(ch, avatar);
         addedTotal += mergeVideos(ch, vids);
       } catch (_) {}
     }
@@ -1698,7 +1905,12 @@
   refreshAllChannelsLive(true);
   setInterval(function () {
     refreshAllChannelsLive(true);
-  }, 5 * 60 * 1000);
+  }, 2 * 60 * 1000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      refreshAllChannelsLive(true);
+    }
+  });
 
   btnHome.addEventListener("click", openHome);
 

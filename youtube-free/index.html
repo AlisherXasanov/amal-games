@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=26" />
+  <link rel="stylesheet" href="./style.css?v=28" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -60,9 +60,13 @@
     <div class="shorts-top">
       <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
       <span>📱 Лента</span>
-      <span class="shorts-tip">колёсико / свайп · вверх-вниз</span>
+      <span class="shorts-tip">↑↓ стрелки · свайп пальцем</span>
     </div>
     <div class="shorts-feed" id="shortsFeed"></div>
+    <div class="shorts-nav" id="shortsNav" hidden>
+      <button type="button" id="shortsPrev" aria-label="Предыдущий">▲</button>
+      <button type="button" id="shortsNext" aria-label="Следующий">▼</button>
+    </div>
   </section>
 
   <section class="view" id="viewMine">
@@ -148,11 +152,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=26&fresh=" + Date.now());
+      location.replace("./index.html?v=28&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=26"></script>
-  <script src="./main.js?v=26"></script>
+  <script src="./channels-data.js?v=28"></script>
+  <script src="./main.js?v=28"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
