@@ -7484,10 +7484,10 @@ window.YT_CHANNELS = [
   },
   {
       "id": "sladosti",
-      "name": "Сладости · GADOSTI",
+      "name": "GADOSTI · Сладости",
       "emoji": "🍬",
       "color": "#fd79a8",
-      "desc": "GADOSTI — любимые сладости (игры/челленджи).",
+      "desc": "Официальный GADOSTI — Roblox, Animal Hospital и челленджи. Жми «Смотреть все подряд».",
       "subs": "1.4 млн",
       "channelId": "UCS6P_uMrthRW5LYR9yahNnQ",
       "uploads": "UUS6P_uMrthRW5LYR9yahNnQ",
@@ -8319,6 +8319,446 @@ window.YT_CHANNELS = [
         "playlist": "UUAHCkDpk5bjGEfsmiRIDEqA",
         "likes": "—",
         "thumb": "https://i.ytimg.com/vi/SioGevy6IVs/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "mils-play",
+    "name": "Милс PLAY",
+    "emoji": "💜",
+    "color": "#9b59b6",
+    "desc": "Главный канал Милс Кела — Майнкрафт и ролики.",
+    "subs": "6.2 млн",
+    "channelId": "UCBIfuwYslGljdRGWSELdaUw",
+    "uploads": "UUBIfuwYslGljdRGWSELdaUw",
+    "icon": "https://i.ytimg.com/vi/MwT5Jlbj8p8/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "MwT5Jlbj8p8",
+        "title": "WONDERLAND - как ЭТО ПРОЙТИ? 🌞 Роблокс",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MwT5Jlbj8p8/hqdefault.jpg"
+      },
+      {
+        "id": "sPooEQaYypg",
+        "title": "И ЧТО ЭТО ТАКОЕ?! 🤣 ИСПОРЧЕННЫЙ ТЕЛЕФОН - опиши что НАРИСОВАЛ ДРУГ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sPooEQaYypg/hqdefault.jpg"
+      },
+      {
+        "id": "aNyrK3LnAy0",
+        "title": "ОБЕЗВРЕДЬ БОМБУ, но ты ГЛУХОЙ 🙉 НЕМОЙ 🙊 СЛЕПОЙ 🙈",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aNyrK3LnAy0/hqdefault.jpg"
+      },
+      {
+        "id": "l_6cHc8isxA",
+        "title": "БОЛЬНИЦА для ЖИВОТНЫХ, но НАПАДЕНИЕ СЛИЗИ 🦠 ROBLOX",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/l_6cHc8isxA/hqdefault.jpg"
+      },
+      {
+        "id": "_UKiFsLuYWk",
+        "title": "ТИМОХА пришел ЗА МНОЙ 👀 5 ночей с ТИМОХОЙ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_UKiFsLuYWk/hqdefault.jpg"
+      },
+      {
+        "id": "LrepVfOxdCc",
+        "title": "✅ Впустил ВСЕ АНОМАЛИИ в Больнице для Животных в ROBLOX",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LrepVfOxdCc/hqdefault.jpg"
+      },
+      {
+        "id": "72DttF0R55o",
+        "title": "Домер и ЧТО ЭТО ТАКОЕ 🤣 ПРЯТКИ, но ты можешь ЗАРИСОВАТЬ СЕБЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/72DttF0R55o/hqdefault.jpg"
+      },
+      {
+        "id": "85D3iTP-vOs",
+        "title": "🩺 Стал ВРАЧЕМ в БОЛЬНИЦЕ с АНОМАЛИЯМИ В ROBLOX",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/85D3iTP-vOs/hqdefault.jpg"
+      },
+      {
+        "id": "hmLI4eMKL4c",
+        "title": "Прятки с Жекой ShadowPriestok 🖼️ ПРЯТКИ, но ты можешь ЗАРИСОВАТЬ СЕБЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hmLI4eMKL4c/hqdefault.jpg"
+      },
+      {
+        "id": "a1UjZ8rDiXE",
+        "title": "Первый раз играю в ПРИВЕТ СОСЕД (Hello Neighbor) 2 акт",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/a1UjZ8rDiXE/hqdefault.jpg"
+      },
+      {
+        "id": "kZyghGaXk0o",
+        "title": "Прятки в УДИВИТЕЛЬНОМ ЦИФРОВОМ ЦИРКЕ 🎪 ПРЯТКИ, но ты можешь ЗАРИСОВАТЬ СЕБЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/kZyghGaXk0o/hqdefault.jpg"
+      },
+      {
+        "id": "SMOHz5XN_s0",
+        "title": "Прятки в ГРАВИТИ ФОЛЗ с Вэлл 🔥 ПРЯТКИ, но ты можешь ЗАРИСОВАТЬ СЕБЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/SMOHz5XN_s0/hqdefault.jpg"
+      },
+      {
+        "id": "HnIDMAWu2ts",
+        "title": "Отправил ХОМЯКА в ПЛАВАНЬЕ... ☠️ Школьные истории моих подписчиков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HnIDMAWu2ts/hqdefault.jpg"
+      },
+      {
+        "id": "sfTH_Z6BA00",
+        "title": "ГДЕ он СПРЯТАЛСЯ?! 🔥 ПРЯТКИ, но ты можешь ЗАРИСОВАТЬ СЕБЯ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/sfTH_Z6BA00/hqdefault.jpg"
+      },
+      {
+        "id": "OQTCikXDu70",
+        "title": "КУДА ЛЕЗЕШЬ?!?!?! 👀 Первый раз играю в ПРИВЕТ СОСЕД (Hello Neighbor)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/OQTCikXDu70/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUBIfuwYslGljdRGWSELdaUw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/MwT5Jlbj8p8/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "mils-kel",
+    "name": "Милс Кел",
+    "emoji": "👾",
+    "color": "#8e44ad",
+    "desc": "Второй канал Милс Кела (фиолетовые волосы).",
+    "subs": "3.6 млн",
+    "channelId": "UCyzu2lWpAYkz97NJjpnfmOg",
+    "uploads": "UUyzu2lWpAYkz97NJjpnfmOg",
+    "icon": "https://i.ytimg.com/vi/ov6fwuOZhxA/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "ov6fwuOZhxA",
+        "title": "Случайно ЗАПИСАЛ ПЕСНЮ с МС Кисулей + Клип",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ov6fwuOZhxA/hqdefault.jpg"
+      },
+      {
+        "id": "fIBZSvX4iqQ",
+        "title": "Как мы ВЫГЛЯДЕЛИ в 2к17 (слив фоток)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fIBZSvX4iqQ/hqdefault.jpg"
+      },
+      {
+        "id": "TyOIQOdQSXM",
+        "title": "✅ Я ВЫПУСТИЛ свою ИГРУ в ROBLOX ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TyOIQOdQSXM/hqdefault.jpg"
+      },
+      {
+        "id": "mJYcVoikFtI",
+        "title": "Один ДЕНЬ с МОЕЙ СОБАКОЙ 🐶",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mJYcVoikFtI/hqdefault.jpg"
+      },
+      {
+        "id": "z7TsibQBC7o",
+        "title": "Прислали САМОДЕЛЬНУЮ - ЛАБУБУ 💨 Распаковка посылок от ПОДПИСЧИКОВ с Полиной ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/z7TsibQBC7o/hqdefault.jpg"
+      },
+      {
+        "id": "KLcF-xAwJWo",
+        "title": "БЮДЖЕТНЫЙ КОСПЛЕЙ на ГУБКУ БОБА 🧽 ПОВТОРЯЕМ МУЛЬТФИЛЬМ в ДОМАШНИХ УСЛОВИЯХ (SpongeBob)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KLcF-xAwJWo/hqdefault.jpg"
+      },
+      {
+        "id": "RBFfSe_4vVY",
+        "title": "ГОТОВИМ ЕДУ с МЭЙБИ БЭЙБИ, но мы ГЛУХОЙ/НЕМОЙ/СЛЕПОЙ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RBFfSe_4vVY/hqdefault.jpg"
+      },
+      {
+        "id": "g_y9HWUfkSY",
+        "title": "ЗАЧЕМ ВЫ мне ЭТО ОТПРАВИЛИ?! 💨 Распаковка посылок от ПОДПИСЧИКОВ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/g_y9HWUfkSY/hqdefault.jpg"
+      },
+      {
+        "id": "0zfysOVI1ds",
+        "title": "ГОТОВИМ ЕДУ, но мы ГЛУХОЙ/НЕМОЙ/СЛЕПОЙ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0zfysOVI1ds/hqdefault.jpg"
+      },
+      {
+        "id": "a621Zw4unnI",
+        "title": "СКОЛЬКО у меня БЫЛО ДЕВУШЕК? 👀 Кто меня лучше знает? Сестра или Девушка?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/a621Zw4unnI/hqdefault.jpg"
+      },
+      {
+        "id": "dG-pm_lMX4Y",
+        "title": "ЭТО мне КУПИЛИ ПОДПИСЧИКИ 📦",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/dG-pm_lMX4Y/hqdefault.jpg"
+      },
+      {
+        "id": "QC_6IBKlFww",
+        "title": "БЮДЖЕТНЫЙ КОСПЛЕЙ на WEDNESDAY 🔥 ПОВТОРЯЕМ СЕРИАЛ в ДОМАШНИХ УСЛОВИЯХ (Уэнсдей)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/QC_6IBKlFww/hqdefault.jpg"
+      },
+      {
+        "id": "GozMohfckBA",
+        "title": "Я стал КВАДРОБЕРОМ 🦊 Распаковка посылок от ПОДПИСЧИКОВ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GozMohfckBA/hqdefault.jpg"
+      },
+      {
+        "id": "mlc2z-9_SrQ",
+        "title": "МЫ ПОШЛИ в ПОХОД НОЧЬЮ (24 часа в ЛЕСУ)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mlc2z-9_SrQ/hqdefault.jpg"
+      },
+      {
+        "id": "aW_5PmkpK1w",
+        "title": "БЮДЖЕТНЫЙ КОСПЛЕЙ на ОЧЕНЬ СТРАННЫЕ ДЕЛА 🔥 ПОВТОРЯЕМ СЕРИАЛ в ДОМАШНИХ УСЛОВИЯХ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aW_5PmkpK1w/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUyzu2lWpAYkz97NJjpnfmOg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ov6fwuOZhxA/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "mils-streams",
+    "name": "Милс Стримы",
+    "emoji": "📡",
+    "color": "#6c5ce7",
+    "desc": "Стримы Милс Кела.",
+    "subs": "136 тыс.",
+    "channelId": "UCiIhatwz6LWjD0HxfarPMXw",
+    "uploads": "UUiIhatwz6LWjD0HxfarPMXw",
+    "icon": "https://i.ytimg.com/vi/x-KYRZYKQ60/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "x-KYRZYKQ60",
+        "title": "МИЛС КЕЛ озвучивает ФИЛЬМЫ и МУЛЬТИКИ - твич стрим",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/x-KYRZYKQ60/hqdefault.jpg"
+      },
+      {
+        "id": "x_7TnX-N2v8",
+        "title": "РЫБАЛКА с ПАЦАНАМИ - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/x_7TnX-N2v8/hqdefault.jpg"
+      },
+      {
+        "id": "HXtGvxvAOTU",
+        "title": "ПРАНК ДОМЕРА в Башне АДА 😱 - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/HXtGvxvAOTU/hqdefault.jpg"
+      },
+      {
+        "id": "udFOYw1DZDg",
+        "title": "Баттл МИЛС КЕЛ против АСЛАНА - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/udFOYw1DZDg/hqdefault.jpg"
+      },
+      {
+        "id": "4MjSzzSoWx8",
+        "title": "Новый СКИН - МИЛС КЕЛА 🔥",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4MjSzzSoWx8/hqdefault.jpg"
+      },
+      {
+        "id": "3brTqsfwkwo",
+        "title": "ДЕНЬ 67 - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3brTqsfwkwo/hqdefault.jpg"
+      },
+      {
+        "id": "EaPv-2J8WrU",
+        "title": "ФИНАЛ ЦИФРОВОЙ ЦИРК 9 СЕРИЯ - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/EaPv-2J8WrU/hqdefault.jpg"
+      },
+      {
+        "id": "1_RuJxUlg8U",
+        "title": "Смотрим ЦИФРОВОЙ ЦИРК 7-8 СЕРИЯ - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1_RuJxUlg8U/hqdefault.jpg"
+      },
+      {
+        "id": "divMvbyTFig",
+        "title": "Смотрим ЦИФРОВОЙ ЦИРК 4-6 СЕРИИ - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/divMvbyTFig/hqdefault.jpg"
+      },
+      {
+        "id": "Csoq8TcV6zs",
+        "title": "Встречаем первый день ЛЕТА (рассвет) - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Csoq8TcV6zs/hqdefault.jpg"
+      },
+      {
+        "id": "LM9ucIc0W_4",
+        "title": "Планы на лето - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LM9ucIc0W_4/hqdefault.jpg"
+      },
+      {
+        "id": "ZO7tgSI80GU",
+        "title": "Это ЖИТЕЛЬ - Самый СЛОЖНЫЙ МАЙНКРАФТ 😡 твич Милс Кел feat Дима",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ZO7tgSI80GU/hqdefault.jpg"
+      },
+      {
+        "id": "y2w5zvjUVig",
+        "title": "Прошли ХАРДКОР 99 ночей в лесу - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/y2w5zvjUVig/hqdefault.jpg"
+      },
+      {
+        "id": "9xiRhKubkOg",
+        "title": "Игра ДИПИНСА ЛУЧШЕ Гренни - твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/9xiRhKubkOg/hqdefault.jpg"
+      },
+      {
+        "id": "oH7awByv0JE",
+        "title": "Обзор фотосессии для Димы / твич Милс Кел",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/oH7awByv0JE/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUiIhatwz6LWjD0HxfarPMXw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/x-KYRZYKQ60/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vell",
+    "name": "Вэлл",
+    "emoji": "🎬",
+    "color": "#a29bfe",
+    "desc": "Вэлл — большой канал (Вэл).",
+    "subs": "2.6 млн",
+    "channelId": "UCo-Wokww_dW0iCSBVJzs10A",
+    "uploads": "UUo-Wokww_dW0iCSBVJzs10A",
+    "icon": "https://i.ytimg.com/vi/YhiXfPQCv0I/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "YhiXfPQCv0I",
+        "title": "Вэлл - ДАЙТЕ ПОСПАТЬ (SPEED UP)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YhiXfPQCv0I/hqdefault.jpg"
+      },
+      {
+        "id": "uVG8bE3oeuE",
+        "title": "В ШКОЛЕ у меня НЕ было ТЕЛЕФОНА📱 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uVG8bE3oeuE/hqdefault.jpg"
+      },
+      {
+        "id": "meE_DKEWUe0",
+        "title": "МОЯ ПЕРВАЯ РАБОТА 🍻 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/meE_DKEWUe0/hqdefault.jpg"
+      },
+      {
+        "id": "f-SJjMM4iz0",
+        "title": "Я и МОЙ ВЫПУСКНОЙ 🔥 ШКОЛА, ПОКА",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/f-SJjMM4iz0/hqdefault.jpg"
+      },
+      {
+        "id": "1Upv1e2Cs6M",
+        "title": "ИСТОРИЯ МОИХ ТАТУИРОВОК (тату) 🖌 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1Upv1e2Cs6M/hqdefault.jpg"
+      },
+      {
+        "id": "EssCiRDs4SU",
+        "title": "МОИ ТУПЫЕ МЕЧТЫ 🤪 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/EssCiRDs4SU/hqdefault.jpg"
+      },
+      {
+        "id": "BPtQzkor3TY",
+        "title": "МОИ ШКОЛЬНЫЕ ИСТОРИИ 📚 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/BPtQzkor3TY/hqdefault.jpg"
+      },
+      {
+        "id": "UxXqsjeNfsQ",
+        "title": "AMONG US -  Выживший РЕБЕНОК 🔥 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/UxXqsjeNfsQ/hqdefault.jpg"
+      },
+      {
+        "id": "p-X6IefxRyU",
+        "title": "AMONG US -  IMPOSTOR 🔥 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/p-X6IefxRyU/hqdefault.jpg"
+      },
+      {
+        "id": "RYA9Bi3Sqpk",
+        "title": "Моя СОЦИОФОБИЯ 👀 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RYA9Bi3Sqpk/hqdefault.jpg"
+      },
+      {
+        "id": "m5CVng3xQSA",
+        "title": "МУЛЬТИКИ моего ДЕТСТВА 2 🐸 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/m5CVng3xQSA/hqdefault.jpg"
+      },
+      {
+        "id": "A-Kp2y0loh4",
+        "title": "Мои ДЕТСКИЕ ТРАВМЫ 🦴Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/A-Kp2y0loh4/hqdefault.jpg"
+      },
+      {
+        "id": "cLZlAkv6hbY",
+        "title": "МУЛЬТИКИ моего ДЕТСТВА 🐸 Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/cLZlAkv6hbY/hqdefault.jpg"
+      },
+      {
+        "id": "mFEssEObKtA",
+        "title": "ИСТОРИЯ моих БРЕКЕТОВ 🦷😬Анимация Вэлл",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/mFEssEObKtA/hqdefault.jpg"
+      },
+      {
+        "id": "ae3izFyslVw",
+        "title": "ДАЙТЕ ПОСПАТЬ! 👽💤Meme (Анимация Вэлл)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ae3izFyslVw/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUo-Wokww_dW0iCSBVJzs10A",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YhiXfPQCv0I/hqdefault.jpg"
       }
     ]
   },

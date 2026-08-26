@@ -763,11 +763,52 @@
     return out;
   }
 
+  let shortsChannelFilter = "";
+
+  function renderShortsFilters() {
+    const box = document.getElementById("shortsFilters");
+    if (!box) return;
+    const counts = {};
+    collectShorts().forEach(function (item) {
+      counts[item.ch.id] = (counts[item.ch.id] || 0) + 1;
+    });
+    const ids = Object.keys(counts);
+    box.innerHTML = "";
+    const all = document.createElement("button");
+    all.type = "button";
+    all.className = "shorts-chip" + (!shortsChannelFilter ? " on" : "");
+    all.textContent = "Все";
+    all.onclick = function () {
+      shortsChannelFilter = "";
+      buildShortsFeed();
+    };
+    box.appendChild(all);
+    ids.slice(0, 14).forEach(function (id) {
+      const ch = findChannel(id);
+      if (!ch) return;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "shorts-chip" + (shortsChannelFilter === id ? " on" : "");
+      b.textContent = ch.name + " · " + counts[id];
+      b.onclick = function () {
+        shortsChannelFilter = id;
+        buildShortsFeed();
+      };
+      box.appendChild(b);
+    });
+  }
+
   /** Лента как Shorts: Shorts + обычные ролики, листаешь без канала */
   function collectSwipeFeed() {
-    const shorts = collectShorts().filter(function (item) {
+    let shorts = collectShorts().filter(function (item) {
       return item && item.v && item.v.id && !shortFailIds[item.v.id];
     });
+    if (shortsChannelFilter) {
+      shorts = shorts.filter(function (item) {
+        return item.ch && item.ch.id === shortsChannelFilter;
+      });
+      return shorts.slice(0, 80);
+    }
     const rest = [];
     const seen = {};
     shorts.forEach(function (item) {
@@ -782,7 +823,6 @@
         rest.push({ ch: ch, v: v });
       });
     });
-    // перемешать чуть-чуть обычные
     rest.sort(function (a, b) {
       return ((a.v.id.charCodeAt(0) + a.v.id.charCodeAt(2)) % 7) - ((b.v.id.charCodeAt(0) + b.v.id.charCodeAt(2)) % 7);
     });
@@ -998,33 +1038,117 @@
     applyTransform();
     const zlab = document.getElementById("zoomLabel");
     if (zlab) zlab.textContent = "100%";
+    if (ytFrame) ytFrame.style.pointerEvents = "auto";
+    if (localVideo) localVideo.style.pointerEvents = "auto";
+    const tip = document.getElementById("panOverlay");
+    if (tip) tip.hidden = true;
   }
 
   function setZoom(z) {
     zoom = Math.max(1, Math.min(4, z));
-    if (zoom === 1) {
+    if (zoom <= 1.001) {
+      zoom = 1;
       panX = 0;
       panY = 0;
     }
     applyTransform();
     const zlab = document.getElementById("zoomLabel");
     if (zlab) zlab.textContent = Math.round(zoom * 100) + "%";
-    ytFrame.style.pointerEvents = zoom > 1 ? "none" : "auto";
-    localVideo.style.pointerEvents = zoom > 1 ? "none" : "auto";
+    if (ytFrame) ytFrame.style.pointerEvents = zoom > 1 ? "none" : "auto";
+    if (localVideo) localVideo.style.pointerEvents = zoom > 1 ? "none" : "auto";
     let tip = document.getElementById("panOverlay");
     if (zoom > 1) {
-      if (!tip) {
+      if (!tip && playerBox) {
         tip = document.createElement("div");
         tip.id = "panOverlay";
         tip.className = "pan-overlay";
+        tip.style.pointerEvents = "none";
         playerBox.appendChild(tip);
       }
-      tip.hidden = false;
+      if (tip) tip.hidden = false;
     } else if (tip) tip.hidden = true;
+  }
+
+  function togglePlayerFullscreen() {
+    const el = playerBox || document.documentElement;
+    try {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else if (el.requestFullscreen) {
+        el.requestFullscreen();
+      }
+    } catch (_) {}
+  }
+
+  function showToast(msg, ms) {
+    let t = document.getElementById("amalToast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "amalToast";
+      t.className = "amal-toast";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._hide);
+    t._hide = setTimeout(function () {
+      t.classList.remove("show");
+    }, ms || 2400);
+  }
+
+  let autoQueue = [];
+  let autoQueuePos = -1;
+
+  function startChannelQueue(ch, fromId) {
+    if (!ch) return;
+    autoQueue = realVideos(ch);
+    autoQueuePos = 0;
+    if (fromId) {
+      const i = autoQueue.findIndex(function (v) {
+        return v.id === fromId;
+      });
+      if (i >= 0) autoQueuePos = i;
+    }
+    const v = autoQueue[autoQueuePos];
+    if (!v) {
+      showToast("Пока нет роликов в списке");
+      return;
+    }
+    showToast("▶ Смотрим подряд · " + (autoQueuePos + 1) + "/" + autoQueue.length);
+    playId(v.id, v.title || "Ролик", {
+      channelId: ch.id,
+      likesLabel: v.likes,
+    });
+  }
+
+  function playNextInQueue() {
+    if (!autoQueue.length || autoQueuePos < 0) return;
+    if (autoQueuePos >= autoQueue.length - 1) {
+      showToast("✓ Все ролики из списка просмотрены");
+      return;
+    }
+    autoQueuePos++;
+    const v = autoQueue[autoQueuePos];
+    if (!v || !currentChannel) return;
+    showToast("⏭ Дальше · " + (autoQueuePos + 1) + "/" + autoQueue.length);
+    playId(v.id, v.title || "Ролик", {
+      channelId: currentChannel.id,
+      likesLabel: v.likes,
+    });
   }
 
   function setWatching(on) {
     if (viewChannel) viewChannel.classList.toggle("watching", !!on);
+  }
+
+  function setMenuTab(tab) {
+    const menu = document.getElementById("channelMenu");
+    if (!menu) return;
+    menu.dataset.tab = tab === "comments" ? "comments" : "videos";
+    const tVideos = document.getElementById("tabVideos");
+    const tComments = document.getElementById("tabComments");
+    if (tVideos) tVideos.classList.toggle("on", menu.dataset.tab === "videos");
+    if (tComments) tComments.classList.toggle("on", menu.dataset.tab === "comments");
   }
 
   function ensureWatchFloat() {
@@ -1033,15 +1157,31 @@
     wrap.id = "watchFloat";
     wrap.className = "watch-float";
     wrap.innerHTML =
-      '<button type="button" id="btnFloatMenu">📋 Меню</button>' +
+      '<button type="button" id="btnFloatMenu">📋 Ролики</button>' +
+      '<button type="button" id="btnFloatComments">💬</button>' +
+      '<button type="button" id="btnFloatNext">⏭</button>' +
+      '<button type="button" id="btnFloatFs">⛶</button>' +
       '<button type="button" class="accent" id="btnFloatNoAds">🎬 Чистый экран</button>' +
       '<button type="button" id="btnFloatCc">🌐 Перевод</button>' +
-      '<button type="button" id="btnFloatExtra">⋯ Ещё</button>';
+      '<button type="button" id="btnFloatExtra">⋯</button>';
     if (playerBox) playerBox.appendChild(wrap);
     document.getElementById("btnFloatMenu").onclick = function () {
       setWatching(false);
+      setMenuTab("videos");
       const menu = document.getElementById("channelMenu");
       if (menu) menu.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    document.getElementById("btnFloatComments").onclick = function () {
+      setWatching(false);
+      setMenuTab("comments");
+      const box = document.getElementById("commentsBox");
+      if (box) box.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    document.getElementById("btnFloatNext").onclick = function () {
+      playNextInQueue();
+    };
+    document.getElementById("btnFloatFs").onclick = function () {
+      togglePlayerFullscreen();
     };
     document.getElementById("btnFloatNoAds").onclick = function () {
       forceCleanScreen();
@@ -1056,7 +1196,6 @@
     };
     document.getElementById("btnFloatExtra").onclick = function () {
       document.body.classList.toggle("show-extra-panels");
-      setWatching(false);
     };
   }
 
@@ -1245,14 +1384,23 @@
   function playVideoObj(ch, v) {
     if (v.local) return playLocal(v.url, v.title);
     if (v.playlist || v.id === "playlist") {
-      // не открываем YouTube-плейлист (там реклама) — грузим меню
-      loadAllFromChannel(ch);
-      const menu = document.getElementById("channelMenu");
-      if (menu) menu.scrollTo({ top: 0, behavior: "smooth" });
-      if (tvHint) tvHint.textContent = "📋 Меню роликов ниже — листай и выбирай";
+      showToast("⏳ Гружу все ролики канала…");
+      loadAllFromChannel(ch).then(function () {
+        startChannelQueue(ch, null);
+        setMenuTab("videos");
+        showToast("▶ Все ролики — смотрим подряд");
+      });
       return;
     }
-    // остаёмся на этом канале и крутим выбранный ролик
+    if (currentChannel && currentChannel.id === ch.id) {
+      autoQueue = realVideos(ch);
+      autoQueuePos = Math.max(
+        0,
+        autoQueue.findIndex(function (x) {
+          return x.id === v.id;
+        })
+      );
+    }
     playId(v.id, v.title || "Ролик", { channelId: ch.id, likesLabel: v.likes });
   }
 
@@ -1553,11 +1701,14 @@
     if (!ch.allowUpload && ch.channelId) {
       const more = document.createElement("button");
       more.type = "button";
-      more.className = "vid-card load-more";
+      more.className = "vid-card load-more play-all";
       more.innerHTML =
-        '<div class="vid-thumb" style="display:grid;place-items:center;font-size:28px">⬇️</div><b>Загрузить ВСЕ ролики канала</b><div class="vl">подтянуть оставшиеся</div>';
+        '<div class="vid-thumb play-all-thumb">▶</div><b>Смотреть все подряд</b><div class="vl">жёлтая кнопка · вся лента</div>';
       more.addEventListener("click", function () {
-        loadAllFromChannel(ch);
+        showToast("⏳ Гружу все ролики…");
+        loadAllFromChannel(ch).then(function () {
+          startChannelQueue(ch, null);
+        });
       });
       videoGrid.appendChild(more);
     }
@@ -1842,7 +1993,10 @@
     currentChannel = ch;
     channelNextpage = null;
     showView("channel");
+    setMenuTab("videos");
     ensurePlayerTools();
+    autoQueue = [];
+    autoQueuePos = -1;
 
     const icon = ch.icon
       ? '<img class="ch-avatar" src="' + ch.icon + '" alt="" />'
@@ -1906,9 +2060,11 @@
 
   function buildShortsFeed(startId) {
     if (!shortsFeed) return;
+    renderShortsFilters();
     allShorts = collectSwipeFeed();
     if (!allShorts.length) {
-      shortsFeed.innerHTML = '<p class="shorts-empty">Пока пусто — зайди позже.</p>';
+      shortsFeed.innerHTML =
+        '<p class="shorts-empty">Пока пусто — выбери другой канал в фильтре сверху.</p>';
       return;
     }
     const touchSwipe =
@@ -2407,9 +2563,12 @@
     { keys: ["а4", "влад а4", "vlad"], channel: "vlada4" },
     { keys: ["мистер бист", "mrbeast", "mr beast", "бист"], channel: "mrbeast" },
     { keys: ["гравити", "gravity", "фолз", "dipper", "мейбл"], channel: "gravity" },
-    { keys: ["сладост", "гадост", "конфет"], channel: "sladosti" },
+    { keys: ["сладост", "гадост", "конфет", "gadosti"], channel: "sladosti" },
+    { keys: ["милс", "милс play", "нил скел", "нилскел"], channel: "mils-play" },
+    { keys: ["милс кел", "милскел"], channel: "mils-kel" },
+    { keys: ["милс стрим", "стримы милс"], channel: "mils-streams" },
+    { keys: ["вэлл", "вэл", "well", "vell"], channel: "vell" },
     { keys: ["биллиент", "billy", "билли"], channel: "billionent" },
-    { keys: ["gadosti", "гадости"], channel: "sladosti" },
     { keys: ["ярокс", "ерокс", "erox", "стандофф"], channel: "yaroks" },
     { keys: ["мой канал", "амал", "загруз"], channel: "amal-room" },
   ];
@@ -2555,9 +2714,10 @@
   if (allVideosBtn) {
     allVideosBtn.addEventListener("click", function () {
       if (!currentChannel) return;
-      const menu = document.getElementById("channelMenu");
-      if (menu) menu.scrollTo({ top: 0, behavior: "smooth" });
-      loadAllFromChannel(currentChannel);
+      showToast("⏳ Гружу все ролики…");
+      loadAllFromChannel(currentChannel).then(function () {
+        startChannelQueue(currentChannel, null);
+      });
     });
   }
 
@@ -2595,6 +2755,27 @@
       e.preventDefault();
       addComment(commentNick ? commentNick.value : "", commentText ? commentText.value : "");
       if (commentText) commentText.value = "";
+      showToast("💬 Комментарий отправлен");
+      setMenuTab("comments");
+    });
+  }
+
+  const tabVideos = document.getElementById("tabVideos");
+  const tabCommentsBtn = document.getElementById("tabComments");
+  if (tabVideos) {
+    tabVideos.addEventListener("click", function () {
+      setMenuTab("videos");
+    });
+  }
+  if (tabCommentsBtn) {
+    tabCommentsBtn.addEventListener("click", function () {
+      setMenuTab("comments");
+    });
+  }
+
+  if (localVideo) {
+    localVideo.addEventListener("ended", function () {
+      playNextInQueue();
     });
   }
 

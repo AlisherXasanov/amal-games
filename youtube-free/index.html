@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=31" />
+  <link rel="stylesheet" href="./style.css?v=32" />
 </head>
 <body class="watch-app">
   <header class="topbar">
@@ -60,8 +60,9 @@
     <div class="shorts-top">
       <button type="button" class="btn ghost" id="btnShortsBack">← Назад</button>
       <span>📱 Лента</span>
-      <span class="shorts-tip">↑↓ стрелки · свайп пальцем</span>
+      <span class="shorts-tip">↑↓ · свайп · фильтр канала</span>
     </div>
+    <div class="shorts-filters" id="shortsFilters"></div>
     <div class="shorts-feed" id="shortsFeed"></div>
     <div class="shorts-nav" id="shortsNav" hidden>
       <button type="button" id="shortsPrev" aria-label="Предыдущий">▲</button>
@@ -119,8 +120,12 @@
         <p class="now" id="nowPlaying">Сейчас: —</p>
       </div>
 
-      <div class="channel-menu" id="channelMenu">
-        <div class="menu-title">📋 Меню роликов · листай вниз</div>
+      <div class="channel-menu" id="channelMenu" data-tab="videos">
+        <div class="menu-tabs">
+          <button type="button" class="menu-tab on" id="tabVideos">📋 Ролики</button>
+          <button type="button" class="menu-tab" id="tabComments">💬 Комменты</button>
+        </div>
+        <div class="menu-title" id="menuTitleVideos">Ролики канала · жми любое</div>
         <div class="upload-box" id="uploadBox" hidden>
           <p>📁 Свой ролик — только у тебя.</p>
           <label class="btn accent upload-label">
@@ -130,11 +135,11 @@
         </div>
         <div class="video-grid" id="videoGrid"></div>
         <div class="comments-box" id="commentsBox">
-          <div class="shelf-label pad">💬 Комментарии</div>
+          <div class="shelf-label pad">💬 Комментарии к этому ролику</div>
           <div class="comments-list" id="commentsList"></div>
           <form class="comment-form" id="commentForm">
-            <input id="commentNick" maxlength="24" placeholder="Имя" autocomplete="nickname" />
-            <input id="commentText" maxlength="400" placeholder="Напиши комментарий…" required />
+            <input id="commentNick" maxlength="24" placeholder="Твоё имя" autocomplete="nickname" />
+            <input id="commentText" maxlength="400" placeholder="Напиши нормальный комментарий…" required />
             <button type="submit">Отправить</button>
           </form>
         </div>
@@ -156,11 +161,11 @@
 
   <script>
     if (document.title.indexOf("Скрыто") !== -1) {
-      location.replace("./index.html?v=31&fresh=" + Date.now());
+      location.replace("./index.html?v=32&fresh=" + Date.now());
     }
   </script>
-  <script src="./channels-data.js?v=31"></script>
-  <script src="./main.js?v=31"></script>
+  <script src="./channels-data.js?v=32"></script>
+  <script src="./main.js?v=32"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
