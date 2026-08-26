@@ -9,6 +9,33 @@
   const LIKE_KEY = "amal-watch-likes-v1";
   const COMMENT_KEY = "amal-watch-comments-v1";
   const REPORT_KEY = "amal-watch-reports-v1";
+  const MINE_KEY = "amal-watch-mychannel-v1";
+  const PLAY_BUTTONS = [
+    { id: "silver", name: "Серебряная", need: 100, cls: "silver" },
+    { id: "romantic", name: "Романтик", need: 500, cls: "romantic" },
+    { id: "gold", name: "Золотая", need: 1000, cls: "gold" },
+    { id: "diamond", name: "Бриллиантовая", need: 10000, cls: "diamond" }
+  ];
+  const ACHS = [
+    { id: "first_up", title: "Первый ролик", check: function (c) { return (c.videos || 0) >= 1; } },
+    { id: "ten", title: "10 роликов", check: function (c) { return (c.videos || 0) >= 10; } },
+    { id: "gift", title: "Именной подарок", check: function (c) { return !!c.giftOpened; } },
+    { id: "silver", title: "Серебро", check: function (c) { return (c.subs || 0) >= 100; } },
+    { id: "romantic", title: "Романтик", check: function (c) { return (c.subs || 0) >= 500; } },
+    { id: "gold", title: "Золото", check: function (c) { return (c.subs || 0) >= 1000; } },
+    { id: "diamond", title: "Бриллиант", check: function (c) { return (c.subs || 0) >= 10000; } }
+  ];
+  function loadMineCh() {
+    try {
+      return Object.assign({ subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {} }, JSON.parse(localStorage.getItem(MINE_KEY) || "{}"));
+    } catch (_) {
+      return { subs: 0, videos: 0, giftOpened: false, hiddenButtons: {}, achievements: {} };
+    }
+  }
+  function saveMineCh() {
+    localStorage.setItem(MINE_KEY, JSON.stringify(mineCh));
+  }
+  let mineCh = loadMineCh();
   // Обычный YouTube-embed может с рекламой.
   // «Без рекламы» = прямой поток через API (свой <video>), БЕЗ сайта Piped на экране.
   const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
@@ -80,8 +107,10 @@
   const viewHome = document.getElementById("viewHome");
   const viewChannel = document.getElementById("viewChannel");
   const viewShorts = document.getElementById("viewShorts");
+  const viewMine = document.getElementById("viewMine");
   const btnHome = document.getElementById("btnHome");
   const btnShorts = document.getElementById("btnShorts");
+  const btnMine = document.getElementById("btnMine");
   const btnShortsBack = document.getElementById("btnShortsBack");
   const channelShelf = document.getElementById("channelShelf");
   const feed = document.getElementById("feed");
@@ -780,8 +809,10 @@
     viewHome.classList.toggle("active", name === "home");
     viewChannel.classList.toggle("active", name === "channel");
     if (viewShorts) viewShorts.classList.toggle("active", name === "shorts");
-    btnHome.hidden = name !== "channel";
+    if (viewMine) viewMine.classList.toggle("active", name === "mine");
+    btnHome.hidden = name === "home";
     if (btnShorts) btnShorts.hidden = name === "shorts";
+    if (btnMine) btnMine.hidden = name === "mine";
   }
 
   function openHome() {
@@ -789,6 +820,103 @@
     setWatching(false);
     document.body.classList.remove("show-extra-panels");
     showView("home");
+  }
+
+  function mineNick() {
+    try {
+      if (window.AmalHub && AmalHub.getNick) {
+        const n = AmalHub.getNick();
+        if (n) return n;
+      }
+    } catch (_) {}
+    return "Друг";
+  }
+
+  function bumpMine(n) {
+    mineCh.subs = Math.min(999999, (mineCh.subs || 0) + (n | 0));
+    ACHS.forEach(function (a) {
+      if (!mineCh.achievements[a.id] && a.check(mineCh)) mineCh.achievements[a.id] = Date.now();
+    });
+    saveMineCh();
+    renderMine();
+  }
+
+  function renderMine() {
+    const nick = mineNick();
+    const nickEl = document.getElementById("mineNick");
+    const subsEl = document.getElementById("mineSubs");
+    const gift = document.getElementById("mineGift");
+    if (nickEl) nickEl.textContent = nick;
+    if (subsEl) subsEl.textContent = String(mineCh.subs || 0);
+    if (gift) {
+      gift.textContent = mineCh.giftOpened
+        ? "🎁 Для " + nick + " · именной подарок"
+        : "🎁 Подарок с твоим именем";
+    }
+    const row = document.getElementById("mineButtons");
+    if (row) {
+      row.innerHTML = "";
+      PLAY_BUTTONS.forEach(function (b) {
+        const unlocked = (mineCh.subs || 0) >= b.need;
+        const hidden = !!(mineCh.hiddenButtons && mineCh.hiddenButtons[b.id]);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className =
+          "play-award " + b.cls + (unlocked ? "" : " locked") + (hidden && unlocked ? " hidden-award" : "");
+        btn.innerHTML =
+          "<strong>" +
+          b.name +
+          "</strong><small>" +
+          (unlocked ? (hidden ? "спрятана · жми" : "получена · жми спрятать") : "нужно " + b.need) +
+          "</small>";
+        btn.disabled = !unlocked;
+        btn.addEventListener("click", function () {
+          if (!unlocked) return;
+          mineCh.hiddenButtons = mineCh.hiddenButtons || {};
+          mineCh.hiddenButtons[b.id] = !mineCh.hiddenButtons[b.id];
+          saveMineCh();
+          renderMine();
+        });
+        row.appendChild(btn);
+      });
+    }
+    const ach = document.getElementById("mineAch");
+    if (ach) {
+      ach.innerHTML = "";
+      ACHS.forEach(function (a) {
+        const done = !!mineCh.achievements[a.id] || a.check(mineCh);
+        const div = document.createElement("div");
+        div.className = "ach" + (done ? " done" : "");
+        div.textContent = (done ? "✅ " : "⬜ ") + a.title;
+        ach.appendChild(div);
+      });
+    }
+    const grid = document.getElementById("mineGrid");
+    if (grid) {
+      grid.innerHTML = "";
+      if (!myVideos.length) {
+        grid.innerHTML = '<p style="color:#999;font-size:13px">Пока нет своих роликов — загрузи выше.</p>';
+      } else {
+        myVideos.forEach(function (v) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "vid-card";
+          btn.innerHTML = '<div class="vid-thumb">🌙</div><b></b>';
+          btn.querySelector("b").textContent = v.title;
+          btn.addEventListener("click", function () {
+            showView("channel");
+            playLocal(v.url, v.title);
+          });
+          grid.appendChild(btn);
+        });
+      }
+    }
+  }
+
+  function openMine() {
+    setWatching(false);
+    showView("mine");
+    renderMine();
   }
 
   function thumbHtml(src, fallbackEmoji) {
@@ -1671,15 +1799,45 @@
     });
   }
 
-  fileIn.addEventListener("change", function () {
+  if (btnMine) {
+    btnMine.addEventListener("click", openMine);
+  }
+
+  fileIn && fileIn.addEventListener("change", function () {
     const f = fileIn.files && fileIn.files[0];
     if (!f || !currentChannel) return;
     const url = URL.createObjectURL(f);
     const title = f.name.replace(/\.[^.]+$/, "") || "Мой ролик";
     myVideos.unshift({ title: title, url: url });
+    mineCh.videos = myVideos.length;
+    bumpMine(25);
     openChannel(currentChannel.id);
     playLocal(url, title);
   });
+
+  const mineFile = document.getElementById("mineFile");
+  if (mineFile) {
+    mineFile.addEventListener("change", function () {
+      const f = mineFile.files && mineFile.files[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      const title = f.name.replace(/\.[^.]+$/, "") || "Мой ролик";
+      myVideos.unshift({ title: title, url: url });
+      mineCh.videos = myVideos.length;
+      bumpMine(25);
+      renderMine();
+      playLocal(url, title);
+    });
+  }
+  document.getElementById("btnMineGift") &&
+    document.getElementById("btnMineGift").addEventListener("click", function () {
+      mineCh.giftOpened = true;
+      bumpMine(15);
+    });
+  document.getElementById("btnMineBoost") &&
+    document.getElementById("btnMineBoost").addEventListener("click", function () {
+      bumpMine(50);
+    });
 
   let deferredPrompt = null;
   const installBtn = document.getElementById("installBtn");

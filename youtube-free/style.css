@@ -498,3 +498,31 @@ body.show-extra-panels .now { display: block; }
 }
 .vid-card b { display: block; padding: 8px 8px 2px; font-size: 11px; line-height: 1.3; }
 .vid-card .vl { padding: 0 8px 8px; font-size: 10px; color: #fde68a; }
+
+.mine-wrap { max-width: 720px; margin: 0 auto; padding: 16px 14px 48px; }
+.mine-wrap h2 { font-size: 1.4rem; margin-bottom: 6px; }
+.mine-lead { color: #c4b5fd; font-size: 13px; margin-bottom: 12px; }
+.subs-line { font-weight: 800; margin: 8px 0 14px; }
+.gift-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.gift-card {
+  flex: 1; min-width: 180px; padding: 14px; border-radius: 14px; text-align: center; font-weight: 800;
+  background: linear-gradient(135deg, #ffe566, #ff8fab 55%, #cc0000); color: #1a1028;
+}
+.buttons-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.play-award {
+  border: 2px solid #554466; border-radius: 14px; padding: 10px 8px; background: #2a1a3a; color: #fff;
+  cursor: pointer; text-align: center; font: 700 12px system-ui; min-height: 88px;
+}
+.play-award.locked { opacity: 0.45; }
+.play-award.hidden-award { outline: 2px dashed #888; }
+.play-award.silver { background: linear-gradient(180deg,#4a4e55,#2c3036); }
+.play-award.gold { background: linear-gradient(180deg,#c9a227,#7a5a10); }
+.play-award.diamond { background: linear-gradient(180deg,#6ec9ff,#2a5a80); }
+.play-award.romantic { background: linear-gradient(180deg,#ff8fab,#8b1e4a); }
+.play-award small { display: block; margin-top: 4px; opacity: 0.8; font-weight: 600; }
+.achievements { display: grid; gap: 6px; margin: 8px 0 16px; }
+.ach { background: #2a1a3a; border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+.ach.done { border: 1px solid #6aad4a; }
+.row-actions { margin: 8px 0 16px; }
+#mineUpload { margin: 8px 0; padding: 12px; background: rgba(0,0,0,.35); border-radius: 12px; }
+#mineUpload p { font-size: 13px; color: #c4b5fd; margin-bottom: 8px; }

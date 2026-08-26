@@ -2,20 +2,21 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Смотри · ТВ-спальня — Amaya Games</title>
   <meta name="description" content="Старое приложение «Смотри»: спальня, каналы, лайки, подписки, лента — всё внутри." />
   <meta name="theme-color" content="#2d1b4e" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <link rel="stylesheet" href="./style.css?v=24" />
+  <link rel="stylesheet" href="./style.css?v=25" />
 </head>
 <body class="watch-app">
   <header class="topbar">
     <button type="button" class="btn ghost" id="btnHome" hidden>🏠 Спальня</button>
     <a class="btn ghost" href="../">← Каталог</a>
     <h1>▶ <span>Смотри</span></h1>
-    <a class="btn ghost" href="./spokoynee.html">🕊 Спокойнее</a>
+    <button type="button" class="btn accent" id="btnMine">Мой канал</button>
     <button type="button" class="btn accent" id="btnShorts">📱 Лента</button>
     <button type="button" class="btn accent" id="installBtn" hidden>📲</button>
   </header>
@@ -62,6 +63,34 @@
       <span class="shorts-tip">колёсико / свайп · вверх-вниз</span>
     </div>
     <div class="shorts-feed" id="shortsFeed"></div>
+  </section>
+
+  <section class="view" id="viewMine">
+    <div class="mine-wrap">
+      <h2>Мой канал</h2>
+      <p class="mine-lead">Свои ролики, кнопки и достижения — здесь, в «Смотри».</p>
+      <p class="subs-line"><span id="mineSubs">0</span> подписчиков · канал «<span id="mineNick">Друг</span>»</p>
+      <div class="gift-row">
+        <div class="gift-card" id="mineGift">🎁 Подарок с твоим именем</div>
+        <button type="button" class="btn accent" id="btnMineGift">Открыть подарок</button>
+      </div>
+      <div class="shelf-label">Кнопки</div>
+      <div class="buttons-row" id="mineButtons"></div>
+      <div class="row-actions">
+        <button type="button" class="btn ghost" id="btnMineBoost">+50 подписчиков</button>
+      </div>
+      <div class="shelf-label">Достижения</div>
+      <div class="achievements" id="mineAch"></div>
+      <div class="shelf-label">Свои ролики</div>
+      <div class="upload-box" id="mineUpload">
+        <p>Загрузи видео с компьютера — играет только у тебя.</p>
+        <label class="btn accent upload-label">
+          Загрузить ролик
+          <input type="file" id="mineFile" accept="video/*" hidden />
+        </label>
+      </div>
+      <div class="video-grid" id="mineGrid"></div>
+    </div>
   </section>
 
   <section class="view" id="viewChannel">
@@ -117,8 +146,13 @@
     </div>
   </div>
 
-  <script src="./channels-data.js?v=24"></script>
-  <script src="./main.js?v=24"></script>
+  <script>
+    if (document.title.indexOf("Скрыто") !== -1) {
+      location.replace("./index.html?v=25&fresh=" + Date.now());
+    }
+  </script>
+  <script src="./channels-data.js?v=25"></script>
+  <script src="./main.js?v=25"></script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v62";
+  var VERSION = "amal-offline-v63";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -53,13 +53,6 @@
     "./obby/",
     "./obby/index.html",
     "./obby/main.js",
-    "./youtube-free/",
-    "./youtube-free/index.html",
-    "./youtube-free/bez-reklamy.html",
-    "./youtube-free/main.js",
-    "./youtube-free/style.css",
-    "./youtube-free/channels-data.js",
-    "./youtube-free/manifest.webmanifest",
     "./create-lab/game.html",
     "./create-lab/lab3d.html",
     "./apps/",
@@ -120,6 +113,15 @@
     var req = event.request;
     if (req.method !== "GET") return;
     if (!sameOrigin(req.url)) return;
+
+    if (req.url.indexOf("/youtube-free/") !== -1) {
+      event.respondWith(
+        fetch(req, { cache: "no-store" }).catch(function () {
+          return caches.match(req);
+        })
+      );
+      return;
+    }
 
     if (isNav(req)) {
       event.respondWith(
