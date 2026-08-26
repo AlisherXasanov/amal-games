@@ -485,7 +485,9 @@
 
   /** Лента как Shorts: Shorts + обычные ролики, листаешь без канала */
   function collectSwipeFeed() {
-    const shorts = collectShorts();
+    const shorts = collectShorts().filter(function (item) {
+      return item && item.v && item.v.id && !shortFailIds[item.v.id];
+    });
     const rest = [];
     const seen = {};
     shorts.forEach(function (item) {
@@ -494,7 +496,7 @@
     CHANNELS.forEach(function (ch) {
       if (ch.allowUpload) return;
       realVideos(ch).forEach(function (v, i) {
-        if (seen[v.id]) return;
+        if (!v || !v.id || seen[v.id] || shortFailIds[v.id]) return;
         if (i > 14) return;
         seen[v.id] = 1;
         rest.push({ ch: ch, v: v });
@@ -521,6 +523,40 @@
     });
   }
 
+  const shortFailIds = {};
+
+  function markShortFail(id) {
+    if (id) shortFailIds[id] = 1;
+  }
+
+  function skipBrokenShort(slide, reason) {
+    if (!slide) return;
+    const loadEl = slide.querySelector(".shorts-loading");
+    const video = slide.querySelector("video.shorts-vid");
+    const fr = slide.querySelector("iframe.shorts-fallback");
+    if (video) {
+      try {
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
+      } catch (_) {}
+      video.hidden = false;
+    }
+    if (fr) {
+      fr.src = "";
+      fr.hidden = true;
+    }
+    if (loadEl) {
+      loadEl.hidden = false;
+      loadEl.textContent = reason || "⏭ Это видео нельзя тут — дальше…";
+    }
+    clearTimeout(slide._skipT);
+    slide._skipT = setTimeout(function () {
+      if (loadEl) loadEl.hidden = true;
+      goShortBy(1);
+    }, 700);
+  }
+
   /** Один шорт в ленте — свой <video>, без ухода на YouTube */
   function playShortSlide(slide) {
     if (!slide || !shortsFeed) return;
@@ -528,6 +564,12 @@
     const vid = slide.dataset.vid;
     const loadEl = slide.querySelector(".shorts-loading");
     if (!video || !vid) return;
+
+    // уже знаем, что это видео запрещено / битое — сразу дальше
+    if (shortFailIds[vid]) {
+      skipBrokenShort(slide);
+      return;
+    }
 
     shortsFeed.querySelectorAll("video.shorts-vid").forEach(function (other) {
       if (other === video) return;
@@ -537,14 +579,27 @@
         other.load();
       } catch (_) {}
     });
+    // прячем старый iframe-фолбэк, если был
+    shortsFeed.querySelectorAll("iframe.shorts-fallback").forEach(function (fr) {
+      fr.src = "";
+      fr.hidden = true;
+    });
+    video.hidden = false;
 
-    function showLoad(on) {
-      if (loadEl) loadEl.hidden = !on;
+    function showLoad(on, text) {
+      if (!loadEl) return;
+      loadEl.hidden = !on;
+      if (on) loadEl.textContent = text || "⏳ Загрузка…";
     }
 
     function startUrl(url) {
       if (!url || slide.dataset.vid !== vid) return;
       showLoad(false);
+      video.onerror = function () {
+        if (slide.dataset.vid !== vid) return;
+        markShortFail(vid);
+        skipBrokenShort(slide, "⏭ Ролик не открылся — дальше…");
+      };
       if (video.getAttribute("src") !== url) {
         video.src = url;
       }
@@ -564,31 +619,19 @@
       return;
     }
 
-    showLoad(true);
+    showLoad(true, "⏳ Без рекламы…");
     fetchDirectStream(vid).then(function (url) {
       if (slide.dataset.vid !== vid) return;
       if (url) {
         startUrl(url);
         return;
       }
-      // запасной путь: embed, но без кликов по YouTube-хромке
-      showLoad(false);
-      let fr = slide.querySelector("iframe.shorts-fallback");
-      if (!fr) {
-        fr = document.createElement("iframe");
-        fr.className = "shorts-fallback";
-        fr.title = "Шорт";
-        fr.setAttribute(
-          "sandbox",
-          "allow-scripts allow-same-origin allow-presentation"
-        );
-        fr.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-        video.hidden = true;
-        slide.querySelector(".shorts-player").appendChild(fr);
-      }
-      video.hidden = true;
-      fr.hidden = false;
-      fr.src = embedUrl(vid, true);
+      // YouTube-встройка часто «запрещена владельцем» — не показываем её, идём дальше
+      markShortFail(vid);
+      skipBrokenShort(
+        slide,
+        "⏭ Владелец запретил встройку — следующий…"
+      );
     });
   }
 
@@ -1616,12 +1659,45 @@
       shortsFeed.querySelectorAll(".shorts-slide")
     );
     if (!slides.length) return;
-    const next = Math.max(
-      0,
-      Math.min(slides.length - 1, currentShortIndex() + delta)
-    );
+    let next = currentShortIndex() + delta;
+    // пропускаем ролики, которые уже не играют
+    while (next >= 0 && next < slides.length) {
+      const id = slides[next] && slides[next].dataset.vid;
+      if (id && shortFailIds[id]) {
+        next += delta > 0 ? 1 : -1;
+        continue;
+      }
+      break;
+    }
+    next = Math.max(0, Math.min(slides.length - 1, next));
     const target = slides[next];
     if (!target) return;
+    // если и текущий битый — ищем любой живой в сторону delta
+    if (shortFailIds[target.dataset.vid]) {
+      let found = null;
+      for (
+        let i = next;
+        i >= 0 && i < slides.length;
+        i += delta > 0 ? 1 : -1
+      ) {
+        if (!shortFailIds[slides[i].dataset.vid]) {
+          found = slides[i];
+          break;
+        }
+      }
+      if (!found) {
+        for (let i = 0; i < slides.length; i++) {
+          if (!shortFailIds[slides[i].dataset.vid]) {
+            found = slides[i];
+            break;
+          }
+        }
+      }
+      if (!found) return;
+      found.scrollIntoView({ behavior: "smooth", block: "start" });
+      playShortSlide(found);
+      return;
+    }
     target.scrollIntoView({ behavior: "smooth", block: "start" });
     playShortSlide(target);
   }
