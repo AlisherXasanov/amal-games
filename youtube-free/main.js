@@ -54,10 +54,13 @@
   // Обычный YouTube-embed может с рекламой.
   // «Без рекламы» = прямой поток через API (свой <video>), БЕЗ сайта Piped на экране.
   const EMBED_WORKS = "https://www.youtube-nocookie.com/embed/";
+  const EMBED_YT = "https://www.youtube.com/embed/";
   const PIPED_APIS = [
     "https://pipedapi.adminforge.de",
     "https://api.piped.private.coffee",
     "https://pipedapi.nosebs.ru",
+    "https://pipedapi.kavin.rocks",
+    "https://pipedapi.leptons.xyz",
   ];
   let playGen = 0;
   let rescueTimer = null;
@@ -67,7 +70,9 @@
     "https://yewtu.be",
     "https://inv.nadeko.net",
     "https://invidious.nerdvpn.de",
+    "https://iv.ggtyler.dev",
   ];
+  let embedHostFlip = 0;
 
   function clearAdRescue() {
     if (rescueTimer) {
@@ -420,6 +425,7 @@
     if (gen !== playGen) return;
     if (videoId && currentPlayId !== videoId) return;
     clearAdRescue();
+    bindLocalVideoRescue();
     ytFrame.hidden = true;
     ytFrame.src = "about:blank";
     playerPh.hidden = true;
@@ -427,7 +433,10 @@
     if (localVideo.src !== url) {
       localVideo.src = url;
     }
-    localVideo.play().catch(function () {});
+    localVideo.play().catch(function () {
+      // автоплей блокируют — покажем YouTube
+      showYtFallback(videoId, gen);
+    });
     const hit = videoId && streamCache[videoId];
     attachCaptions(localVideo, (hit && hit.subtitles) || []);
     usingNoAds = true;
@@ -436,6 +445,15 @@
     try {
       savePlayerPref();
     } catch (_) {}
+    // если за 5 сек так и нет кадров — запасной YouTube
+    setTimeout(function () {
+      if (gen !== playGen || currentPlayId !== videoId) return;
+      if (!localVideo.hidden && localVideo.readyState < 2) {
+        if (streamCache[videoId]) delete streamCache[videoId];
+        embedHostFlip++;
+        showYtFallback(videoId, gen);
+      }
+    }, 5000);
   }
 
   const viewHome = document.getElementById("viewHome");
@@ -621,13 +639,50 @@
 
   function embedUrl(id, autoplay) {
     const ap = autoplay === false ? "0" : "1";
-    // cc_load_policy=0 — без субтитров; шайбу/титры YouTube всё равно рисует — нужен чистый поток
+    const host = embedHostFlip % 2 === 0 ? EMBED_WORKS : EMBED_YT;
     return (
-      EMBED_WORKS +
+      host +
       encodeURIComponent(id) +
       "?rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&playsinline=1&autoplay=" +
       ap
     );
+  }
+
+  function showYtFallback(id, gen) {
+    if (gen !== playGen || currentPlayId !== id) return;
+    playerPh.hidden = true;
+    localVideo.hidden = true;
+    localVideo.removeAttribute("src");
+    try {
+      localVideo.load();
+    } catch (_) {}
+    ytFrame.hidden = false;
+    ytFrame.src = embedUrl(id, true);
+    setCinemaPure(false);
+    setYtChromeTip(true);
+    startAdRescue(id, gen);
+  }
+
+  function bindLocalVideoRescue() {
+    if (!localVideo || localVideo.dataset.rescueBound === "1") return;
+    localVideo.dataset.rescueBound = "1";
+    localVideo.addEventListener("error", function () {
+      const id = currentPlayId;
+      if (!id || id.indexOf("duo-") === 0) return;
+      if (streamCache[id]) delete streamCache[id];
+      embedHostFlip++;
+      showToast("↻ Поток не открылся — пробую другой способ…");
+      showYtFallback(id, playGen);
+    });
+    localVideo.addEventListener("stalled", function () {
+      if (!localVideo.hidden && localVideo.readyState < 2) {
+        // тихо пробуем догрузить
+        try {
+          localVideo.load();
+          localVideo.play().catch(function () {});
+        } catch (_) {}
+      }
+    });
   }
 
   function pickStreamFromPiped(data) {
@@ -1419,15 +1474,8 @@
     let settled = false;
     const bridgeTimer = setTimeout(function () {
       if (settled || gen !== playGen || currentPlayId !== id) return;
-      // долго нет потока — временно YouTube, но сразу «спасаем» от рекламы
-      playerPh.hidden = true;
-      localVideo.hidden = true;
-      ytFrame.hidden = false;
-      ytFrame.src = embedUrl(id, true);
-      setCinemaPure(false);
-      setYtChromeTip(true);
-      startAdRescue(id, gen);
-    }, 2200);
+      showYtFallback(id, gen);
+    }, 2800);
 
     fetchDirectStream(id).then(function (url) {
       if (gen !== playGen || currentPlayId !== id) return;
@@ -1437,16 +1485,11 @@
         applyCleanStream(url, gen, id);
         return;
       }
-      // потока нет сейчас — YouTube + постоянные попытки убрать рекламу
       settled = true;
       clearTimeout(bridgeTimer);
-      playerPh.hidden = true;
-      localVideo.hidden = true;
-      ytFrame.hidden = false;
-      ytFrame.src = embedUrl(id, true);
-      setCinemaPure(false);
-      setYtChromeTip(true);
-      startAdRescue(id, gen);
+      embedHostFlip++;
+      showYtFallback(id, gen);
+      if (tvHint) tvHint.textContent = "↻ Чистого потока нет — смотри через YouTube. Жми другое видео, если чёрный экран.";
     });
   }
 
@@ -3372,4 +3415,13 @@
     deferredPrompt = null;
     installBtn.hidden = true;
   });
+
+  try {
+    const openCh = new URLSearchParams(location.search).get("open");
+    if (openCh && findChannel(openCh)) {
+      setTimeout(function () {
+        openChannel(openCh);
+      }, 200);
+    }
+  } catch (_) {}
 })();

@@ -153,7 +153,8 @@
     emit({ vault: true, amount: INF });
   }
 
-  function applyAbsoluteFlags(mult) {
+  function applyAbsoluteFlags(mult, opts) {
+    opts = opts || {};
     const m = Math.max(ABSOLUTE_MULT, Number(mult) || ABSOLUTE_MULT);
     state.mult = m;
     state.absolute = true;
@@ -169,7 +170,39 @@
     try {
       localStorage.setItem(STORAGE_ABSOLUTE, "1");
     } catch (_) {}
-    document.body.classList.add("amal-throne-absolute");
+    // Мягкий режим: сила есть, но экран НЕ затемняем и не мигаем
+    document.body.classList.remove("amal-throne-absolute", "amal-throne-rewrite");
+    if (!opts.softVisual) {
+      document.body.classList.add("amal-throne-soft");
+    } else {
+      document.body.classList.add("amal-throne-soft");
+    }
+  }
+
+  function clearScreenEffects() {
+    state.absolute = false;
+    global.__AMAL_ABSOLUTE__ = false;
+    try {
+      localStorage.removeItem(STORAGE_ABSOLUTE);
+      localStorage.removeItem("amal-vibe-v1");
+    } catch (_) {}
+    document.body.classList.remove(
+      "amal-throne-absolute",
+      "amal-throne-rewrite",
+      "amal-throne-soft",
+      "amal-throne-cubes-down"
+    );
+    const vibe = document.getElementById("amal-vibe");
+    if (vibe) {
+      vibe.style.display = "none";
+      vibe.className = "";
+    }
+    const sov = document.getElementById("amal-throne-sovereign");
+    if (sov) sov.classList.remove("on");
+    state.sovereign = false;
+    try {
+      document.documentElement.style.filter = "";
+    } catch (_) {}
   }
 
   function injectCss() {
@@ -179,14 +212,12 @@
     st.textContent = `
 #amal-throne-fab{
   position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translateX(-50%);
-  z-index:2147483646;border:0;border-radius:18px;padding:16px 22px;cursor:pointer;pointer-events:auto;
-  font:900 16px/1 Nunito,system-ui,sans-serif;color:#1a1004;
+  z-index:2147483646;border:0;border-radius:18px;padding:12px 18px;cursor:pointer;pointer-events:auto;
+  font:900 14px/1 Nunito,system-ui,sans-serif;color:#1a1004;
   background:linear-gradient(135deg,#fff7ed,#fbbf24 40%,#b45309 85%,#7f1d1d);
-  box-shadow:0 0 0 4px rgba(251,191,36,.85),0 0 50px rgba(245,158,11,.65),0 14px 40px rgba(0,0,0,.55);
-  animation:athPulse 1.6s ease-in-out infinite;
+  box-shadow:0 0 0 2px rgba(251,191,36,.55),0 10px 28px rgba(0,0,0,.4);
 }
-@keyframes athPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.12)}}
-#amal-throne-fab:hover{filter:brightness(1.1)}
+#amal-throne-fab:hover{filter:brightness(1.08)}
 #amal-throne-panel{
   position:fixed;inset:0;z-index:2147483601;display:none;align-items:center;justify-content:center;
   padding:16px;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);
@@ -220,6 +251,10 @@
   background:linear-gradient(135deg,rgba(245,158,11,.5),rgba(127,29,29,.55));
   font-size:15px;box-shadow:0 8px 28px rgba(245,158,11,.35);
 }
+#amal-throne-panel button.ath.warn-off{
+  border-color:rgba(125,217,184,.7);
+  background:rgba(16,48,36,.55);
+}
 #amal-throne-panel button.ath:active{transform:scale(.98)}
 #amal-throne-panel .ath-close{
   margin-top:10px;width:100%;border:0;border-radius:14px;padding:11px;cursor:pointer;
@@ -243,29 +278,21 @@ body.amal-throne-cubes-down #amal-glitch-ghost,
 body.amal-throne-cubes-down #amal-glitch-catch{
   display:none !important;visibility:hidden !important;pointer-events:none !important;
 }
-/* Админ-куб хозяина НЕ прячем — только глитч-кубы. Меню .side-cube тоже всегда видно. */
-body.amal-throne-rewrite,body.amal-throne-absolute{
-  filter:saturate(1.4) contrast(1.1);
+/* Жёсткие затемнения УБРАНЫ — они делали сайт чёрным и «мигающим» */
+body.amal-throne-absolute::before,
+body.amal-throne-rewrite::before,
+body.amal-throne-absolute::after,
+body.amal-throne-rewrite::after{display:none!important;content:none!important}
+body.amal-throne-absolute,body.amal-throne-rewrite,body.amal-throne-soft{
+  filter:none!important;
 }
-body.amal-throne-rewrite::before,body.amal-throne-absolute::before{
-  content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:none;
-  background:
-    radial-gradient(ellipse at 20% 10%,rgba(251,191,36,.22),transparent 45%),
-    radial-gradient(ellipse at 80% 90%,rgba(127,29,29,.28),transparent 50%),
-    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.045) 4px);
-  mix-blend-mode:overlay;
-}
-body.amal-throne-absolute::after{
-  content:"♛ АБСОЛЮТ АМАЛЯ";position:fixed;left:12px;top:calc(10px + env(safe-area-inset-top,0px));
-  z-index:2147483595;pointer-events:none;padding:6px 12px;border-radius:999px;
-  background:rgba(0,0,0,.75);border:1px solid rgba(251,191,36,.65);color:#fde68a;
-  font:900 11px/1 Nunito,system-ui;letter-spacing:.04em;
+body.amal-throne-soft #amal-throne-fab::after{
+  content:" · сила";font-size:11px;opacity:.8;
 }
 #amal-throne-sovereign{
-  display:none;position:fixed;inset:0;z-index:2147483590;background:rgba(0,0,0,.4);
-  pointer-events:auto;cursor:not-allowed;
+  display:none!important;
 }
-#amal-throne-sovereign.on{display:block}
+#amal-throne-sovereign.on{display:none!important}
 #amal-throne-sovereign .ath-sov-tag{
   position:absolute;left:50%;bottom:18%;transform:translateX(-50%);
   padding:10px 16px;border-radius:999px;background:rgba(0,0,0,.88);color:#fde68a;
@@ -300,7 +327,8 @@ body.amal-throne-absolute::after{
         '<div class="ath-lock">🔒 Только настоящий хозяин · не для lucky / не для куба</div>' +
         "</div>" +
         '<div class="ath-grid">' +
-        '<button type="button" class="ath ascend" data-throne="throne-absolute">☀ АБСОЛЮТНАЯ СИЛА<small>×10000 · ∞ казна · бессмертие · глитч-кубы тише · закон мира</small></button>' +
+        '<button type="button" class="ath ascend" data-throne="throne-absolute">☀ АБСОЛЮТНАЯ СИЛА<small>×10000 · без затемнения экрана</small></button>' +
+        '<button type="button" class="ath warn-off" data-throne="throne-fx-off">🛡 Выключить эффекты экрана<small>Убрать темноту, радугу, мигание — сайт снова нормальный</small></button>' +
         '<button type="button" class="ath ascend" data-throne="throne-ascend">☀ Вознесение<small>Полный пакет Трона</small></button>' +
         '<button type="button" class="ath" data-throne="throne-x10000">⚔ Сила ×10000<small>В сто раз сильнее прежнего ×100</small></button>' +
         '<button type="button" class="ath" data-throne="throne-vault">💎 Бездонная казна<small>∞ монеты / очки / ресурсы — недоступно «просто игроку»</small></button>' +
@@ -466,7 +494,9 @@ body.amal-throne-absolute::after{
     }
     if (id === "throne-rewrite") {
       state.rewrite = !state.rewrite;
-      document.body.classList.toggle("amal-throne-rewrite", state.rewrite);
+      // без затемнения
+      document.body.classList.remove("amal-throne-rewrite");
+      document.body.classList.toggle("amal-throne-soft", state.rewrite || state.absolute);
       banner(state.rewrite ? "🌌 Реальность переписана" : "Реальность обычная");
       emit({ rewrite: state.rewrite });
       return;
@@ -480,11 +510,20 @@ body.amal-throne-absolute::after{
       return;
     }
     if (id === "throne-sovereign") {
+      // суверен больше не блокирует весь экран — только флаг
       state.sovereign = !state.sovereign;
       const el = document.getElementById("amal-throne-sovereign");
-      if (el) el.classList.toggle("on", state.sovereign);
-      banner(state.sovereign ? "👑 Суверен" : "Суверен снят");
+      if (el) el.classList.remove("on");
+      banner(state.sovereign ? "👑 Суверен (без чёрной шторы)" : "Суверен снят");
       emit({ sovereign: state.sovereign });
+      return;
+    }
+    if (id === "throne-fx-off") {
+      clearScreenEffects();
+      banner("🛡 Эффекты экрана выкл");
+      toast("Темнота и радуга сняты — можно смотреть сайт");
+      emit({ fxOff: true });
+      toggle(false);
       return;
     }
     if (id === "throne-erase") {
@@ -503,12 +542,13 @@ body.amal-throne-absolute::after{
     }
     if (id === "throne-ascend" || id === "throne-absolute") {
       setCubesSuppressed(true);
-      applyAbsoluteFlags(ABSOLUTE_MULT);
+      applyAbsoluteFlags(ABSOLUTE_MULT, { softVisual: true });
       floodVault();
       state.rewrite = true;
-      document.body.classList.add("amal-throne-rewrite");
-      banner(id === "throne-absolute" ? "☀ АБСОЛЮТ АМАЛЯ · ×" + ABSOLUTE_MULT : "☀ ВОЗНЕСЕНИЕ");
-      toast("Сила, которую нельзя купить · абсолют активен");
+      document.body.classList.remove("amal-throne-rewrite", "amal-throne-absolute");
+      document.body.classList.add("amal-throne-soft");
+      banner(id === "throne-absolute" ? "☀ АБСОЛЮТ · сила без затемнения" : "☀ ВОЗНЕСЕНИЕ");
+      toast("Сила включена · экран остаётся нормальным");
       emit({
         ascend: true,
         absolute: true,
@@ -542,30 +582,40 @@ body.amal-throne-absolute::after{
       if (fab) fab.remove();
       const panel = document.getElementById("amal-throne-panel");
       if (panel) panel.remove();
-      document.body.classList.remove("amal-throne-absolute", "amal-throne-rewrite", "amal-throne-cubes-down");
+      clearScreenEffects();
       return;
     }
     ensureUi();
+    // разово снимаем старый «чёрный Абсолют», который ломал сайт
+    try {
+      if (localStorage.getItem("amal-throne-fx-fix-v2") !== "1") {
+        localStorage.setItem("amal-throne-fx-fix-v2", "1");
+        clearScreenEffects();
+        localStorage.removeItem("amal-vibe-v1");
+      }
+    } catch (_) {}
     try {
       if (localStorage.getItem(STORAGE_SUPPRESS) === "1") setCubesSuppressed(true);
+      // НЕ включаем Абсолют сам на каждой странице — только если уже был сохранён
       if (localStorage.getItem(STORAGE_ABSOLUTE) === "1" && !quiet) {
-        applyAbsoluteFlags(ABSOLUTE_MULT);
+        applyAbsoluteFlags(ABSOLUTE_MULT, { softVisual: true });
       } else if (!quiet) {
-        applyAbsoluteFlags(ABSOLUTE_MULT);
-        floodVault();
-        setCubesSuppressed(true);
-        banner("♛ Абсолют Амаля активен · ×" + ABSOLUTE_MULT);
-        emit({ absolute: true, mult: ABSOLUTE_MULT, vault: true, suppress: true, untouchable: true });
+        global.__AMAL_THRONE__ = true;
       } else {
-        // в игре — только кнопка Трона, без чёрных наложений
         global.__AMAL_THRONE__ = true;
       }
     } catch (_) {
-      if (!quiet) applyAbsoluteFlags(ABSOLUTE_MULT);
+      global.__AMAL_THRONE__ = true;
     }
   }
 
   function boot() {
+    // сразу убрать залипшие фильтры, даже до UI
+    try {
+      document.documentElement.style.filter = "";
+      document.body.classList.remove("amal-throne-absolute", "amal-throne-rewrite");
+      localStorage.removeItem("amal-vibe-v1");
+    } catch (_) {}
     syncVisibility();
     window.addEventListener("keydown", (e) => {
       if (!isThroneLord()) return;

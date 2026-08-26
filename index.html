@@ -1147,6 +1147,17 @@
   </style>
 </head>
 <body>
+  <script>
+    /* Снять залипший Абсолют/радугу сразу, до остальных скриптов */
+    try {
+      localStorage.removeItem("amal-vibe-v1");
+      document.documentElement.style.filter = "";
+      if (localStorage.getItem("amal-throne-fx-fix-v2") !== "1") {
+        localStorage.setItem("amal-throne-fx-fix-v2", "1");
+        localStorage.removeItem("amal-throne-absolute-v1");
+      }
+    } catch (e) {}
+  </script>
   <div class="lab-top">
     <span class="dot" aria-hidden="true"></span>
     <span>🎮 Игры Амаля · все игры в браузере</span>
@@ -2812,7 +2823,7 @@
   <script src="./shared/amal-pwa.js?v=2" defer></script>
   <script src="./owner-cheats.js" defer></script>
   <script src="./shared/amal-owner-powers.js?v=23" defer></script>
-  <script src="./shared/amal-throne.js?v=6" defer></script>
+  <script src="./shared/amal-throne.js?v=7" defer></script>
 
   <script src="./shared/amal-random-surprise.js?v=4" defer></script>
   <script src="./shared/amal-secret-dream.js?v=2" defer></script>
