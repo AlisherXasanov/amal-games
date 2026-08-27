@@ -11,7 +11,7 @@
       "<p>Каналы не загрузились 😕</p>" +
       '<p style="color:#c4b5fd;font-size:14px">Нажми — обновим Смотри</p>' +
       '<button type="button" style="margin-top:12px;padding:12px 20px;border:0;border-radius:12px;background:#cc0000;color:#fff;font:800 14px system-ui;cursor:pointer" ' +
-      'onclick="location.replace(\'./index.html?v=46&fresh=\'+Date.now())">🔄 Обновить</button></div>';
+      'onclick="location.replace(\'./index.html?v=47&fresh=\'+Date.now())">🔄 Обновить</button></div>';
     return;
   }
   const SUB_KEY = "amal-watch-subs-v1";
@@ -689,6 +689,7 @@
     playerPh.textContent = "▶ Выбери видео из меню ниже";
   }
 
+  function embedUrl(id, autoplay) {
     const ap = autoplay === false ? "0" : "1";
     const host = embedHostFlip % 2 === 0 ? EMBED_WORKS : EMBED_YT;
     return (
