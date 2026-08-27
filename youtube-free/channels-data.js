@@ -7491,8 +7491,20 @@ window.YT_CHANNELS = [
       "subs": "1.4 млн",
       "channelId": "UCS6P_uMrthRW5LYR9yahNnQ",
       "uploads": "UUS6P_uMrthRW5LYR9yahNnQ",
-      "icon": "https://i.ytimg.com/vi/FXscfMrgxDM/hqdefault.jpg",
+      "icon": "https://i.ytimg.com/vi/wgGTLR0Sf0k/hqdefault.jpg",
       "videos": [
+          {
+              "id": "wgGTLR0Sf0k",
+              "title": "😱НЕ ВЫБИРАЙ БАРНИ В БАШНЕ ВЫБОРА ОДЕЖДЫ ANIMAL HOSPITAL В РОБЛОКС!",
+              "likes": "—",
+              "thumb": "https://i.ytimg.com/vi/wgGTLR0Sf0k/hqdefault.jpg"
+          },
+          {
+              "id": "vjimdk2mJuM",
+              "title": "😂ЗАТРОЛИЛИ DELVER АДМИНСКИМИ КОМАНДАМИ В ANIMAL HOSPITAL В РОБЛОКС!",
+              "likes": "—",
+              "thumb": "https://i.ytimg.com/vi/vjimdk2mJuM/hqdefault.jpg"
+          },
           {
               "id": "FXscfMrgxDM",
               "title": "🤨ВЫ ЗНАЕТЕ ЭТОГО ИГРОКА В ANIMAL HOSPITAL В РОБЛОКС?!",
@@ -7590,8 +7602,9 @@ window.YT_CHANNELS = [
               "likes": "—",
               "thumb": "https://i.ytimg.com/vi/FXscfMrgxDM/hqdefault.jpg"
           }
-      ]
-  },
+      ],
+      "pinShelf": true
+    },
   {
       "id": "billionent",
       "name": "Билли",
@@ -11212,7 +11225,8 @@ window.YT_CHANNELS = [
         "likes": "—",
         "thumb": "https://i.ytimg.com/vi/D4HidgA1PUI/hqdefault.jpg"
       }
-    ]
+    ],
+    "pinShelf": true
   },
   {
     "id": "asel",
