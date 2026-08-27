@@ -11,7 +11,7 @@
       "<p>Каналы не загрузились 😕</p>" +
       '<p style="color:#c4b5fd;font-size:14px">Нажми — обновим Смотри</p>' +
       '<button type="button" style="margin-top:12px;padding:12px 20px;border:0;border-radius:12px;background:#cc0000;color:#fff;font:800 14px system-ui;cursor:pointer" ' +
-      'onclick="location.replace(\'./index.html?v=47&fresh=\'+Date.now())">🔄 Обновить</button></div>';
+      'onclick="location.replace(\'./index.html?v=48&fresh=\'+Date.now())">🔄 Обновить</button></div>';
     return;
   }
   const SUB_KEY = "amal-watch-subs-v1";
@@ -294,18 +294,13 @@
   function updateCaptionBtn(list, chosen) {
     const btn = document.getElementById("btnFloatCc");
     if (!btn) return;
-    if (!list || !list.length) {
-      btn.textContent = "🌐 Перевод";
-      btn.disabled = true;
-      btn.title = "У этого ролика нет дорожек перевода";
-      return;
-    }
+    // кнопку не блокируем — иначе «Перевод» кажется мёртвым
     btn.disabled = false;
-    btn.title = "Субтитры / перевод";
-    if (chosen && chosen !== "off") {
+    btn.title = "Субтитры / перевод на русский";
+    if (list && list.length && chosen && chosen !== "off") {
       btn.textContent = "🌐 " + (LANG_LABELS[chosen] || chosen);
     } else {
-      btn.textContent = "🌐 Перевод";
+      btn.textContent = "🌐 Русский";
     }
   }
 
@@ -317,10 +312,21 @@
     panel.className = "caption-panel";
     panel.hidden = true;
     panel.innerHTML =
-      "<b>Перевод / субтитры</b><div class=\"caption-list\" id=\"captionList\"></div>" +
-      "<p class=\"caption-hint\">Берём дорожки с ролика (в т.ч. автоперевод). Голоса не меняем — только текст.</p>";
+      "<b>Перевод · язык: русский</b><div class=\"caption-list\" id=\"captionList\"></div>" +
+      "<p class=\"caption-hint\">По умолчанию русский. Голос не меняем — только текст субтитров и названий.</p>";
     if (playerBox) playerBox.appendChild(panel);
     return panel;
+  }
+
+  function findPlayingVideoObj() {
+    if (!currentPlayId) return null;
+    for (let i = 0; i < CHANNELS.length; i++) {
+      const vids = CHANNELS[i].videos || [];
+      for (let j = 0; j < vids.length; j++) {
+        if (vids[j] && vids[j].id === currentPlayId) return vids[j];
+      }
+    }
+    return null;
   }
 
   function openCaptionPicker() {
@@ -330,6 +336,14 @@
     const list = (hit && hit.subtitles) || [];
     if (!listEl) return;
     listEl.innerHTML = "";
+
+    const status = document.createElement("p");
+    status.className = "caption-status";
+    status.textContent =
+      (captionLangPref === "off" ? "Сейчас: выкл" : "Сейчас выбран: русский") +
+      (list.length ? "" : " · у ролика нет субтитров");
+    listEl.appendChild(status);
+
     const off = document.createElement("button");
     off.type = "button";
     off.textContent = "Выкл";
@@ -344,6 +358,62 @@
       panel.hidden = true;
     };
     listEl.appendChild(off);
+
+    const ruBtn = document.createElement("button");
+    ruBtn.type = "button";
+    ruBtn.textContent = "Русский";
+    if (captionLangPref === "ru" || !captionLangPref) ruBtn.className = "on";
+    ruBtn.onclick = function () {
+      captionLangPref = "ru";
+      try {
+        localStorage.setItem("amal-watch-cc-lang", "ru");
+      } catch (_) {}
+      setCaptionMode(localVideo, "ru");
+      updateCaptionBtn(list, "ru");
+      const playing = findPlayingVideoObj();
+      if (playing) {
+        ensureTitleRu(playing).then(function () {
+          showToast("✓ Язык: русский");
+        });
+      } else {
+        showToast("✓ Язык: русский");
+      }
+      panel.hidden = true;
+    };
+    listEl.appendChild(ruBtn);
+
+    const titlesBtn = document.createElement("button");
+    titlesBtn.type = "button";
+    titlesBtn.textContent = "Перевести названия → RU";
+    titlesBtn.onclick = function () {
+      const batch = [];
+      const playing = findPlayingVideoObj();
+      if (playing) batch.push(playing);
+      document.querySelectorAll(".vid-card, .feed-card").forEach(function (card) {
+        const id = card.dataset.vid;
+        if (!id) return;
+        for (let i = 0; i < CHANNELS.length; i++) {
+          const v = (CHANNELS[i].videos || []).find(function (x) {
+            return x && x.id === id;
+          });
+          if (v) {
+            batch.push(v);
+            break;
+          }
+        }
+      });
+      showToast("⏳ Перевожу названия на русский…");
+      Promise.all(
+        batch.slice(0, 30).map(function (v) {
+          return ensureTitleRu(v);
+        })
+      ).then(function () {
+        showToast("✓ Названия на русском");
+        panel.hidden = true;
+      });
+    };
+    listEl.appendChild(titlesBtn);
+
     const seen = {};
     list.forEach(function (s) {
       const code = normLang(s.code);
@@ -366,8 +436,11 @@
       listEl.appendChild(b);
     });
     if (!list.length) {
-      listEl.innerHTML =
-        "<p>Пока нет дорожек — включи «Чистый экран», чтобы подтянуть перевод.</p>";
+      const tip = document.createElement("p");
+      tip.className = "caption-hint";
+      tip.textContent =
+        "Субтитров у ролика нет (сервер не отдал). Можно перевести названия кнопкой выше или включить «Чистый экран».";
+      listEl.appendChild(tip);
     }
     panel.hidden = false;
   }
@@ -2301,6 +2374,56 @@
       setWatchTitle(safe);
     }
   }
+  function fetchTitleTranslation(text) {
+    const q = String(text || "").slice(0, 180);
+    if (!q) return Promise.reject(new Error("empty"));
+    const jobs = [
+      function () {
+        return fetch(
+          "https://api.mymemory.translated.net/get?q=" +
+            encodeURIComponent(q) +
+            "&langpair=en|ru",
+          { signal: AbortSignal.timeout(8000) }
+        )
+          .then(function (r) {
+            if (!r.ok) throw new Error("mm");
+            return r.json();
+          })
+          .then(function (data) {
+            const ru =
+              (data &&
+                data.responseData &&
+                data.responseData.translatedText &&
+                String(data.responseData.translatedText).trim()) ||
+              "";
+            if (!ru || /MYMEMORY WARNING/i.test(ru)) throw new Error("empty");
+            return ru;
+          });
+      },
+      function () {
+        return fetch(
+          "https://lingva.ml/api/v1/en/ru/" + encodeURIComponent(q),
+          { signal: AbortSignal.timeout(8000) }
+        )
+          .then(function (r) {
+            if (!r.ok) throw new Error("lv");
+            return r.json();
+          })
+          .then(function (data) {
+            const ru = (data && data.translation && String(data.translation).trim()) || "";
+            if (!ru) throw new Error("empty");
+            return ru;
+          });
+      },
+    ];
+    let chain = Promise.reject(new Error("start"));
+    jobs.forEach(function (job) {
+      chain = chain.catch(function () {
+        return job();
+      });
+    });
+    return chain;
+  }
   function ensureTitleRu(v) {
     if (!v || !v.title) return Promise.resolve(v.title || "Ролик");
     const key = videoTitleKey(v);
@@ -2313,24 +2436,8 @@
       v.titleRu = v.title;
       return Promise.resolve(v.title);
     }
-    const q = encodeURIComponent(String(v.title).slice(0, 180));
-    const url =
-      "https://api.mymemory.translated.net/get?q=" +
-      q +
-      "&langpair=en|ru";
-    return fetch(url, { signal: AbortSignal.timeout(8000) })
-      .then(function (r) {
-        if (!r.ok) throw new Error("tr");
-        return r.json();
-      })
-      .then(function (data) {
-        const ru =
-          (data &&
-            data.responseData &&
-            data.responseData.translatedText &&
-            String(data.responseData.translatedText).trim()) ||
-          "";
-        if (!ru || /MYMEMORY WARNING/i.test(ru)) throw new Error("empty");
+    return fetchTitleTranslation(v.title)
+      .then(function (ru) {
         applyRuTitleEverywhere(v, ru);
         return ru;
       })
