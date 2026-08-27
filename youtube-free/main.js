@@ -98,7 +98,7 @@
         return;
       }
       tries++;
-      if (tries > 25) {
+      if (tries > 12) {
         clearAdRescue();
         return;
       }
@@ -106,7 +106,7 @@
         if (!url || gen !== playGen || currentPlayId !== videoId) return;
         applyCleanStream(url, gen, videoId);
       });
-    }, 1100);
+    }, 2200);
   }
 
   function disableVideoCaptions() {
@@ -431,13 +431,21 @@
     bindLocalVideoRescue();
     ytFrame.hidden = true;
     ytFrame.src = "about:blank";
-    playerPh.hidden = true;
+    clearPlayerLoading();
     localVideo.hidden = false;
     if (localVideo.src !== url) {
       localVideo.src = url;
     }
+    const onReady = function () {
+      if (gen !== playGen || currentPlayId !== videoId) return;
+      clearPlayerLoading();
+      playerPh.hidden = true;
+      localVideo.removeEventListener("canplay", onReady);
+      localVideo.removeEventListener("playing", onReady);
+    };
+    localVideo.addEventListener("canplay", onReady);
+    localVideo.addEventListener("playing", onReady);
     localVideo.play().catch(function () {
-      // автоплей блокируют — покажем YouTube
       showYtFallback(videoId, gen);
     });
     const hit = videoId && streamCache[videoId];
@@ -448,7 +456,15 @@
     try {
       savePlayerPref();
     } catch (_) {}
-    // если за 5 сек так и нет кадров — запасной YouTube
+    setTimeout(function () {
+      if (gen !== playGen || currentPlayId !== videoId) return;
+      if (!localVideo.hidden && localVideo.readyState < 2) {
+        try {
+          localVideo.load();
+          localVideo.play().catch(function () {});
+        } catch (_) {}
+      }
+    }, 2500);
     setTimeout(function () {
       if (gen !== playGen || currentPlayId !== videoId) return;
       if (!localVideo.hidden && localVideo.readyState < 2) {
@@ -456,7 +472,7 @@
         embedHostFlip++;
         showYtFallback(videoId, gen);
       }
-    }, 5000);
+    }, 10000);
   }
 
   const viewHome = document.getElementById("viewHome");
@@ -640,7 +656,30 @@
     return "";
   }
 
-  function embedUrl(id, autoplay) {
+  function thumbUrlForId(id) {
+    return "https://i.ytimg.com/vi/" + encodeURIComponent(id) + "/hqdefault.jpg";
+  }
+
+  function showPlayerLoading(id, text) {
+    if (!playerPh) return;
+    playerPh.hidden = false;
+    playerPh.className = "player-ph loading";
+    playerPh.innerHTML =
+      '<img class="ph-poster" src="' +
+      thumbUrlForId(id) +
+      '" alt="" />' +
+      '<span class="ph-label">' +
+      escapeHtml(text || "⏳ Загружаю…") +
+      "</span>";
+  }
+
+  function hidePlayerLoading() {
+    if (!playerPh) return;
+    playerPh.hidden = true;
+    playerPh.className = "player-ph";
+    playerPh.textContent = "▶ Выбери видео из меню ниже";
+  }
+
     const ap = autoplay === false ? "0" : "1";
     const host = embedHostFlip % 2 === 0 ? EMBED_WORKS : EMBED_YT;
     return (
@@ -653,7 +692,7 @@
 
   function showYtFallback(id, gen) {
     if (gen !== playGen || currentPlayId !== id) return;
-    playerPh.hidden = true;
+    setPlayerLoading(id, "⏳ Открываю запасной плеер…");
     localVideo.hidden = true;
     localVideo.removeAttribute("src");
     try {
@@ -661,6 +700,8 @@
     } catch (_) {}
     ytFrame.hidden = false;
     ytFrame.src = embedUrl(id, true);
+    clearPlayerLoading();
+    playerPh.hidden = true;
     setCinemaPure(false);
     setYtChromeTip(true);
     startAdRescue(id, gen);
@@ -1563,6 +1604,42 @@
     playerBox.addEventListener("pointercancel", endDrag);
   }
 
+  function thumbUrlForId(id) {
+    if (!id || id === "playlist") return "";
+    return "https://i.ytimg.com/vi/" + encodeURIComponent(id) + "/hqdefault.jpg";
+  }
+
+  function setPlayerLoading(id, text) {
+    if (!playerPh) return;
+    playerPh.hidden = false;
+    playerPh.className = "player-ph loading";
+    const url = thumbUrlForId(id);
+    playerPh.innerHTML =
+      (url
+        ? '<img class="ph-poster" src="' + url + '" alt="" decoding="async" />'
+        : "") +
+      '<span class="ph-label">' +
+      escapeHtml(text || "⏳ Загружаю…") +
+      "</span>";
+  }
+
+  function clearPlayerLoading() {
+    if (!playerPh) return;
+    playerPh.hidden = true;
+    playerPh.className = "player-ph";
+    playerPh.textContent = "";
+  }
+
+  /** Между роликами — не гасим экран в чёрный, оставляем последний кадр/постер */
+  function softStopPlayers() {
+    clearAdRescue();
+    ytFrame.hidden = true;
+    ytFrame.src = "about:blank";
+    localVideo.pause();
+    hideStoryPlayer();
+    setYtChromeTip(false);
+  }
+
   function stopPlayers() {
     clearAdRescue();
     playGen++;
@@ -1576,6 +1653,7 @@
     } catch (_) {}
     hideStoryPlayer();
     playerPh.hidden = false;
+    playerPh.className = "player-ph";
     playerPh.textContent = "▶ Выбери видео из меню ниже";
     currentPlayId = "";
     setYtChromeTip(false);
@@ -1588,7 +1666,9 @@
     opts = opts || {};
     ensureZoomBar();
     ensurePlayerTools();
-    stopAllMedia();
+    softStopPlayers();
+    stopShortsPlayers();
+    clearTvPreview();
     const gen = ++playGen;
     currentPlayId = id;
     const playObj = { id: id, title: title };
@@ -1624,9 +1704,8 @@
       return;
     }
 
-    // 2) ищем чистый поток; YouTube только как мост, и сами с него уйдём
-    playerPh.hidden = false;
-    playerPh.textContent = "⏳ Без рекламы…";
+    // 2) ищем чистый поток; YouTube — только если долго нет ответа
+    setPlayerLoading(id, "⏳ Загружаю ролик…");
     ytFrame.hidden = true;
     localVideo.hidden = true;
 
@@ -1634,7 +1713,7 @@
     const bridgeTimer = setTimeout(function () {
       if (settled || gen !== playGen || currentPlayId !== id) return;
       showYtFallback(id, gen);
-    }, 2800);
+    }, 5500);
 
     fetchDirectStream(id).then(function (url) {
       if (gen !== playGen || currentPlayId !== id) return;
