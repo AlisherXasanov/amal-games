@@ -10899,6 +10899,641 @@ window.YT_CHANNELS = [
     "pinShelf": true
   },
   {
+    "id": "ludwig-ru",
+    "name": "ludwig film Russian",
+    "emoji": "🎬",
+    "color": "#74b9ff",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "289 тыс.",
+    "channelId": "UC2Ta5PqtGe4j9nTp-fgy4MA",
+    "uploads": "UU2Ta5PqtGe4j9nTp-fgy4MA",
+    "icon": "https://i.ytimg.com/vi/-uOl-2eMqR4/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "-uOl-2eMqR4",
+        "title": "Через 500 лет он проснулся в мире, где все стали глупыми! 🤯😂",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-uOl-2eMqR4/hqdefault.jpg"
+      },
+      {
+        "id": "gezVWXE_sQc",
+        "title": "😱 Он мог превратить любой предмет в оружие — но теперь его цель вернулась за местью! 🔥",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gezVWXE_sQc/hqdefault.jpg"
+      },
+      {
+        "id": "3wLmPBOBzmg",
+        "title": "🐸😱 Лягушка победила пингвина, но никто не ожидал её настоящего секрета! 🐧",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3wLmPBOBzmg/hqdefault.jpg"
+      },
+      {
+        "id": "J7dCggvUcls",
+        "title": "😱 Мальчик поменялся телами с Роналду и стал футбольной звездой! ⚽🔥",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/J7dCggvUcls/hqdefault.jpg"
+      },
+      {
+        "id": "n-ncwAcD0ks",
+        "title": "Щенок-гигант: Все думали, что он обычный малыш, пока он не вырос! 🐶😱",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/n-ncwAcD0ks/hqdefault.jpg"
+      },
+      {
+        "id": "wDnyS0zxgiI",
+        "title": "Он нажимал кнопки, чтобы выбраться… но каждая открывала новую ловушку! 😱🚪",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wDnyS0zxgiI/hqdefault.jpg"
+      },
+      {
+        "id": "TniPqJwMgs8",
+        "title": "Парень Довёл Девушку До Ярости Своим Розыгрышем! 😂🏍️",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TniPqJwMgs8/hqdefault.jpg"
+      },
+      {
+        "id": "RRKOq73TTb8",
+        "title": "Школьники Взломали Систему Блокировки Телефонов! 😱📱",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RRKOq73TTb8/hqdefault.jpg"
+      },
+      {
+        "id": "3cKQNhT_ID0",
+        "title": "Он Видит Тайные Красные Нити Над Людьми! 😱🔴",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/3cKQNhT_ID0/hqdefault.jpg"
+      },
+      {
+        "id": "hxYPOHFWV4c",
+        "title": "Мальчик чудом спасался от немцев, но его ждала новая опасность! 😱 #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hxYPOHFWV4c/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "fpM3q18gmow",
+        "title": "🐜🔥 Кусочек сахара стал причиной великой войны муравьёв! 😱 #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/fpM3q18gmow/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "E91IkD7ysao",
+        "title": "✈️ Оса построила гнездо в самолёте — и произошла катастрофа! 😱🐝",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E91IkD7ysao/hqdefault.jpg"
+      },
+      {
+        "id": "WJHMV4eMmw8",
+        "title": "🚗💰 Он купил машину за $2000, но внутри оказалось чистое золото! 😱🔥",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WJHMV4eMmw8/hqdefault.jpg"
+      },
+      {
+        "id": "4bCtF9unF1E",
+        "title": "🕷️ Питер получил суперсилы и потерял любовь! 💔🔥",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4bCtF9unF1E/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UU2Ta5PqtGe4j9nTp-fgy4MA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-uOl-2eMqR4/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "bonbons",
+    "name": "Bonbons",
+    "emoji": "🍬",
+    "color": "#fd79a8",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "178 тыс.",
+    "channelId": "UCjHEk0OGNG__F6OTN9Wcxog",
+    "uploads": "UUjHEk0OGNG__F6OTN9Wcxog",
+    "icon": "https://i.ytimg.com/vi/uf0HDXRRels/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "uf0HDXRRels",
+        "title": "【vlog】60代今UR賃貸を選んだ理由｜お金と気持ちの負荷を軽く｜竹炭3キロ部屋の除湿大作戦｜長芋鶏つくねでシニアの夏バテ予防｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uf0HDXRRels/hqdefault.jpg"
+      },
+      {
+        "id": "02xEzkaoDHg",
+        "title": "【vlog】60代UR団地暮らし始めました｜持ってきたモノと新しい生活｜シニア安心のための小細工｜ジャガとちくわのバター煮が旨い｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/02xEzkaoDHg/hqdefault.jpg"
+      },
+      {
+        "id": "uu4eECQJIbo",
+        "title": "【vlog】60代引越し処分したモノ11点｜UR賃貸でダウンサイジング｜新居で快適に暮らすための前準備｜働きながらの荷造りは眠い｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uu4eECQJIbo/hqdefault.jpg"
+      },
+      {
+        "id": "Z8zPhiUsQFg",
+        "title": "【vlog】60代 心細さを補う日常｜UR賃貸内見3度目で決めた｜甘夏の初夏サラダとアジの竜田焼き｜捨て活2026再開｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Z8zPhiUsQFg/hqdefault.jpg"
+      },
+      {
+        "id": "7zGlv85QuFE",
+        "title": "【vlog】60代 優しい気持ちで暮らしたい｜あちこちのお得は損｜99円トマト高見え炊き込みご飯｜菜の花と新じゃがの春サラダ｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7zGlv85QuFE/hqdefault.jpg"
+      },
+      {
+        "id": "_fPI9Nqv9yY",
+        "title": "【vlog】60代 頼れる存在って｜私の心強くなれる術｜水餃子が旨い｜新玉ピクルスと新じゃが春サラダ｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/_fPI9Nqv9yY/hqdefault.jpg"
+      },
+      {
+        "id": "E6lHtXiavvg",
+        "title": "【vlog】60代最適の見直し｜しっくりは変わり続ける｜10年目の浮気ナイキコルテッツ｜味しみしみ高野豆腐の昔煮｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/E6lHtXiavvg/hqdefault.jpg"
+      },
+      {
+        "id": "YO2IgAj2Ato",
+        "title": "【vlog】60代日常をしんどくしない暮らし｜キャパ80％軽い生活｜無限塩かぼちゃ｜とろうま豆腐ときのこのそぼろ煮｜イン・ザ・メガチャーチ｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YO2IgAj2Ato/hqdefault.jpg"
+      },
+      {
+        "id": "f_Ji8V2rS6Q",
+        "title": "【vlog】50-60代見直してよかった習慣4つ｜心穏やかに暮らすコツ｜生活品買い替え｜冷蔵庫に常備したいきんぴら｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/f_Ji8V2rS6Q/hqdefault.jpg"
+      },
+      {
+        "id": "som3AwfnlTA",
+        "title": "【vlog】（声入り）本棚ツアー｜人生で一番読み返してる本5選＆最近のおすすめ本3選｜かぶと鶏だんごの煮物でほっこり風邪予防｜60代一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/som3AwfnlTA/hqdefault.jpg"
+      },
+      {
+        "id": "IGv2m7H48hc",
+        "title": "【vlog】60代 暮らしと気持ちを軽くする｜あの頃を片付ける｜米粉×豆乳ふわもち蒸しパン｜ボリューム控えめ昔ながらのグラタン｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/IGv2m7H48hc/hqdefault.jpg"
+      },
+      {
+        "id": "5VDrNo-FscQ",
+        "title": "【vlog】60代 やっぱりメンタルが9割だった｜平常心が暮らしを救う｜とろとろあったか白菜と鶏肉の豆乳煮｜心と体の冬支度｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/5VDrNo-FscQ/hqdefault.jpg"
+      },
+      {
+        "id": "C7EsspMhIKo",
+        "title": "【vlog】60代 少ないお金で心穏やかに暮らす｜月2.2万円我慢しない食生活｜カンタン美味しすぎるカブと梨と柿のサラダ｜心を整えて散財予防｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/C7EsspMhIKo/hqdefault.jpg"
+      },
+      {
+        "id": "VLnwjwpW1-s",
+        "title": "【vlog】60代 身と暮らしを守るための見直し｜Instagram乗っ取られて学んだこと｜お手頃に秋めくきのこマリネ｜登録サービス全セキュリティを強化｜一人暮らし",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/VLnwjwpW1-s/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUjHEk0OGNG__F6OTN9Wcxog",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/uf0HDXRRels/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "talking-tom",
+    "name": "Говорящий Том и Друзья",
+    "emoji": "🐱",
+    "color": "#00cec9",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "10.4 млн",
+    "channelId": "UCnBTGpEQ3LGPW2Shh7fiabg",
+    "uploads": "UUnBTGpEQ3LGPW2Shh7fiabg",
+    "icon": "https://i.ytimg.com/vi/D4HidgA1PUI/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "D4HidgA1PUI",
+        "title": "Маникюрный салон 💅🏻 Студия Говорящей Анджелы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/D4HidgA1PUI/hqdefault.jpg"
+      },
+      {
+        "id": "F8l6f9n1cQw",
+        "title": "Talking Tom Shorts 🐱 Смешилки Говорящего Тома: Приключения продолжаются 🐱",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/F8l6f9n1cQw/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "7C0zSryLQqc",
+        "title": "Talking Tom Shorts 🐱 Смешилки Говорящего Тома: Приключения продолжаются 🐱",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/7C0zSryLQqc/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "1T9ItOhtrtw",
+        "title": "Мега музыкальная вечеринка | Минимульты «Говорящий Том»",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/1T9ItOhtrtw/hqdefault.jpg"
+      },
+      {
+        "id": "n3d9inzef00",
+        "title": "Пляжный день дома 🏖️",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/n3d9inzef00/hqdefault.jpg"
+      },
+      {
+        "id": "YS4tzVQX-y0",
+        "title": "Пляжный день дома | Говорящая Анджела: городские приключения",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/YS4tzVQX-y0/hqdefault.jpg"
+      },
+      {
+        "id": "lqxwMRLpqGM",
+        "title": "ВСЕ трейлеры 🎮 Эволюция трейлеров из вселенной Говорящего Тома и Друзей",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/lqxwMRLpqGM/hqdefault.jpg"
+      },
+      {
+        "id": "Kd_U5PDnu3o",
+        "title": "Спаси дерево 🌳💚",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Kd_U5PDnu3o/hqdefault.jpg"
+      },
+      {
+        "id": "ScXcaCbY4v0",
+        "title": "Говорящий Том и Друзья — Спаси дерево (11-я серия 4-го сезона)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ScXcaCbY4v0/hqdefault.jpg"
+      },
+      {
+        "id": "W4xlWT09ZH0",
+        "title": "Городская жара 🔥🥵  Говорящая Анджела: городские приключения",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/W4xlWT09ZH0/hqdefault.jpg"
+      },
+      {
+        "id": "oh7KpjLli9g",
+        "title": "Смесь 1-го и 2-го сезонов | Минимульты «Говорящий Том» | Компиляция мультиков",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/oh7KpjLli9g/hqdefault.jpg"
+      },
+      {
+        "id": "wnT0a4C2_CU",
+        "title": "Младенцы Том и Анджела идут к врачу 🩺👶🍼 #МирГоворящегоТомаИДрузей #Младенцы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wnT0a4C2_CU/hqdefault.jpg"
+      },
+      {
+        "id": "RV0f7_74V4k",
+        "title": "Младенцы Том и Анджела идут к врачу 👶🍼 Геймплей игры «Мир Говорящего Тома и Друзей»",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/RV0f7_74V4k/hqdefault.jpg"
+      },
+      {
+        "id": "Ot-agmlJ_4g",
+        "title": "Мастер минигольфа ⛳️🌟",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Ot-agmlJ_4g/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUnBTGpEQ3LGPW2Shh7fiabg",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/D4HidgA1PUI/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "asel",
+    "name": "Асель Машанова",
+    "emoji": "🎤",
+    "color": "#a29bfe",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "—",
+    "channelId": "UCB04vUism7gfBF7ORV7n1Gw",
+    "uploads": "UUB04vUism7gfBF7ORV7n1Gw",
+    "icon": "https://i.ytimg.com/vi/ywdSQd2Qpig/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "ywdSQd2Qpig",
+        "title": "ТЕБЯ УЖЕ ОБГОНЯЮТ 16–17-ЛЕТНИЕ: ПОЧЕМУ СТАРТАП НУЖНО НАЧИНАТЬ РАНО? #стартап #бизнес #успех #рек",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ywdSQd2Qpig/hqdefault.jpg"
+      },
+      {
+        "id": "ItKAY4LUqKQ",
+        "title": "СИСЬКАМ НУЖНА СВОБОДА? ЧТО НЕ ТАК С ЛИФЧИКАМИ С КОСТОЧКАМИ #лимфа #лифчик #большиеразмеры #девуш",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ItKAY4LUqKQ/hqdefault.jpg"
+      },
+      {
+        "id": "o_Jr47n24Jc",
+        "title": "КОМУ НЕЛЬЗЯ ПОСТИТЬСЯ В РАМАДАН? ЭТО ВАЖНО ЗНАТЬ ЖЕНЩИНАМ #рамадан #пост #женщина #здоровье #пмс",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/o_Jr47n24Jc/hqdefault.jpg"
+      },
+      {
+        "id": "-0r8nLSR6bw",
+        "title": "СИНДРОМ ЖИЛЬБЕРА: ПОЧЕМУ НЕЛЬЗЯ ГОЛОДАТЬ? #синдром #голодовка #еда #пп #здоровье #симптомы",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/-0r8nLSR6bw/hqdefault.jpg"
+      },
+      {
+        "id": "wYjGbH-jo2A",
+        "title": "ЗОЖ МОЖЕТ СТАТЬ НЕВРОЗОМ? ВОТ ГДЕ ГРАНЬ МЕЖДУ ЗДОРОВЬЕМ И ФАНАТИЗМОМ #зож #здоровье #сладкое #пп",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wYjGbH-jo2A/hqdefault.jpg"
+      },
+      {
+        "id": "TKjGauoWdFg",
+        "title": "ПОЧЕМУ У ЖЕНЩИН НЕ РАСТУТ МЫШЦЫ? ВОТ КАК ПРАВИЛЬНО НАБИРАТЬ МАССУ #мышцы #масса #женщина #менопа",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/TKjGauoWdFg/hqdefault.jpg"
+      },
+      {
+        "id": "Uzso9_PnTM4",
+        "title": "VLOG: НАМ БОЛЬШЕ НЕ НУЖНЫ УНИВЕРСИТЕТЫ?! ИИ, РОБОТЫ И БУДУЩЕЕ ПОКОЛЕНИЕ! КАК ПРОШЛИ ВЫХОДНЫЕ",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Uzso9_PnTM4/hqdefault.jpg"
+      },
+      {
+        "id": "bFnU3AVpE3Y",
+        "title": "ВЫ ТОЧНО ЗДОРОВЫ? ЧТО ТАКОЕ ЗДОРОВЬЕ НА САМОМ ДЕЛЕ #здоровье #бытьздоровым #духовность #жизнь #т",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bFnU3AVpE3Y/hqdefault.jpg"
+      },
+      {
+        "id": "KViQdgdt94U",
+        "title": "ВАС ОБМАНЫВАЛИ ВСЮ ЖИЗНЬ: ПОЧЕМУ МЕНОПАУЗА — НЕ ПРИГОВОР #менопауза #женскоездоровье #гормоны",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KViQdgdt94U/hqdefault.jpg"
+      },
+      {
+        "id": "bGEZhSfjVro",
+        "title": "МЕНОПАУЗА: ЧТО ЖЕНЩИНЕ НЕЛЬЗЯ ПОТЕРЯТЬ НИ В КОЕМ СЛУЧАЕ? #менопауза #женскоездоровье #мышцы #мас",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/bGEZhSfjVro/hqdefault.jpg"
+      },
+      {
+        "id": "GIqZvwC4U8E",
+        "title": "РЕБЁНОК НЕ ЛЮБИТ МОЛОКО? НУЖНО ЛИ ЗАСТАВЛЯТЬ ЕГО ПИТЬ? #молоко #кальций #дети #верблюд #казахи",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/GIqZvwC4U8E/hqdefault.jpg"
+      },
+      {
+        "id": "xelAARr2m8s",
+        "title": "СДВГ, ДОФАМИН И ДОБАВКИ: ЧТО НУЖНО РЕБЁНКУ? #здоровьедетей #сдвг #дофамин #гормоны #дети #родите",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/xelAARr2m8s/hqdefault.jpg"
+      },
+      {
+        "id": "D7kaM41oiSg",
+        "title": "ПОТЕЮТ ЛАДОНИ И НОГИ? НЕ СПЕШИТЕ ВИНИТЬ ГИПЕРГИДРОЗ #гипергидроз #надпочечники #стопы #эндокрино",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/D7kaM41oiSg/hqdefault.jpg"
+      },
+      {
+        "id": "4kWCvgBVJkI",
+        "title": "5 ДОБАВОК ДЛЯ ШКОЛЬНИКА: ЧТО ДАВАТЬ, А ЧТО НЕ НУЖНО? #здоровье #школа #добавки #витамины #дети",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/4kWCvgBVJkI/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUB04vUism7gfBF7ORV7n1Gw",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ywdSQd2Qpig/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "adictboiz",
+    "name": "AdictBoiz",
+    "emoji": "🎮",
+    "color": "#e17055",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "174 тыс.",
+    "channelId": "UCUBAwRLhVeal_OCVhvNLhxA",
+    "uploads": "UUUBAwRLhVeal_OCVhvNLhxA",
+    "icon": "https://i.ytimg.com/vi/CO55ebfNcAg/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "CO55ebfNcAg",
+        "title": "#act",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CO55ebfNcAg/hqdefault.jpg"
+      },
+      {
+        "id": "XtbR6oHaenw",
+        "title": "🛑 Falling Pickaxe Live 💀 #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/XtbR6oHaenw/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "ta9cKqFbY1o",
+        "title": "🛑 Falling Pickaxe Live 💀 #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/ta9cKqFbY1o/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "0bixIz-jnBE",
+        "title": "#act",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0bixIz-jnBE/hqdefault.jpg"
+      },
+      {
+        "id": "npxDKWBHlAo",
+        "title": "🛑 gta vi hardest challenge #gta6 #gtavi",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/npxDKWBHlAo/hqdefault.jpg"
+      },
+      {
+        "id": "yaqt7ozNYGg",
+        "title": "🛑 Scribble.io game live",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yaqt7ozNYGg/hqdefault.jpg"
+      },
+      {
+        "id": "n42fesnqVEg",
+        "title": "#act",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/n42fesnqVEg/hqdefault.jpg"
+      },
+      {
+        "id": "6keJVYMIj3c",
+        "title": "🛑 Falling Pickaxe Live 💀 #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6keJVYMIj3c/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "vMkx9qnpuVw",
+        "title": "Minecraft TNT Blast Village Live 0004 #minecraft #usa #unitedstates #shorts #shortsfeed",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/vMkx9qnpuVw/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "LZ73jMQdooU",
+        "title": "Minecraft TNT Blast Village Live 0004 #minecraft #usa #unitedstates #shorts #shortsfeed",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LZ73jMQdooU/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "tvhWntNbNYU",
+        "title": "🛑 Minecraft Speedrun Challenge 😱 Can I Beat the challenge Before Time Runs Out?",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tvhWntNbNYU/hqdefault.jpg"
+      },
+      {
+        "id": "aNbIyw-njts",
+        "title": "NO WAY 😭 I Played CS2 WITHOUT Headphones 💀 | Counter-Strike 2 Challenge!",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/aNbIyw-njts/hqdefault.jpg"
+      },
+      {
+        "id": "Vyfj6vDJk4g",
+        "title": "🛑 Falling Pickaxe Live ☠️ #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Vyfj6vDJk4g/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "AbQVw7rhOYQ",
+        "title": "🛑 Falling Pickaxe Live ☠️ #shorts",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/AbQVw7rhOYQ/hqdefault.jpg",
+        "short": true
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUUBAwRLhVeal_OCVhvNLhxA",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CO55ebfNcAg/hqdefault.jpg"
+      }
+    ]
+  },
+  {
+    "id": "happy2",
+    "name": "Хэппи 2",
+    "emoji": "😄",
+    "color": "#ffeaa7",
+    "desc": "Из твоих подписок на YouTube.",
+    "subs": "835 тыс.",
+    "channelId": "UCSIwSzP5WmSXyIWpQ8gzu2A",
+    "uploads": "UUSIwSzP5WmSXyIWpQ8gzu2A",
+    "icon": "https://i.ytimg.com/vi/O6xx4NBv_hU/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "O6xx4NBv_hU",
+        "title": "😱Я Нашел САМОГО СТАРОГО ПАЦИЕНТА в БОЛЬНИЦЕ ДЛЯ ЖИОВТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/O6xx4NBv_hU/hqdefault.jpg"
+      },
+      {
+        "id": "oAX_zlrobe8",
+        "title": "😱Купил КЛАССЫ АНОМАЛИЙ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ в РОБЛОКС (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/oAX_zlrobe8/hqdefault.jpg"
+      },
+      {
+        "id": "dKkdKh4F8gw",
+        "title": "😱Что Делают ЖИВОТНЫЕ, Когда Ты Вышел из Игры в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/dKkdKh4F8gw/hqdefault.jpg"
+      },
+      {
+        "id": "6CTtdvFDkPM",
+        "title": "😱Как УБИТЬ ДОКТОРА ХАРЛОУ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/6CTtdvFDkPM/hqdefault.jpg"
+      },
+      {
+        "id": "KsKsa-Btso8",
+        "title": "😱ПОТРАТИЛ $9,156,804 РОБУКСОВ на АСМР-СКВИШИ в РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/KsKsa-Btso8/hqdefault.jpg"
+      },
+      {
+        "id": "zwobT_zmkgU",
+        "title": "😱Проверяю РЕДКИЕ СЕКРЕТЫ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ в РЕАЛЬНОЙ ЖИЗНИ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/zwobT_zmkgU/hqdefault.jpg"
+      },
+      {
+        "id": "IiqAq7aFYZI",
+        "title": "😱Узнал СЕКРЕТЫ ДОКТОРА ХАРЛОУ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/IiqAq7aFYZI/hqdefault.jpg"
+      },
+      {
+        "id": "Xeka7Lrpirg",
+        "title": "Добавил VERITY в Брукхейвен! (Роблокс BrookHaven RP🏡)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Xeka7Lrpirg/hqdefault.jpg"
+      },
+      {
+        "id": "hRRG0sXHjiY",
+        "title": "😱Я Нашел БОЛЬНИЦУ ДЛЯ ЖИВОТНЫХ в РЕАЛЬНОЙ ЖИЗНИ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/hRRG0sXHjiY/hqdefault.jpg"
+      },
+      {
+        "id": "nwSe3a0VkgY",
+        "title": "😱Самая ОПАСНСАЯ АНОМАЛИЯ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/nwSe3a0VkgY/hqdefault.jpg"
+      },
+      {
+        "id": "Cl7kj0F36hY",
+        "title": "😱Проверил СЕКРЕТЫ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Cl7kj0F36hY/hqdefault.jpg"
+      },
+      {
+        "id": "yA1lPM0NHI4",
+        "title": "😱 ВСЁ, ЧТО Я СКАЖУ ПОЯВИТСЯ в БОЛЬНИЦЕ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/yA1lPM0NHI4/hqdefault.jpg"
+      },
+      {
+        "id": "gAh9y6ejbEw",
+        "title": "😱ТЕМНАЯ ПРАВДА про +1 Keyboard Escape РОБЛОКС",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/gAh9y6ejbEw/hqdefault.jpg"
+      },
+      {
+        "id": "WI4GGd3h2Lw",
+        "title": "😱Нашел АНОМАЛИЮ VERITY в БОЛЬНИЦУ ДЛЯ ЖИВОТНЫХ (Animal Hospital Roblox)",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/WI4GGd3h2Lw/hqdefault.jpg"
+      },
+      {
+        "id": "playlist",
+        "title": "▶ Все ролики канала (полная лента)",
+        "playlist": "UUSIwSzP5WmSXyIWpQ8gzu2A",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/O6xx4NBv_hU/hqdefault.jpg"
+      }
+    ]
+  },
+  {
     "id": "amal-duo",
     "name": "Мы с тобой · ТВ",
     "emoji": "✦",
