@@ -5,6 +5,15 @@
   window.__AMAL_NO_WORLD__ = true;
 
   const CHANNELS = window.YT_CHANNELS || [];
+  if (!CHANNELS.length) {
+    document.body.innerHTML =
+      '<div style="padding:24px;font:600 16px system-ui;color:#fff;background:#1a1028;min-height:100vh;text-align:center">' +
+      "<p>Каналы не загрузились 😕</p>" +
+      '<p style="color:#c4b5fd;font-size:14px">Нажми — обновим Смотри</p>' +
+      '<button type="button" style="margin-top:12px;padding:12px 20px;border:0;border-radius:12px;background:#cc0000;color:#fff;font:800 14px system-ui;cursor:pointer" ' +
+      'onclick="location.replace(\'./index.html?v=46&fresh=\'+Date.now())">🔄 Обновить</button></div>';
+    return;
+  }
   const SUB_KEY = "amal-watch-subs-v1";
   const LIKE_KEY = "amal-watch-likes-v1";
   const COMMENT_KEY = "amal-watch-comments-v1";
@@ -2400,6 +2409,7 @@
     const fresh = [];
     (incoming || []).forEach(function (v) {
       if (!v || !v.id || v.id === "playlist") return;
+      if (v.uploaderChannelId && ch.channelId && v.uploaderChannelId !== ch.channelId) return;
       const old = byId[v.id];
       if (old) {
         if (v.title) old.title = v.title;
@@ -2458,6 +2468,15 @@
     return vids;
   }
 
+  function uploaderChannelId(s) {
+    if (!s) return "";
+    const direct = s.uploaderId || s.uploader_id || "";
+    if (direct && String(direct).indexOf("UC") === 0) return direct;
+    const u = s.uploaderUrl || s.uploader_url || "";
+    const m = String(u).match(/\/channel\/(UC[\w-]+)/);
+    return m ? m[1] : "";
+  }
+
   function parsePipedStream(s) {
     const url = s.url || "";
     const m =
@@ -2494,6 +2513,8 @@
     ) {
       out.streamVod = true;
     }
+    const uc = uploaderChannelId(s);
+    if (uc) out.uploaderChannelId = uc;
     return out;
   }
 
