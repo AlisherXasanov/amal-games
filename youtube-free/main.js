@@ -66,6 +66,9 @@
   let rescueTimer = null;
   const streamCache = {};
   const STREAM_CACHE_MS = 20 * 60 * 1000;
+  /** Не копим весь архив канала — только свежая лента */
+  const MAX_CHANNEL_VIDEOS = 72;
+  const LOAD_ALL_MAX_ROUNDS = 4;
   const INV_APIS = [
     "https://yewtu.be",
     "https://inv.nadeko.net",
@@ -855,11 +858,28 @@
 
   function ensurePlayerTools() {
     ensureWatchFloat();
-    if (document.getElementById("playerTools")) return;
+    if (document.getElementById("playerTools")) {
+      if (!document.getElementById("btnOpenYt")) {
+        const bar = document.getElementById("playerTools");
+        const alt = document.getElementById("btnAltPlayer");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "btnOpenYt";
+        btn.className = "sub-btn";
+        btn.textContent = "▶ На YouTube";
+        btn.onclick = function () {
+          openYoutubeWatch(currentPlayId);
+        };
+        if (bar && alt) bar.insertBefore(btn, alt);
+      }
+      setAltBtnLabel();
+      return;
+    }
     const bar = document.createElement("div");
     bar.id = "playerTools";
     bar.className = "player-tools";
     bar.innerHTML =
+      '<button type="button" id="btnOpenYt" class="sub-btn">▶ На YouTube</button>' +
       '<button type="button" id="btnAltPlayer" class="sub-btn accent-ad"></button>' +
       '<button type="button" id="btnToMenu" class="sub-btn">📋 К меню</button>' +
       '<span id="vidCountLabel" class="stat"></span>';
@@ -867,6 +887,9 @@
       playerBox.parentNode.insertBefore(bar, playerBox.nextSibling);
     }
     setAltBtnLabel();
+    document.getElementById("btnOpenYt").onclick = function () {
+      openYoutubeWatch(currentPlayId);
+    };
     document.getElementById("btnAltPlayer").onclick = function () {
       if (!currentPlayId) return;
       usingNoAds = !usingNoAds;
@@ -1441,6 +1464,7 @@
       '<button type="button" id="btnFloatMenu">📋 Ролики</button>' +
       '<button type="button" id="btnFloatComments">💬</button>' +
       '<button type="button" id="btnFloatNext">⏭</button>' +
+      '<button type="button" id="btnFloatYt">▶ YT</button>' +
       '<button type="button" id="btnFloatFs">⛶</button>' +
       '<button type="button" class="accent" id="btnFloatNoAds">🎬 Чистый экран</button>' +
       '<button type="button" id="btnFloatCc">🌐 Перевод</button>' +
@@ -1461,6 +1485,9 @@
     };
     document.getElementById("btnFloatNext").onclick = function () {
       playNextInQueue();
+    };
+    document.getElementById("btnFloatYt").onclick = function () {
+      openYoutubeWatch(currentPlayId);
     };
     document.getElementById("btnFloatFs").onclick = function () {
       togglePlayerFullscreen();
@@ -2259,6 +2286,31 @@
     return true;
   }
 
+  function openYoutubeWatch(id) {
+    id = id || currentPlayId;
+    if (!id || id === "playlist") {
+      showToast("Сначала выбери ролик");
+      return;
+    }
+    const url = "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if (!w) {
+      location.href = url;
+    }
+  }
+
+  function trimChannelVideos(ch) {
+    if (!ch || !ch.videos) return;
+    const pl = ch.videos.filter(function (v) {
+      return v.id === "playlist" || v.playlist;
+    });
+    const rest = ch.videos.filter(function (v) {
+      return v.id !== "playlist" && !v.playlist;
+    });
+    if (rest.length <= MAX_CHANNEL_VIDEOS) return;
+    ch.videos = rest.slice(0, MAX_CHANNEL_VIDEOS).concat(pl);
+  }
+
   function mergeVideos(ch, incoming) {
     if (!ch.videos) ch.videos = [];
     const byId = {};
@@ -2289,6 +2341,7 @@
     if (fresh.length) {
       ch.videos = fresh.concat(ch.videos);
     }
+    trimChannelVideos(ch);
     return { added: added, fresh: fresh };
   }
 
@@ -2605,7 +2658,7 @@
     if (tvHint) tvHint.textContent = "⏳ Загружаю ВСЕ ролики канала…";
     channelNextpage = null;
     let rounds = 0;
-    while (rounds < 40) {
+    while (rounds < LOAD_ALL_MAX_ROUNDS) {
       rounds++;
       await loadMoreFromChannel(ch, false);
       if (tvHint) {
@@ -2697,7 +2750,7 @@
           }
         });
       });
-      loadAllFromChannel(ch);
+      // только свежая страница — без автозагрузки всего архива канала
     }
   }
 
@@ -3274,20 +3327,15 @@
     { keys: ["ludwig", "людвиг", "мастифильм"], channel: "ludwig-ru" },
     { keys: ["bonbons", "бонбонс", "бонбон"], channel: "bonbons" },
     { keys: ["говорящий том", "talking tom", "том и друзья"], channel: "talking-tom" },
-    { keys: ["асель", "машанова"], channel: "asel" },
-    { keys: ["adictboiz", "адикт", "adict"], channel: "adictboiz" },
     { keys: ["хэппи 2", "хеппи 2", "happy 2", "etohappy"], channel: "happy2" },
     { keys: ["владус", "мармелад"], channel: "vladus" },
     { keys: ["а4", "влад а4", "vlad"], channel: "vlada4" },
-    { keys: ["мистер бист", "mrbeast", "mr beast", "бист"], channel: "mrbeast" },
     { keys: ["гравити", "gravity", "фолз", "dipper", "мейбл"], channel: "gravity" },
     { keys: ["сладост", "гадост", "конфет", "gadosti"], channel: "sladosti" },
     { keys: ["милс", "милс play", "нил скел", "нилскел"], channel: "mils-play" },
     { keys: ["милс кел", "милскел"], channel: "mils-kel" },
     { keys: ["милс стрим", "стримы милс"], channel: "mils-streams" },
     { keys: ["вэлл", "вэл", "well", "vell"], channel: "vell" },
-    { keys: ["биллиент", "billy", "билли"], channel: "billionent" },
-    { keys: ["ярокс", "ерокс стандофф", "standoff ерокс"], channel: "yaroks" },
     { keys: ["ерокс", "erox", "eroxblox", "роблокс ерокс", "укради яйцо"], channel: "eroxblox" },
     { keys: ["кукутик"], channel: "kukutiki" },
     { keys: ["тёма", "тема и катя", "тема катя"], channel: "tema-katya" },
@@ -3295,9 +3343,6 @@
     { keys: ["брайн", "brain maps", "теори"], channel: "brius" },
     { keys: ["денчик"], channel: "denchik" },
     { keys: ["junior", "джуниор"], channel: "junior" },
-    { keys: ["кобяков"], channel: "cobel" },
-    { keys: ["wylsa", "вилса", "уайса"], channel: "wylsa" },
-    { keys: ["простая наука", "лаборатор"], channel: "laber" },
     { keys: ["вилли", "вили", "willi", "villy", "кот вилли"], channel: "villy" },
     { keys: ["вилли теор", "теории вилли"], channel: "villy-theory" },
     { keys: ["мы с тобой", "курсор", "наш канал", "amal duo", "duo"], channel: "amal-duo" },
