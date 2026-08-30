@@ -346,6 +346,41 @@ html, body {
   touch-action: manipulation;
 }
 .break-btn:active { transform: scale(.98); }
+.sick-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
+  font: 700 13px inherit;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  touch-action: manipulation;
+}
+#cut-canvas {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  display: block;
+  margin: 0 auto 12px;
+  border-radius: 14px;
+  background: #0c1220;
+  border: 1px solid rgba(255,255,255,.1);
+}
+.freeze-blob {
+  width: 100%;
+  max-width: 280px;
+  height: 110px;
+  margin: 0 auto;
+  border-radius: 50% 50% 45% 45%;
+  background: linear-gradient(160deg, #bae6fd, #38bdf8 40%, #e0f2fe);
+  box-shadow: inset 0 0 20px rgba(255,255,255,.5), 0 8px 20px rgba(56,189,248,.2);
+  cursor: pointer;
+  transition: filter 1.2s, transform .15s;
+  touch-action: manipulation;
+}
+.freeze-blob.melt { filter: blur(1px) brightness(1.1); opacity: .75; transform: scaleY(.92); }
 .audio-hint {
   font-size: 11px;
   color: var(--muted);

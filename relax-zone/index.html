@@ -6,7 +6,7 @@
   <title>Зона отдыха · ASMR и антистресс | Amaya Games</title>
   <meta name="description" content="Приятные ASMR-звуки, лёд, баттерсквиш, растяжка и компаньон с секретными именами. Отдых после тяжёлого дня." />
   <meta name="theme-color" content="#0f1419" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <div class="shell">
@@ -32,6 +32,7 @@
     </section>
 
     <button type="button" class="break-btn" id="btn-break">🔔 Перемена — отдых 5 мин</button>
+    <button type="button" class="sick-btn" id="btn-sick">🤒 Болею — мур и тишина</button>
     <p class="audio-hint" id="audio-hint">👆 Сначала нажми любую кнопку — тогда звук включится (так в браузере)</p>
 
     <div class="vol-row">
@@ -63,6 +64,11 @@
           <div class="ice-board" id="ice-board"></div>
         </article>
         <article class="toy">
+          <h3>❄️ Заморозка</h3>
+          <p>Тап — треск льда, потом медленно тает.</p>
+          <div class="freeze-blob" id="freeze"></div>
+        </article>
+        <article class="toy">
           <h3>🫧 Pop-it</h3>
           <p>Лопай пузырьки — классика антистресса.</p>
           <div class="pop-grid" id="pop-grid"></div>
@@ -80,13 +86,14 @@
     </section>
 
     <section class="panel" id="panel-inside">
-      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Как в «смотри, что внутри» — жми коробочку, слушай и успокаивайся.</p>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Жми предмет — увидишь <b>как режется</b>, и услышишь звук.</p>
+      <canvas id="cut-canvas" width="340" height="200" aria-label="Разрез — что внутри"></canvas>
       <div class="exp-grid" id="exp-grid"></div>
-      <div class="exp-reveal" id="exp-reveal">Выбери эксперимент…</div>
+      <div class="exp-reveal" id="exp-reveal">Выбери предмет…</div>
     </section>
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=2"></script>
+  <script src="./app.js?v=3"></script>
 </body>
 </html>

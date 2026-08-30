@@ -131,6 +131,75 @@
     [660, 880, 660].forEach((f, i) => setTimeout(() => playTone(f, 0.35, "sine", 0.35 - i * 0.05), i * 180));
   }
 
+  function sliceSound() {
+    ensureAudio();
+    noiseBurst(0.15, 3500, 0.4, "bandpass");
+    setTimeout(() => playTone(200, 0.08, "sawtooth", 0.12), 50);
+  }
+
+  /** Настоящий «мур» — постоянный низкий rumble + дрожь */
+  function startPurrLoop() {
+    const g = audioCtx.createGain();
+    g.gain.value = 0.42 * vol();
+    loopGains.set("purrs", g);
+    g.connect(masterGain);
+
+    const len = audioCtx.sampleRate * 3;
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      const pulse = 0.35 + 0.65 * Math.abs(Math.sin(i / 45));
+      d[i] = (Math.random() * 2 - 1) * pulse;
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.loop = true;
+    const nf = audioCtx.createBiquadFilter();
+    nf.type = "lowpass";
+    nf.frequency.value = 180;
+    src.connect(nf);
+    nf.connect(g);
+    src.start();
+
+    const o1 = audioCtx.createOscillator();
+    o1.type = "triangle";
+    o1.frequency.value = 24;
+    const og = audioCtx.createGain();
+    og.gain.value = 0.3 * vol();
+    o1.connect(og);
+    og.connect(g);
+    o1.start();
+
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = 3.5;
+    const lfoG = audioCtx.createGain();
+    lfoG.gain.value = 6;
+    lfo.connect(lfoG);
+    lfoG.connect(o1.frequency);
+    lfo.start();
+
+    const o2 = audioCtx.createOscillator();
+    o2.type = "sine";
+    o2.frequency.value = 48;
+    const og2 = audioCtx.createGain();
+    og2.gain.value = 0.15 * vol();
+    o2.connect(og2);
+    og2.connect(g);
+    o2.start();
+
+    return {
+      stop: () => {
+        try {
+          src.stop();
+          o1.stop();
+          o2.stop();
+          lfo.stop();
+          loopGains.delete("purrs");
+        } catch (_) {}
+      },
+    };
+  }
+
   const SOUNDS = [
     { id: "rain", icon: "🌧", label: "Дождь", loop: true, start() {
       const len = audioCtx.sampleRate * 3;
@@ -187,14 +256,7 @@
       const id = setInterval(() => { ensureAudio(); playTone(58, 0.14, "sine", 0.35); }, 850);
       return { stop: () => clearInterval(id) };
     }},
-    { id: "purrs", icon: "🐱", label: "Мур", loop: true, start() {
-      const id = setInterval(() => {
-        ensureAudio();
-        playTone(28 + Math.random() * 10, 0.35, "sine", 0.22);
-        noiseBurst(0.25, 250, 0.1);
-      }, 1200);
-      return { stop: () => clearInterval(id) };
-    }},
+    { id: "purrs", icon: "🐱", label: "Мур", loop: true, start() { return startPurrLoop(); }},
     { id: "typing", icon: "⌨", label: "Клавиши", loop: false, play() {
       [0, 70, 140, 90, 200, 260].forEach((d) => setTimeout(tapSound, d));
     }},
@@ -424,20 +486,132 @@
     }, 1000);
   }
 
-  /* ── Experiments «что внутри» ── */
+  async function startSick() {
+    await ensureAudio();
+    stopAllSounds();
+    toast("🤒 Лежи спокойно — включила мур");
+    $("buddy-msg").textContent = "Болеешь? Ничего страшного. Мур-мур… отдыхай.";
+    if (!$("buddy").textContent.includes("🐱")) $("buddy").textContent = "🐱";
+    await toggleSound("purrs");
+    setTimeout(() => toggleSound("night"), 300);
+  }
+
+  /* ── Experiments «что внутри» + картинка разреза ── */
   const EXPERIMENTS = [
-    { icon: "🍫", label: "Kinder", reveal: "Внутри — мягкий крем и хруст. ASMR: *тик* — крышка открылась. Пахнет шоколадом и спокойствием." },
-    { icon: "🟢", label: "Nee Doh", reveal: "Желейный шар! Жми — он возвращается. Внутри воздух и satisfaction. Валера бы одобрил." },
-    { icon: "🫧", label: "Pop-it", reveal: "Слой силикона с пузырями. Каждый *pop* — минус одна тревога." },
-    { icon: "🧊", label: "Лёд", reveal: "Вода замёрзла. Треск — чистый звук. Холодно, но приятно." },
-    { icon: "🥟", label: "Пельмень", reveal: "Тесто + начинка. Антистресс-пельмень: мягкий, тёплый, смешной." },
-    { icon: "🎁", label: "Сюрприз", reveal: "Внутри — ничего страшного. Просто напоминание: ты заслужила отдых." },
+    { icon: "🍫", label: "Kinder", outer: "#6b4226", inner: "#fff7ed", core: "#fcd34d", shape: "egg",
+      reveal: "Разрез! Внутри — белый крем и жёлтая сердцевина. Хруст + сладость." },
+    { icon: "🟢", label: "Nee Doh", outer: "#86efac", inner: "#bbf7d0", core: "#4ade80", shape: "ball",
+      reveal: "Желейный шар разрезан — внутри воздух и squish. Валера бы сказал: «Ого!»" },
+    { icon: "🫧", label: "Pop-it", outer: "#a78bfa", inner: "#c4b5fd", core: "#8b5cf6", shape: "square",
+      reveal: "Слой силикона — половинки с пузырями. Pop-pop-pop!" },
+    { icon: "🧊", label: "Лёд", outer: "#bae6fd", inner: "#e0f2fe", core: "#7dd3fc", shape: "ice",
+      reveal: "Лёд треснул! Внутри чистая вода. *скррр*" },
+    { icon: "🍦", label: "Морож.", outer: "#fbcfe8", inner: "#fff1f2", core: "#f472b6", shape: "scoop",
+      reveal: "Заморозка! Разрез — розовое мороженое, холодное и мягкое." },
+    { icon: "🧼", label: "Мыло", outer: "#fef08a", inner: "#fef9c3", core: "#fde047", shape: "bar",
+      reveal: "Мыльный брусок — внутри однородный, пахнет чистотой." },
+    { icon: "🟣", label: "Слайм", outer: "#c084fc", inner: "#e9d5ff", core: "#a855f7", shape: "blob",
+      reveal: "Слайм разрезали — тянется и блестит. Satisfying!" },
+    { icon: "🥟", label: "Пельмень", outer: "#fef3c7", inner: "#fde68a", core: "#92400e", shape: "dumpling",
+      reveal: "Тесто + мясная начинка. Тёплый пельмень-антистресс." },
+    { icon: "🎁", label: "Сюрприз", outer: "#6366f1", inner: "#a5b4fc", core: "#fcd34d", shape: "box",
+      reveal: "Внутри — звёздочка и напоминание: ты молодец, что отдыхаешь." },
   ];
+
+  let cutAnim = null;
+
+  function drawCut(ex, progress) {
+    const c = $("cut-canvas");
+    if (!c) return;
+    const ctx = c.getContext("2d");
+    const W = c.width;
+    const H = c.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#0c1220";
+    ctx.fillRect(0, 0, W, H);
+
+    const cx = W * 0.42;
+    const cy = H * 0.52;
+    const cutX = W * (0.25 + progress * 0.55);
+
+    function half(side) {
+      ctx.save();
+      ctx.beginPath();
+      if (ex.shape === "egg") ctx.ellipse(cx + side * 18, cy, 52, 64, 0, 0, Math.PI * 2);
+      else if (ex.shape === "ball") ctx.arc(cx + side * 16, cy, 58, 0, Math.PI * 2);
+      else if (ex.shape === "square") ctx.roundRect(cx - 50 + side * 20, cy - 50, 100, 100, 16);
+      else if (ex.shape === "ice") ctx.rect(cx - 45 + side * 15, cy - 40, 90, 80);
+      else if (ex.shape === "scoop") ctx.arc(cx + side * 14, cy + 10, 55, Math.PI, 0);
+      else if (ex.shape === "bar") ctx.roundRect(cx - 55 + side * 18, cy - 28, 110, 56, 10);
+      else if (ex.shape === "blob") ctx.ellipse(cx + side * 12, cy, 60, 48, 0, 0, Math.PI * 2);
+      else if (ex.shape === "dumpling") ctx.ellipse(cx + side * 14, cy, 55, 40, 0, 0, Math.PI * 2);
+      else ctx.roundRect(cx - 48 + side * 16, cy - 48, 96, 96, 12);
+      ctx.clip();
+      ctx.fillStyle = ex.outer;
+      ctx.fillRect(0, 0, W, H);
+      if (progress > 0.35) {
+        const ix = cx + side * 8 + (progress - 0.35) * 30 * side;
+        ctx.beginPath();
+        ctx.arc(ix, cy, 32, 0, Math.PI * 2);
+        ctx.fillStyle = ex.inner;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(ix, cy, 16, 0, Math.PI * 2);
+        ctx.fillStyle = ex.core;
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    if (progress < 0.08) {
+      ctx.fillStyle = ex.outer;
+      ctx.beginPath();
+      if (ex.shape === "egg") ctx.ellipse(cx, cy, 52, 64, 0, 0, Math.PI * 2);
+      else if (ex.shape === "ball") ctx.arc(cx, cy, 58, 0, Math.PI * 2);
+      else if (ex.shape === "square") ctx.roundRect(cx - 50, cy - 50, 100, 100, 16);
+      else if (ex.shape === "ice") ctx.rect(cx - 45, cy - 40, 90, 80);
+      else if (ex.shape === "scoop") ctx.arc(cx, cy + 10, 55, Math.PI, 0);
+      else if (ex.shape === "bar") ctx.roundRect(cx - 55, cy - 28, 110, 56, 10);
+      else if (ex.shape === "blob") ctx.ellipse(cx, cy, 60, 48, 0, 0, Math.PI * 2);
+      else if (ex.shape === "dumpling") ctx.ellipse(cx, cy, 55, 40, 0, 0, Math.PI * 2);
+      else ctx.roundRect(cx - 48, cy - 48, 96, 96, 12);
+      ctx.fill();
+    } else {
+      half(-1);
+      half(1);
+    }
+
+    if (progress > 0.05 && progress < 0.95) {
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cutX, 20);
+      ctx.lineTo(cutX + 8, H - 20);
+      ctx.stroke();
+      ctx.font = "28px serif";
+      ctx.fillText("🔪", cutX - 10, 36);
+    }
+    ctx.fillStyle = "#8ba3c7";
+    ctx.font = "600 12px system-ui";
+    ctx.fillText(ex.label + (progress >= 1 ? " — готово!" : " — режем…"), 12, H - 10);
+  }
+
+  function animateCut(ex) {
+    if (cutAnim) cancelAnimationFrame(cutAnim);
+    let p = 0;
+    const step = () => {
+      p = Math.min(1, p + 0.028);
+      drawCut(ex, p);
+      if (p < 1) cutAnim = requestAnimationFrame(step);
+      else cutAnim = null;
+    };
+    step();
+  }
 
   function renderExperiments() {
     const grid = $("exp-grid");
     grid.innerHTML = "";
-    EXPERIMENTS.forEach((ex, i) => {
+    EXPERIMENTS.forEach((ex) => {
       const box = document.createElement("button");
       box.type = "button";
       box.className = "exp-box";
@@ -447,13 +621,33 @@
         document.querySelectorAll(".exp-box").forEach((b) => b.classList.remove("open"));
         box.classList.add("open");
         $("exp-reveal").textContent = ex.reveal;
-        tapSound();
-        noiseBurst(0.12, 2000, 0.15, "bandpass");
-        if (i === 1) squishSound();
-        if (i === 3) iceCrack();
+        animateCut(ex);
+        sliceSound();
+        setTimeout(sliceSound, 400);
+        if (ex.shape === "ball" || ex.shape === "blob") setTimeout(squishSound, 600);
+        if (ex.shape === "ice") setTimeout(iceCrack, 500);
+        if (ex.shape === "square") setTimeout(popSound, 550);
       };
       grid.appendChild(box);
     });
+    drawCut(EXPERIMENTS[0], 0);
+  }
+
+  function initFreeze() {
+    const el = $("freeze");
+    if (!el) return;
+    el.onclick = async () => {
+      await ensureAudio();
+      if (el.classList.contains("melt")) {
+        el.classList.remove("melt");
+        toast("Снова заморозили ❄️");
+        return;
+      }
+      iceCrack();
+      setTimeout(iceCrack, 200);
+      el.classList.add("melt");
+      toast("Тает… медленно…");
+    };
   }
 
   /* ── Tabs ── */
@@ -484,14 +678,15 @@
   $("vol").oninput = () => {
     if (masterGain) masterGain.gain.value = vol();
     loopGains.forEach((g, id) => {
-      const base = id === "rain" ? 0.22 : id === "wind" ? 0.18 : 0.12;
-      g.gain.value = base * vol();
+      const bases = { rain: 0.22, wind: 0.18, night: 0.12, purrs: 0.42 };
+      g.gain.value = (bases[id] || 0.12) * vol();
     });
   };
   $("name-btn").onclick = renameBuddy;
   $("name-in").onkeydown = (e) => { if (e.key === "Enter") renameBuddy(); };
   $("buddy").onclick = async () => { await ensureAudio(); petBuddy(); };
   $("btn-break").onclick = () => startBreak();
+  $("btn-sick").onclick = () => startSick();
 
   load();
   applyBuddy();
@@ -499,6 +694,7 @@
   initSquish();
   initIce();
   initPop();
+  initFreeze();
   renderStretch();
   renderExperiments();
   initTabs();
