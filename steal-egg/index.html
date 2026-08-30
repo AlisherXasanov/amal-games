@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укради яйцо — Amal Games</title>
   <meta name="description" content="2D как в Roblox: база, яйца, дорожка, воровство." />
-  <link rel="stylesheet" href="./style.css?v=5" />
+  <link rel="stylesheet" href="./style.css?v=6" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -28,7 +28,7 @@
         <ol id="indexList"></ol>
       </div>
 
-      <div class="help-bar">WASD — бег · <b>E</b> — взять / украсть / поставить</div>
+      <div class="help-bar">WASD — бег · <b>Shift+WASD</b> — камера · <b>E</b> — действие · <b>F2</b> админ</div>
 
       <div class="shop" id="shop">
         <div class="shop-tabs">
@@ -51,17 +51,35 @@
         <div class="pad right" id="actBtn">E</div>
       </div>
 
+      <div class="event-banner" id="eventBanner"></div>
+
+      <div class="admin-panel" id="adminPanel" hidden>
+        <h3>⚙️ Админ-панель</h3>
+        <div class="admin-row">
+          <button type="button" id="admCoins">+10K 🪙</button>
+          <button type="button" id="admSpeed">+100K ⚡</button>
+          <button type="button" id="admUnlock">Открыть зоны</button>
+        </div>
+        <div class="admin-row">
+          <button type="button" id="admNight">🌙 Ночь сейчас</button>
+          <button type="button" id="admBlink">✨ Blink ивент</button>
+          <button type="button" id="admDragon">🐉 Яйцо</button>
+          <button type="button" id="admHeal">💚 Снять злость</button>
+        </div>
+        <p class="admin-hint">F2 — закрыть · боты играют сами</p>
+      </div>
+
       <button type="button" class="btn-lock" id="btnLock">🔒 База</button>
 
       <div class="tutorial" id="tutorial">
         <div class="tutorial-card">
-          <h2>🥚 Укради яйцо — зоны и вольеры</h2>
+          <h2>🥚 Укради яйцо — v6</h2>
           <ol>
-            <li><b>Твоя зона</b> слева — ставь яйца в <b>вольеры</b> (загончики).</li>
-            <li><b>8 зон</b> в ряд — у каждой свой босс и свои яйца.</li>
-            <li>Дальние зоны <b>🔒 закрыты</b> — качай ⚡ на дорожке, потом проход откроется!</li>
-            <li>Чем дальше зона — <b>быстрее босс</b> и <b>круче яйца</b> 🐉👑</li>
-            <li><b>E</b> — взять / украсть / поставить · мини-карта справа</li>
+            <li><b>Вольеры</b> — ставь яйца. Боссы <b>злятся</b>, если украл!</li>
+            <li>Если поймают — <b>💥 бьют</b> и возвращают яйцо.</li>
+            <li>Вынес в <b>чужую зону</b> — старый босс уже не вернёт!</li>
+            <li><b>🌙 Каждые 2 мин</b> — ночь, новые яйца и звук.</li>
+            <li><b>✨ Blink</b> — ивент с крутыми яйцами · <b>F2</b> — админ</li>
           </ol>
           <button type="button" id="btnStart">Погнали!</button>
         </div>
@@ -71,7 +89,7 @@
 
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
-  <script src="./game.js?v=5"></script>
+  <script src="./game.js?v=6"></script>
   <script src="../shared/amal-hub.js?v=66"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v5";
+  const SAVE_KEY = "amal-steal-egg-v6";
   const VW = 960;
   const VH = 640;
   const MW = 3920;
@@ -44,7 +44,10 @@
   ];
 
   const LUCKY_PRICE = 250;
-  const DAY_SEC = 90;
+  const DAY_SEC = 60;
+  const NIGHT_SEC = 60;
+  const BLINK_EVERY = 180;
+  const BLINK_DUR = 35;
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
@@ -64,6 +67,8 @@
   const actBtn = document.getElementById("actBtn");
   const tutorial = document.getElementById("tutorial");
   const btnStart = document.getElementById("btnStart");
+  const adminPanel = document.getElementById("adminPanel");
+  const eventBanner = document.getElementById("eventBanner");
 
   const panes = {
     eggs: document.getElementById("pane-eggs"),
@@ -83,17 +88,41 @@
   let onTreadmill = false;
   let toastTimer = 0;
   let incomeTimer = 0;
-  let npcTimer = 0;
   let trailDots = [];
   let paused = true;
-
   let gateToast = 0;
+  let wasNight = false;
+  let blinkLeft = 0;
+  let blinkTimer = BLINK_EVERY;
+  let hitFlash = 0;
+  let audioCtx = null;
 
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
 
-  const player = { x: 200, y: 1680, r: 14, carry: null, color: "#38bdf8" };
+  const player = {
+    x: 200,
+    y: 1680,
+    r: 16,
+    carry: null,
+    color: "#38bdf8",
+    emoji: "😎",
+    stunned: 0,
+    hitCd: 0,
+  };
   const cam = { x: 0, y: 0 };
+
+  const CHAR_LOOK = {
+    player: { emoji: "😎", body: "#38bdf8", outline: "#0ea5e9" },
+    nub: { emoji: "😐", body: "#94a3b8", outline: "#64748b" },
+    neighbor: { emoji: "😠", body: "#ef4444", outline: "#b91c1c" },
+    katya: { emoji: "😤", body: "#f97316", outline: "#c2410c" },
+    rick: { emoji: "😏", body: "#3b82f6", outline: "#1d4ed8" },
+    erox: { emoji: "👿", body: "#a855f7", outline: "#7e22ce" },
+    dragon: { emoji: "🐲", body: "#dc2626", outline: "#991b1b" },
+    legend: { emoji: "🧊", body: "#0891b2", outline: "#0e7490" },
+    final: { emoji: "👑", body: "#eab308", outline: "#ca8a04" },
+  };
 
   /** Зоны с вольерами — чем дальше, тем сильнее босс и круче яйца */
   const ZONE_DEFS = [
@@ -281,17 +310,22 @@
   const rivals = ZONE_DEFS.filter(function (z) {
     return z.boss;
   }).map(function (z) {
+    const look = CHAR_LOOK[z.boss.id] || CHAR_LOOK.nub;
     return {
       name: z.boss.name,
       speed: z.boss.speed,
       color: z.boss.color,
+      look: look,
       x: z.x + z.w / 2,
-      y: z.y + 90,
+      y: z.y + 120,
       homeX: z.x + z.w / 2,
-      homeY: z.y + 90,
+      homeY: z.y + 120,
       zoneId: z.id,
+      bossId: z.boss.id,
       carry: null,
       boss: !!z.boss.boss,
+      angry: false,
+      aiTimer: Math.random() * 2,
     };
   });
 
@@ -316,11 +350,70 @@
   }
 
   function moveSpeed() {
-    return (2.6 + Math.log10(Math.max(10, speedStat)) * 1.4) * (player.carry ? 0.65 : 1);
+    const base = 150;
+    const boost = Math.min(70, Math.log10(Math.max(10, speedStat)) * 22);
+    let sp = base + boost;
+    if (player.carry) sp *= 0.75;
+    if (player.stunned > 0) sp *= 0.35;
+    return sp;
   }
 
   function isNight() {
-    return (gameTime % (DAY_SEC * 2)) >= DAY_SEC;
+    const cycle = DAY_SEC + NIGHT_SEC;
+    const t = gameTime % cycle;
+    return t >= DAY_SEC;
+  }
+
+  function cycleLeft() {
+    const cycle = DAY_SEC + NIGHT_SEC;
+    const t = gameTime % cycle;
+    if (isNight()) return cycle - t;
+    return DAY_SEC - t;
+  }
+
+  function playTone(freq, dur, type) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type || "sine";
+      o.frequency.value = freq;
+      g.gain.value = 0.08;
+      o.connect(g);
+      g.connect(audioCtx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.stop(audioCtx.currentTime + dur);
+    } catch (_) {}
+  }
+
+  function playNightSound() {
+    playTone(220, 0.35, "triangle");
+    setTimeout(function () {
+      playTone(165, 0.5, "triangle");
+    }, 200);
+  }
+
+  function playHitSound() {
+    playTone(120, 0.15, "square");
+  }
+
+  function playBlinkSound() {
+    playTone(880, 0.12, "sine");
+    setTimeout(function () {
+      playTone(1100, 0.15, "sine");
+    }, 100);
+  }
+
+  function wrapCarry(egg, zoneId) {
+    return {
+      typeId: egg.typeId,
+      name: egg.name,
+      emoji: egg.emoji,
+      color: egg.color,
+      rate: egg.rate,
+      fromZoneId: zoneId,
+    };
   }
 
   function eggFromType(typeId) {
@@ -328,15 +421,110 @@
     return { typeId: t.id, name: t.name, emoji: t.emoji, color: t.color, rate: t.rate };
   }
 
+  function returnEggToZone(zoneId, eggData) {
+    const empty = pedestals.filter(function (p) {
+      return p.zoneId === zoneId && !p.egg;
+    });
+    const egg = eggFromType(eggData.typeId);
+    if (empty.length) empty[0].egg = egg;
+    else {
+      const any = pedestals.find(function (p) {
+        return p.zoneId === zoneId;
+      });
+      if (any) any.egg = egg;
+    }
+  }
+
+  function setBossAngry(zoneId, on) {
+    rivals.forEach(function (r) {
+      if (r.zoneId === zoneId) r.angry = on;
+    });
+  }
+
+  function checkCrossZoneSafe() {
+    if (!player.carry || !player.carry.fromZoneId) return;
+    const here = zoneAt(player.x, player.y);
+    if (here && here.isHome) {
+      setBossAngry(player.carry.fromZoneId, false);
+      return;
+    }
+    if (!here || here.isHome) return;
+    if (here.id !== player.carry.fromZoneId && here.boss) {
+      setBossAngry(player.carry.fromZoneId, false);
+    }
+  }
+
+  function bossHitPlayer(npc) {
+    if (player.hitCd > 0 || !player.carry) return;
+    player.hitCd = 1.2;
+    player.stunned = 0.9;
+    hitFlash = 0.35;
+    const egg = player.carry;
+    player.carry = null;
+    returnEggToZone(egg.fromZoneId, egg);
+    npc.angry = false;
+    const dx = player.x - npc.x;
+    const dy = player.y - npc.y;
+    const len = Math.hypot(dx, dy) || 1;
+    player.x += (dx / len) * 55;
+    player.y += (dy / len) * 55;
+    showToast("💥 " + npc.name + " вернул яйцо!");
+    playHitSound();
+  }
+
+  function refreshAllBossEggs() {
+    pedestals.forEach(function (p) {
+      if (p.baseId === "mine") return;
+      p.egg = rollEggForZone(p.zoneId, true);
+      p.respawn = 0;
+    });
+  }
+
+  function triggerNightEvent() {
+    refreshAllBossEggs();
+    rivals.forEach(function (r) {
+      r.angry = false;
+      r.x = r.homeX;
+      r.y = r.homeY;
+      r.carry = null;
+    });
+    playNightSound();
+    if (eventBanner) {
+      eventBanner.textContent = "🌙 Ночь! Яйца обновились · животные проснулись";
+      eventBanner.classList.add("show");
+      setTimeout(function () {
+        eventBanner.classList.remove("show");
+      }, 3500);
+    }
+    showToast("🌙 Ночь — все яйца новые!");
+  }
+
+  function triggerBlinkEvent() {
+    blinkLeft = BLINK_DUR;
+    playBlinkSound();
+    if (eventBanner) {
+      eventBanner.textContent = "✨ BLINK ивент! Крутые яйца во всех зонах!";
+      eventBanner.classList.add("blink");
+      eventBanner.classList.add("show");
+    }
+    refreshAllBossEggs();
+    showToast("✨ BLINK — лови редкие яйца!");
+  }
+
   function rollEggLucky() {
     return rollEggForZone("z1");
   }
 
-  function rollEggForZone(zoneId) {
+  function rollEggForZone(zoneId, forceCool) {
     const z = ZONE_DEFS.find(function (x) {
       return x.id === zoneId;
     });
-    const weights = (z && z.eggs) || [620, 240, 110, 24, 5, 1];
+    let weights = (z && z.eggs ? z.eggs.slice() : [620, 240, 110, 24, 5, 1]);
+    if (blinkLeft > 0 || forceCool) {
+      weights = weights.map(function (w, i) {
+        return i >= 2 ? w * 2.2 : w * 0.7;
+      });
+    }
     const ids = ["basic", "gold", "rare", "epic", "dragon", "final"];
     let total = 0;
     weights.forEach(function (w) {
@@ -502,7 +690,9 @@
     carryEl.textContent = player.carry
       ? "В руках: " + player.carry.emoji + " " + player.carry.name
       : "В руках: пусто";
-    timeEl.textContent = isNight() ? "🌙 Ночь +12%" : "☀️ День";
+    timeEl.textContent = isNight()
+      ? "🌙 Ночь +" + Math.ceil(cycleLeft()) + "с"
+      : "☀️ День · ночь через " + Math.ceil(cycleLeft()) + "с";
 
     const rows = getIndex();
     indexList.innerHTML = "";
@@ -556,7 +746,7 @@
       return;
     }
     coins -= t.price;
-    player.carry = eggFromType(typeId);
+    player.carry = wrapCarry(eggFromType(typeId), "shop");
     showToast("Купил " + t.emoji);
     saveGame();
     refreshShop();
@@ -566,7 +756,7 @@
   function buyLucky() {
     if (player.carry || coins < LUCKY_PRICE) return;
     coins -= LUCKY_PRICE;
-    player.carry = rollEggLucky();
+    player.carry = wrapCarry(rollEggLucky(), "shop");
     showToast("Lucky: " + player.carry.emoji + " " + player.carry.name);
     saveGame();
     refreshShop();
@@ -616,8 +806,11 @@
     if (!player.carry) return false;
     const slot = nearestPedestal((p) => p.baseId === "mine" && !p.egg);
     if (!slot) return false;
-    slot.egg = player.carry;
+    slot.egg = eggFromType(player.carry.typeId);
     player.carry = null;
+    rivals.forEach(function (r) {
+      r.angry = false;
+    });
     showToast("На базе! +" + slot.egg.rate + "/с");
     saveGame();
     return true;
@@ -633,9 +826,10 @@
       return zoneUnlocked(z);
     });
     if (!slot) return false;
-    player.carry = slot.egg;
+    player.carry = wrapCarry(slot.egg, slot.zoneId);
     slot.egg = null;
-    showToast("Украл! Беги в свою зону!");
+    setBossAngry(slot.zoneId, true);
+    showToast("Украл! Беги — " + (ZONE_DEFS.find(function (z) { return z.id === slot.zoneId; }) || {}).name + " злится!");
     return true;
   }
 
@@ -768,6 +962,13 @@
     if (onTreadmill) t = "🏃 Качаешь +" + formatNum(treadmillGain()) + "/с";
     else if (player.carry && nearestPedestal((p) => p.baseId === "mine" && !p.egg)) t = "E — в вольер";
     else if (!player.carry && nearestPedestal((p) => p.baseId !== "mine" && p.egg)) t = "E — украсть!";
+    else if (player.carry && player.carry.fromZoneId) {
+      rivals.forEach(function (r) {
+        if (r.angry && r.zoneId === player.carry.fromZoneId && dist(player.x, player.y, r.x, r.y) < 120) {
+          t = "😡 " + r.name + " гонится!";
+        }
+      });
+    }
     else {
       GATES.forEach(function (g) {
         if (t || g.need <= 0 || speedStat >= g.need) return;
@@ -801,8 +1002,23 @@
   }
 
   function movePlayer(dt) {
+    if (player.stunned > 0) player.stunned -= dt;
+    if (player.hitCd > 0) player.hitCd -= dt;
+
     let mx = 0;
     let my = 0;
+    const panMode = keys.ShiftLeft || keys.ShiftRight;
+    if (panMode) {
+      if (keys.ArrowUp || keys.KeyW) cam.y -= 320 * dt;
+      if (keys.ArrowDown || keys.KeyS) cam.y += 320 * dt;
+      if (keys.ArrowLeft || keys.KeyA) cam.x -= 320 * dt;
+      if (keys.ArrowRight || keys.KeyD) cam.x += 320 * dt;
+      cam.x = Math.max(0, Math.min(MW - VW, cam.x));
+      cam.y = Math.max(0, Math.min(MH - VH, cam.y));
+      onTreadmill = false;
+      return;
+    }
+
     if (keys.ArrowUp || keys.KeyW) my -= 1;
     if (keys.ArrowDown || keys.KeyS) my += 1;
     if (keys.ArrowLeft || keys.KeyA) mx -= 1;
@@ -813,7 +1029,7 @@
     }
     const len = Math.hypot(mx, my);
     if (len > 0.01) {
-      const sp = moveSpeed() * dt * 60;
+      const sp = moveSpeed() * dt;
       player.x += (mx / len) * sp;
       player.y += (my / len) * sp;
       const tr = TRAILS.find((t) => t.id === trailId);
@@ -825,6 +1041,7 @@
     player.x = Math.max(24, Math.min(MW - 24, player.x));
     player.y = Math.max(24, Math.min(MH - 24, player.y));
     applyGates();
+    checkCrossZoneSafe();
 
     onTreadmill =
       player.x > treadmill.x - treadmill.w / 2 &&
@@ -834,44 +1051,127 @@
     if (onTreadmill && !paused) speedStat += treadmillGain() * dt;
   }
 
+  function npcMoveToward(npc, tx, ty, spd, dt) {
+    const d = dist(npc.x, npc.y, tx, ty);
+    if (d < 8) return false;
+    const step = spd * dt;
+    npc.x += ((tx - npc.x) / d) * step;
+    npc.y += ((ty - npc.y) / d) * step;
+    return true;
+  }
+
+  function placeNpcEgg(npc) {
+    const pens = pedestals.filter(function (p) {
+      return p.zoneId === npc.zoneId && !p.egg;
+    });
+    if (pens.length && npc.carry) {
+      pens[0].egg = eggFromType(npc.carry.typeId || npc.carry);
+      npc.carry = null;
+      return true;
+    }
+    npc.carry = null;
+    return false;
+  }
+
   function updateNpcs(dt) {
-    npcTimer -= dt;
-    if (npcTimer > 0 || lockUntil > performance.now()) return;
-    npcTimer = 2.2;
+    if (lockUntil > performance.now()) return;
+
     rivals.forEach(function (npc) {
+      const chaseSpd = npc.boss ? 210 : 175;
+
       if (npc.carry) {
-        const d = dist(npc.x, npc.y, npc.homeX, npc.homeY);
-        if (d > 36) {
-          npc.x += ((npc.homeX - npc.x) / d) * (npc.boss ? 2.8 : 2) * dt * 60;
-          npc.y += ((npc.homeY - npc.y) / d) * (npc.boss ? 2.8 : 2) * dt * 60;
+        if (npcMoveToward(npc, npc.homeX, npc.homeY, 160, dt)) return;
+        placeNpcEgg(npc);
+        return;
+      }
+
+      if (
+        npc.angry &&
+        player.carry &&
+        player.carry.fromZoneId === npc.zoneId &&
+        player.carry.fromZoneId !== "shop"
+      ) {
+        const here = zoneAt(player.x, player.y);
+        if (here && here.boss && here.id !== npc.zoneId) {
+          npc.angry = false;
         } else {
-          npc.carry = null;
+          if (dist(npc.x, npc.y, player.x, player.y) < 28) {
+            bossHitPlayer(npc);
+          } else {
+            npcMoveToward(npc, player.x, player.y, chaseSpd, dt);
+          }
+          return;
+        }
+      }
+
+      npc.aiTimer -= dt;
+      if (npc.aiTimer > 0) {
+        if (Math.random() < 0.02) {
+          npcMoveToward(npc, npc.homeX + (Math.random() - 0.5) * 80, npc.homeY + (Math.random() - 0.5) * 40, 90, dt);
         }
         return;
       }
-      const slots = myPedestals().filter(function (p) {
-        return p.egg;
-      });
-      if (!slots.length) return;
-      const chance = npc.boss ? 0.55 : 0.32;
-      if (Math.random() > chance) return;
-      const target = slots[Math.floor(Math.random() * slots.length)];
-      const d = dist(npc.x, npc.y, target.x, target.y);
-      const spd = npc.boss ? 2.6 : 2;
-      if (d > 40) {
-        npc.x += ((target.x - npc.x) / d) * spd * dt * 60;
-        npc.y += ((target.y - npc.y) / d) * spd * dt * 60;
-      } else {
-        npc.carry = target.egg;
-        target.egg = null;
-        showToast((npc.boss ? "👑 " : "") + npc.name + " украл!");
+      npc.aiTimer = 1.4 + Math.random() * 2;
+
+      if (Math.random() < 0.45) {
+        const myEggs = myPedestals().filter(function (p) {
+          return p.egg;
+        });
+        if (myEggs.length) {
+          const target = myEggs[Math.floor(Math.random() * myEggs.length)];
+          if (npcMoveToward(npc, target.x, target.y, 130, dt)) return;
+          npc.carry = target.egg.typeId;
+          target.egg = null;
+          showToast("😡 " + npc.name + " украл у тебя!");
+          return;
+        }
       }
+
+      const otherZones = ZONE_DEFS.filter(function (z) {
+        return z.boss && z.id !== npc.zoneId && zoneUnlocked(z);
+      });
+      if (otherZones.length && Math.random() < 0.6) {
+        const zt = otherZones[Math.floor(Math.random() * otherZones.length)];
+        const slots = pedestals.filter(function (p) {
+          return p.zoneId === zt.id && p.egg;
+        });
+        if (slots.length) {
+          const target = slots[Math.floor(Math.random() * slots.length)];
+          if (npcMoveToward(npc, target.x, target.y, 120, dt)) return;
+          const stolen = target.egg;
+          target.egg = null;
+          npc.carry = stolen.typeId;
+          if (Math.random() < 0.35) showToast(npc.name + " ↔ " + zt.boss.name);
+          return;
+        }
+      }
+
+      npcMoveToward(npc, npc.homeX, npc.homeY, 100, dt);
     });
   }
 
   function update(dt) {
     if (paused) return;
     gameTime += dt;
+
+    const nightNow = isNight();
+    if (nightNow && !wasNight) triggerNightEvent();
+    wasNight = nightNow;
+
+    blinkTimer -= dt;
+    if (blinkTimer <= 0) {
+      blinkTimer = BLINK_EVERY;
+      triggerBlinkEvent();
+    }
+    if (blinkLeft > 0) {
+      blinkLeft -= dt;
+      if (blinkLeft <= 0 && eventBanner) {
+        eventBanner.classList.remove("blink");
+        eventBanner.classList.remove("show");
+      }
+    }
+    if (hitFlash > 0) hitFlash -= dt;
+
     movePlayer(dt);
     updateNpcs(dt);
     pedestals.forEach((p) => {
@@ -914,20 +1214,77 @@
     ctx.stroke();
   }
 
-  function drawEgg(x, y, egg) {
+  function drawEgg(x, y, egg, big) {
+    const sc = big ? 1.15 : 1;
     ctx.save();
     ctx.translate(x, y);
+    if (egg.typeId === "dragon" || egg.typeId === "final" || egg.typeId === "epic") {
+      ctx.shadowColor = egg.color;
+      ctx.shadowBlur = 12;
+    }
+    ctx.scale(sc, sc);
     ctx.fillStyle = egg.color;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 12, 15, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 13, 16, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#00000044";
+    ctx.strokeStyle = "#00000055";
     ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.font = "15px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(egg.emoji, 0, 2);
+    ctx.restore();
+  }
+
+  function drawCharacter(x, y, look, angry, isBoss, carryEgg) {
+    const w = 22;
+    const h = 28;
+    ctx.save();
+    ctx.translate(x, y);
+    if (angry) {
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = look.body;
+    ctx.strokeStyle = look.outline;
+    ctx.lineWidth = 2;
+    ctx.fillRect(-w / 2, -4, w, h);
+    ctx.strokeRect(-w / 2, -4, w, h);
+    ctx.fillStyle = "#fde68a";
+    ctx.beginPath();
+    ctx.arc(0, -12, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = look.outline;
     ctx.stroke();
     ctx.font = "14px system-ui";
     ctx.textAlign = "center";
-    ctx.fillText(egg.emoji, 0, 1);
+    ctx.fillText(angry ? "😡" : look.emoji, 0, -8);
+    if (isBoss) {
+      ctx.font = "11px system-ui";
+      ctx.fillText("👑", 0, -26);
+    }
     ctx.restore();
+    if (carryEgg) {
+      const eg = typeof carryEgg === "string" ? eggFromType(carryEgg) : carryEgg;
+      drawEgg(x, y - 32, eg, false);
+    }
+  }
+
+  function grassPattern(night) {
+    const tile = document.createElement("canvas");
+    tile.width = 40;
+    tile.height = 40;
+    const t = tile.getContext("2d");
+    t.fillStyle = night ? "#14532d" : "#4ade80";
+    t.fillRect(0, 0, 40, 40);
+    t.fillStyle = night ? "#166534" : "#22c55e";
+    t.fillRect(0, 0, 20, 20);
+    t.fillRect(20, 20, 20, 20);
+    return ctx.createPattern(tile, "repeat");
   }
 
   function drawPen(pen, mine, locked) {
@@ -1045,8 +1402,10 @@
   }
 
   function draw() {
-    cam.x = Math.max(0, Math.min(MW - VW, player.x - VW / 2));
-    cam.y = Math.max(0, Math.min(MH - VH, player.y - VH / 2));
+    if (!(keys.ShiftLeft || keys.ShiftRight)) {
+      cam.x = Math.max(0, Math.min(MW - VW, player.x - VW / 2));
+      cam.y = Math.max(0, Math.min(MH - VH, player.y - VH / 2));
+    }
 
     const night = isNight();
     ctx.fillStyle = night ? "#0f172a" : "#1e293b";
@@ -1070,10 +1429,8 @@
 
     for (let gx = 0; gx < MW; gx += 80) {
       for (let gy = 1400; gy < MH; gy += 80) {
-        ctx.fillStyle = (gx + gy) % 160 === 0 ? (night ? "#14532d" : "#22c55e") : night ? "#166534" : "#4ade80";
-        ctx.globalAlpha = 0.35;
+        ctx.fillStyle = grassPattern(night);
         ctx.fillRect(gx, gy, 80, 80);
-        ctx.globalAlpha = 1;
       }
     }
 
@@ -1126,16 +1483,7 @@
     ctx.globalAlpha = 1;
 
     rivals.forEach(function (npc) {
-      ctx.fillStyle = npc.color;
-      ctx.beginPath();
-      ctx.arc(npc.x, npc.y, npc.boss ? 15 : 12, 0, Math.PI * 2);
-      ctx.fill();
-      if (npc.boss) {
-        ctx.font = "12px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("👑", npc.x, npc.y - 18);
-      }
-      if (npc.carry) drawEgg(npc.x, npc.y - 22, npc.carry);
+      drawCharacter(npc.x, npc.y, npc.look, npc.angry, npc.boss, npc.carry);
     });
 
     const rows = getIndex();
@@ -1143,26 +1491,39 @@
       ctx.strokeStyle = "#fde68a";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(player.x, player.y, player.r + 8, 0, Math.PI * 2);
+      ctx.arc(player.x, player.y, player.r + 10, 0, Math.PI * 2);
       ctx.stroke();
     }
 
-    ctx.fillStyle = player.color;
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    if (player.carry) drawEgg(player.x, player.y - 26, player.carry);
+    drawCharacter(player.x, player.y, CHAR_LOOK.player, false, false, null);
+    if (player.carry) drawEgg(player.x, player.y - 34, player.carry, true);
+
+    if (hitFlash > 0) {
+      ctx.fillStyle = "rgba(239,68,68," + hitFlash + ")";
+      ctx.fillRect(cam.x, cam.y, VW, VH);
+    }
 
     if (night) {
-      ctx.fillStyle = "rgba(15,23,42,0.25)";
+      ctx.fillStyle = "rgba(15,23,42,0.32)";
+      ctx.fillRect(cam.x, cam.y, VW, VH);
+    }
+
+    if (blinkLeft > 0) {
+      ctx.fillStyle = "rgba(251,191,36,0.08)";
       ctx.fillRect(cam.x, cam.y, VW, VH);
     }
 
     ctx.restore();
     drawMinimap();
+
+    if (keys.ShiftLeft || keys.ShiftRight) {
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(VW / 2 - 90, 4, 180, 22);
+      ctx.fillStyle = "#fde68a";
+      ctx.font = "bold 11px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Shift+WASD — камера", VW / 2, 18);
+    }
   }
 
   window.addEventListener("keydown", (e) => {
@@ -1170,6 +1531,10 @@
     if (e.code === "KeyE" || e.code === "Space") {
       e.preventDefault();
       doAction();
+    }
+    if (e.code === "F2") {
+      e.preventDefault();
+      if (adminPanel) adminPanel.hidden = !adminPanel.hidden;
     }
   });
   window.addEventListener("keyup", (e) => {
@@ -1213,6 +1578,65 @@
     el.addEventListener("pointercancel", end);
   }
   bindStick(stickEl);
+
+  function bindAdmin() {
+    if (!adminPanel) return;
+    const map = {
+      admCoins: function () {
+        coins += 10000;
+        showToast("+10K монет");
+        refreshShop();
+      },
+      admSpeed: function () {
+        speedStat += 100000;
+        showToast("+100K скорости");
+        refreshShop();
+      },
+      admUnlock: function () {
+        speedStat = Math.max(speedStat, 1e12);
+        showToast("Все зоны открыты");
+      },
+      admNight: function () {
+        triggerNightEvent();
+      },
+      admBlink: function () {
+        triggerBlinkEvent();
+      },
+      admDragon: function () {
+        if (!player.carry) player.carry = wrapCarry(eggFromType("dragon"), "admin");
+        showToast("🐉 дракон в руках");
+      },
+      admHeal: function () {
+        player.stunned = 0;
+        player.hitCd = 0;
+        rivals.forEach(function (r) {
+          r.angry = false;
+        });
+        showToast("Ок!");
+      },
+    };
+    Object.keys(map).forEach(function (id) {
+      const btn = document.getElementById(id);
+      if (btn) btn.onclick = map[id];
+    });
+  }
+  bindAdmin();
+
+  canvas.addEventListener("click", function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = (e.clientX - rect.left) * (VW / rect.width);
+    const sy = (e.clientY - rect.top) * (VH / rect.height);
+    const mx = VW - 130;
+    const my = 72;
+    const mw = 118;
+    const mh = 78;
+    if (sx >= mx && sx <= mx + mw && sy >= my && sy <= my + mh) {
+      const wx = ((sx - mx) / mw) * MW;
+      const wy = ((sy - my - 14) / (mh - 18)) * MH;
+      cam.x = Math.max(0, Math.min(MW - VW, wx - VW / 2));
+      cam.y = Math.max(0, Math.min(MH - VH, wy - VH / 2));
+    }
+  });
 
   initPedestals();
   loadGame();
