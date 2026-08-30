@@ -1,60 +1,57 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v2";
-  const VW = 960;
-  const VH = 640;
-  const MW = 1500;
-  const MH = 1050;
-  const DAY_SEC = 90;
+  const SAVE_KEY = "amal-steal-egg-v3";
+  const W = 960;
+  const H = 640;
 
   const EGG_TYPES = [
-    { id: "basic", name: "Обычное", emoji: "🥚", color: "#f8fafc", price: 0, rate: 1, weight: 600 },
-    { id: "gold", name: "Золотое", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4, weight: 250 },
-    { id: "rare", name: "Редкое", emoji: "💎", color: "#a855f7", price: 350, rate: 12, weight: 120 },
-    { id: "epic", name: "Эпик", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28, weight: 25 },
-    { id: "dragon", name: "Дракон", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70, weight: 4 },
+    { id: "basic", name: "Обычное", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
+    { id: "gold", name: "Золотое", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4, weight: 240 },
+    { id: "rare", name: "Редкое", emoji: "💎", color: "#a855f7", price: 350, rate: 12, weight: 110 },
+    { id: "epic", name: "Эпик", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28, weight: 24 },
+    { id: "dragon", name: "Дракон", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70, weight: 5 },
     { id: "final", name: "ФИНАЛ", emoji: "👑", color: "#fde68a", price: 0, rate: 200, weight: 1 },
   ];
 
-  /** Честные цены: после 500M идёт 1T, не 50T */
   const TRAILS = [
-    { id: "none", name: "Без следа", mult: 1, price: 0, color: null },
-    { id: "white", name: "Белый", mult: 1.5, price: 150, color: "#f8fafc" },
-    { id: "gold", name: "Золотой", mult: 2, price: 900, color: "#fbbf24" },
+    { id: "none", name: "Нет", mult: 1, price: 0, color: null },
+    { id: "white", name: "Белый", mult: 1.5, price: 150, color: "#fff" },
+    { id: "gold", name: "Золото", mult: 2, price: 900, color: "#fbbf24" },
     { id: "fire", name: "Огонь", mult: 3, price: 6000, color: "#f97316" },
     { id: "rain", name: "Радуга", mult: 5, price: 45000, color: "#a855f7" },
     { id: "cosmo", name: "Космо", mult: 8, price: 320000, color: "#38bdf8" },
     { id: "legend", name: "Легенда", mult: 12, price: 2.5e6, color: "#22d3ee" },
     { id: "myth", name: "Миф", mult: 20, price: 45e6, color: "#ec4899" },
     { id: "star", name: "Звезда", mult: 35, price: 500e6, color: "#fde68a" },
-    { id: "final", name: "ФИНАЛЬНЫЙ", mult: 50, price: 1e12, color: "#fff" },
+    { id: "final", name: "ФИНАЛ", mult: 50, price: 1e12, color: "#fff" },
   ];
 
   const TREADMILL_LEVELS = [
-    { price: 0, gain: 3, label: "Старт" },
-    { price: 400, gain: 8, label: "Быстрая" },
-    { price: 2200, gain: 22, label: "Спринт" },
-    { price: 12000, gain: 65, label: "Мощная" },
-    { price: 65000, gain: 200, label: "Тurbo" },
-    { price: 380000, gain: 700, label: "Мега" },
-    { price: 2.2e6, gain: 2500, label: "Гiga" },
-    { price: 15e6, gain: 9000, label: "Ultra" },
-    { price: 120e6, gain: 35000, label: "Hyper" },
-    { price: 500e6, gain: 120000, label: "Max" },
-    { price: 1e12, gain: 500000, label: "ФИНАЛ" },
+    { price: 0, gain: 4, label: "Старт" },
+    { price: 400, gain: 10, label: "Быстрая" },
+    { price: 2200, gain: 28, label: "Спринт" },
+    { price: 12000, gain: 80, label: "Мощная" },
+    { price: 65000, gain: 250, label: "Turbo" },
+    { price: 380000, gain: 900, label: "Мега" },
+    { price: 2.2e6, gain: 3200, label: "Giga" },
+    { price: 15e6, gain: 12000, label: "Ultra" },
+    { price: 120e6, gain: 45000, label: "Hyper" },
+    { price: 500e6, gain: 150000, label: "Max" },
+    { price: 1e12, gain: 600000, label: "ФИНАЛ" },
   ];
 
   const LUCKY_PRICE = 250;
+  const DAY_SEC = 90;
 
   const canvas = document.getElementById("gameCanvas");
   const ctx = canvas.getContext("2d");
+
   const coinsEl = document.getElementById("coins");
   const incomeEl = document.getElementById("income");
   const speedEl = document.getElementById("speedStat");
   const rankEl = document.getElementById("rankLabel");
   const carryEl = document.getElementById("carry");
-  const statusEl = document.getElementById("status");
   const timeEl = document.getElementById("timeLabel");
   const indexList = document.getElementById("indexList");
   const toastEl = document.getElementById("toast");
@@ -62,6 +59,8 @@
   const btnLock = document.getElementById("btnLock");
   const stickEl = document.getElementById("stick");
   const actBtn = document.getElementById("actBtn");
+  const tutorial = document.getElementById("tutorial");
+  const btnStart = document.getElementById("btnStart");
 
   const panes = {
     eggs: document.getElementById("pane-eggs"),
@@ -77,48 +76,44 @@
   let baseSlots = 4;
   let lockBonus = 0;
   let lockUntil = 0;
+  let gameTime = 0;
+  let onTreadmill = false;
   let toastTimer = 0;
   let incomeTimer = 0;
   let npcTimer = 0;
-  let gameTime = 0;
-  let onTreadmill = false;
   let trailDots = [];
+  let paused = true;
 
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
 
-  const player = { x: 240, y: 860, r: 16, carry: null, color: "#38bdf8" };
+  const player = { x: 130, y: 500, r: 14, carry: null, color: "#38bdf8" };
 
   const bases = [
-    { id: "mine", name: "Твоя база", x: 240, y: 860, r: 95, color: "#22c55e", border: "#86efac" },
-    { id: "red", name: "Сосед", x: 1220, y: 180, r: 78, color: "#ef4444", border: "#fca5a5" },
-    { id: "blue", name: "Рик", x: 240, y: 180, r: 78, color: "#3b82f6", border: "#93c5fd" },
-    { id: "orange", name: "Катя", x: 1220, y: 820, r: 78, color: "#f97316", border: "#fdba74" },
+    { id: "mine", name: "ТВОЯ БАЗА", x: 130, y: 500, r: 72, fill: "#22c55e", stroke: "#86efac" },
+    { id: "blue", name: "РИК", x: 130, y: 130, r: 58, fill: "#3b82f6", stroke: "#93c5fd" },
+    { id: "red", name: "СОСЕД", x: 830, y: 130, r: 58, fill: "#ef4444", stroke: "#fca5a5" },
+    { id: "orange", name: "КАТЯ", x: 830, y: 500, r: 58, fill: "#f97316", stroke: "#fdba74" },
   ];
 
-  const shop = { x: MW / 2, y: MH / 2 - 30, r: 72 };
-  const treadmill = { x: 420, y: 860, w: 140, h: 55 };
-  const signs = [
-    { x: shop.x, y: shop.y - 95, title: "🛒 МАГАЗИН", lines: ["Яйца · Lucky · Следы"] },
-    { x: treadmill.x, y: treadmill.y - 72, title: "🏃 ДОРОЖКА", lines: ["Стань сюда — качай ⚡"] },
-    { x: 240, y: 720, title: "📊 ИНДЕКС", lines: ["Кто сильнее — тот босс"] },
+  const shop = { x: 480, y: 300, r: 52, label: "МАГАЗИН" };
+  const treadmill = { x: 280, y: 500, w: 110, h: 48, label: "ДОРОЖКА" };
+
+  const rivals = [
+    { name: "Сосед", speed: 800000, color: "#fca5a5", x: 830, y: 130, carry: null },
+    { name: "Рик", speed: 150000000, color: "#93c5fd", x: 130, y: 130, carry: null },
+    { name: "Катя", speed: 2000000, color: "#fdba74", x: 830, y: 500, carry: null },
   ];
 
   const pedestals = [];
 
-  const rivals = [
-    { name: "Сосед-бот", speed: 800000, color: "#fca5a5", x: 1220, y: 180, carry: null },
-    { name: "Рик-бот", speed: 150000000, color: "#93c5fd", x: 240, y: 180, carry: null },
-    { name: "Катя-бот", speed: 2000000, color: "#fdba74", x: 1220, y: 820, carry: null },
-  ];
-
   function formatNum(n) {
     n = Number(n) || 0;
-    if (n >= 1e12) return (n / 1e12).toFixed(n >= 10e12 ? 0 : 1).replace(/\.0$/, "") + "T";
-    if (n >= 1e9) return (n / 1e9).toFixed(n >= 10e9 ? 0 : 1).replace(/\.0$/, "") + "B";
-    if (n >= 1e6) return (n / 1e6).toFixed(n >= 10e6 ? 0 : 1).replace(/\.0$/, "") + "M";
-    if (n >= 1e4) return (n / 1e3).toFixed(0) + "K";
-    return Math.floor(n).toLocaleString("ru-RU");
+    if (n >= 1e12) return (n / 1e12).toFixed(1).replace(/\.0$/, "") + "T";
+    if (n >= 1e9) return (n / 1e9).toFixed(1).replace(/\.0$/, "") + "B";
+    if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+    if (n >= 1e4) return Math.round(n / 1000) + "K";
+    return Math.floor(n).toString();
   }
 
   function trailMult() {
@@ -131,16 +126,7 @@
   }
 
   function moveSpeed() {
-    const base = 2.8 + Math.log10(Math.max(10, speedStat)) * 1.6;
-    return base * (player.carry ? 0.62 : 1);
-  }
-
-  function powerScore(speed, mult, inc) {
-    return speed * mult * (1 + inc / 50);
-  }
-
-  function playerPower() {
-    return powerScore(speedStat, trailMult(), incomePerSec());
+    return (2.6 + Math.log10(Math.max(10, speedStat)) * 1.4) * (player.carry ? 0.65 : 1);
   }
 
   function isNight() {
@@ -166,32 +152,29 @@
     return eggFromType("basic");
   }
 
-  function rollEnemyEgg() {
-    return rollEggLucky();
-  }
-
   function initPedestals() {
     pedestals.length = 0;
     bases.forEach((base) => {
       const slots = base.id === "mine" ? baseSlots : 2;
       for (let i = 0; i < slots; i++) {
         const ang = (i / slots) * Math.PI * 2 - Math.PI / 2;
-        const dist = base.id === "mine" ? 58 : 48;
+        const dist = base.id === "mine" ? 46 : 38;
         pedestals.push({
           x: base.x + Math.cos(ang) * dist,
           y: base.y + Math.sin(ang) * dist,
           baseId: base.id,
           egg: null,
+          respawn: 0,
         });
       }
     });
     pedestals.forEach((p) => {
-      if (p.baseId !== "mine") p.egg = rollEnemyEgg();
+      if (p.baseId !== "mine") p.egg = rollEggLucky();
     });
   }
 
   function rebuildMySlots() {
-    const mineEggs = pedestals.filter((p) => p.baseId === "mine").map((p) => p.egg);
+    const eggs = pedestals.filter((p) => p.baseId === "mine").map((p) => p.egg);
     for (let i = pedestals.length - 1; i >= 0; i--) {
       if (pedestals[i].baseId === "mine") pedestals.splice(i, 1);
     }
@@ -199,10 +182,11 @@
     for (let i = 0; i < baseSlots; i++) {
       const ang = (i / baseSlots) * Math.PI * 2 - Math.PI / 2;
       pedestals.push({
-        x: mine.x + Math.cos(ang) * 58,
-        y: mine.y + Math.sin(ang) * 58,
+        x: mine.x + Math.cos(ang) * 46,
+        y: mine.y + Math.sin(ang) * 46,
         baseId: "mine",
-        egg: mineEggs[i] || null,
+        egg: eggs[i] || null,
+        respawn: 0,
       });
     }
   }
@@ -218,7 +202,7 @@
           trailId,
           baseSlots,
           lockBonus,
-          gameTime,
+          tut: tutorial.hidden,
           eggs: pedestals.filter((p) => p.baseId === "mine").map((p) => (p.egg ? p.egg.typeId : null)),
         })
       );
@@ -227,16 +211,18 @@
 
   function loadGame() {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return;
-      const d = JSON.parse(raw);
+      const d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+      if (!d) return;
       if (d.coins != null) coins = d.coins;
       if (d.speedStat != null) speedStat = d.speedStat;
       if (d.treadmillLv != null) treadmillLv = d.treadmillLv;
       if (d.trailId != null) trailId = d.trailId;
       if (d.baseSlots != null) baseSlots = d.baseSlots;
       if (d.lockBonus != null) lockBonus = d.lockBonus;
-      if (d.gameTime != null) gameTime = d.gameTime;
+      if (d.tut) {
+        tutorial.hidden = true;
+        paused = false;
+      }
       initPedestals();
       rebuildMySlots();
       if (Array.isArray(d.eggs)) {
@@ -248,12 +234,6 @@
     } catch (_) {}
   }
 
-  function showToast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    toastTimer = 2.4;
-  }
-
   function dist(ax, ay, bx, by) {
     return Math.hypot(ax - bx, ay - by);
   }
@@ -263,30 +243,46 @@
   }
 
   function incomePerSec() {
-    const mult = isNight() ? 1.12 : 1;
-    return myPedestals().reduce((s, p) => s + (p.egg ? p.egg.rate : 0), 0) * mult;
+    const m = isNight() ? 1.12 : 1;
+    return myPedestals().reduce((s, p) => s + (p.egg ? p.egg.rate : 0), 0) * m;
+  }
+
+  function playerPower() {
+    return speedStat * trailMult() * (1 + incomePerSec() / 50);
   }
 
   function getIndex() {
     const rows = [
-      { name: "ТЫ", speed: speedStat, power: playerPower(), me: true },
+      { name: "ТЫ", speed: speedStat, me: true },
       ...rivals.map((r) => ({
         name: r.name,
         speed: r.speed * (isNight() ? 0.85 : 1),
-        power: powerScore(r.speed, 1, 0),
         me: false,
       })),
     ];
-    rows.sort((a, b) => b.power - a.power);
+    rows.sort((a, b) => b.speed * (b.me ? trailMult() : 1) - a.speed * (a.me ? trailMult() : 1));
     return rows;
   }
 
-  function updateIndexUi() {
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    toastTimer = 2.2;
+  }
+
+  function updateHud() {
+    coinsEl.textContent = formatNum(coins);
+    incomeEl.innerHTML = "+" + formatNum(incomePerSec()) + '/сек · ⚡ <span id="speedStat">' + formatNum(speedStat) + "</span>";
+    carryEl.textContent = player.carry
+      ? "В руках: " + player.carry.emoji + " " + player.carry.name
+      : "В руках: пусто";
+    timeEl.textContent = isNight() ? "🌙 Ночь +12%" : "☀️ День";
+
     const rows = getIndex();
     indexList.innerHTML = "";
     rows.forEach((row, i) => {
       const li = document.createElement("li");
-      li.textContent = i + 1 + ". " + row.name + " · " + formatNum(row.speed);
+      li.textContent = i + 1 + ". " + row.name + " " + formatNum(row.speed);
       if (row.me) li.className = "me";
       indexList.appendChild(li);
     });
@@ -298,29 +294,19 @@
       rankEl.textContent = "Индекс: #" + myRank;
       rankEl.className = "rank";
     }
-  }
 
-  function updateHud() {
-    coinsEl.textContent = formatNum(coins);
-    incomeEl.textContent = formatNum(incomePerSec());
-    speedEl.textContent = formatNum(speedStat);
-    carryEl.textContent = player.carry
-      ? "В руках: " + player.carry.emoji + " " + player.carry.name
-      : "В руках: пусто";
-    timeEl.textContent = isNight() ? "🌙 Ночь (+12% доход)" : "☀️ День";
     const lockLeft = Math.max(0, lockUntil - performance.now());
     btnLock.disabled = lockLeft > 0;
     btnLock.textContent = lockLeft > 0 ? "🔒 " + Math.ceil(lockLeft / 1000) + "с" : "🔒 База";
-    updateIndexUi();
   }
 
-  function nearestPedestal(x, y, filter) {
+  function nearestPedestal(filter) {
     let best = null;
     let bestD = 999;
     pedestals.forEach((p) => {
       if (filter && !filter(p)) return;
-      const d = dist(x, y, p.x, p.y);
-      if (d < 44 && d < bestD) {
+      const d = dist(player.x, player.y, p.x, p.y);
+      if (d < 40 && d < bestD) {
         bestD = d;
         best = p;
       }
@@ -330,36 +316,24 @@
 
   function buyEgg(typeId) {
     const t = EGG_TYPES.find((e) => e.id === typeId);
-    if (!t || t.id === "final") return;
-    if (player.carry) {
-      showToast("Сначала поставь яйцо (E)");
-      return;
-    }
-    if (coins < t.price) {
-      showToast("Мало монет 🪙");
+    if (!t || t.id === "final" || player.carry || coins < t.price) {
+      if (player.carry) showToast("Поставь яйцо на базу (E)");
+      else showToast("Мало монет");
       return;
     }
     coins -= t.price;
     player.carry = eggFromType(typeId);
-    showToast("Купил: " + t.emoji + " " + t.name);
+    showToast("Купил " + t.emoji);
     saveGame();
     refreshShop();
     updateHud();
   }
 
   function buyLucky() {
-    if (player.carry) {
-      showToast("Руки заняты");
-      return;
-    }
-    if (coins < LUCKY_PRICE) {
-      showToast("Нужно " + LUCKY_PRICE + " 🪙");
-      return;
-    }
+    if (player.carry || coins < LUCKY_PRICE) return;
     coins -= LUCKY_PRICE;
-    const egg = rollEggLucky();
-    player.carry = egg;
-    showToast(egg.emoji + " Lucky: " + egg.name + "!");
+    player.carry = rollEggLucky();
+    showToast("Lucky: " + player.carry.emoji + " " + player.carry.name);
     saveGame();
     refreshShop();
     updateHud();
@@ -367,14 +341,10 @@
 
   function buyTrail(id) {
     const t = TRAILS.find((x) => x.id === id);
-    if (!t || trailId === id) return;
-    if (coins < t.price) {
-      showToast("Нужно " + formatNum(t.price) + " 🪙");
-      return;
-    }
+    if (!t || trailId === id || coins < t.price) return;
     coins -= t.price;
     trailId = id;
-    showToast("След: " + t.name + " x" + t.mult);
+    showToast("След: " + t.name);
     saveGame();
     refreshShop();
     updateHud();
@@ -385,7 +355,7 @@
     if (next >= TREADMILL_LEVELS.length) return;
     const cost = TREADMILL_LEVELS[next].price;
     if (coins < cost) {
-      showToast("Нужно " + formatNum(cost) + " 🪙");
+      showToast("Нужно " + formatNum(cost));
       return;
     }
     coins -= cost;
@@ -397,35 +367,20 @@
   }
 
   function buyBaseSlot() {
-    if (baseSlots >= 8) return;
-    const cost = 180 + baseSlots * 120;
-    if (coins < cost) {
-      showToast("Нужно " + formatNum(cost) + " 🪙");
-      return;
-    }
+    const cost = 150 + baseSlots * 100;
+    if (baseSlots >= 8 || coins < cost) return;
     coins -= cost;
     baseSlots++;
     rebuildMySlots();
-    showToast("Слот +" + baseSlots);
+    showToast("Слот " + baseSlots + "/8");
     saveGame();
     refreshShop();
     updateHud();
   }
 
-  function buyLockUpgrade() {
-    if (lockBonus >= 3) return;
-    const cost = 220 * (lockBonus + 1);
-    if (coins < cost) return;
-    coins -= cost;
-    lockBonus++;
-    showToast("Замок +" + (5 * lockBonus) + " сек");
-    saveGame();
-    refreshShop();
-  }
-
   function tryPlace() {
     if (!player.carry) return false;
-    const slot = nearestPedestal(player.x, player.y, (p) => p.baseId === "mine" && !p.egg);
+    const slot = nearestPedestal((p) => p.baseId === "mine" && !p.egg);
     if (!slot) return false;
     slot.egg = player.carry;
     player.carry = null;
@@ -436,35 +391,23 @@
 
   function trySteal() {
     if (player.carry) return false;
-    const slot = nearestPedestal(player.x, player.y, (p) => p.baseId !== "mine" && p.egg);
+    const slot = nearestPedestal((p) => p.baseId !== "mine" && p.egg);
     if (!slot) return false;
     player.carry = slot.egg;
     slot.egg = null;
-    showToast("Украл " + player.carry.emoji + "! Домой!");
-    return true;
-  }
-
-  function tryPickupOwn() {
-    if (player.carry) return false;
-    const slot = nearestPedestal(player.x, player.y, (p) => p.baseId === "mine" && p.egg);
-    if (!slot) return false;
-    player.carry = slot.egg;
-    slot.egg = null;
-    showToast("Взял яйцо");
-    saveGame();
+    showToast("Украл! Беги домой!");
     return true;
   }
 
   function doAction() {
-    if (tryPlace()) return;
-    if (trySteal()) return;
-    if (tryPickupOwn()) return;
-    showToast("Подойди к яйцу или слоту (E)");
+    if (paused) return;
+    if (tryPlace() || trySteal()) return;
+    showToast("Подойди к яйцу или слоту");
   }
 
   function lockBase() {
     if (lockUntil > performance.now()) return;
-    lockUntil = performance.now() + (12000 + lockBonus * 5000);
+    lockUntil = performance.now() + 12000 + lockBonus * 5000;
     showToast("База закрыта 🔒");
     updateHud();
   }
@@ -487,46 +430,45 @@
         " " +
         t.name +
         '<span class="price">' +
-        (t.price ? formatNum(t.price) + " 🪙" : "бесплатно") +
+        (t.price ? formatNum(t.price) : "0") +
         " · +" +
         t.rate +
-        "/с</span></button>";
+        "</span></button>";
     });
     eggs += "</div>";
     paneHtml("eggs", eggs);
     panes.eggs.querySelectorAll("[data-egg]").forEach((btn) => {
-      btn.addEventListener("click", () => buyEgg(btn.dataset.egg));
+      btn.onclick = () => buyEgg(btn.dataset.egg);
     });
 
     const lv = TREADMILL_LEVELS[treadmillLv];
     const next = TREADMILL_LEVELS[treadmillLv + 1];
-    paneHtml(
-      "lucky",
+    let lucky =
       '<div class="shop-row">' +
-        '<button type="button"' +
-        (coins < LUCKY_PRICE || player.carry ? " disabled" : "") +
-        ' id="btnLucky">🎰 Lucky яйцо<span class="price">' +
-        LUCKY_PRICE +
-        " 🪙 · редкое почти не падает</span></button>" +
-        (next
-          ? '<button type="button"' +
-            (coins < next.price ? " disabled" : "") +
-            ' id="btnTmill">🏃 Дорожка → ' +
-            next.label +
-            '<span class="price">' +
-            formatNum(next.price) +
-            " 🪙 · +" +
-            formatNum(next.gain) +
-            "/с на дорожке</span></button>"
-          : '<button type="button" disabled>Дорожка MAX</button>') +
-        "</div>" +
-        '<p class="shop-hint">Сейчас на дорожке: +' +
-        formatNum(treadmillGain()) +
-        " ⚡/сек · уровень «" +
-        lv.label +
-        "»</p>" +
-        '<p class="shop-hint">Lucky: обычное 60% · золото 25% · редкое 12% · эпик 2.5% · дракон 0.4% · ФИНАЛ 0.1%</p>"
-    );
+      '<button type="button" id="btnLucky"' +
+      (coins < LUCKY_PRICE || player.carry ? " disabled" : "") +
+      ">🎰 Lucky " +
+      LUCKY_PRICE +
+      "</button>";
+    if (next) {
+      lucky +=
+        '<button type="button" id="btnTmill"' +
+        (coins < next.price ? " disabled" : "") +
+        ">🏃 " +
+        next.label +
+        " " +
+        formatNum(next.price) +
+        "</button>";
+    }
+    lucky += "</div>";
+    lucky +=
+      '<p class="shop-hint">Дорожка: +' +
+      formatNum(treadmillGain()) +
+      "/с · " +
+      lv.label +
+      "</p>";
+    lucky += '<p class="shop-hint">Lucky: обыч 62% · золото 24% · редк 11% · эпик 2% · дракон 0.8%</p>';
+    paneHtml("lucky", lucky);
     document.getElementById("btnLucky").onclick = buyLucky;
     const bt = document.getElementById("btnTmill");
     if (bt) bt.onclick = upgradeTreadmill;
@@ -539,65 +481,55 @@
         (trailId === t.id || coins < t.price ? " disabled" : "") +
         ' data-tr="' +
         t.id +
-        '">' +
-        (t.id === "none" ? "—" : "👣") +
+        '">x' +
+        t.mult +
         " " +
         t.name +
-        '<span class="price">x' +
-        t.mult +
-        " · " +
-        (t.price ? formatNum(t.price) + " 🪙" : "бесплатно") +
+        '<span class="price">' +
+        formatNum(t.price) +
         "</span></button>";
     });
     tr += "</div>";
     paneHtml("trail", tr);
     panes.trail.querySelectorAll("[data-tr]").forEach((btn) => {
-      btn.addEventListener("click", () => buyTrail(btn.dataset.tr));
+      btn.onclick = () => buyTrail(btn.dataset.tr);
     });
 
-    const slotCost = 180 + baseSlots * 120;
+    const slotCost = 150 + baseSlots * 100;
     paneHtml(
       "base",
       '<div class="shop-row">' +
-        '<button type="button"' +
+        '<button type="button" id="btnSlot"' +
         (baseSlots >= 8 || coins < slotCost ? " disabled" : "") +
-        ' id="btnSlot">+ слот (' +
-        baseSlots +
-        "/8)<span class=\"price\">" +
+        ">+ слот " +
         formatNum(slotCost) +
-        " 🪙</span></button>" +
-        '<button type="button"' +
-        (lockBonus >= 3 || coins < 220 * (lockBonus + 1) ? " disabled" : "") +
-        ' id="btnLockUp">Замок дольше<span class="price">' +
-        formatNum(220 * (lockBonus + 1)) +
-        " 🪙</span></button>" +
-        "</div>" +
-        '<p class="shop-hint">База дешевле чем в Roblox — качай постепенно</p>'
+        "</button></div>"
     );
     document.getElementById("btnSlot").onclick = buyBaseSlot;
-    document.getElementById("btnLockUp").onclick = buyLockUpgrade;
   }
 
   document.querySelectorAll(".shop-tabs .tab").forEach((tab) => {
-    tab.addEventListener("click", () => {
+    tab.onclick = () => {
       document.querySelectorAll(".shop-tabs .tab").forEach((t) => t.classList.remove("on"));
       document.querySelectorAll(".shop-pane").forEach((p) => p.classList.remove("on"));
       tab.classList.add("on");
       panes[tab.dataset.tab].classList.add("on");
-    });
+    };
   });
 
+  btnStart.onclick = () => {
+    tutorial.hidden = true;
+    paused = false;
+    saveGame();
+  };
+
   function updatePrompt() {
-    let text = "";
-    if (onTreadmill) text = "🏃 Качаешь скорость +" + formatNum(treadmillGain()) + "/с";
-    else if (player.carry) {
-      if (nearestPedestal(player.x, player.y, (p) => p.baseId === "mine" && !p.egg)) text = "E — на базу";
-    } else {
-      const steal = nearestPedestal(player.x, player.y, (p) => p.baseId !== "mine" && p.egg);
-      if (steal) text = "E — украсть " + steal.egg.emoji;
-    }
-    promptEl.style.display = text ? "block" : "none";
-    promptEl.textContent = text;
+    let t = "";
+    if (onTreadmill) t = "🏃 Качаешь +" + formatNum(treadmillGain()) + "/с";
+    else if (player.carry && nearestPedestal((p) => p.baseId === "mine" && !p.egg)) t = "E — на базу";
+    else if (!player.carry && nearestPedestal((p) => p.baseId !== "mine" && p.egg)) t = "E — украсть!";
+    promptEl.style.display = t ? "block" : "none";
+    promptEl.textContent = t;
   }
 
   function movePlayer(dt) {
@@ -619,80 +551,64 @@
       const tr = TRAILS.find((t) => t.id === trailId);
       if (tr && tr.color) {
         trailDots.push({ x: player.x, y: player.y, life: 1, color: tr.color });
-        if (trailDots.length > 40) trailDots.shift();
+        if (trailDots.length > 30) trailDots.shift();
       }
     }
-    player.x = Math.max(24, Math.min(MW - 24, player.x));
-    player.y = Math.max(24, Math.min(MH - 24, player.y));
+    player.x = Math.max(20, Math.min(W - 20, player.x));
+    player.y = Math.max(20, Math.min(H - 140, player.y));
 
     onTreadmill =
       player.x > treadmill.x - treadmill.w / 2 &&
       player.x < treadmill.x + treadmill.w / 2 &&
       player.y > treadmill.y - treadmill.h / 2 &&
       player.y < treadmill.y + treadmill.h / 2;
-    if (onTreadmill) speedStat += treadmillGain() * dt;
+    if (onTreadmill && !paused) speedStat += treadmillGain() * dt;
   }
 
-  function updateRivals(dt) {
+  function updateNpcs(dt) {
     npcTimer -= dt;
-    if (npcTimer > 0) return;
-    npcTimer = 3 + Math.random() * 2;
-    if (lockUntil > performance.now()) return;
-
+    if (npcTimer > 0 || lockUntil > performance.now()) return;
+    npcTimer = 3;
     rivals.forEach((npc) => {
       if (npc.carry) {
-        const home = bases[1];
-        const d = dist(npc.x, npc.y, home.x, home.y);
-        if (d > 40) {
-          const dx = home.x - npc.x;
-          const dy = home.y - npc.y;
-          const l = Math.hypot(dx, dy) || 1;
-          npc.x += (dx / l) * 2 * dt * 60;
-          npc.y += (dy / l) * 2 * dt * 60;
-        } else {
-          npc.carry = null;
-          showToast(npc.name + " унёс яйцо!");
-        }
+        const d = dist(npc.x, npc.y, 830, 130);
+        if (d > 30) {
+          npc.x += ((830 - npc.x) / d) * 2 * dt * 60;
+          npc.y += ((130 - npc.y) / d) * 2 * dt * 60;
+        } else npc.carry = null;
         return;
       }
       const slots = myPedestals().filter((p) => p.egg);
-      if (!slots.length || Math.random() > 0.35) return;
+      if (!slots.length || Math.random() > 0.4) return;
       const target = slots[Math.floor(Math.random() * slots.length)];
       const d = dist(npc.x, npc.y, target.x, target.y);
-      if (d > 45) {
-        const dx = target.x - npc.x;
-        const dy = target.y - npc.y;
-        const l = Math.hypot(dx, dy) || 1;
-        npc.x += (dx / l) * 2.2 * dt * 60;
-        npc.y += (dy / l) * 2.2 * dt * 60;
+      if (d > 35) {
+        npc.x += ((target.x - npc.x) / d) * 2.2 * dt * 60;
+        npc.y += ((target.y - npc.y) / d) * 2.2 * dt * 60;
       } else {
         npc.carry = target.egg;
         target.egg = null;
-        showToast("⚠️ " + npc.name + " украл!");
-      }
-    });
-  }
-
-  function respawnEnemyEggs(dt) {
-    pedestals.forEach((p) => {
-      if (p.baseId === "mine" || p.egg) return;
-      p.respawn = (p.respawn || 0) + dt;
-      if (p.respawn > 8) {
-        p.egg = rollEnemyEgg();
-        p.respawn = 0;
+        showToast(npc.name + " украл!");
       }
     });
   }
 
   function update(dt) {
+    if (paused) return;
     gameTime += dt;
     movePlayer(dt);
-    updateRivals(dt);
-    respawnEnemyEggs(dt);
-
+    updateNpcs(dt);
+    pedestals.forEach((p) => {
+      if (p.baseId === "mine" || p.egg) return;
+      p.respawn += dt;
+      if (p.respawn > 10) {
+        p.egg = rollEggLucky();
+        p.respawn = 0;
+      }
+    });
     incomeTimer += dt;
     if (incomeTimer >= 1) {
-      incomeTimer -= 1;
+      incomeTimer = 0;
       coins += incomePerSec();
       saveGame();
       refreshShop();
@@ -702,125 +618,117 @@
       if (toastTimer <= 0) toastEl.classList.remove("show");
     }
     trailDots.forEach((d) => {
-      d.life -= dt * 2;
+      d.life -= dt * 2.5;
     });
     trailDots = trailDots.filter((d) => d.life > 0);
-
     updateHud();
     updatePrompt();
   }
 
-  const cam = { x: 0, y: 0 };
+  function drawRoad(x1, y1, x2, y2) {
+    ctx.strokeStyle = "#d4a574";
+    ctx.lineWidth = 28;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.strokeStyle = "#e8c9a0";
+    ctx.lineWidth = 18;
+    ctx.stroke();
+  }
 
-  function drawEgg(x, y, egg, scale) {
-    scale = scale || 1;
+  function drawZone(base) {
+    const locked = base.id === "mine" && lockUntil > performance.now();
+    ctx.fillStyle = base.fill + "66";
+    ctx.beginPath();
+    ctx.arc(base.x, base.y, base.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = locked ? "#fde68a" : base.stroke;
+    ctx.lineWidth = locked ? 4 : 3;
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.strokeText(base.name, base.x, base.y - base.r - 8);
+    ctx.fillText(base.name, base.x, base.y - base.r - 8);
+  }
+
+  function drawEgg(x, y, egg) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(scale, scale);
     ctx.fillStyle = egg.color;
     ctx.beginPath();
-    ctx.ellipse(0, 0, 14, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, 12, 15, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+    ctx.strokeStyle = "#00000044";
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.font = "16px system-ui";
+    ctx.font = "14px system-ui";
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
     ctx.fillText(egg.emoji, 0, 1);
     ctx.restore();
   }
 
-  function drawSign(s) {
-    ctx.fillStyle = "rgba(15,23,42,0.88)";
-    ctx.strokeStyle = "#fde68a";
-    ctx.lineWidth = 2;
-    const w = 150;
-    const h = 52 + s.lines.length * 14;
-    ctx.fillRect(s.x - w / 2, s.y - h / 2, w, h);
-    ctx.strokeRect(s.x - w / 2, s.y - h / 2, w, h);
-    ctx.fillStyle = "#fde68a";
-    ctx.font = "bold 12px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText(s.title, s.x, s.y - h / 2 + 16);
-    ctx.fillStyle = "#e2e8f0";
-    ctx.font = "10px system-ui";
-    s.lines.forEach((line, i) => {
-      ctx.fillText(line, s.x, s.y - h / 2 + 32 + i * 14);
-    });
-  }
-
   function draw() {
-    cam.x = Math.max(0, Math.min(MW - VW, player.x - VW / 2));
-    cam.y = Math.max(0, Math.min(MH - VH, player.y - VH / 2));
     const night = isNight();
 
-    ctx.fillStyle = night ? "#1e293b" : "#4ade80";
-    ctx.fillRect(0, 0, VW, VH);
-
-    ctx.save();
-    ctx.translate(-cam.x, -cam.y);
-    if (night) ctx.globalAlpha = 0.72;
-
-    for (let gx = 0; gx < MW; gx += 40) {
-      for (let gy = 0; gy < MH; gy += 40) {
-        ctx.fillStyle = night
-          ? (gx + gy) % 80 === 0
-            ? "#14532d"
-            : "#166534"
-          : (gx + gy) % 80 === 0
-            ? "#22c55e"
-            : "#4ade80";
-        ctx.fillRect(gx, gy, 40, 40);
-      }
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    if (night) {
+      sky.addColorStop(0, "#1e1b4b");
+      sky.addColorStop(1, "#312e81");
+    } else {
+      sky.addColorStop(0, "#7dd3fc");
+      sky.addColorStop(1, "#86efac");
     }
-    ctx.globalAlpha = 1;
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = night ? "rgba(30,58,95,0.5)" : "rgba(168,85,247,0.22)";
+    ctx.fillStyle = night ? "#166534" : "#4ade80";
+    ctx.fillRect(0, H * 0.35, W, H);
+
+    drawRoad(130, 500, 480, 300);
+    drawRoad(830, 500, 480, 300);
+    drawRoad(130, 130, 480, 300);
+    drawRoad(830, 130, 480, 300);
+    drawRoad(130, 500, 280, 500);
+
+    ctx.fillStyle = onTreadmill ? "#fde68a" : "#94a3b8";
+    ctx.fillRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 11px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("🏃 " + treadmill.label, treadmill.x, treadmill.y + 4);
+
+    ctx.fillStyle = "rgba(168,85,247,0.35)";
     ctx.beginPath();
     ctx.arc(shop.x, shop.y, shop.r, 0, Math.PI * 2);
     ctx.fill();
-
-    ctx.fillStyle = "#64748b";
-    ctx.fillRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
-    ctx.strokeStyle = onTreadmill ? "#fde68a" : "#94a3b8";
-    ctx.lineWidth = onTreadmill ? 4 : 2;
-    ctx.strokeRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
+    ctx.strokeStyle = "#c084fc";
+    ctx.lineWidth = 3;
+    ctx.stroke();
     ctx.fillStyle = "#fff";
     ctx.font = "bold 12px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("🏃 ДОРОЖКА", treadmill.x, treadmill.y + 4);
+    ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 4);
 
-    signs.forEach(drawSign);
-
-    bases.forEach((base) => {
-      const locked = base.id === "mine" && lockUntil > performance.now();
-      ctx.fillStyle = base.color + (night ? "44" : "55");
-      ctx.beginPath();
-      ctx.arc(base.x, base.y, base.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = locked ? "#fde68a" : base.border;
-      ctx.lineWidth = locked ? 5 : 3;
-      ctx.stroke();
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 13px system-ui";
-      ctx.textAlign = "center";
-      ctx.fillText(base.name + (locked ? " 🔒" : ""), base.x, base.y - base.r - 10);
-    });
+    bases.forEach(drawZone);
 
     pedestals.forEach((p) => {
       ctx.fillStyle = "#64748b";
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 12, 0, Math.PI * 2);
-      ctx.fill();
-      if (p.egg) drawEgg(p.x, p.y - 18, p.egg);
+      ctx.fillRect(p.x - 10, p.y - 4, 20, 8);
+      if (p.egg) drawEgg(p.x, p.y - 16, p.egg);
     });
 
     trailDots.forEach((d) => {
-      ctx.globalAlpha = d.life * 0.6;
+      ctx.globalAlpha = d.life * 0.7;
       ctx.fillStyle = d.color;
       ctx.beginPath();
-      ctx.arc(d.x, d.y, 6, 0, Math.PI * 2);
+      ctx.arc(d.x, d.y, 5, 0, Math.PI * 2);
       ctx.fill();
     });
     ctx.globalAlpha = 1;
@@ -828,17 +736,17 @@
     rivals.forEach((npc) => {
       ctx.fillStyle = npc.color;
       ctx.beginPath();
-      ctx.arc(npc.x, npc.y, 14, 0, Math.PI * 2);
+      ctx.arc(npc.x, npc.y, 12, 0, Math.PI * 2);
       ctx.fill();
-      if (npc.carry) drawEgg(npc.x, npc.y - 28, npc.carry, 0.85);
+      if (npc.carry) drawEgg(npc.x, npc.y - 22, npc.carry);
     });
 
     const rows = getIndex();
     if (rows[0] && rows[0].me) {
       ctx.strokeStyle = "#fde68a";
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(player.x, player.y, player.r + 8, 0, Math.PI * 2);
+      ctx.arc(player.x, player.y, player.r + 7, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -847,16 +755,14 @@
     ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2;
     ctx.stroke();
-    if (player.carry) drawEgg(player.x, player.y - 32, player.carry);
+    if (player.carry) drawEgg(player.x, player.y - 26, player.carry);
 
     if (night) {
-      ctx.fillStyle = "rgba(15,23,42,0.35)";
-      ctx.fillRect(cam.x, cam.y, VW, VH);
+      ctx.fillStyle = "rgba(15,23,42,0.28)";
+      ctx.fillRect(0, 0, W, H);
     }
-
-    ctx.restore();
   }
 
   window.addEventListener("keydown", (e) => {
@@ -870,11 +776,11 @@
     keys[e.code] = false;
   });
 
-  btnLock.addEventListener("click", lockBase);
-  actBtn.addEventListener("click", (e) => {
+  btnLock.onclick = lockBase;
+  actBtn.onclick = (e) => {
     e.preventDefault();
     doAction();
-  });
+  };
 
   function bindStick(el) {
     el.addEventListener("pointerdown", (e) => {
@@ -888,8 +794,8 @@
       if (!stick.active || e.pointerId !== stick.pid) return;
       let dx = e.clientX - stick.ox;
       let dy = e.clientY - stick.oy;
-      const max = 42;
-      const len = Math.hypot(dx, dy);
+      const max = 40;
+      const len = Math.hypot(dx, dy) || 1;
       if (len > max) {
         dx = (dx / len) * max;
         dy = (dy / len) * max;
@@ -912,8 +818,7 @@
   loadGame();
   refreshShop();
   updateHud();
-  statusEl.textContent = "Дорожка у базы · индекс справа · стань ФИНАЛЬНЫМ";
-  setInterval(saveGame, 15000);
+  setInterval(saveGame, 12000);
 
   let last = performance.now();
   function loop(now) {

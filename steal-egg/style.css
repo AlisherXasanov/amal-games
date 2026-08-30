@@ -56,6 +56,69 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+#amal-world-canvas {
+  display: none !important;
+}
+
+.help-bar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+  color: #e2e8f0;
+  pointer-events: none;
+}
+
+.tutorial {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.tutorial-card {
+  width: min(420px, 92vw);
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: linear-gradient(165deg, #1e293b, #0f172a);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-card h2 {
+  margin-bottom: 10px;
+  color: #fde68a;
+  font-size: 20px;
+}
+
+.tutorial-card ol {
+  margin: 0 0 14px 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.tutorial-card button {
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #fff;
+  font: 800 15px system-ui, sans-serif;
+  cursor: pointer;
 }
 
 .hud {

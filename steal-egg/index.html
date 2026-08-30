@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укради яйцо — Amal Games</title>
-  <meta name="description" content="2D как в Roblox: база, яйца, дорожка, следы, день/ночь и финальный босс." />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <meta name="description" content="2D как в Roblox: база, яйца, дорожка, воровство." />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -17,22 +17,22 @@
       <div class="hud" id="hud">
         <div class="time" id="timeLabel">☀️ День</div>
         <div class="coins">🪙 <span id="coins">100</span></div>
-        <div class="income">+<span id="income">0</span>/сек</div>
-        <div class="speed">⚡ Скорость: <span id="speedStat">1</span></div>
+        <div class="income">+<span id="income">0</span>/сек · ⚡ <span id="speedStat">1</span></div>
         <div class="rank" id="rankLabel">Индекс: #4</div>
         <div class="carry" id="carry">В руках: пусто</div>
-        <div class="status" id="status">Стань на дорожку у базы — качай скорость</div>
       </div>
 
       <div class="index-panel" id="indexPanel">
-        <div class="index-title">📊 Индекс силы</div>
+        <div class="index-title">📊 Кто босс</div>
         <ol id="indexList"></ol>
       </div>
+
+      <div class="help-bar">WASD — бег · <b>E</b> — взять / украсть / поставить</div>
 
       <div class="shop" id="shop">
         <div class="shop-tabs">
           <button type="button" class="tab on" data-tab="eggs">🥚 Яйца</button>
-          <button type="button" class="tab" data-tab="lucky">🎰 Лucky</button>
+          <button type="button" class="tab" data-tab="lucky">🎰 Lucky</button>
           <button type="button" class="tab" data-tab="trail">👣 Следы</button>
           <button type="button" class="tab" data-tab="base">🏠 База</button>
         </div>
@@ -51,11 +51,25 @@
       </div>
 
       <button type="button" class="btn-lock" id="btnLock">🔒 База</button>
+
+      <div class="tutorial" id="tutorial">
+        <div class="tutorial-card">
+          <h2>🥚 Укради яйцо</h2>
+          <ol>
+            <li><b>Зелёная база</b> — твоя. Ставь яйца на пьедесталы.</li>
+            <li><b>Серая дорожка</b> — встань и качай скорость ⚡</li>
+            <li><b>Фиолетовый круг</b> — магазин (кнопки внизу)</li>
+            <li><b>Чужие базы</b> — подойди и жми <b>E</b>, укради яйцо!</li>
+          </ol>
+          <button type="button" id="btnStart">Погнали!</button>
+        </div>
+      </div>
     </div>
   </div>
 
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
-  <script src="./game.js?v=2"></script>
+  <script src="./game.js?v=3"></script>
   <script src="../shared/amal-hub.js?v=66"></script>
 </body>
 </html>
