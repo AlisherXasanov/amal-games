@@ -41,6 +41,10 @@
       font-weight: 800; font-size: 14px; color: #fff; margin-right: 10px; white-space: nowrap;
     }
     .ribbon .logo span { color: #4fc3f7; }
+    .ver-badge {
+      display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 4px;
+      background: #16825d; color: #fff; font: 800 10px inherit; vertical-align: middle;
+    }
     .ribbon a.back {
       color: #9cdcfe; text-decoration: none; font-weight: 700; font-size: 12px; margin-right: 8px;
     }
@@ -189,7 +193,7 @@
   <div class="studio">
     <header class="ribbon">
       <a class="back" href="./">← Lab</a>
-      <div class="logo">Amal <span>Studio</span></div>
+      <div class="logo">Amal <span>Studio</span> <span class="ver-badge" id="ver-badge">v8</span></div>
       <div class="sep"></div>
       <button type="button" class="tool-btn on" data-mode="select" title="Выбор">
         <span class="ico">↖</span> Выбор
@@ -207,6 +211,7 @@
         <span class="ico">⬜</span> Hit
       </button>
       <div class="sep"></div>
+      <button type="button" class="tool-btn on" id="btn-grid" title="Сетка">
         <span class="ico">#</span> Сетка
       </button>
       <button type="button" class="tool-btn" id="btn-snap" title="Привязка">
@@ -258,7 +263,7 @@
     </div>
 
     <footer class="status">
-      <span id="status-text">Amal Studio v7 · заготовка не выбрана</span>
+      <span id="status-text">Amal Studio v8 · загрузка…</span>
       <button type="button" id="btn-save">💾 Сохранить</button>
       <button type="button" id="btn-load">📂 Загрузить</button>
       <button type="button" id="btn-export">⬇ Скачать карту</button>
@@ -269,6 +274,6 @@
 
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script src="../shared/amal-walk-player.js?v=1"></script>
-  <script type="module" src="./studio3d.js?v=7"></script>
+  <script type="module" src="./studio3d.js?v=8"></script>
 </body>
 </html>

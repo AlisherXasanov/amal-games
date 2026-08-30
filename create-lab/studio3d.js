@@ -15,9 +15,10 @@ import {
 } from "./studio3d-catalog.js?v=5";
 import { renderPrefabPreview, preloadCategoryPreviews, getPreviewUrl } from "./studio3d-previews.js?v=2";
 
-import { buildNpcPrefabs, animateNpcRig } from "./studio3d-npc.js?v=2";
+import { buildNpcPrefabs, animateNpcRig } from "./studio3d-npc.js?v=3";
 
-const STUDIO_VERSION = "v7";
+const STUDIO_VERSION = "v8";
+const STORAGE = "amal-studio-world-v6";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -46,6 +47,10 @@ let speechRec = null;
 const soundState = new Map();
 const pickedUp = new Set();
 let previewsReady = false;
+
+function setStatus(msg) {
+  if (statusText) statusText.textContent = "Amal Studio " + STUDIO_VERSION + " · " + msg;
+}
 
 function toast(msg) {
   toastEl.textContent = msg;
@@ -774,9 +779,9 @@ function renderToolbox() {
       document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === "select"));
       renderToolbox();
       updateGhost();
-      statusText.textContent = placementPrefab
-        ? "Клик — поставить «" + pf.name + "» (картинка = как будет)"
-        : "Выбери предмет — видишь как выглядит";
+      setStatus(placementPrefab
+        ? "Клик по зелёной земле — поставить «" + pf.name + "»"
+        : "выбери предмет слева");
     };
     prefabList.appendChild(btn);
   });
@@ -1368,5 +1373,8 @@ try {
 }
 updateShopUI();
 document.getElementById("btn-export")?.addEventListener("click", exportMap);
+const verBadge = document.getElementById("ver-badge");
+if (verBadge) verBadge.textContent = STUDIO_VERSION;
+setStatus("вкладка 🎮 → NPC ходят · клик по земле — поставить");
 toast("Amal Studio " + STUDIO_VERSION + " · вкладка 🎮 → NPC ходят!");
 setTimeout(startPreviewGeneration, 1500);
