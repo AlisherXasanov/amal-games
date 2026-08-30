@@ -22,7 +22,10 @@
   let audioCtx = null;
   let masterGain = null;
   let activeLoops = new Map();
+  let loopGains = new Map();
+  let audioReady = false;
   let stretchTimer = null;
+  let breakTimer = null;
 
   function toast(msg) {
     const el = $("toast");
@@ -32,44 +35,63 @@
     toast._t = setTimeout(() => el.classList.remove("show"), 2800);
   }
 
-  function ensureAudio() {
+  async function ensureAudio() {
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       masterGain = audioCtx.createGain();
       masterGain.connect(audioCtx.destination);
     }
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    masterGain.gain.value = ($("vol").value / 100) * 0.85;
+    if (audioCtx.state === "suspended") await audioCtx.resume();
+    masterGain.gain.value = vol();
+    if (!audioReady) {
+      audioReady = true;
+      const hint = $("audio-hint");
+      if (hint) { hint.textContent = "🔊 Звук включён — жми кнопки!"; hint.classList.add("ok"); }
+      const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+      const s = audioCtx.createBufferSource();
+      s.buffer = buf;
+      s.connect(masterGain);
+      s.start();
+    }
   }
 
-  function vol() { return ($("vol").value / 100) * 0.85; }
+  function vol() { return Math.max(0.05, ($("vol").value / 100) * 0.95); }
 
-  /* ── ASMR sound synth ── */
+  function setLoopVol(id, v) {
+    const g = loopGains.get(id);
+    if (g) g.gain.value = v;
+  }
+
+  /* ── ASMR sound synth (как squish/pop в видео) ── */
   function playTone(freq, dur, type, gain) {
-    ensureAudio();
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
     o.type = type || "sine";
-    o.frequency.value = freq;
-    g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(gain * vol(), audioCtx.currentTime + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001, gain * vol()), t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
     o.connect(g);
     g.connect(masterGain);
-    o.start();
-    o.stop(audioCtx.currentTime + dur + 0.05);
+    o.start(t0);
+    o.stop(t0 + dur + 0.06);
   }
 
-  function noiseBurst(dur, filterFreq, gain) {
-    ensureAudio();
-    const len = audioCtx.sampleRate * dur;
+  function noiseBurst(dur, filterFreq, gain, type) {
+    if (!audioCtx) return;
+    const len = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
     const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
     const d = buf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    for (let i = 0; i < len; i++) {
+      const t = i / len;
+      d[i] = (Math.random() * 2 - 1) * (1 - t * 0.85);
+    }
     const src = audioCtx.createBufferSource();
     src.buffer = buf;
     const filt = audioCtx.createBiquadFilter();
-    filt.type = "lowpass";
+    filt.type = type || "lowpass";
     filt.frequency.value = filterFreq;
     const g = audioCtx.createGain();
     g.gain.value = gain * vol();
@@ -80,109 +102,134 @@
   }
 
   function squishSound() {
-    playTone(120 + Math.random() * 40, 0.15, "sine", 0.25);
-    setTimeout(() => playTone(80, 0.2, "triangle", 0.15), 40);
+    ensureAudio();
+    playTone(140 + Math.random() * 30, 0.12, "sine", 0.45);
+    setTimeout(() => playTone(70 + Math.random() * 20, 0.18, "triangle", 0.35), 35);
+    setTimeout(() => noiseBurst(0.06, 900, 0.2, "bandpass"), 20);
   }
 
   function iceCrack() {
-    noiseBurst(0.08, 4000, 0.35);
-    playTone(800 + Math.random() * 400, 0.06, "square", 0.08);
+    ensureAudio();
+    noiseBurst(0.1, 5000, 0.55, "highpass");
+    playTone(1200 + Math.random() * 600, 0.04, "square", 0.15);
+    setTimeout(() => noiseBurst(0.05, 3000, 0.3, "bandpass"), 40);
   }
 
   function popSound() {
-    playTone(300 + Math.random() * 200, 0.05, "sine", 0.2);
+    ensureAudio();
+    playTone(280 + Math.random() * 180, 0.06, "sine", 0.4);
+    noiseBurst(0.04, 2200, 0.25, "bandpass");
   }
 
   function tapSound() {
-    playTone(900 + Math.random() * 300, 0.04, "triangle", 0.12);
+    ensureAudio();
+    playTone(800 + Math.random() * 400, 0.05, "triangle", 0.25);
+  }
+
+  function bellSound() {
+    ensureAudio();
+    [660, 880, 660].forEach((f, i) => setTimeout(() => playTone(f, 0.35, "sine", 0.35 - i * 0.05), i * 180));
   }
 
   const SOUNDS = [
     { id: "rain", icon: "🌧", label: "Дождь", loop: true, start() {
-      ensureAudio();
-      const len = audioCtx.sampleRate * 2;
+      const len = audioCtx.sampleRate * 3;
       const buf = audioCtx.createBuffer(2, len, audioCtx.sampleRate);
       for (let ch = 0; ch < 2; ch++) {
         const d = buf.getChannelData(ch);
-        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.4;
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.55;
       }
       const src = audioCtx.createBufferSource();
       src.buffer = buf;
       src.loop = true;
       const f = audioCtx.createBiquadFilter();
       f.type = "bandpass";
-      f.frequency.value = 800;
-      f.Q.value = 0.4;
+      f.frequency.value = 900;
+      f.Q.value = 0.35;
       const g = audioCtx.createGain();
-      g.gain.value = 0.12 * vol();
+      g.gain.value = 0.22 * vol();
+      loopGains.set("rain", g);
       src.connect(f);
       f.connect(g);
       g.connect(masterGain);
       src.start();
-      return { stop: () => { try { src.stop(); } catch (_) {} } };
+      return { stop: () => { try { src.stop(); loopGains.delete("rain"); } catch (_) {} } };
     }},
     { id: "wind", icon: "🍃", label: "Ветер", loop: true, start() {
-      ensureAudio();
-      const o = audioCtx.createOscillator();
-      o.type = "sawtooth";
-      o.frequency.value = 55;
-      const g = audioCtx.createGain();
-      g.gain.value = 0.04 * vol();
+      const len = audioCtx.sampleRate * 4;
+      const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.loop = true;
       const f = audioCtx.createBiquadFilter();
       f.type = "lowpass";
-      f.frequency.value = 400;
-      o.connect(f);
+      f.frequency.value = 450;
+      const g = audioCtx.createGain();
+      g.gain.value = 0.18 * vol();
+      loopGains.set("wind", g);
+      src.connect(f);
       f.connect(g);
       g.connect(masterGain);
-      o.start();
-      return { stop: () => { try { o.stop(); } catch (_) {} } };
+      src.start();
+      return { stop: () => { try { src.stop(); loopGains.delete("wind"); } catch (_) {} } };
     }},
     { id: "fire", icon: "🔥", label: "Костёр", loop: true, start() {
-      ensureAudio();
-      const id = setInterval(() => noiseBurst(0.15, 600, 0.08 + Math.random() * 0.06), 180 + Math.random() * 120);
+      const id = setInterval(() => {
+        ensureAudio();
+        noiseBurst(0.18, 700, 0.14 + Math.random() * 0.08);
+        if (Math.random() < 0.3) playTone(180 + Math.random() * 80, 0.08, "triangle", 0.08);
+      }, 160 + Math.random() * 100);
       return { stop: () => clearInterval(id) };
     }},
     { id: "heart", icon: "💓", label: "Сердце", loop: true, start() {
-      const id = setInterval(() => playTone(52, 0.12, "sine", 0.18), 900);
+      const id = setInterval(() => { ensureAudio(); playTone(58, 0.14, "sine", 0.35); }, 850);
       return { stop: () => clearInterval(id) };
     }},
     { id: "purrs", icon: "🐱", label: "Мур", loop: true, start() {
       const id = setInterval(() => {
-        playTone(25 + Math.random() * 8, 0.3, "sine", 0.12);
-        noiseBurst(0.2, 200, 0.06);
-      }, 1400);
+        ensureAudio();
+        playTone(28 + Math.random() * 10, 0.35, "sine", 0.22);
+        noiseBurst(0.25, 250, 0.1);
+      }, 1200);
       return { stop: () => clearInterval(id) };
     }},
     { id: "typing", icon: "⌨", label: "Клавиши", loop: false, play() {
-      const keys = [0, 80, 160, 100, 200];
-      keys.forEach((d, i) => setTimeout(() => tapSound(), d));
+      [0, 70, 140, 90, 200, 260].forEach((d) => setTimeout(tapSound, d));
     }},
     { id: "bubble", icon: "🫧", label: "Пузыри", loop: false, play() {
-      for (let i = 0; i < 5; i++) setTimeout(() => { playTone(400 + i * 80, 0.08, "sine", 0.1); popSound(); }, i * 220);
+      for (let i = 0; i < 6; i++) setTimeout(() => popSound(), i * 200);
     }},
     { id: "water", icon: "💧", label: "Вода", loop: true, start() {
-      const id = setInterval(() => noiseBurst(0.25, 1200, 0.07), 350);
+      const id = setInterval(() => { ensureAudio(); noiseBurst(0.3, 1400, 0.12, "bandpass"); }, 280);
       return { stop: () => clearInterval(id) };
     }},
     { id: "night", icon: "🌙", label: "Ночь", loop: true, start() {
-      ensureAudio();
       const o = audioCtx.createOscillator();
       o.type = "sine";
-      o.frequency.value = 110;
+      o.frequency.value = 98;
       const g = audioCtx.createGain();
-      g.gain.value = 0.06 * vol();
+      g.gain.value = 0.12 * vol();
+      loopGains.set("night", g);
       o.connect(g);
       g.connect(masterGain);
       o.start();
-      return { stop: () => { try { o.stop(); } catch (_) {} } };
+      return { stop: () => { try { o.stop(); loopGains.delete("night"); } catch (_) {} } };
     }},
     { id: "scratch", icon: "✨", label: "Скраб", loop: false, play() {
-      noiseBurst(0.4, 2500, 0.15);
+      noiseBurst(0.5, 2800, 0.35, "bandpass");
+      setTimeout(() => noiseBurst(0.3, 3200, 0.2, "highpass"), 120);
+    }},
+    { id: "squish", icon: "🧈", label: "Squish", loop: false, play() {
+      squishSound();
+      setTimeout(squishSound, 350);
+      setTimeout(squishSound, 700);
     }},
   ];
 
-  function toggleSound(id) {
-    ensureAudio();
+  async function toggleSound(id) {
+    await ensureAudio();
     if (activeLoops.has(id)) {
       activeLoops.get(id).stop();
       activeLoops.delete(id);
@@ -216,9 +263,25 @@
       btn.className = "sound-btn";
       btn.dataset.sound = s.id;
       btn.innerHTML = `<span class="ico">${s.icon}</span><span class="lbl">${s.label}</span>`;
-      btn.onclick = () => toggleSound(s.id);
+      btn.onclick = () => { toggleSound(s.id); };
       grid.appendChild(btn);
     });
+  }
+
+  async function startBreak() {
+    await ensureAudio();
+    stopAllSounds();
+    if (breakTimer) clearTimeout(breakTimer);
+    bellSound();
+    toast("🔔 Перемена! 5 минут тишины — дыши");
+    $("buddy-msg").textContent = "Перемена. Можно просто сидеть. Никто не торопит.";
+    await toggleSound("rain");
+    setTimeout(() => toggleSound("wind"), 400);
+    breakTimer = setTimeout(() => {
+      bellSound();
+      toast("🔔 Перемена кончилась — молодец!");
+      $("buddy-msg").textContent = "Хочешь потянуться? Вкладка 🙆";
+    }, 5 * 60 * 1000);
   }
 
   /* ── Companion ── */
@@ -272,8 +335,8 @@
   /* ── Toys ── */
   function initSquish() {
     const el = $("squish");
-    function down() { el.classList.add("squished"); squishSound(); }
-    function up() { el.classList.remove("squished"); setTimeout(squishSound, 120); }
+    async function down() { await ensureAudio(); el.classList.add("squished"); squishSound(); }
+    async function up() { el.classList.remove("squished"); setTimeout(squishSound, 120); }
     el.addEventListener("pointerdown", (e) => { e.preventDefault(); down(); });
     el.addEventListener("pointerup", up);
     el.addEventListener("pointerleave", up);
@@ -287,7 +350,8 @@
       cube.type = "button";
       cube.className = "ice-cube";
       cube.setAttribute("aria-label", "Ледяной кубик");
-      cube.onclick = () => {
+      cube.onclick = async () => {
+        await ensureAudio();
         if (cube.classList.contains("cracked")) return;
         cube.classList.add("cracked");
         iceCrack();
@@ -303,13 +367,10 @@
       const p = document.createElement("button");
       p.type = "button";
       p.className = "pop";
-      p.onclick = () => {
-        if (p.classList.contains("popped")) {
-          p.classList.remove("popped");
-        } else {
-          p.classList.add("popped");
-          popSound();
-        }
+      p.onclick = async () => {
+        await ensureAudio();
+        if (p.classList.contains("popped")) p.classList.remove("popped");
+        else { p.classList.add("popped"); popSound(); }
       };
       grid.appendChild(p);
     }
@@ -381,12 +442,13 @@
       box.type = "button";
       box.className = "exp-box";
       box.innerHTML = `<div class="ico">${ex.icon}</div><div class="lbl">${ex.label}</div>`;
-      box.onclick = () => {
+      box.onclick = async () => {
+        await ensureAudio();
         document.querySelectorAll(".exp-box").forEach((b) => b.classList.remove("open"));
         box.classList.add("open");
         $("exp-reveal").textContent = ex.reveal;
         tapSound();
-        noiseBurst(0.12, 2000, 0.1);
+        noiseBurst(0.12, 2000, 0.15, "bandpass");
         if (i === 1) squishSound();
         if (i === 3) iceCrack();
       };
@@ -421,10 +483,15 @@
 
   $("vol").oninput = () => {
     if (masterGain) masterGain.gain.value = vol();
+    loopGains.forEach((g, id) => {
+      const base = id === "rain" ? 0.22 : id === "wind" ? 0.18 : 0.12;
+      g.gain.value = base * vol();
+    });
   };
   $("name-btn").onclick = renameBuddy;
   $("name-in").onkeydown = (e) => { if (e.key === "Enter") renameBuddy(); };
-  $("buddy").onclick = petBuddy;
+  $("buddy").onclick = async () => { await ensureAudio(); petBuddy(); };
+  $("btn-break").onclick = () => startBreak();
 
   load();
   applyBuddy();
@@ -435,6 +502,4 @@
   renderStretch();
   renderExperiments();
   initTabs();
-
-  document.body.addEventListener("pointerdown", ensureAudio, { once: true });
 })();
