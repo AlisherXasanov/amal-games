@@ -1,30 +1,56 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v8";
+  const SAVE_KEY = "amal-steal-egg-v9";
   const VW = 960;
   const VH = 640;
   const MW = 3920;
-  const MH = 2000;
+  const MH = 2400;
+  const SKY_NEED = 50000;
 
   const EGG_TYPES = [
-    { id: "basic", name: "Обычное яйцо", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
-    { id: "gold", name: "Золотое яйцо", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4, weight: 240 },
-    { id: "rare", name: "Редкое яйцо", emoji: "💎", color: "#a855f7", price: 350, rate: 12, weight: 110 },
-    { id: "epic", name: "Эпик яйцо", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28, weight: 24 },
-    { id: "dragon", name: "Дракон яйцо", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70, weight: 5 },
-    { id: "final", name: "ФИНАЛ яйцо", emoji: "👑", color: "#fde68a", price: 0, rate: 200, weight: 1 },
+    { id: "basic", name: "Обычное", emoji: "🥚", color: "#fff", price: 0, rate: 1 },
+    { id: "gold", name: "Золотое", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4 },
+    { id: "slime", name: "Слайм", emoji: "🟢", color: "#84cc16", price: 200, rate: 8 },
+    { id: "rare", name: "Редкое", emoji: "💎", color: "#a855f7", price: 350, rate: 12 },
+    { id: "crystal", name: "Кристалл", emoji: "🔷", color: "#38bdf8", price: 900, rate: 22 },
+    { id: "epic", name: "Эпик", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28 },
+    { id: "ghost", name: "Призрак", emoji: "👻", color: "#e2e8f0", price: 3500, rate: 45 },
+    { id: "lava", name: "Лава", emoji: "🌋", color: "#f97316", price: 5500, rate: 58 },
+    { id: "dragon", name: "Дракон", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70 },
+    { id: "void", name: "Пустота", emoji: "🕳️", color: "#1e1b4b", price: 25000, rate: 110 },
+    { id: "star", name: "Звезда", emoji: "⭐", color: "#fde68a", price: 80000, rate: 160 },
+    { id: "final", name: "ФИНАЛ", emoji: "👑", color: "#fde68a", price: 0, rate: 200 },
   ];
 
-  /** Яйцо вылупляется в питомца — как в Roblox */
+  const MUTATIONS = [
+    { id: "none", label: "", mult: 1, weight: 620, color: null },
+    { id: "gold", label: "✨Золото", mult: 2, weight: 220, color: "#fbbf24" },
+    { id: "rainbow", label: "🌈Радуга", mult: 5, weight: 100, color: "#a855f7" },
+    { id: "cosmic", label: "🌌Космо", mult: 10, weight: 45, color: "#38bdf8" },
+    { id: "glitch", label: "⚡Глитч", mult: 20, weight: 15, color: "#22d3ee" },
+  ];
+
   const PETS = {
     basic: { name: "Цыпа", emoji: "🐤" },
     gold: { name: "Золотуша", emoji: "🐥" },
+    slime: { name: "Слаймик", emoji: "🟢" },
     rare: { name: "Кристаллик", emoji: "🦊" },
+    crystal: { name: "Алмазик", emoji: "💠" },
     epic: { name: "Единорог", emoji: "🦄" },
+    ghost: { name: "Привидение", emoji: "👻" },
+    lava: { name: "Магма", emoji: "🔥" },
     dragon: { name: "Дракоша", emoji: "🐲" },
+    void: { name: "Тень", emoji: "🕳️" },
+    star: { name: "Звездочёт", emoji: "⭐" },
     final: { name: "Король", emoji: "👑" },
   };
+
+  const TEAM_DEFS = [
+    { name: "Валера", emoji: "🦸", body: "#22c55e", outline: "#16a34a" },
+    { name: "Амал", emoji: "⭐", body: "#fbbf24", outline: "#d97706" },
+    { name: "Ботик", emoji: "🤖", body: "#94a3b8", outline: "#64748b" },
+  ];
 
   const PLAYER_SKINS = [
     { id: "cool", emoji: "😎", body: "#38bdf8", outline: "#0ea5e9", name: "Крутой" },
@@ -82,6 +108,7 @@
   const toastEl = document.getElementById("toast");
   const promptEl = document.getElementById("prompt");
   const btnLock = document.getElementById("btnLock");
+  const btnTeam = document.getElementById("btnTeam");
   const stickEl = document.getElementById("stick");
   const actBtn = document.getElementById("actBtn");
   const tutorial = document.getElementById("tutorial");
@@ -126,6 +153,8 @@
   let playerSkinId = "cool";
   let treadmillRun = false;
   let treadmillScroll = 0;
+  let teamOn = true;
+  let teamMates = [];
 
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
@@ -158,7 +187,7 @@
   const ZONE_DEFS = [
     {
       id: "home",
-      name: "🏠 ТВОЯ ЗОНА",
+      name: "🏃 ЗЕМЛЯ · дорожка",
       x: 60,
       y: 1480,
       w: 440,
@@ -166,12 +195,7 @@
       fill: "#14532d",
       stroke: "#86efac",
       isHome: true,
-      pens: [
-        { x: 120, y: 1580, w: 88, h: 68 },
-        { x: 230, y: 1580, w: 88, h: 68 },
-        { x: 120, y: 1670, w: 88, h: 68 },
-        { x: 230, y: 1670, w: 88, h: 68 },
-      ],
+      pens: [],
     },
     {
       id: "z1",
@@ -321,7 +345,33 @@
       ],
       eggs: [0, 0, 20, 80, 350, 550],
     },
+    {
+      id: "sky",
+      name: "☁️ ТВОЙ СКАЙ · ТЫ БОСС",
+      x: 1380,
+      y: 260,
+      w: 1160,
+      h: 420,
+      fill: "#1e1b4b",
+      stroke: "#fde68a",
+      isSky: true,
+      needSpeed: SKY_NEED,
+      pens: [
+        { x: 1440, y: 400, w: 92, h: 72 },
+        { x: 1560, y: 400, w: 92, h: 72 },
+        { x: 1680, y: 400, w: 92, h: 72 },
+        { x: 1800, y: 400, w: 92, h: 72 },
+        { x: 1560, y: 510, w: 92, h: 72 },
+        { x: 1680, y: 510, w: 92, h: 72 },
+        { x: 1920, y: 400, w: 92, h: 72 },
+        { x: 2040, y: 400, w: 92, h: 72 },
+      ],
+      eggs: [0, 0, 0, 50, 200, 400, 100, 80, 0, 0, 150, 120],
+    },
   ];
+
+  const skyPortalUp = { x: 280, y: 1540, r: 58, label: "☁️ НА СКАЙ" };
+  const skyPortalDown = { x: 1960, y: 620, r: 50, label: "⬇️ НА ЗЕМЛЮ" };
 
   const GATES = [
     { x: 505, y: 1460, w: 32, h: 380, need: 0 },
@@ -337,6 +387,20 @@
   const shop = { x: 340, y: 1520, r: 52, label: "МАГАЗИН" };
   /** Большая дорожка внизу своей зоны — беги W чтобы качать ⚡ */
   const treadmill = { x: 280, y: 1745, w: 360, h: 72, label: "ДОРОЖКА" };
+
+  function initTeam() {
+    teamMates = TEAM_DEFS.map(function (t, i) {
+      return {
+        name: t.name,
+        emoji: t.emoji,
+        look: { emoji: t.emoji, body: t.body, outline: t.outline },
+        x: player.x - 35 - i * 28,
+        y: player.y,
+        carry: null,
+        timer: i * 0.7,
+      };
+    });
+  }
 
   const rivals = ZONE_DEFS.filter(function (z) {
     return z.boss;
@@ -481,18 +545,48 @@
     return hatchPet(typeId);
   }
 
-  function hatchPet(typeId) {
+  function rollMutation(boost) {
+    let weights = MUTATIONS.map(function (m) {
+      return m.weight;
+    });
+    if (boost) {
+      weights = weights.map(function (w, i) {
+        return i === 0 ? w * 0.35 : w * 2;
+      });
+    }
+    let total = 0;
+    weights.forEach(function (w) {
+      total += w;
+    });
+    let r = Math.random() * total;
+    for (let i = 0; i < MUTATIONS.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return MUTATIONS[i];
+    }
+    return MUTATIONS[0];
+  }
+
+  function hatchPet(typeId, mutId, mutBoost) {
     const t = EGG_TYPES.find(function (e) {
       return e.id === typeId;
     }) || EGG_TYPES[0];
     const p = PETS[t.id] || { name: t.name, emoji: t.emoji };
+    const mut = mutId
+      ? MUTATIONS.find(function (m) {
+          return m.id === mutId;
+        }) || MUTATIONS[0]
+      : rollMutation(!!mutBoost);
+    const rate = Math.max(1, Math.floor(t.rate * mut.mult));
     return {
       typeId: t.id,
       name: p.name,
       emoji: p.emoji,
       eggEmoji: t.emoji,
-      color: t.color,
-      rate: t.rate,
+      color: mut.color || t.color,
+      rate: rate,
+      mutId: mut.id,
+      mutLabel: mut.label,
+      mutMult: mut.mult,
       isPet: true,
     };
   }
@@ -515,7 +609,7 @@
     const empty = pedestals.filter(function (p) {
       return p.zoneId === zoneId && !p.egg;
     });
-    const egg = eggFromType(eggData.typeId);
+    const egg = hatchPet(eggData.typeId, eggData.mutId);
     if (empty.length) empty[0].egg = egg;
     else {
       const any = pedestals.find(function (p) {
@@ -523,6 +617,62 @@
       });
       if (any) any.egg = egg;
     }
+  }
+
+  function tryPortal() {
+    if (dist(player.x, player.y, skyPortalUp.x, skyPortalUp.y) < skyPortalUp.r) {
+      if (speedStat < SKY_NEED) {
+        showToast("☁️ Скай открыт с ⚡" + formatNum(SKY_NEED));
+        return true;
+      }
+      player.x = skyPortalDown.x;
+      player.y = skyPortalDown.y + 40;
+      showToast("☁️ Твой Скай! Ты — БОСС!");
+      return true;
+    }
+    if (dist(player.x, player.y, skyPortalDown.x, skyPortalDown.y) < skyPortalDown.r) {
+      player.x = skyPortalUp.x;
+      player.y = skyPortalUp.y + 50;
+      showToast("⬇️ Земля · дорожка");
+      return true;
+    }
+    return false;
+  }
+
+  function updateTeam(dt) {
+    if (!teamOn || paused) return;
+    teamMates.forEach(function (m, i) {
+      m.timer -= dt;
+      if (m.carry) {
+        const homePen = pedestals.find(function (p) {
+          return p.baseId === "mine" && !p.egg;
+        });
+        if (homePen && npcMoveToward(m, homePen.x, homePen.y, 150, dt)) return;
+        homePen.egg = hatchPet(m.carry.typeId || m.carry, m.carry.mutId);
+        m.carry = null;
+        showToast("👥 " + m.name + " принёс!");
+        return;
+      }
+      npcMoveToward(m, player.x - 45 - i * 32, player.y + 8, 130, dt);
+      if (m.timer > 0) return;
+      m.timer = 2.5 + Math.random() * 2;
+      const targets = pedestals.filter(function (p) {
+        if (p.baseId === "mine" || !p.egg) return false;
+        const z = ZONE_DEFS.find(function (x) {
+          return x.id === p.zoneId;
+        });
+        return zoneUnlocked(z);
+      });
+      if (!targets.length) return;
+      const t = targets[Math.floor(Math.random() * targets.length)];
+      if (dist(m.x, m.y, t.x, t.y) > 45) {
+        npcMoveToward(m, t.x, t.y, 140, dt);
+        return;
+      }
+      m.carry = t.egg;
+      t.egg = null;
+      showToast("👥 " + m.name + " украл " + m.carry.emoji + "!");
+    });
   }
 
   function setBossAngry(zoneId, on) {
@@ -534,11 +684,11 @@
   function checkCrossZoneSafe() {
     if (!player.carry || !player.carry.fromZoneId) return;
     const here = zoneAt(player.x, player.y);
-    if (here && here.isHome) {
+    if (here && (here.isHome || here.isSky)) {
       setBossAngry(player.carry.fromZoneId, false);
       return;
     }
-    if (!here || here.isHome) return;
+    if (!here || here.isHome || here.isSky) return;
     if (here.id !== player.carry.fromZoneId && here.boss) {
       setBossAngry(player.carry.fromZoneId, false);
     }
@@ -605,28 +755,22 @@
     return rollEggForZone("z1");
   }
 
+  const ZONE_POOL = {
+    z1: ["basic", "basic", "gold", "gold"],
+    z2: ["basic", "gold", "slime", "rare"],
+    z3: ["gold", "slime", "rare", "crystal"],
+    z4: ["rare", "crystal", "epic", "ghost"],
+    z5: ["crystal", "epic", "ghost", "lava", "dragon"],
+    z6: ["epic", "ghost", "lava", "dragon", "void"],
+    z7: ["lava", "dragon", "void", "star"],
+    z8: ["dragon", "void", "star", "final"],
+    sky: ["epic", "ghost", "lava", "dragon", "void", "star", "final", "star", "dragon"],
+  };
+
   function rollEggForZone(zoneId, forceCool) {
-    const z = ZONE_DEFS.find(function (x) {
-      return x.id === zoneId;
-    });
-    let weights = (z && z.eggs ? z.eggs.slice() : [620, 240, 110, 24, 5, 1]);
-    if (blinkLeft > 0 || forceCool) {
-      weights = weights.map(function (w, i) {
-        return i >= 2 ? w * 2.2 : w * 0.7;
-      });
-    }
-    const ids = ["basic", "gold", "rare", "epic", "dragon", "final"];
-    let total = 0;
-    weights.forEach(function (w) {
-      total += w;
-    });
-    if (total <= 0) return eggFromType("basic");
-    let r = Math.random() * total;
-    for (let i = 0; i < ids.length; i++) {
-      r -= weights[i];
-      if (r <= 0) return eggFromType(ids[i]);
-    }
-    return eggFromType("basic");
+    const pool = ZONE_POOL[zoneId] || ZONE_POOL.z1;
+    const typeId = pool[Math.floor(Math.random() * pool.length)];
+    return hatchPet(typeId, null, zoneId === "sky" || forceCool || blinkLeft > 0);
   }
 
   function zoneAt(x, y) {
@@ -644,13 +788,13 @@
   function initPedestals() {
     pedestals.length = 0;
     ZONE_DEFS.forEach(function (zone) {
-      if (zone.isHome) {
+      if (zone.isSky) {
         zone.pens.slice(0, baseSlots).forEach(function (pen) {
           pedestals.push({
             x: pen.x + pen.w / 2,
             y: pen.y + pen.h / 2,
             baseId: "mine",
-            zoneId: "home",
+            zoneId: "sky",
             pen: pen,
             egg: null,
             respawn: 0,
@@ -658,6 +802,7 @@
         });
         return;
       }
+      if (zone.isHome) return;
       zone.pens.forEach(function (pen) {
         pedestals.push({
           x: pen.x + pen.w / 2,
@@ -673,21 +818,26 @@
   }
 
   function rebuildMySlots() {
-    const eggs = pedestals.filter(function (p) {
-      return p.baseId === "mine";
-    }).map(function (p) {
-      return p.egg;
-    });
+    const eggs = pedestals
+      .filter(function (p) {
+        return p.baseId === "mine";
+      })
+      .map(function (p) {
+        return p.egg;
+      });
     for (let i = pedestals.length - 1; i >= 0; i--) {
       if (pedestals[i].baseId === "mine") pedestals.splice(i, 1);
     }
-    const home = ZONE_DEFS[0];
-    home.pens.slice(0, baseSlots).forEach(function (pen, i) {
+    const sky = ZONE_DEFS.find(function (z) {
+      return z.isSky;
+    });
+    if (!sky) return;
+    sky.pens.slice(0, baseSlots).forEach(function (pen, i) {
       pedestals.push({
         x: pen.x + pen.w / 2,
         y: pen.y + pen.h / 2,
         baseId: "mine",
-        zoneId: "home",
+        zoneId: "sky",
         pen: pen,
         egg: eggs[i] || null,
         respawn: 0,
@@ -708,7 +858,10 @@
           lockBonus,
           tut: tutorial.hidden,
           skin: playerSkinId,
-          eggs: pedestals.filter((p) => p.baseId === "mine").map((p) => (p.egg ? p.egg.typeId : null)),
+          teamOn: teamOn,
+          eggs: pedestals.filter((p) => p.baseId === "mine").map((p) =>
+            p.egg ? { typeId: p.egg.typeId, mutId: p.egg.mutId || "none" } : null
+          ),
         })
       );
     } catch (_) {}
@@ -725,6 +878,7 @@
       if (d.baseSlots != null) baseSlots = d.baseSlots;
       if (d.lockBonus != null) lockBonus = d.lockBonus;
       if (d.skin) applyPlayerSkin(d.skin);
+      if (d.teamOn != null) teamOn = d.teamOn;
       if (d.tut) {
         tutorial.hidden = true;
         paused = false;
@@ -733,8 +887,10 @@
       rebuildMySlots();
       if (Array.isArray(d.eggs)) {
         const mine = pedestals.filter((p) => p.baseId === "mine");
-        d.eggs.forEach((id, i) => {
-          if (id && mine[i]) mine[i].egg = eggFromType(id);
+        d.eggs.forEach(function (e, i) {
+          if (!e || !mine[i]) return;
+          if (typeof e === "string") mine[i].egg = hatchPet(e);
+          else mine[i].egg = hatchPet(e.typeId, e.mutId);
         });
       }
     } catch (_) {}
@@ -978,8 +1134,10 @@
         t.id +
         '">' +
         t.emoji +
+        " → " +
+        (PETS[t.id] ? PETS[t.id].emoji : t.emoji) +
         " " +
-        t.name +
+        (PETS[t.id] ? PETS[t.id].name : t.name) +
         '<span class="price">' +
         (t.price ? formatNum(t.price) : "0") +
         " · +" +
