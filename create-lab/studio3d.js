@@ -1,11 +1,15 @@
 import * as THREE from "three";
 import {
-  initTextures, TEX_LIST, SOUND_LIST, PIC_LIST,
-  makeMaterial, applyMaterialToObject, makeEmojiTexture,
+  initTextures, TEX_LIST, SOUND_LIST, PIC_LIST, TEX_PREVIEWS,
+  makeMaterial, applyMaterialToObject, makeEmojiTexture, buildTexturePreviews,
   playSound, buildExtraPrefabs, setEditModeVisible, toggleSoundRings,
-} from "./studio3d-assets.js?v=2";
+} from "./studio3d-assets.js?v=3";
+import {
+  loadUnlocks, saveUnlocks, loadCoins, saveCoins, shopPrice,
+  buildCatalogPrefabs, buildPicPrefabs, FREE_ITEMS,
+} from "./studio3d-catalog.js?v=3";
 
-const STORAGE = "amal-studio-world-v2";
+const STORAGE = "amal-studio-world-v3";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -49,7 +53,7 @@ function snap(v) {
 /* ── Prefab definitions ── */
 const PREFABS = {
   block: {
-    cat: "parts", name: "Блок", icon: "🧱",
+    cat: "build", name: "Блок", icon: "🧱",
     create(d) {
       const c = d.color || "#38bdf8";
       const m = new THREE.Mesh(
@@ -60,7 +64,7 @@ const PREFABS = {
     },
   },
   ball: {
-    cat: "parts", name: "Шар", icon: "⚽",
+    cat: "build", name: "Шар", icon: "⚽",
     create(d) {
       const s = d.sx || 1.5;
       const m = new THREE.Mesh(
@@ -71,7 +75,7 @@ const PREFABS = {
     },
   },
   plate: {
-    cat: "parts", name: "Плита", icon: "▭",
+    cat: "build", name: "Плита", icon: "▭",
     create(d) {
       const m = new THREE.Mesh(
         new THREE.BoxGeometry(d.sx || 8, d.sy || 0.4, d.sz || 8),
@@ -82,7 +86,7 @@ const PREFABS = {
     },
   },
   cylinder: {
-    cat: "parts", name: "Цилиндр", icon: "🛢",
+    cat: "build", name: "Цилиндр", icon: "🛢",
     create(d) {
       const m = new THREE.Mesh(
         new THREE.CylinderGeometry(d.sx || 1.2, d.sx || 1.2, d.sy || 3, 16),
@@ -92,7 +96,7 @@ const PREFABS = {
     },
   },
   tree: {
-    cat: "parts", name: "Дерево", icon: "🌲",
+    cat: "nature", name: "Дерево", icon: "🌲",
     create(d) {
       const g = new THREE.Group();
       const trunk = new THREE.Mesh(
@@ -194,18 +198,25 @@ const PREFABS = {
       return wrap(g, Object.assign({}, d, { isBoss: true }));
     },
   },
-  egg_basic: { cat: "egg", name: "Яйцо обыч.", icon: "🥚", create: (d) => makeEgg("egg", d) },
-  egg_gold: { cat: "egg", name: "Золотое", icon: "✨", create: (d) => makeEgg("gold", d) },
-  egg_slime: { cat: "egg", name: "Слайм", icon: "🟢", create: (d) => makeEgg("slime", d) },
-  egg_crystal: { cat: "egg", name: "Кристалл", icon: "💎", create: (d) => makeEgg("crystal", d) },
-  egg_dragon: { cat: "egg", name: "Дракон", icon: "🐉", create: (d) => makeEgg("dragon", d) },
-  egg_void: { cat: "egg", name: "Пустота", icon: "🌑", create: (d) => makeEgg("void", d) },
-  egg_star: { cat: "egg", name: "Звезда", icon: "⭐", create: (d) => makeEgg("star", d) },
-  egg_final: { cat: "egg", name: "ФИНАЛ", icon: "👑", create: (d) => makeEgg("final", d) },
+  egg_basic: { cat: "game", name: "Яйцо обыч.", icon: "🥚", create: (d) => makeEgg("egg", d) },
+  egg_gold: { cat: "game", name: "Золотое", icon: "✨", create: (d) => makeEgg("gold", d) },
+  egg_slime: { cat: "game", name: "Слайм", icon: "🟢", create: (d) => makeEgg("slime", d) },
+  egg_crystal: { cat: "game", name: "Кристалл", icon: "💎", create: (d) => makeEgg("crystal", d) },
+  egg_dragon: { cat: "game", name: "Дракон", icon: "🐉", create: (d) => makeEgg("dragon", d) },
+  egg_void: { cat: "game", name: "Пустота", icon: "🌑", create: (d) => makeEgg("void", d) },
+  egg_star: { cat: "game", name: "Звезда", icon: "⭐", create: (d) => makeEgg("star", d) },
+  egg_final: { cat: "game", name: "ФИНАЛ", icon: "👑", create: (d) => makeEgg("final", d) },
 };
 
 Object.assign(PREFABS, buildExtraPrefabs(wrap, makeEgg));
+Object.assign(PREFABS, buildCatalogPrefabs(wrap));
+Object.assign(PREFABS, buildPicPrefabs(wrap));
 initTextures();
+buildTexturePreviews();
+
+let unlocks = loadUnlocks();
+let studioCoins = loadCoins();
+FREE_ITEMS.forEach((k) => unlocks.add(k));
 
 const EGG_STYLES = {
   egg: { color: 0xf8fafc, geo: "sphere", sy: 1.28 },
@@ -300,6 +311,7 @@ function wrap(meshOrGroup, data) {
     isPickup: !!data.isPickup,
     isPortal: !!data.isPortal,
     isLight: !!data.isLight,
+    scale: data.scale != null ? data.scale : 1,
   };
   root.traverse((c) => {
     if (c.isMesh) {
@@ -319,6 +331,8 @@ function addObject(prefabKey, x, y, z, extra) {
   obj.position.set(x, y, z);
   if (extra?.ry != null) obj.rotation.y = extra.ry;
   if (data.texture) applyMaterialToObject(obj, data);
+  const sc = data.scale || 1;
+  if (sc !== 1) obj.scale.setScalar(sc);
   scene.add(obj);
   objects.push(obj);
   refreshExplorer();
@@ -382,8 +396,11 @@ attachEditOrbit();
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let isDragging = false;
+let isRotating = false;
 let dragStart = null;
 let dragObjStart = null;
+let rotateStartX = 0;
+let rotateStartY = 0;
 
 function getSelectable() {
   return objects;
@@ -485,6 +502,7 @@ function refreshProps() {
       </div>
     </div>
     <div class="prop-row"><label>Поворот Y</label><input id="p-ry" type="number" step="15" value="${(o.rotation.y * 180 / Math.PI).toFixed(0)}" /></div>
+    <div class="prop-row"><label>Размер ×</label><input id="p-scale" type="range" min="0.3" max="4" step="0.1" value="${d.scale || 1}" /></div>
     ${d.color !== undefined ? `<div class="prop-row"><label>Цвет</label><input id="p-color" type="color" value="${(d.color && d.color.startsWith("#")) ? d.color : "#38bdf8"}" /></div>` : ""}
     ${d.metalness != null ? `<div class="prop-row"><label>Металл</label><input id="p-metal" type="range" min="0" max="1" step="0.05" value="${d.metalness}" /></div>` : ""}
     ${extra}
@@ -533,6 +551,13 @@ function refreshProps() {
     d.metalness = parseFloat(e.target.value);
     applyMaterialToObject(o, d);
   };
+  const psc = document.getElementById("p-scale");
+  if (psc) psc.oninput = (e) => {
+    const s = parseFloat(e.target.value) || 1;
+    d.scale = s;
+    o.scale.setScalar(s);
+    selectionBox.setFromObject(o);
+  };
   document.getElementById("p-del").onclick = () => deleteSelected();
 }
 
@@ -558,27 +583,92 @@ function deleteSelected() {
   toast("Объект удалён");
 }
 
-/* ── Toolbox UI ── */
-let activeCat = "parts";
+/* ── Toolbox UI + Магазин ── */
+let activeCat = "build";
+
+function updateShopUI() {
+  const el = document.getElementById("shop-coins");
+  if (el) el.textContent = String(studioCoins);
+}
+
+function isUnlocked(key) {
+  return unlocks.has(key) || shopPrice(key) === 0;
+}
+
+function tryBuy(key) {
+  if (isUnlocked(key)) return true;
+  const price = shopPrice(key);
+  if (studioCoins >= price) {
+    studioCoins -= price;
+    unlocks.add(key);
+    saveCoins(studioCoins);
+    saveUnlocks(unlocks);
+    updateShopUI();
+    toast("Куплено: " + (PREFABS[key]?.name || key) + " 🪙" + price);
+    return true;
+  }
+  toast("Нужно 🪙 " + price + " (у тебя " + studioCoins + ")");
+  return false;
+}
+
+function buyAllItems() {
+  let need = 0;
+  Object.keys(PREFABS).forEach((k) => {
+    if (!isUnlocked(k)) need += shopPrice(k);
+  });
+  if (need === 0) { toast("Всё уже куплено!"); return; }
+  if (studioCoins < need) {
+    toast("Нужно 🪙 " + need + " — не хватает!");
+    return;
+  }
+  Object.keys(PREFABS).forEach((k) => unlocks.add(k));
+  studioCoins -= need;
+  saveCoins(studioCoins);
+  saveUnlocks(unlocks);
+  updateShopUI();
+  renderToolbox();
+  toast("🎉 Куплены ВСЕ предметы!");
+}
+
+function thumbHtml(key, pf) {
+  if (key.startsWith("tex_") && TEX_PREVIEWS[key.slice(4)]) {
+    return `<span class="thumb"><img src="${TEX_PREVIEWS[key.slice(4)]}" alt=""/></span>`;
+  }
+  if (pf.previewEmoji || (pf.cat === "pic" && pf.icon)) {
+    const em = pf.previewEmoji || pf.icon;
+    return `<span class="thumb preview-em">${em}</span>`;
+  }
+  return `<span class="thumb">${pf.icon || "📦"}</span>`;
+}
 
 function renderToolbox() {
+  prefabList.className = "toolbox-list grid";
   prefabList.innerHTML = "";
-  Object.entries(PREFABS).forEach(([key, pf]) => {
-    if (pf.cat !== activeCat) return;
+  const entries = Object.entries(PREFABS).filter(([, pf]) => pf.cat === activeCat);
+  if (!entries.length) {
+    prefabList.innerHTML = '<p class="prop-empty" style="padding:8px">Пусто</p>';
+    return;
+  }
+  entries.forEach(([key, pf]) => {
+    const locked = !isUnlocked(key);
+    const price = shopPrice(key);
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "prefab" + (placementPrefab === key ? " on" : "");
-    btn.innerHTML = `<span class="thumb">${pf.icon}</span><span>${pf.name}</span>`;
+    btn.className = "prefab card" + (placementPrefab === key ? " on" : "") + (locked ? " locked" : "");
+    btn.innerHTML = thumbHtml(key, pf) +
+      `<span class="pname">${pf.name}</span>` +
+      (locked && price > 0 ? `<span class="price">🪙${price}</span>` : "");
     btn.onclick = () => {
+      if (locked && !tryBuy(key)) return;
       placementPrefab = placementPrefab === key ? null : key;
       toolMode = placementPrefab ? "place" : "select";
-      if (pf.cat === "sound" && placementPrefab) playSound(key === "sound_zone" ? "coin" : "coin", 0.5);
+      if (pf.cat === "sound" && placementPrefab) playSound("coin", 0.4);
       document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === "select"));
       renderToolbox();
       updateGhost();
       statusText.textContent = placementPrefab
-        ? "Кликни на карту — поставить «" + pf.name + "»"
-        : "Заготовка не выбрана";
+        ? "Клик — поставить «" + pf.name + "» · двигай/крути инструментами"
+        : "Выбери предмет слева";
     };
     prefabList.appendChild(btn);
   });
@@ -639,15 +729,27 @@ function updateGhost() {
 /* ── Pointer ── */
 canvas.addEventListener("pointermove", (ev) => {
   if (!editMode) return;
+  if (isRotating && toolMode === "rotate") {
+    const o = getSelected();
+    if (!o) return;
+    o.rotation.y += (ev.movementX || 0) * 0.014;
+    selectionBox.setFromObject(o);
+    refreshProps();
+    return;
+  }
   if (isDragging && toolMode === "move") {
     const hit = pickGround(ev);
     if (!hit || !dragStart) return;
     const o = getSelected();
     if (!o) return;
-    const dx = hit.point.x - dragStart.x;
-    const dz = hit.point.z - dragStart.z;
-    o.position.x = snap(dragObjStart.x + dx);
-    o.position.z = snap(dragObjStart.z + dz);
+    if (ev.shiftKey) {
+      o.position.y = snap(Math.max(0, dragObjStart.y - (ev.movementY || 0) * 0.04));
+    } else {
+      const dx = hit.point.x - dragStart.x;
+      const dz = hit.point.z - dragStart.z;
+      o.position.x = snap(dragObjStart.x + dx);
+      o.position.z = snap(dragObjStart.z + dz);
+    }
     selectionBox.setFromObject(o);
     refreshProps();
     return;
@@ -681,21 +783,35 @@ canvas.addEventListener("pointerdown", (ev) => {
       if (hit) {
         isDragging = true;
         dragStart = { x: hit.point.x, z: hit.point.z };
-        dragObjStart = { x: obj.position.x, z: obj.position.z };
+        dragObjStart = { x: obj.position.x, y: obj.position.y, z: obj.position.z };
       }
     }
     if (obj && toolMode === "rotate") {
-      obj.rotation.y += Math.PI / 4;
-      selectionBox.setFromObject(obj);
-      refreshProps();
+      isRotating = true;
+    }
+    if (obj && toolMode === "scale") {
+      toast("Колёсико мыши — больше/меньше");
     }
   }
 });
 
 canvas.addEventListener("pointerup", () => {
   isDragging = false;
+  isRotating = false;
   dragStart = null;
 });
+
+canvas.addEventListener("wheel", (ev) => {
+  if (!editMode || toolMode !== "scale") return;
+  const o = getSelected();
+  if (!o) return;
+  ev.preventDefault();
+  const d = o.userData.studio;
+  d.scale = Math.max(0.3, Math.min(4, (d.scale || 1) - ev.deltaY * 0.002));
+  o.scale.setScalar(d.scale);
+  selectionBox.setFromObject(o);
+  refreshProps();
+}, { passive: false });
 
 window.addEventListener("keydown", (e) => {
   if (!editMode) return;
@@ -703,6 +819,15 @@ window.addEventListener("keydown", (e) => {
     if (document.activeElement?.tagName === "INPUT") return;
     e.preventDefault();
     deleteSelected();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.code === "KeyD") {
+    e.preventDefault();
+    const o = getSelected();
+    if (!o) return;
+    const d = o.userData.studio;
+    const n = addObject(d.prefab, o.position.x + 2, o.position.y, o.position.z + 2, Object.assign({}, d));
+    if (n) selectObject(n);
+    toast("Копия!");
   }
 });
 
@@ -733,6 +858,7 @@ function serialize() {
         soundVolume: d.soundVolume,
         imageChar: d.imageChar,
         signText: d.signText,
+        scale: d.scale,
       };
     }),
   };
@@ -828,6 +954,10 @@ function stopPlay() {
   setEditModeVisible(true);
   toggleSoundRings(objects, true);
   soundState.clear();
+  pickedUp.clear();
+  objects.forEach((o) => {
+    if (o.userData.studio.isPickup) o.visible = true;
+  });
   toast("Редактор — персонажа нет");
 }
 
@@ -875,27 +1005,19 @@ function updatePlaySounds(px, pz, dt) {
 
 function loadDemo() {
   addObject("spawn", 0, 0, 0);
-  addObject("tex_grass", 0, 0, 0, { sx: 20, sz: 20, sy: 0.4, name: "Моя база", texture: "grass" });
-  addObject("treadmill", 0, 0, 6);
-  addObject("pen", -4, 0, -2);
-  addObject("pen", 4, 0, -2);
-  addObject("lamp", -6, 0, 4);
-  addObject("picture", 2, 0, -5, { imageChar: "🥚", name: "Картинка яйца" });
-  addObject("sound_zone", -2, 0, 8, { soundId: "music", soundLoop: true, name: "Музыка у базы" });
-  addObject("zone", 18, 0, 0, { color: "#64748b", name: "Зона НУБ" });
-  addObject("tex_brick", 16, 0, 4, { name: "Стена", sx: 8, sy: 3, sz: 0.6, texture: "brick" });
-  addObject("boss", 18, 0, -4, { color: "#64748b", name: "Босс НУБ" });
-  addObject("egg_basic", 20, 0, 2);
-  addObject("egg_gold", 22, 0, -1);
-  addObject("coin_pickup", 21, 0, 0);
-  addObject("zone", 36, 0, 0, { color: "#ef4444", name: "Зона 2" });
-  addObject("tex_sand", 34, 0, 3, { sx: 10, sz: 6, sy: 0.3, texture: "sand", name: "Пустыня" });
-  addObject("egg_dragon", 38, 0, 1);
-  addObject("sound_zone", 38, 0, -3, { soundId: "alarm", name: "Тревога" });
-  addObject("billboard", 30, 0, -6, { imageChar: "🐉", name: "Баннер" });
-  addObject("tree", -8, 0, 8);
-  addObject("fence", 10, 0, 10);
-  addObject("rock", 14, 0, 8);
+  addObject("tex_grass", 0, 0, 0, { sx: 24, sz: 24, sy: 0.4, name: "Парк", texture: "grass" });
+  addObject("tree", -6, 0, 5);
+  addObject("tree", 8, 0, -4);
+  addObject("flower", -2, 0, 3);
+  addObject("chair", 3, 0, 2);
+  addObject("table", -3, 0, -2);
+  addObject("lamp", 5, 0, 5);
+  addObject("pic_star", -5, 0, -3);
+  addObject("ramp", 12, 0, 0);
+  addObject("tex_stone", 18, 0, 0, { sx: 10, sz: 8, sy: 0.35, texture: "stone", name: "Площадка" });
+  addObject("acc_hat", 20, 0, 2);
+  addObject("balloon", 15, 0, -5);
+  addObject("sound_zone", 0, 0, 8, { soundId: "music", soundLoop: true, name: "Музыка" });
   selectObject(null);
 }
 
@@ -937,11 +1059,13 @@ renderToolbox();
 refreshExplorer();
 try {
   if (localStorage.getItem(STORAGE)) loadWorld();
-  else if (localStorage.getItem("amal-studio-world-v1")) {
-    localStorage.setItem(STORAGE, localStorage.getItem("amal-studio-world-v1"));
+  else if (localStorage.getItem("amal-studio-world-v2")) {
+    localStorage.setItem(STORAGE, localStorage.getItem("amal-studio-world-v2"));
     loadWorld();
   } else loadDemo();
 } catch (_) {
   loadDemo();
 }
-toast("Amal Studio v2 — текстуры, звуки, картинки!");
+updateShopUI();
+document.getElementById("btn-shop-all")?.addEventListener("click", buyAllItems);
+toast("Amal Studio v3 — магазин, 80+ предметов!");

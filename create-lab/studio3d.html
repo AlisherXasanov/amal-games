@@ -21,7 +21,7 @@
       --play-h: #1a9870;
       --danger: #c42b1c;
       --ribbon-h: 42px;
-      --side-w: 220px;
+      --side-w: 280px;
       --right-w: 260px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -90,7 +90,27 @@
     .prefab.on { border-color: var(--accent); background: #094771; color: #fff; }
     .prefab .thumb {
       width: 32px; height: 32px; border-radius: 4px; background: #444;
-      display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
+      display: grid; place-items: center; font-size: 18px; flex-shrink: 0; overflow: hidden;
+    }
+    .toolbox-list.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; align-content: start; }
+    .prefab.card {
+      flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px;
+      font-size: 10px; text-align: center;
+    }
+    .prefab .pname { line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .prefab .price { font-size: 9px; color: #fbbf24; font-weight: 800; }
+    .prefab.locked { opacity: 0.65; }
+    .prefab .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .prefab .thumb.preview-em { font-size: 28px; background: #1e293b; }
+    .prefab.card .thumb { width: 52px; height: 52px; }
+    .shop-bar {
+      display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+      background: #1a1a2e; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .shop-bar b { color: #fbbf24; font-size: 15px; }
+    .shop-bar button {
+      flex: 1; padding: 5px 8px; border: 0; border-radius: 4px; cursor: pointer;
+      font: 800 10px inherit; background: linear-gradient(135deg,#7c3aed,#2563eb); color: #fff;
     }
 
     /* Viewport */
@@ -180,6 +200,9 @@
       <button type="button" class="tool-btn" data-mode="rotate" title="Поворот">
         <span class="ico">↻</span> Поворот
       </button>
+      <button type="button" class="tool-btn" data-mode="scale" title="Масштаб">
+        <span class="ico">⤢</span> Размер
+      </button>
       <div class="sep"></div>
       <button type="button" class="tool-btn" id="btn-grid" title="Сетка">
         <span class="ico">#</span> Сетка
@@ -193,23 +216,30 @@
 
     <div class="main">
       <aside class="toolbox">
-        <div class="toolbox-head">Заготовки</div>
-        <div class="toolbox-tabs">
-          <button type="button" class="on" data-cat="parts">Части</button>
-          <button type="button" data-cat="tex">🎨 Текстуры</button>
-          <button type="button" data-cat="decor">🪑 Вещи</button>
-          <button type="button" data-cat="egg">🥚 Яйца</button>
-          <button type="button" data-cat="game">🎮 Игра</button>
-          <button type="button" data-cat="sound">🔊 Звук</button>
-          <button type="button" data-cat="pic">🖼 Картинки</button>
+        <div class="toolbox-head">Каталог — своё, не Roblox</div>
+        <div class="shop-bar">
+          <span>🪙 <b id="shop-coins">500</b></span>
+          <button type="button" id="btn-shop-all">Купить ВСЁ</button>
         </div>
-        <div class="toolbox-list" id="prefab-list"></div>
+        <div class="toolbox-tabs">
+          <button type="button" class="on" data-cat="build">Строй</button>
+          <button type="button" data-cat="props">Вещи</button>
+          <button type="button" data-cat="acc">👒 Acc</button>
+          <button type="button" data-cat="nature">🌿</button>
+          <button type="button" data-cat="ride">🚗</button>
+          <button type="button" data-cat="fun">🎉</button>
+          <button type="button" data-cat="tex">🎨</button>
+          <button type="button" data-cat="pic">🖼</button>
+          <button type="button" data-cat="sound">🔊</button>
+          <button type="button" data-cat="game">🎮</button>
+        </div>
+        <div class="toolbox-list grid" id="prefab-list"></div>
       </aside>
 
       <div class="viewport-wrap">
         <canvas id="studio-canvas"></canvas>
         <div class="vp-label" id="vp-mode">РЕДАКТОР</div>
-        <div class="vp-hint" id="vp-hint">ПКМ — камера · Клик — поставить · Del — удалить</div>
+        <div class="vp-hint" id="vp-hint">ПКМ камера · Двигать=тащи · Shift+тащи=вверх · Крутить=тащи · Размер=колёсико · Ctrl+D копия</div>
       </div>
 
       <aside class="right">
@@ -237,6 +267,6 @@
 
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script src="../shared/amal-walk-player.js?v=1"></script>
-  <script type="module" src="./studio3d.js?v=2"></script>
+  <script type="module" src="./studio3d.js?v=3"></script>
 </body>
 </html>

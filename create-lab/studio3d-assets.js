@@ -212,6 +212,18 @@ export function initTextures() {
   });
 }
 
+export const TEX_PREVIEWS = {};
+
+export function buildTexturePreviews() {
+  TEX_LIST.forEach(({ id }) => {
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    const ctx = c.getContext("2d");
+    (TEX_DRAW[id] || TEX_DRAW.stone)(ctx, 64);
+    TEX_PREVIEWS[id] = c.toDataURL();
+  });
+}
+
 export function getTexture(id) {
   return TEX[id] || TEX.stone;
 }
@@ -346,7 +358,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
 
   Object.assign(out, {
     wedge: {
-      cat: "parts", name: "Склон", icon: "📐",
+      cat: "build", name: "Склон", icon: "📐",
       create(d) {
         const m = new THREE.Mesh(new THREE.CylinderGeometry(0, 2.5, 2, 4, 1), makeMaterial(Object.assign({ color: "#94a3b8" }, d)));
         m.rotation.y = Math.PI / 4;
@@ -354,7 +366,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     fence: {
-      cat: "decor", name: "Забор", icon: "🚧",
+      cat: "props", name: "Забор", icon: "🚧",
       create(d) {
         const g = new THREE.Group();
         for (let i = -2; i <= 2; i++) {
@@ -375,7 +387,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     lamp: {
-      cat: "decor", name: "Фонарь", icon: "💡",
+      cat: "props", name: "Фонарь", icon: "💡",
       create(d) {
         const g = new THREE.Group();
         const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 3, 8), makeMaterial({ color: "#374151" }));
@@ -394,7 +406,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     sign: {
-      cat: "decor", name: "Табличка", icon: "📋",
+      cat: "props", name: "Табличка", icon: "📋",
       create(d) {
         const g = new THREE.Group();
         const board = new THREE.Mesh(
@@ -410,7 +422,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     rock: {
-      cat: "decor", name: "Камень", icon: "🪨",
+      cat: "props", name: "Камень", icon: "🪨",
       create(d) {
         const m = new THREE.Mesh(
           new THREE.DodecahedronGeometry(1.2, 0),
@@ -422,7 +434,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     stairs: {
-      cat: "decor", name: "Лестница", icon: "🪜",
+      cat: "props", name: "Лестница", icon: "🪜",
       create(d) {
         const g = new THREE.Group();
         for (let i = 0; i < 5; i++) {
@@ -437,13 +449,13 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     crate: {
-      cat: "decor", name: "Ящик", icon: "📦",
+      cat: "props", name: "Ящик", icon: "📦",
       create(d) {
         return box(Object.assign({ texture: "wood", sx: 1.8, sy: 1.8, sz: 1.8 }, d), 1.8, 1.8, 1.8);
       },
     },
     coin_pickup: {
-      cat: "decor", name: "Монетка", icon: "🪙",
+      cat: "props", name: "Монетка", icon: "🪙",
       create(d) {
         const m = new THREE.Mesh(
           new THREE.CylinderGeometry(0.5, 0.5, 0.12, 20),
@@ -455,7 +467,7 @@ export function buildExtraPrefabs(wrap, makeEgg) {
       },
     },
     portal: {
-      cat: "decor", name: "Портал", icon: "🌀",
+      cat: "props", name: "Портал", icon: "🌀",
       create(d) {
         const g = new THREE.Group();
         const ring = new THREE.Mesh(
