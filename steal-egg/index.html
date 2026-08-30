@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Укради яйцо — Amal Games</title>
+  <meta name="description" content="2D как в Roblox: база, яйца, дорожка, следы, день/ночь и финальный босс." />
+  <link rel="stylesheet" href="./style.css?v=2" />
+</head>
+<body>
+  <a class="portal-back" href="../">&larr; Все игры</a>
+
+  <div id="app">
+    <div class="screen" id="screen">
+      <canvas id="gameCanvas" width="960" height="640"></canvas>
+
+      <div class="hud" id="hud">
+        <div class="time" id="timeLabel">☀️ День</div>
+        <div class="coins">🪙 <span id="coins">100</span></div>
+        <div class="income">+<span id="income">0</span>/сек</div>
+        <div class="speed">⚡ Скорость: <span id="speedStat">1</span></div>
+        <div class="rank" id="rankLabel">Индекс: #4</div>
+        <div class="carry" id="carry">В руках: пусто</div>
+        <div class="status" id="status">Стань на дорожку у базы — качай скорость</div>
+      </div>
+
+      <div class="index-panel" id="indexPanel">
+        <div class="index-title">📊 Индекс силы</div>
+        <ol id="indexList"></ol>
+      </div>
+
+      <div class="shop" id="shop">
+        <div class="shop-tabs">
+          <button type="button" class="tab on" data-tab="eggs">🥚 Яйца</button>
+          <button type="button" class="tab" data-tab="lucky">🎰 Лucky</button>
+          <button type="button" class="tab" data-tab="trail">👣 Следы</button>
+          <button type="button" class="tab" data-tab="base">🏠 База</button>
+        </div>
+        <div class="shop-pane on" id="pane-eggs"></div>
+        <div class="shop-pane" id="pane-lucky"></div>
+        <div class="shop-pane" id="pane-trail"></div>
+        <div class="shop-pane" id="pane-base"></div>
+      </div>
+
+      <div class="toast" id="toast"></div>
+      <div class="prompt" id="prompt"></div>
+
+      <div class="touch" id="touch">
+        <div class="pad left" id="stick"></div>
+        <div class="pad right" id="actBtn">E</div>
+      </div>
+
+      <button type="button" class="btn-lock" id="btnLock">🔒 База</button>
+    </div>
+  </div>
+
+  <script src="../shared/amal-owner-powers.js?v=23"></script>
+  <script src="./game.js?v=2"></script>
+  <script src="../shared/amal-hub.js?v=66"></script>
+</body>
+</html>
