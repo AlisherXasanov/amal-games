@@ -57,8 +57,7 @@ export function saveCoins(n) {
 }
 
 export function shopPrice(key) {
-  if (FREE_ITEMS.has(key)) return 0;
-  return SHOP_PRICES[key] != null ? SHOP_PRICES[key] : 35;
+  return 0; /* всё бесплатно — своя студия */
 }
 
 export function buildCatalogPrefabs(wrap) {

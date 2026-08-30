@@ -9,7 +9,7 @@ import {
   buildCatalogPrefabs, buildPicPrefabs, FREE_ITEMS,
 } from "./studio3d-catalog.js?v=3";
 
-const STORAGE = "amal-studio-world-v3";
+const STORAGE = "amal-studio-world-v4";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -215,8 +215,8 @@ initTextures();
 buildTexturePreviews();
 
 let unlocks = loadUnlocks();
-let studioCoins = loadCoins();
-FREE_ITEMS.forEach((k) => unlocks.add(k));
+Object.keys(PREFABS).forEach((k) => unlocks.add(k));
+saveUnlocks(unlocks);
 
 const EGG_STYLES = {
   egg: { color: 0xf8fafc, geo: "sphere", sy: 1.28 },
@@ -596,38 +596,15 @@ function isUnlocked(key) {
 }
 
 function tryBuy(key) {
-  if (isUnlocked(key)) return true;
-  const price = shopPrice(key);
-  if (studioCoins >= price) {
-    studioCoins -= price;
-    unlocks.add(key);
-    saveCoins(studioCoins);
-    saveUnlocks(unlocks);
-    updateShopUI();
-    toast("Куплено: " + (PREFABS[key]?.name || key) + " 🪙" + price);
-    return true;
-  }
-  toast("Нужно 🪙 " + price + " (у тебя " + studioCoins + ")");
-  return false;
+  unlocks.add(key);
+  return true;
 }
 
 function buyAllItems() {
-  let need = 0;
-  Object.keys(PREFABS).forEach((k) => {
-    if (!isUnlocked(k)) need += shopPrice(k);
-  });
-  if (need === 0) { toast("Всё уже куплено!"); return; }
-  if (studioCoins < need) {
-    toast("Нужно 🪙 " + need + " — не хватает!");
-    return;
-  }
   Object.keys(PREFABS).forEach((k) => unlocks.add(k));
-  studioCoins -= need;
-  saveCoins(studioCoins);
   saveUnlocks(unlocks);
-  updateShopUI();
   renderToolbox();
-  toast("🎉 Куплены ВСЕ предметы!");
+  toast("Все предметы доступны — бесплатно!");
 }
 
 function thumbHtml(key, pf) {
@@ -650,16 +627,11 @@ function renderToolbox() {
     return;
   }
   entries.forEach(([key, pf]) => {
-    const locked = !isUnlocked(key);
-    const price = shopPrice(key);
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "prefab card" + (placementPrefab === key ? " on" : "") + (locked ? " locked" : "");
-    btn.innerHTML = thumbHtml(key, pf) +
-      `<span class="pname">${pf.name}</span>` +
-      (locked && price > 0 ? `<span class="price">🪙${price}</span>` : "");
+    btn.className = "prefab card" + (placementPrefab === key ? " on" : "");
+    btn.innerHTML = thumbHtml(key, pf) + `<span class="pname">${pf.name}</span>`;
     btn.onclick = () => {
-      if (locked && !tryBuy(key)) return;
       placementPrefab = placementPrefab === key ? null : key;
       toolMode = placementPrefab ? "place" : "select";
       if (pf.cat === "sound" && placementPrefab) playSound("coin", 0.4);
@@ -886,11 +858,17 @@ function loadWorld() {
   }
 }
 
-function newWorld() {
+function startEmpty() {
   objects.forEach((o) => scene.remove(o));
   objects = [];
   selectObject(null);
-  toast("Новый проект");
+  toast("Пустая карта — ставь предметы сам!");
+}
+
+function newWorld() {
+  startEmpty();
+  try { localStorage.removeItem(STORAGE); } catch (_) {}
+  toast("Новый пустой проект");
 }
 
 document.getElementById("btn-save").onclick = saveWorld;
@@ -1004,21 +982,16 @@ function updatePlaySounds(px, pz, dt) {
 }
 
 function loadDemo() {
-  addObject("spawn", 0, 0, 0);
-  addObject("tex_grass", 0, 0, 0, { sx: 24, sz: 24, sy: 0.4, name: "Парк", texture: "grass" });
-  addObject("tree", -6, 0, 5);
-  addObject("tree", 8, 0, -4);
-  addObject("flower", -2, 0, 3);
-  addObject("chair", 3, 0, 2);
-  addObject("table", -3, 0, -2);
-  addObject("lamp", 5, 0, 5);
-  addObject("pic_star", -5, 0, -3);
-  addObject("ramp", 12, 0, 0);
-  addObject("tex_stone", 18, 0, 0, { sx: 10, sz: 8, sy: 0.35, texture: "stone", name: "Площадка" });
-  addObject("acc_hat", 20, 0, 2);
-  addObject("balloon", 15, 0, -5);
-  addObject("sound_zone", 0, 0, 8, { soundId: "music", soundLoop: true, name: "Музыка" });
-  selectObject(null);
+  startEmpty();
+}
+
+function exportMap() {
+  const blob = new Blob([JSON.stringify(serialize(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "my-amal-game.json";
+  a.click();
+  toast("Карта скачана — это твоя игра!");
 }
 
 /* ── Loop ── */
@@ -1058,14 +1031,13 @@ requestAnimationFrame(frame);
 renderToolbox();
 refreshExplorer();
 try {
-  if (localStorage.getItem(STORAGE)) loadWorld();
-  else if (localStorage.getItem("amal-studio-world-v2")) {
-    localStorage.setItem(STORAGE, localStorage.getItem("amal-studio-world-v2"));
-    loadWorld();
-  } else loadDemo();
+  const raw = localStorage.getItem(STORAGE);
+  if (raw) loadWorld();
+  else startEmpty();
 } catch (_) {
-  loadDemo();
+  startEmpty();
 }
 updateShopUI();
 document.getElementById("btn-shop-all")?.addEventListener("click", buyAllItems);
-toast("Amal Studio v3 — магазин, 80+ предметов!");
+document.getElementById("btn-export")?.addEventListener("click", exportMap);
+toast("Amal Studio — пустая карта, всё бесплатно!");
