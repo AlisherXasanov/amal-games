@@ -1,4 +1,9 @@
 import * as THREE from "three";
+if (!THREE.CapsuleGeometry) {
+  THREE.CapsuleGeometry = function (r, len) {
+    return new THREE.CylinderGeometry(r, r, (len || 1) + r * 2, 8);
+  };
+}
 import {
   initTextures, TEX_LIST, SOUND_LIST, PIC_LIST, TEX_PREVIEWS,
   makeMaterial, applyMaterialToObject, makeEmojiTexture, buildTexturePreviews,
@@ -10,7 +15,9 @@ import {
 } from "./studio3d-catalog.js?v=5";
 import { renderPrefabPreview, preloadCategoryPreviews, getPreviewUrl } from "./studio3d-previews.js?v=2";
 
-const STORAGE = "amal-studio-world-v5";
+import { buildNpcPrefabs, animateNpcRig } from "./studio3d-npc.js?v=2";
+
+const STUDIO_VERSION = "v7";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -217,6 +224,7 @@ const PREFABS = {
 Object.assign(PREFABS, buildExtraPrefabs(wrap, makeEgg));
 Object.assign(PREFABS, buildCatalogPrefabs(wrap));
 Object.assign(PREFABS, buildPicPrefabs(wrap));
+Object.assign(PREFABS, buildNpcPrefabs(wrap));
 initTextures();
 buildTexturePreviews();
 
@@ -325,6 +333,10 @@ function wrap(meshOrGroup, data) {
     isTrigger: !!data.isTrigger || !!data.isBoss || !!data.isNpc || !!data.isPickup,
     isNpc: !!data.isNpc,
     npcText: data.npcText || "",
+    npcWalk: !!data.npcWalk,
+    patrolR: data.patrolR != null ? data.patrolR : 5,
+    walkSpeed: data.walkSpeed != null ? data.walkSpeed : 1,
+    npcSkin: data.npcSkin || "default",
   };
   root.traverse((c) => {
     if (c.isMesh) {
@@ -366,6 +378,7 @@ function syncHitboxVisual(obj) {
     );
     hb.name = "hitboxVis";
     hb.userData.canTexture = false;
+    hb.raycast = function () {};
     obj.add(hb);
   }
   hb.scale.set(d.hitboxW || 1, d.hitboxH || 1, d.hitboxD || 1);
@@ -378,13 +391,22 @@ function syncAllHitboxes() {
   objects.forEach(syncHitboxVisual);
 }
 
+function snapObjectToSurface(obj, surfaceY) {
+  obj.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(obj);
+  obj.position.y += surfaceY - box.min.y;
+  if (obj.userData.npcRig) obj.userData.npcRig.baseY = obj.position.y;
+}
+
 function addObject(prefabKey, x, y, z, extra) {
   const def = PREFABS[prefabKey];
   if (!def) return null;
   const data = Object.assign({ prefab: prefabKey, name: def.name }, extra || {});
   if (prefabKey.startsWith("tex_") && !data.texture) data.texture = prefabKey.slice(4);
   const obj = def.create(data);
-  obj.position.set(x, y, z);
+  const surfaceY = Math.max(0, y);
+  obj.position.set(x, surfaceY, z);
+  snapObjectToSurface(obj, surfaceY);
   if (extra?.ry != null) obj.rotation.y = extra.ry;
   if (data.texture) applyMaterialToObject(obj, data);
   const sc = data.scale || 1;
@@ -483,7 +505,24 @@ function pickGround(ev) {
   pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
   const hits = raycaster.intersectObjects([baseplate, ...objects], true);
-  return hits[0] || null;
+  for (let i = 0; i < hits.length; i++) {
+    const h = hits[i];
+    if (h.object.name === "hitboxVis") continue;
+    return h;
+  }
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const pt = new THREE.Vector3();
+  if (raycaster.ray.intersectPlane(plane, pt)) {
+    return { point: pt, object: baseplate };
+  }
+  return null;
+}
+
+function surfaceYFromHit(hit) {
+  if (!hit) return 0;
+  let y = hit.point.y;
+  if (hit.object === baseplate || y < 0.05) y = 0;
+  return y;
 }
 
 function selectObject(obj) {
@@ -572,7 +611,12 @@ function refreshProps() {
       </div>
     </div>
     <div class="prop-row"><label><input id="p-solid" type="checkbox"${d.solid ? " checked" : ""}/> Твёрдый (столкновение)</label></div>
-    ${d.isNpc ? `<div class="prop-row"><label>Фраза NPC</label><input id="p-npc" value="${esc(d.npcText || "")}" /></div>` : ""}
+    ${d.isNpc ? `
+    <div class="prop-row"><label>Фраза NPC</label><input id="p-npc" value="${esc(d.npcText || "")}" /></div>
+    <div class="prop-row"><label><input id="p-npcwalk" type="checkbox"${d.npcWalk ? " checked" : ""}/> Ходит по кругу</label></div>
+    <div class="prop-row"><label>Радиус ходьбы</label><input id="p-patrol" type="number" step="0.5" min="0" value="${d.patrolR != null ? d.patrolR : 5}" /></div>
+    <div class="prop-row"><label>Скорость</label><input id="p-wspeed" type="number" step="0.1" min="0.1" value="${(d.walkSpeed != null ? d.walkSpeed : 1).toFixed(1)}" /></div>
+    ` : ""}
     <button type="button" class="prop-del" id="p-del">🗑 Удалить объект</button>
   `;
   document.getElementById("p-name").oninput = (e) => { d.name = e.target.value; refreshExplorer(); };
@@ -640,6 +684,12 @@ function refreshProps() {
   if (psol) psol.onchange = (e) => { d.solid = e.target.checked; };
   const pnpc = document.getElementById("p-npc");
   if (pnpc) pnpc.oninput = (e) => { d.npcText = e.target.value; };
+  const pnw = document.getElementById("p-npcwalk");
+  if (pnw) pnw.onchange = (e) => { d.npcWalk = e.target.checked; };
+  const ppr = document.getElementById("p-patrol");
+  if (ppr) ppr.onchange = (e) => { d.patrolR = parseFloat(e.target.value) || 5; };
+  const pws = document.getElementById("p-wspeed");
+  if (pws) pws.onchange = (e) => { d.walkSpeed = parseFloat(e.target.value) || 1; };
   document.getElementById("p-del").onclick = () => deleteSelected();
 }
 
@@ -846,7 +896,9 @@ canvas.addEventListener("pointermove", (ev) => {
   if (ghostMesh && placementPrefab) {
     const hit = pickGround(ev);
     if (hit) {
-      ghostMesh.position.set(snap(hit.point.x), snap(hit.point.y), snap(hit.point.z));
+      const sy = surfaceYFromHit(hit);
+      ghostMesh.position.set(snap(hit.point.x), sy, snap(hit.point.z));
+      snapObjectToSurface(ghostMesh, sy);
       ghostMesh.visible = true;
     } else ghostMesh.visible = false;
   }
@@ -857,7 +909,8 @@ canvas.addEventListener("pointerdown", (ev) => {
   if (placementPrefab) {
     const hit = pickGround(ev);
     if (!hit) return;
-    const obj = addObject(placementPrefab, snap(hit.point.x), snap(hit.point.y), snap(hit.point.z));
+    const sy = surfaceYFromHit(hit);
+    const obj = addObject(placementPrefab, snap(hit.point.x), sy, snap(hit.point.z));
     if (obj) {
       selectObject(obj);
       toast("Поставлено: " + PREFABS[placementPrefab].name);
@@ -958,6 +1011,10 @@ function serialize() {
         solid: d.solid,
         isNpc: d.isNpc,
         npcText: d.npcText,
+        npcWalk: d.npcWalk,
+        patrolR: d.patrolR,
+        walkSpeed: d.walkSpeed,
+        npcSkin: d.npcSkin,
       };
     }),
   };
@@ -1002,6 +1059,45 @@ document.getElementById("btn-save").onclick = saveWorld;
 document.getElementById("btn-load").onclick = loadWorld;
 document.getElementById("btn-new").onclick = newWorld;
 
+/* ── NPC patrol ── */
+function initNpcPatrol() {
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    if (!d.npcWalk) return;
+    d.npcHomeX = o.position.x;
+    d.npcHomeZ = o.position.z;
+    d.npcAngle = Math.random() * Math.PI * 2;
+    if (o.userData.npcRig) o.userData.npcRig.baseY = o.position.y;
+    animateNpcRig(o, 0, false);
+  });
+}
+
+function updateNpcPatrol(dt) {
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    if (!d.npcWalk || d.npcHomeX == null) return;
+    d.npcAngle = (d.npcAngle || 0) + dt * (d.walkSpeed || 1);
+    const r = d.patrolR != null ? d.patrolR : 5;
+    o.position.x = d.npcHomeX + Math.cos(d.npcAngle) * r;
+    o.position.z = d.npcHomeZ + Math.sin(d.npcAngle) * r;
+    o.rotation.y = d.npcAngle + Math.PI / 2;
+    animateNpcRig(o, dt, true);
+  });
+}
+
+function resetNpcPatrol() {
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    if (!d.npcWalk || d.npcHomeX == null) return;
+    o.position.x = d.npcHomeX;
+    o.position.z = d.npcHomeZ;
+    if (o.userData.npcRig) {
+      o.userData.npcRig.baseY = o.position.y;
+      animateNpcRig(o, 0, false);
+    }
+  });
+}
+
 /* ── Play mode ── */
 function findSpawn() {
   const sp = objects.find((o) => o.userData.studio.isSpawn);
@@ -1044,7 +1140,8 @@ function startPlay() {
   );
   scene.add(playerHitboxMesh);
   objects.forEach((o) => syncHitboxVisual(o));
-  toast("▶ Игра! T — говорить с NPC · хитбоксы включены");
+  initNpcPatrol();
+  toast("▶ Игра! NPC ходят · T — говорить · ■ Стоп — редактор");
 }
 
 function stopPlay() {
@@ -1073,6 +1170,7 @@ function stopPlay() {
   objects.forEach((o) => {
     if (o.userData.studio.isPickup) o.visible = true;
   });
+  resetNpcPatrol();
   toast("Редактор — персонажа нет");
 }
 
@@ -1243,6 +1341,7 @@ function frame(now) {
     const p = playPlayer.mesh.position;
     updatePlaySounds(p.x, p.z, dt);
     updatePlayNpcAndBoss(p.x, p.y, p.z);
+    updateNpcPatrol(dt);
     if (playerHitboxMesh) {
       playerHitboxMesh.position.set(p.x, p.y + 0.875, p.z);
     }
@@ -1269,5 +1368,5 @@ try {
 }
 updateShopUI();
 document.getElementById("btn-export")?.addEventListener("click", exportMap);
-toast("Amal Studio — зелёная база, ставь предметы!");
+toast("Amal Studio " + STUDIO_VERSION + " · вкладка 🎮 → NPC ходят!");
 setTimeout(startPreviewGeneration, 1500);
