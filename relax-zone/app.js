@@ -496,122 +496,52 @@
     setTimeout(() => toggleSound("night"), 300);
   }
 
-  /* ── Experiments «что внутри» + картинка разреза ── */
-  const EXPERIMENTS = [
-    { icon: "🍫", label: "Kinder", outer: "#6b4226", inner: "#fff7ed", core: "#fcd34d", shape: "egg",
-      reveal: "Разрез! Внутри — белый крем и жёлтая сердцевина. Хруст + сладость." },
-    { icon: "🟢", label: "Nee Doh", outer: "#86efac", inner: "#bbf7d0", core: "#4ade80", shape: "ball",
-      reveal: "Желейный шар разрезан — внутри воздух и squish. Валера бы сказал: «Ого!»" },
-    { icon: "🫧", label: "Pop-it", outer: "#a78bfa", inner: "#c4b5fd", core: "#8b5cf6", shape: "square",
-      reveal: "Слой силикона — половинки с пузырями. Pop-pop-pop!" },
-    { icon: "🧊", label: "Лёд", outer: "#bae6fd", inner: "#e0f2fe", core: "#7dd3fc", shape: "ice",
-      reveal: "Лёд треснул! Внутри чистая вода. *скррр*" },
-    { icon: "🍦", label: "Морож.", outer: "#fbcfe8", inner: "#fff1f2", core: "#f472b6", shape: "scoop",
-      reveal: "Заморозка! Разрез — розовое мороженое, холодное и мягкое." },
-    { icon: "🧼", label: "Мыло", outer: "#fef08a", inner: "#fef9c3", core: "#fde047", shape: "bar",
-      reveal: "Мыльный брусок — внутри однородный, пахнет чистотой." },
-    { icon: "🟣", label: "Слайм", outer: "#c084fc", inner: "#e9d5ff", core: "#a855f7", shape: "blob",
-      reveal: "Слайм разрезали — тянется и блестит. Satisfying!" },
-    { icon: "🥟", label: "Пельмень", outer: "#fef3c7", inner: "#fde68a", core: "#92400e", shape: "dumpling",
-      reveal: "Тесто + мясная начинка. Тёплый пельмень-антистресс." },
-    { icon: "🎁", label: "Сюрприз", outer: "#6366f1", inner: "#a5b4fc", core: "#fcd34d", shape: "box",
-      reveal: "Внутри — звёздочка и напоминание: ты молодец, что отдыхаешь." },
-  ];
+  /* ── «Что внутри» — каждый предмет открывается по-своему (inside-scenes.js) ── */
+  let insideAnim = null;
 
-  let cutAnim = null;
-
-  function drawCut(ex, progress) {
+  function drawInsideScene(ex, p) {
     const c = $("cut-canvas");
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    const W = c.width;
-    const H = c.height;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#0c1220";
-    ctx.fillRect(0, 0, W, H);
-
-    const cx = W * 0.42;
-    const cy = H * 0.52;
-    const cutX = W * (0.25 + progress * 0.55);
-
-    function half(side) {
-      ctx.save();
-      ctx.beginPath();
-      if (ex.shape === "egg") ctx.ellipse(cx + side * 18, cy, 52, 64, 0, 0, Math.PI * 2);
-      else if (ex.shape === "ball") ctx.arc(cx + side * 16, cy, 58, 0, Math.PI * 2);
-      else if (ex.shape === "square") ctx.roundRect(cx - 50 + side * 20, cy - 50, 100, 100, 16);
-      else if (ex.shape === "ice") ctx.rect(cx - 45 + side * 15, cy - 40, 90, 80);
-      else if (ex.shape === "scoop") ctx.arc(cx + side * 14, cy + 10, 55, Math.PI, 0);
-      else if (ex.shape === "bar") ctx.roundRect(cx - 55 + side * 18, cy - 28, 110, 56, 10);
-      else if (ex.shape === "blob") ctx.ellipse(cx + side * 12, cy, 60, 48, 0, 0, Math.PI * 2);
-      else if (ex.shape === "dumpling") ctx.ellipse(cx + side * 14, cy, 55, 40, 0, 0, Math.PI * 2);
-      else ctx.roundRect(cx - 48 + side * 16, cy - 48, 96, 96, 12);
-      ctx.clip();
-      ctx.fillStyle = ex.outer;
-      ctx.fillRect(0, 0, W, H);
-      if (progress > 0.35) {
-        const ix = cx + side * 8 + (progress - 0.35) * 30 * side;
-        ctx.beginPath();
-        ctx.arc(ix, cy, 32, 0, Math.PI * 2);
-        ctx.fillStyle = ex.inner;
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(ix, cy, 16, 0, Math.PI * 2);
-        ctx.fillStyle = ex.core;
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    if (progress < 0.08) {
-      ctx.fillStyle = ex.outer;
-      ctx.beginPath();
-      if (ex.shape === "egg") ctx.ellipse(cx, cy, 52, 64, 0, 0, Math.PI * 2);
-      else if (ex.shape === "ball") ctx.arc(cx, cy, 58, 0, Math.PI * 2);
-      else if (ex.shape === "square") ctx.roundRect(cx - 50, cy - 50, 100, 100, 16);
-      else if (ex.shape === "ice") ctx.rect(cx - 45, cy - 40, 90, 80);
-      else if (ex.shape === "scoop") ctx.arc(cx, cy + 10, 55, Math.PI, 0);
-      else if (ex.shape === "bar") ctx.roundRect(cx - 55, cy - 28, 110, 56, 10);
-      else if (ex.shape === "blob") ctx.ellipse(cx, cy, 60, 48, 0, 0, Math.PI * 2);
-      else if (ex.shape === "dumpling") ctx.ellipse(cx, cy, 55, 40, 0, 0, Math.PI * 2);
-      else ctx.roundRect(cx - 48, cy - 48, 96, 96, 12);
-      ctx.fill();
-    } else {
-      half(-1);
-      half(1);
-    }
-
-    if (progress > 0.05 && progress < 0.95) {
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(cutX, 20);
-      ctx.lineTo(cutX + 8, H - 20);
-      ctx.stroke();
-      ctx.font = "28px serif";
-      ctx.fillText("🔪", cutX - 10, 36);
-    }
-    ctx.fillStyle = "#8ba3c7";
-    ctx.font = "600 12px system-ui";
-    ctx.fillText(ex.label + (progress >= 1 ? " — готово!" : " — режем…"), 12, H - 10);
+    if (!c || !window.RelaxInside) return;
+    RelaxInside.draw(c.getContext("2d"), c.width, c.height, ex, p);
   }
 
-  function animateCut(ex) {
-    if (cutAnim) cancelAnimationFrame(cutAnim);
+  function playInsideSound(ex, sounds) {
+    const t = ex.type;
+    if (t === "kinderSurprise" || t === "kinderMaxi" || t === "kinderJoy") {
+      sounds.tapSound();
+      setTimeout(sounds.tapSound, 280);
+    } else if (t === "kinderChoco") {
+      sounds.sliceSound();
+    } else if (t === "neeDoh" || t === "slime") {
+      sounds.squishSound();
+    } else if (t === "ice") {
+      sounds.iceCrack();
+    } else if (t === "popIt") {
+      for (let i = 0; i < 4; i++) setTimeout(sounds.popSound, i * 110);
+    } else if (t === "balloon") {
+      setTimeout(() => { sounds.noiseBurst(0.18, 800, 0.18, "lowpass"); sounds.popSound(); }, 480);
+    } else {
+      sounds.tapSound();
+    }
+  }
+
+  function animateInside(ex) {
+    if (insideAnim) cancelAnimationFrame(insideAnim);
     let p = 0;
     const step = () => {
-      p = Math.min(1, p + 0.028);
-      drawCut(ex, p);
-      if (p < 1) cutAnim = requestAnimationFrame(step);
-      else cutAnim = null;
+      p = Math.min(1, p + 0.013);
+      drawInsideScene(ex, p);
+      if (p < 1) insideAnim = requestAnimationFrame(step);
+      else insideAnim = null;
     };
     step();
   }
 
   function renderExperiments() {
+    const list = window.RelaxInside ? RelaxInside.EXPERIMENTS : [];
     const grid = $("exp-grid");
     grid.innerHTML = "";
-    EXPERIMENTS.forEach((ex) => {
+    list.forEach((ex) => {
       const box = document.createElement("button");
       box.type = "button";
       box.className = "exp-box";
@@ -621,16 +551,12 @@
         document.querySelectorAll(".exp-box").forEach((b) => b.classList.remove("open"));
         box.classList.add("open");
         $("exp-reveal").textContent = ex.reveal;
-        animateCut(ex);
-        sliceSound();
-        setTimeout(sliceSound, 400);
-        if (ex.shape === "ball" || ex.shape === "blob") setTimeout(squishSound, 600);
-        if (ex.shape === "ice") setTimeout(iceCrack, 500);
-        if (ex.shape === "square") setTimeout(popSound, 550);
+        animateInside(ex);
+        playInsideSound(ex, { tapSound, sliceSound, squishSound, iceCrack, popSound, noiseBurst });
       };
       grid.appendChild(box);
     });
-    drawCut(EXPERIMENTS[0], 0);
+    if (list[0]) drawInsideScene(list[0], 0);
   }
 
   function initFreeze() {
