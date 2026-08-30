@@ -1,6 +1,11 @@
 import * as THREE from "three";
+import {
+  initTextures, TEX_LIST, SOUND_LIST, PIC_LIST,
+  makeMaterial, applyMaterialToObject, makeEmojiTexture,
+  playSound, buildExtraPrefabs, setEditModeVisible, toggleSoundRings,
+} from "./studio3d-assets.js?v=2";
 
-const STORAGE = "amal-studio-world-v1";
+const STORAGE = "amal-studio-world-v2";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -22,6 +27,8 @@ let idCounter = 0;
 let playPlayer = null;
 let playOrbit = null;
 let ghostMesh = null;
+const soundState = new Map();
+const pickedUp = new Set();
 
 function toast(msg) {
   toastEl.textContent = msg;
@@ -197,6 +204,9 @@ const PREFABS = {
   egg_final: { cat: "egg", name: "ФИНАЛ", icon: "👑", create: (d) => makeEgg("final", d) },
 };
 
+Object.assign(PREFABS, buildExtraPrefabs(wrap, makeEgg));
+initTextures();
+
 const EGG_STYLES = {
   egg: { color: 0xf8fafc, geo: "sphere", sy: 1.28 },
   gold: { color: 0xfbbf24, geo: "sphere", sy: 1.28, em: 0.4, metal: 0.6 },
@@ -277,6 +287,19 @@ function wrap(meshOrGroup, data) {
     isBoss: !!data.isBoss,
     isTreadmill: !!data.isTreadmill,
     eggStyle: data.eggStyle || null,
+    texture: data.texture || null,
+    texRepeat: data.texRepeat != null ? data.texRepeat : 1,
+    roughness: data.roughness != null ? data.roughness : 0.65,
+    metalness: data.metalness != null ? data.metalness : 0,
+    soundId: data.soundId || null,
+    soundRadius: data.soundRadius != null ? data.soundRadius : 6,
+    soundLoop: !!data.soundLoop,
+    soundVolume: data.soundVolume != null ? data.soundVolume : 0.8,
+    imageChar: data.imageChar || null,
+    signText: data.signText || null,
+    isPickup: !!data.isPickup,
+    isPortal: !!data.isPortal,
+    isLight: !!data.isLight,
   };
   root.traverse((c) => {
     if (c.isMesh) {
@@ -291,9 +314,11 @@ function addObject(prefabKey, x, y, z, extra) {
   const def = PREFABS[prefabKey];
   if (!def) return null;
   const data = Object.assign({ prefab: prefabKey, name: def.name }, extra || {});
+  if (prefabKey.startsWith("tex_") && !data.texture) data.texture = prefabKey.slice(4);
   const obj = def.create(data);
   obj.position.set(x, y, z);
   if (extra?.ry != null) obj.rotation.y = extra.ry;
+  if (data.texture) applyMaterialToObject(obj, data);
   scene.add(obj);
   objects.push(obj);
   refreshExplorer();
@@ -431,6 +456,24 @@ function refreshProps() {
   }
   const d = o.userData.studio;
   const pf = PREFABS[d.prefab];
+  let extra = "";
+  if (d.texture || d.prefab?.startsWith("tex_")) {
+    extra += `<div class="prop-row"><label>Текстура</label><select id="p-tex">${TEX_LIST.map((t) =>
+      `<option value="${t.id}"${(d.texture || d.prefab?.replace("tex_", "")) === t.id ? " selected" : ""}>${t.icon} ${t.name}</option>`
+    ).join("")}</select></div>`;
+  }
+  if (d.soundId != null || d.prefab === "sound_zone") {
+    extra += `<div class="prop-row"><label>Звук</label><select id="p-sound">${SOUND_LIST.map((s) =>
+      `<option value="${s.id}"${d.soundId === s.id ? " selected" : ""}>${s.icon} ${s.name}</option>`
+    ).join("")}</select></div>
+    <div class="prop-row"><label>Радиус звука</label><input id="p-sradius" type="number" step="1" value="${d.soundRadius || 6}" /></div>
+    <div class="prop-row"><label><input id="p-sloop" type="checkbox"${d.soundLoop ? " checked" : ""}/> Зациклить</label></div>`;
+  }
+  if (d.imageChar != null || d.prefab === "picture" || d.prefab === "billboard") {
+    extra += `<div class="prop-row"><label>Картинка</label><select id="p-pic">${PIC_LIST.map((p) =>
+      `<option value="${p.id}"${d.imageChar === p.id ? " selected" : ""}>${p.id} ${p.name}</option>`
+    ).join("")}</select></div>`;
+  }
   propsEl.innerHTML = `
     <div class="prop-row"><label>Имя</label><input id="p-name" value="${esc(d.name)}" /></div>
     <div class="prop-row"><label>Тип</label><input readonly value="${pf?.name || d.prefab}" /></div>
@@ -442,7 +485,9 @@ function refreshProps() {
       </div>
     </div>
     <div class="prop-row"><label>Поворот Y</label><input id="p-ry" type="number" step="15" value="${(o.rotation.y * 180 / Math.PI).toFixed(0)}" /></div>
-    ${d.color ? `<div class="prop-row"><label>Цвет</label><input id="p-color" type="color" value="${d.color.startsWith("#") ? d.color : "#38bdf8"}" /></div>` : ""}
+    ${d.color !== undefined ? `<div class="prop-row"><label>Цвет</label><input id="p-color" type="color" value="${(d.color && d.color.startsWith("#")) ? d.color : "#38bdf8"}" /></div>` : ""}
+    ${d.metalness != null ? `<div class="prop-row"><label>Металл</label><input id="p-metal" type="range" min="0" max="1" step="0.05" value="${d.metalness}" /></div>` : ""}
+    ${extra}
     <button type="button" class="prop-del" id="p-del">🗑 Удалить объект</button>
   `;
   document.getElementById("p-name").oninput = (e) => { d.name = e.target.value; refreshExplorer(); };
@@ -461,6 +506,33 @@ function refreshProps() {
   };
   const col = document.getElementById("p-color");
   if (col) col.oninput = (e) => applyColor(o, e.target.value);
+  const pt = document.getElementById("p-tex");
+  if (pt) pt.onchange = (e) => {
+    d.texture = e.target.value;
+    applyMaterialToObject(o, d);
+  };
+  const ps = document.getElementById("p-sound");
+  if (ps) ps.onchange = (e) => { d.soundId = e.target.value; playSound(d.soundId, d.soundVolume); };
+  const sr = document.getElementById("p-sradius");
+  if (sr) sr.onchange = (e) => { d.soundRadius = parseFloat(e.target.value) || 6; };
+  const sl = document.getElementById("p-sloop");
+  if (sl) sl.onchange = (e) => { d.soundLoop = e.target.checked; };
+  const pp = document.getElementById("p-pic");
+  if (pp) pp.onchange = (e) => {
+    d.imageChar = e.target.value;
+    o.traverse((c) => {
+      if (c.isMesh && c.material && c.material.map) {
+        c.material.map.dispose();
+        c.material.map = makeEmojiTexture(d.imageChar, d.prefab === "billboard" ? "#0f172a" : "#1e293b");
+        c.material.needsUpdate = true;
+      }
+    });
+  };
+  const pm = document.getElementById("p-metal");
+  if (pm) pm.oninput = (e) => {
+    d.metalness = parseFloat(e.target.value);
+    applyMaterialToObject(o, d);
+  };
   document.getElementById("p-del").onclick = () => deleteSelected();
 }
 
@@ -500,6 +572,7 @@ function renderToolbox() {
     btn.onclick = () => {
       placementPrefab = placementPrefab === key ? null : key;
       toolMode = placementPrefab ? "place" : "select";
+      if (pf.cat === "sound" && placementPrefab) playSound(key === "sound_zone" ? "coin" : "coin", 0.5);
       document.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("on", b.dataset.mode === "select"));
       renderToolbox();
       updateGhost();
@@ -636,7 +709,7 @@ window.addEventListener("keydown", (e) => {
 /* ── Save / Load ── */
 function serialize() {
   return {
-    v: 1,
+    v: 2,
     objects: objects.map((o) => {
       const d = o.userData.studio;
       return {
@@ -650,6 +723,16 @@ function serialize() {
         sx: d.sx,
         sy: d.sy,
         sz: d.sz,
+        texture: d.texture,
+        texRepeat: d.texRepeat,
+        roughness: d.roughness,
+        metalness: d.metalness,
+        soundId: d.soundId,
+        soundRadius: d.soundRadius,
+        soundLoop: d.soundLoop,
+        soundVolume: d.soundVolume,
+        imageChar: d.imageChar,
+        signText: d.signText,
       };
     }),
   };
@@ -704,6 +787,10 @@ function startPlay() {
   selectionBox.visible = false;
   if (ghostMesh) { scene.remove(ghostMesh); ghostMesh = null; }
   if (editOrbit) { editOrbit.dispose(); editOrbit = null; }
+  setEditModeVisible(false);
+  toggleSoundRings(objects, false);
+  soundState.clear();
+  pickedUp.clear();
 
   const sp = findSpawn();
   playPlayer = AmalWalkPlayer.create(scene, THREE, {
@@ -738,6 +825,9 @@ function stopPlay() {
     playOrbit = null;
   }
   attachEditOrbit();
+  setEditModeVisible(true);
+  toggleSoundRings(objects, true);
+  soundState.clear();
   toast("Редактор — персонажа нет");
 }
 
@@ -747,20 +837,65 @@ btnPlay.onclick = () => {
 };
 
 /* ── Demo starter map ── */
+function updatePlaySounds(px, pz, dt) {
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    if (d.isPickup && pickedUp.has(d.id)) return;
+    if (d.isPickup && d.pickupType === "coin") {
+      o.rotation.y += dt * 2.5;
+      const dist = Math.hypot(px - o.position.x, pz - o.position.z);
+      if (dist < 1.4) {
+        pickedUp.add(d.id);
+        o.visible = false;
+        playSound("coin", 0.9);
+        toast("🪙 +1");
+      }
+      return;
+    }
+    if (!d.soundId) return;
+    const dist = Math.hypot(px - o.position.x, pz - o.position.z);
+    const r = d.soundRadius || 6;
+    const inside = dist < r;
+    const st = soundState.get(d.id) || { inside: false, t: 0 };
+    if (inside && !st.inside) {
+      playSound(d.soundId, d.soundVolume);
+      st.inside = true;
+    }
+    if (!inside) st.inside = false;
+    if (inside && d.soundLoop) {
+      st.t += dt;
+      if (st.t > 2.5) {
+        st.t = 0;
+        playSound(d.soundId, d.soundVolume * 0.6);
+      }
+    }
+    soundState.set(d.id, st);
+  });
+}
+
 function loadDemo() {
   addObject("spawn", 0, 0, 0);
-  addObject("plate", 0, 0, 0, { sx: 20, sz: 20, color: "#4ade80", name: "Моя база" });
+  addObject("tex_grass", 0, 0, 0, { sx: 20, sz: 20, sy: 0.4, name: "Моя база", texture: "grass" });
   addObject("treadmill", 0, 0, 6);
   addObject("pen", -4, 0, -2);
   addObject("pen", 4, 0, -2);
+  addObject("lamp", -6, 0, 4);
+  addObject("picture", 2, 0, -5, { imageChar: "🥚", name: "Картинка яйца" });
+  addObject("sound_zone", -2, 0, 8, { soundId: "music", soundLoop: true, name: "Музыка у базы" });
   addObject("zone", 18, 0, 0, { color: "#64748b", name: "Зона НУБ" });
+  addObject("tex_brick", 16, 0, 4, { name: "Стена", sx: 8, sy: 3, sz: 0.6, texture: "brick" });
   addObject("boss", 18, 0, -4, { color: "#64748b", name: "Босс НУБ" });
   addObject("egg_basic", 20, 0, 2);
   addObject("egg_gold", 22, 0, -1);
+  addObject("coin_pickup", 21, 0, 0);
   addObject("zone", 36, 0, 0, { color: "#ef4444", name: "Зона 2" });
+  addObject("tex_sand", 34, 0, 3, { sx: 10, sz: 6, sy: 0.3, texture: "sand", name: "Пустыня" });
   addObject("egg_dragon", 38, 0, 1);
+  addObject("sound_zone", 38, 0, -3, { soundId: "alarm", name: "Тревога" });
+  addObject("billboard", 30, 0, -6, { imageChar: "🐉", name: "Баннер" });
   addObject("tree", -8, 0, 8);
-  addObject("tree", 8, 0, 10);
+  addObject("fence", 10, 0, 10);
+  addObject("rock", 14, 0, 8);
   selectObject(null);
 }
 
@@ -785,6 +920,7 @@ function frame(now) {
     const bounds = { minX: -55, maxX: 55, minZ: -55, maxZ: 55 };
     playPlayer.update(dt, playOrbit.state.yaw, bounds);
     playOrbit.follow(playPlayer.mesh.position);
+    updatePlaySounds(playPlayer.mesh.position.x, playPlayer.mesh.position.z, dt);
   }
 
   objects.forEach((o) => {
@@ -801,8 +937,11 @@ renderToolbox();
 refreshExplorer();
 try {
   if (localStorage.getItem(STORAGE)) loadWorld();
-  else loadDemo();
+  else if (localStorage.getItem("amal-studio-world-v1")) {
+    localStorage.setItem(STORAGE, localStorage.getItem("amal-studio-world-v1"));
+    loadWorld();
+  } else loadDemo();
 } catch (_) {
   loadDemo();
 }
-toast("Amal Studio — как Roblox Studio, но своё!");
+toast("Amal Studio v2 — текстуры, звуки, картинки!");

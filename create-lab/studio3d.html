@@ -73,10 +73,10 @@
       padding: 8px 10px; font-weight: 800; font-size: 11px; text-transform: uppercase;
       color: var(--muted); border-bottom: 1px solid var(--border); letter-spacing: .04em;
     }
-    .toolbox-tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .toolbox-tabs { display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0; }
     .toolbox-tabs button {
-      flex: 1; padding: 7px 4px; border: 0; background: transparent; color: var(--muted);
-      font: 700 11px inherit; cursor: pointer;
+      flex: 0 0 auto; padding: 7px 8px; border: 0; background: transparent; color: var(--muted);
+      font: 700 10px inherit; cursor: pointer; white-space: nowrap;
     }
     .toolbox-tabs button.on { color: #fff; background: var(--panel2); border-bottom: 2px solid var(--accent); }
     .toolbox-list { flex: 1; overflow-y: auto; padding: 6px; }
@@ -196,8 +196,12 @@
         <div class="toolbox-head">Заготовки</div>
         <div class="toolbox-tabs">
           <button type="button" class="on" data-cat="parts">Части</button>
+          <button type="button" data-cat="tex">🎨 Текстуры</button>
+          <button type="button" data-cat="decor">🪑 Вещи</button>
           <button type="button" data-cat="egg">🥚 Яйца</button>
-          <button type="button" data-cat="game">Игра</button>
+          <button type="button" data-cat="game">🎮 Игра</button>
+          <button type="button" data-cat="sound">🔊 Звук</button>
+          <button type="button" data-cat="pic">🖼 Картинки</button>
         </div>
         <div class="toolbox-list" id="prefab-list"></div>
       </aside>
@@ -233,6 +237,6 @@
 
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script src="../shared/amal-walk-player.js?v=1"></script>
-  <script type="module" src="./studio3d.js?v=1"></script>
+  <script type="module" src="./studio3d.js?v=2"></script>
 </body>
 </html>
