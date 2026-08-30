@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Укради яйцо — Amal Games</title>
   <meta name="description" content="2D как в Roblox: база, яйца, дорожка, воровство." />
-  <link rel="stylesheet" href="./style.css?v=4" />
+  <link rel="stylesheet" href="./style.css?v=5" />
 </head>
 <body>
   <a class="portal-back" href="../">&larr; Все игры</a>
@@ -19,6 +19,7 @@
         <div class="coins">🪙 <span id="coins">100</span></div>
         <div class="income">+<span id="income">0</span>/сек · ⚡ <span id="speedStat">1</span></div>
         <div class="rank" id="rankLabel">Индекс: #4</div>
+        <div class="zone" id="zoneLabel">🏠 ТВОЯ ЗОНА</div>
         <div class="carry" id="carry">В руках: пусто</div>
       </div>
 
@@ -54,14 +55,13 @@
 
       <div class="tutorial" id="tutorial">
         <div class="tutorial-card">
-          <h2>🥚 Укради яйцо — большая карта</h2>
+          <h2>🥚 Укради яйцо — зоны и вольеры</h2>
           <ol>
-            <li><b>Зелёная база</b> внизу — твоя. Ставь яйца на пьедесталы.</li>
-            <li><b>8 боссов</b> по карте — у каждого своя база. Кради яйца!</li>
-            <li><b>👑 ФИНАЛ</b> сверху — главный босс. Поднимись на #1 в индексе!</li>
-            <li><b>Серая дорожка</b> у твоей базы — качай скорость ⚡</li>
-            <li><b>Фиолетовый круг</b> в центре — магазин (кнопки внизу)</li>
-            <li><b>Мини-карта</b> справа — видно всю карту. WASD — бег, <b>E</b> — действие</li>
+            <li><b>Твоя зона</b> слева — ставь яйца в <b>вольеры</b> (загончики).</li>
+            <li><b>8 зон</b> в ряд — у каждой свой босс и свои яйца.</li>
+            <li>Дальние зоны <b>🔒 закрыты</b> — качай ⚡ на дорожке, потом проход откроется!</li>
+            <li>Чем дальше зона — <b>быстрее босс</b> и <b>круче яйца</b> 🐉👑</li>
+            <li><b>E</b> — взять / украсть / поставить · мини-карта справа</li>
           </ol>
           <button type="button" id="btnStart">Погнали!</button>
         </div>
@@ -71,7 +71,7 @@
 
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <script src="../shared/amal-owner-powers.js?v=23"></script>
-  <script src="./game.js?v=4"></script>
+  <script src="./game.js?v=5"></script>
   <script src="../shared/amal-hub.js?v=66"></script>
 </body>
 </html>

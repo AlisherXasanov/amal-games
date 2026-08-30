@@ -168,6 +168,13 @@ body {
   text-shadow: 0 0 8px rgba(251, 191, 36, 0.8);
 }
 
+.hud .zone {
+  color: #7dd3fc;
+  font-weight: 800;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
 .hud .carry {
   margin-top: 3px;
   color: #e9d5ff;

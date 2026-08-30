@@ -1,11 +1,11 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v4";
+  const SAVE_KEY = "amal-steal-egg-v5";
   const VW = 960;
   const VH = 640;
-  const MW = 2400;
-  const MH = 1800;
+  const MW = 3920;
+  const MH = 2000;
 
   const EGG_TYPES = [
     { id: "basic", name: "Обычное", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
@@ -53,6 +53,7 @@
   const incomeEl = document.getElementById("income");
   const speedEl = document.getElementById("speedStat");
   const rankEl = document.getElementById("rankLabel");
+  const zoneEl = document.getElementById("zoneLabel");
   const carryEl = document.getElementById("carry");
   const timeEl = document.getElementById("timeLabel");
   const indexList = document.getElementById("indexList");
@@ -86,56 +87,211 @@
   let trailDots = [];
   let paused = true;
 
+  let gateToast = 0;
+
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
 
-  const player = { x: 280, y: 1550, r: 14, carry: null, color: "#38bdf8" };
+  const player = { x: 200, y: 1680, r: 14, carry: null, color: "#38bdf8" };
   const cam = { x: 0, y: 0 };
 
-  /** 8 боссов + твоя база — большая карта как в Roblox */
-  const BOSS_DEFS = [
-    { id: "nub", name: "НУБ", speed: 5000, fill: "#94a3b8", stroke: "#cbd5e1", x: 700, y: 1300, r: 52, slots: 2 },
-    { id: "neighbor", name: "СОСЕД", speed: 800000, fill: "#ef4444", stroke: "#fca5a5", x: 1950, y: 1400, r: 58, slots: 2 },
-    { id: "katya", name: "КАТЯ", speed: 2000000, fill: "#f97316", stroke: "#fdba74", x: 1950, y: 450, r: 58, slots: 2 },
-    { id: "rick", name: "РИК", speed: 150000000, fill: "#3b82f6", stroke: "#93c5fd", x: 450, y: 450, r: 58, slots: 2 },
-    { id: "erox", name: "ЕРОКС", speed: 500000000, fill: "#a855f7", stroke: "#d8b4fe", x: 350, y: 1450, r: 62, slots: 3 },
-    { id: "dragon", name: "ДРАКОН", speed: 2000000000, fill: "#b91c1c", stroke: "#fca5a5", x: 2100, y: 900, r: 65, slots: 3 },
-    { id: "legend", name: "ЛЕГЕНДА", speed: 8000000000, fill: "#0891b2", stroke: "#67e8f9", x: 1200, y: 1650, r: 60, slots: 2 },
-    { id: "final", name: "👑 ФИНАЛ", speed: 50000000000, fill: "#eab308", stroke: "#fde68a", x: 1200, y: 220, r: 78, slots: 3, boss: true },
+  /** Зоны с вольерами — чем дальше, тем сильнее босс и круче яйца */
+  const ZONE_DEFS = [
+    {
+      id: "home",
+      name: "🏠 ТВОЯ ЗОНА",
+      x: 60,
+      y: 1480,
+      w: 440,
+      h: 340,
+      fill: "#14532d",
+      stroke: "#86efac",
+      isHome: true,
+      pens: [
+        { x: 120, y: 1580, w: 88, h: 68 },
+        { x: 230, y: 1580, w: 88, h: 68 },
+        { x: 120, y: 1670, w: 88, h: 68 },
+        { x: 230, y: 1670, w: 88, h: 68 },
+      ],
+    },
+    {
+      id: "z1",
+      name: "Зона 1 · Нубик",
+      x: 560,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#334155",
+      stroke: "#94a3b8",
+      needSpeed: 0,
+      boss: { id: "nub", name: "НУБ", speed: 600, color: "#cbd5e1" },
+      pens: [
+        { x: 610, y: 1580, w: 82, h: 62 },
+        { x: 720, y: 1580, w: 82, h: 62 },
+        { x: 665, y: 1670, w: 82, h: 62 },
+      ],
+      eggs: [620, 340, 40, 0, 0, 0],
+    },
+    {
+      id: "z2",
+      name: "Зона 2 · Сосед",
+      x: 980,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#450a0a",
+      stroke: "#fca5a5",
+      needSpeed: 600,
+      boss: { id: "neighbor", name: "СОСЕД", speed: 6000, color: "#fca5a5" },
+      pens: [
+        { x: 1030, y: 1580, w: 82, h: 62 },
+        { x: 1140, y: 1580, w: 82, h: 62 },
+        { x: 1085, y: 1670, w: 82, h: 62 },
+      ],
+      eggs: [380, 420, 180, 20, 0, 0],
+    },
+    {
+      id: "z3",
+      name: "Зона 3 · Катя",
+      x: 1400,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#431407",
+      stroke: "#fdba74",
+      needSpeed: 6000,
+      boss: { id: "katya", name: "КАТЯ", speed: 60000, color: "#fdba74" },
+      pens: [
+        { x: 1450, y: 1580, w: 82, h: 62 },
+        { x: 1560, y: 1580, w: 82, h: 62 },
+        { x: 1505, y: 1670, w: 82, h: 62 },
+      ],
+      eggs: [180, 320, 360, 130, 10, 0],
+    },
+    {
+      id: "z4",
+      name: "Зона 4 · Рик",
+      x: 1820,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#1e3a8a",
+      stroke: "#93c5fd",
+      needSpeed: 60000,
+      boss: { id: "rick", name: "РИК", speed: 600000, color: "#93c5fd" },
+      pens: [
+        { x: 1870, y: 1580, w: 82, h: 62 },
+        { x: 1980, y: 1580, w: 82, h: 62 },
+        { x: 1925, y: 1670, w: 82, h: 62 },
+      ],
+      eggs: [60, 140, 320, 380, 100, 0],
+    },
+    {
+      id: "z5",
+      name: "Зона 5 · Ерокс",
+      x: 2240,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#581c87",
+      stroke: "#d8b4fe",
+      needSpeed: 600000,
+      boss: { id: "erox", name: "ЕРОКС", speed: 6000000, color: "#d8b4fe" },
+      pens: [
+        { x: 2290, y: 1580, w: 82, h: 62 },
+        { x: 2400, y: 1580, w: 82, h: 62 },
+        { x: 2345, y: 1670, w: 82, h: 62 },
+        { x: 2290, y: 1740, w: 82, h: 62 },
+      ],
+      eggs: [20, 70, 200, 350, 320, 40],
+    },
+    {
+      id: "z6",
+      name: "Зона 6 · Дракон",
+      x: 2660,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#7f1d1d",
+      stroke: "#fca5a5",
+      needSpeed: 6000000,
+      boss: { id: "dragon", name: "ДРАКОН", speed: 60000000, color: "#fca5a5" },
+      pens: [
+        { x: 2710, y: 1580, w: 82, h: 62 },
+        { x: 2820, y: 1580, w: 82, h: 62 },
+        { x: 2765, y: 1670, w: 82, h: 62 },
+        { x: 2710, y: 1740, w: 82, h: 62 },
+      ],
+      eggs: [5, 30, 90, 250, 450, 175],
+    },
+    {
+      id: "z7",
+      name: "Зона 7 · Легенда",
+      x: 3080,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#164e63",
+      stroke: "#67e8f9",
+      needSpeed: 60000000,
+      boss: { id: "legend", name: "ЛЕГЕНДА", speed: 600000000, color: "#67e8f9" },
+      pens: [
+        { x: 3130, y: 1580, w: 82, h: 62 },
+        { x: 3240, y: 1580, w: 82, h: 62 },
+        { x: 3185, y: 1670, w: 82, h: 62 },
+        { x: 3130, y: 1740, w: 82, h: 62 },
+      ],
+      eggs: [0, 15, 70, 180, 400, 335],
+    },
+    {
+      id: "z8",
+      name: "👑 Зона 8 · ФИНАЛ",
+      x: 3500,
+      y: 1480,
+      w: 360,
+      h: 340,
+      fill: "#713f12",
+      stroke: "#fde68a",
+      needSpeed: 600000000,
+      boss: { id: "final", name: "👑 ФИНАЛ", speed: 6000000000, color: "#fde68a", boss: true },
+      pens: [
+        { x: 3540, y: 1570, w: 90, h: 70 },
+        { x: 3660, y: 1570, w: 90, h: 70 },
+        { x: 3540, y: 1660, w: 90, h: 70 },
+        { x: 3660, y: 1660, w: 90, h: 70 },
+      ],
+      eggs: [0, 0, 20, 80, 350, 550],
+    },
   ];
 
-  const bases = [
-    { id: "mine", name: "ТВОЯ БАЗА", x: 280, y: 1550, r: 76, fill: "#22c55e", stroke: "#86efac", slots: 0 },
-  ].concat(
-    BOSS_DEFS.map(function (b) {
-      return {
-        id: b.id,
-        name: b.name,
-        x: b.x,
-        y: b.y,
-        r: b.r,
-        fill: b.fill,
-        stroke: b.stroke,
-        slots: b.slots,
-        boss: !!b.boss,
-      };
-    })
-  );
+  const GATES = [
+    { x: 505, y: 1460, w: 32, h: 380, need: 0 },
+    { x: 925, y: 1460, w: 32, h: 380, need: 600 },
+    { x: 1345, y: 1460, w: 32, h: 380, need: 6000 },
+    { x: 1765, y: 1460, w: 32, h: 380, need: 60000 },
+    { x: 2185, y: 1460, w: 32, h: 380, need: 600000 },
+    { x: 2605, y: 1460, w: 32, h: 380, need: 6000000 },
+    { x: 3025, y: 1460, w: 32, h: 380, need: 60000000 },
+    { x: 3445, y: 1460, w: 32, h: 380, need: 600000000 },
+  ];
 
-  const shop = { x: 1200, y: 900, r: 62, label: "МАГАЗИН" };
-  const treadmill = { x: 480, y: 1550, w: 120, h: 52, label: "ДОРОЖКА" };
+  const shop = { x: 340, y: 1540, r: 52, label: "МАГАЗИН" };
+  const treadmill = { x: 400, y: 1760, w: 130, h: 52, label: "ДОРОЖКА" };
 
-  const rivals = BOSS_DEFS.map(function (b) {
+  const rivals = ZONE_DEFS.filter(function (z) {
+    return z.boss;
+  }).map(function (z) {
     return {
-      name: b.name,
-      speed: b.speed,
-      color: b.stroke,
-      x: b.x,
-      y: b.y,
-      homeX: b.x,
-      homeY: b.y,
+      name: z.boss.name,
+      speed: z.boss.speed,
+      color: z.boss.color,
+      x: z.x + z.w / 2,
+      y: z.y + 90,
+      homeX: z.x + z.w / 2,
+      homeY: z.y + 90,
+      zoneId: z.id,
       carry: null,
-      boss: !!b.boss,
+      boss: !!z.boss.boss,
     };
   });
 
@@ -173,57 +329,92 @@
   }
 
   function rollEggLucky() {
-    const pool = EGG_TYPES.filter((e) => e.id !== "final" || speedStat >= 1e6);
-    let total = 0;
-    pool.forEach((e) => {
-      total += e.weight;
+    return rollEggForZone("z1");
+  }
+
+  function rollEggForZone(zoneId) {
+    const z = ZONE_DEFS.find(function (x) {
+      return x.id === zoneId;
     });
+    const weights = (z && z.eggs) || [620, 240, 110, 24, 5, 1];
+    const ids = ["basic", "gold", "rare", "epic", "dragon", "final"];
+    let total = 0;
+    weights.forEach(function (w) {
+      total += w;
+    });
+    if (total <= 0) return eggFromType("basic");
     let r = Math.random() * total;
-    for (let i = 0; i < pool.length; i++) {
-      r -= pool[i].weight;
-      if (r <= 0) return eggFromType(pool[i].id);
+    for (let i = 0; i < ids.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return eggFromType(ids[i]);
     }
     return eggFromType("basic");
   }
 
+  function zoneAt(x, y) {
+    for (let i = 0; i < ZONE_DEFS.length; i++) {
+      const z = ZONE_DEFS[i];
+      if (x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h) return z;
+    }
+    return null;
+  }
+
+  function zoneUnlocked(z) {
+    return !z || z.isHome || speedStat >= (z.needSpeed || 0);
+  }
+
   function initPedestals() {
     pedestals.length = 0;
-    bases.forEach(function (base) {
-      const slots = base.id === "mine" ? baseSlots : base.slots || 2;
-      for (let i = 0; i < slots; i++) {
-        const ang = (i / slots) * Math.PI * 2 - Math.PI / 2;
-        const dist = base.id === "mine" ? 48 : base.r * 0.55;
+    ZONE_DEFS.forEach(function (zone) {
+      if (zone.isHome) {
+        zone.pens.slice(0, baseSlots).forEach(function (pen) {
+          pedestals.push({
+            x: pen.x + pen.w / 2,
+            y: pen.y + pen.h / 2,
+            baseId: "mine",
+            zoneId: "home",
+            pen: pen,
+            egg: null,
+            respawn: 0,
+          });
+        });
+        return;
+      }
+      zone.pens.forEach(function (pen) {
         pedestals.push({
-          x: base.x + Math.cos(ang) * dist,
-          y: base.y + Math.sin(ang) * dist,
-          baseId: base.id,
-          egg: null,
+          x: pen.x + pen.w / 2,
+          y: pen.y + pen.h / 2,
+          baseId: zone.boss.id,
+          zoneId: zone.id,
+          pen: pen,
+          egg: rollEggForZone(zone.id),
           respawn: 0,
         });
-      }
-    });
-    pedestals.forEach(function (p) {
-      if (p.baseId === "mine") return;
-      p.egg = p.baseId === "final" ? eggFromType("dragon") : rollEggLucky();
+      });
     });
   }
 
   function rebuildMySlots() {
-    const eggs = pedestals.filter((p) => p.baseId === "mine").map((p) => p.egg);
+    const eggs = pedestals.filter(function (p) {
+      return p.baseId === "mine";
+    }).map(function (p) {
+      return p.egg;
+    });
     for (let i = pedestals.length - 1; i >= 0; i--) {
       if (pedestals[i].baseId === "mine") pedestals.splice(i, 1);
     }
-    const mine = bases[0];
-    for (let i = 0; i < baseSlots; i++) {
-      const ang = (i / baseSlots) * Math.PI * 2 - Math.PI / 2;
+    const home = ZONE_DEFS[0];
+    home.pens.slice(0, baseSlots).forEach(function (pen, i) {
       pedestals.push({
-        x: mine.x + Math.cos(ang) * 46,
-        y: mine.y + Math.sin(ang) * 46,
+        x: pen.x + pen.w / 2,
+        y: pen.y + pen.h / 2,
         baseId: "mine",
+        zoneId: "home",
+        pen: pen,
         egg: eggs[i] || null,
         respawn: 0,
       });
-    }
+    });
   }
 
   function saveGame() {
@@ -330,6 +521,14 @@
       rankEl.className = "rank";
     }
 
+    const z = zoneAt(player.x, player.y);
+    if (zoneEl) {
+      if (!z) zoneEl.textContent = "🗺️ Карта";
+      else if (z.isHome) zoneEl.textContent = z.name;
+      else if (zoneUnlocked(z)) zoneEl.textContent = z.name + " · " + z.boss.name;
+      else zoneEl.textContent = "🔒 " + z.name + " · нужно ⚡" + formatNum(z.needSpeed);
+    }
+
     const lockLeft = Math.max(0, lockUntil - performance.now());
     btnLock.disabled = lockLeft > 0;
     btnLock.textContent = lockLeft > 0 ? "🔒 " + Math.ceil(lockLeft / 1000) + "с" : "🔒 База";
@@ -407,7 +606,7 @@
     coins -= cost;
     baseSlots++;
     rebuildMySlots();
-    showToast("Слот " + baseSlots + "/8");
+    showToast("Вольер " + baseSlots + "/8");
     saveGame();
     refreshShop();
     updateHud();
@@ -426,11 +625,17 @@
 
   function trySteal() {
     if (player.carry) return false;
-    const slot = nearestPedestal((p) => p.baseId !== "mine" && p.egg);
+    const slot = nearestPedestal(function (p) {
+      if (p.baseId === "mine" || !p.egg) return false;
+      const z = ZONE_DEFS.find(function (x) {
+        return x.id === p.zoneId;
+      });
+      return zoneUnlocked(z);
+    });
     if (!slot) return false;
     player.carry = slot.egg;
     slot.egg = null;
-    showToast("Украл! Беги домой!");
+    showToast("Украл! Беги в свою зону!");
     return true;
   }
 
@@ -502,7 +707,7 @@
       "/с · " +
       lv.label +
       "</p>";
-    lucky += '<p class="shop-hint">Lucky: обыч 62% · золото 24% · редк 11% · эпик 2% · дракон 0.8%</p>';
+    lucky += '<p class="shop-hint">Lucky — яйца как в зоне 1. Дальние зоны = круче яйца!</p>';
     paneHtml("lucky", lucky);
     document.getElementById("btnLucky").onclick = buyLucky;
     const bt = document.getElementById("btnTmill");
@@ -536,7 +741,7 @@
       '<div class="shop-row">' +
         '<button type="button" id="btnSlot"' +
         (baseSlots >= 8 || coins < slotCost ? " disabled" : "") +
-        ">+ слот " +
+        ">+ вольер " +
         formatNum(slotCost) +
         "</button></div>"
     );
@@ -561,10 +766,38 @@
   function updatePrompt() {
     let t = "";
     if (onTreadmill) t = "🏃 Качаешь +" + formatNum(treadmillGain()) + "/с";
-    else if (player.carry && nearestPedestal((p) => p.baseId === "mine" && !p.egg)) t = "E — на базу";
+    else if (player.carry && nearestPedestal((p) => p.baseId === "mine" && !p.egg)) t = "E — в вольер";
     else if (!player.carry && nearestPedestal((p) => p.baseId !== "mine" && p.egg)) t = "E — украсть!";
+    else {
+      GATES.forEach(function (g) {
+        if (t || g.need <= 0 || speedStat >= g.need) return;
+        if (dist(player.x, player.y, g.x + g.w / 2, g.y + g.h / 2) < 70) {
+          t = "🔒 Нужно ⚡ " + formatNum(g.need);
+        }
+      });
+    }
     promptEl.style.display = t ? "block" : "none";
     promptEl.textContent = t;
+  }
+
+  function applyGates() {
+    GATES.forEach(function (g) {
+      if (speedStat >= g.need) return;
+      if (
+        player.x + player.r > g.x &&
+        player.x - player.r < g.x + g.w &&
+        player.y + player.r > g.y &&
+        player.y - player.r < g.y + g.h
+      ) {
+        if (player.x < g.x + g.w / 2) player.x = g.x - player.r - 2;
+        else player.x = g.x + g.w + player.r + 2;
+        gateToast -= 1;
+        if (gateToast <= 0) {
+          gateToast = 90;
+          showToast("🔒 Зона закрыта! Качай ⚡ на дорожке — нужно " + formatNum(g.need));
+        }
+      }
+    });
   }
 
   function movePlayer(dt) {
@@ -591,6 +824,7 @@
     }
     player.x = Math.max(24, Math.min(MW - 24, player.x));
     player.y = Math.max(24, Math.min(MH - 24, player.y));
+    applyGates();
 
     onTreadmill =
       player.x > treadmill.x - treadmill.w / 2 &&
@@ -644,7 +878,7 @@
       if (p.baseId === "mine" || p.egg) return;
       p.respawn += dt;
       if (p.respawn > 10) {
-        p.egg = rollEggLucky();
+        p.egg = rollEggForZone(p.zoneId);
         p.respawn = 0;
       }
     });
@@ -696,31 +930,81 @@
     ctx.restore();
   }
 
-  function drawZone(base) {
-    const locked = base.id === "mine" && lockUntil > performance.now();
-    if (base.boss) {
-      ctx.strokeStyle = "#fde68a";
-      ctx.lineWidth = 5;
-      ctx.setLineDash([8, 6]);
-      ctx.beginPath();
-      ctx.arc(base.x, base.y, base.r + 14, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.setLineDash([]);
+  function drawPen(pen, mine, locked) {
+    ctx.fillStyle = mine ? "rgba(34,197,94,0.18)" : "rgba(248,113,113,0.12)";
+    ctx.fillRect(pen.x, pen.y, pen.w, pen.h);
+    ctx.strokeStyle = mine ? (locked ? "#fde68a" : "#86efac") : "#fca5a5";
+    ctx.lineWidth = mine && locked ? 4 : 3;
+    ctx.strokeRect(pen.x, pen.y, pen.w, pen.h);
+    ctx.fillStyle = mine ? "#86efac" : "#fecaca";
+    [[pen.x, pen.y], [pen.x + pen.w, pen.y], [pen.x, pen.y + pen.h], [pen.x + pen.w, pen.y + pen.h]].forEach(function (c) {
+      ctx.fillRect(c[0] - 3, c[1] - 3, 6, 6);
+    });
+    if (mine) {
+      ctx.fillStyle = "#bbf7d0";
+      ctx.font = "9px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("ВОЛЬЕР", pen.x + pen.w / 2, pen.y + pen.h - 4);
     }
-    ctx.fillStyle = base.fill + "77";
-    ctx.beginPath();
-    ctx.arc(base.x, base.y, base.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = locked ? "#fde68a" : base.stroke;
-    ctx.lineWidth = locked ? 4 : 3;
-    ctx.stroke();
+  }
+
+  function drawGate(g) {
+    const open = speedStat >= g.need;
+    ctx.fillStyle = open ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.55)";
+    ctx.fillRect(g.x, g.y, g.w, g.h);
+    ctx.strokeStyle = open ? "#86efac" : "#fca5a5";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(g.x, g.y, g.w, g.h);
     ctx.fillStyle = "#fff";
-    ctx.font = "bold " + (base.boss ? 13 : 11) + "px system-ui";
+    ctx.font = "bold 10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(open ? "✓" : "🔒", g.x + g.w / 2, g.y + g.h / 2 - 6);
+    if (!open) {
+      ctx.font = "9px system-ui";
+      ctx.fillText("⚡" + formatNum(g.need), g.x + g.w / 2, g.y + g.h / 2 + 10);
+    }
+  }
+
+  function drawZoneArea(zone) {
+    const locked = zone.isHome && lockUntil > performance.now();
+    const closed = !zone.isHome && !zoneUnlocked(zone);
+    ctx.fillStyle = (closed ? "#0f172a" : zone.fill) + (closed ? "cc" : "aa");
+    ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
+    ctx.strokeStyle = locked ? "#fde68a" : zone.boss && zone.boss.boss ? "#fde68a" : zone.stroke;
+    ctx.lineWidth = zone.boss && zone.boss.boss ? 5 : 3;
+    if (zone.boss && zone.boss.boss) {
+      ctx.setLineDash([10, 6]);
+    }
+    ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = closed ? "#94a3b8" : "#fff";
+    ctx.font = "bold 12px system-ui";
     ctx.textAlign = "center";
     ctx.strokeStyle = "#000";
     ctx.lineWidth = 3;
-    ctx.strokeText(base.name, base.x, base.y - base.r - 10);
-    ctx.fillText(base.name, base.x, base.y - base.r - 10);
+    ctx.strokeText(zone.name, zone.x + zone.w / 2, zone.y + 22);
+    ctx.fillText(zone.name, zone.x + zone.w / 2, zone.y + 22);
+
+    if (zone.boss && !closed) {
+      ctx.font = "bold 11px system-ui";
+      ctx.fillStyle = zone.boss.color;
+      ctx.fillText("👑 " + zone.boss.name + " · ⚡" + formatNum(zone.boss.speed), zone.x + zone.w / 2, zone.y + 42);
+    }
+    if (closed) {
+      ctx.font = "10px system-ui";
+      ctx.fillStyle = "#fca5a5";
+      ctx.fillText("🔒 Нужно ⚡ " + formatNum(zone.needSpeed), zone.x + zone.w / 2, zone.y + 42);
+    }
+
+    zone.pens.forEach(function (pen) {
+      const isMine = !!zone.isHome;
+      if (isMine) {
+        const idx = zone.pens.indexOf(pen);
+        if (idx >= baseSlots) return;
+      }
+      drawPen(pen, isMine, locked);
+    });
   }
 
   function drawMinimap() {
@@ -745,8 +1029,8 @@
       ctx.fill();
     }
 
-    bases.forEach(function (b) {
-      dot(b.x, b.y, b.id === "mine" ? "#22c55e" : b.boss ? "#fde68a" : b.fill, b.boss ? 4 : 3);
+    ZONE_DEFS.forEach(function (z) {
+      dot(z.x + z.w / 2, z.y + z.h / 2, z.isHome ? "#22c55e" : z.boss && z.boss.boss ? "#fde68a" : z.stroke, z.boss && z.boss.boss ? 4 : 3);
     });
     dot(shop.x, shop.y, "#c084fc", 4);
     dot(player.x, player.y, "#38bdf8", 4);
@@ -785,7 +1069,7 @@
     ctx.fillRect(0, 0, MW, MH);
 
     for (let gx = 0; gx < MW; gx += 80) {
-      for (let gy = 0; gy < MH; gy += 80) {
+      for (let gy = 1400; gy < MH; gy += 80) {
         ctx.fillStyle = (gx + gy) % 160 === 0 ? (night ? "#14532d" : "#22c55e") : night ? "#166534" : "#4ade80";
         ctx.globalAlpha = 0.35;
         ctx.fillRect(gx, gy, 80, 80);
@@ -793,11 +1077,19 @@
       }
     }
 
-    drawRoad(280, 1550, shop.x, shop.y);
-    bases.forEach(function (b) {
-      if (b.id !== "mine") drawRoad(shop.x, shop.y, b.x, b.y);
-    });
-    drawRoad(280, 1550, treadmill.x, treadmill.y);
+    ctx.fillStyle = night ? "#0c4a6e" : "#38bdf8";
+    ctx.globalAlpha = 0.25;
+    ctx.fillRect(0, 0, MW, 1400);
+    ctx.globalAlpha = 1;
+
+    for (let i = 0; i < ZONE_DEFS.length - 1; i++) {
+      const a = ZONE_DEFS[i];
+      const b = ZONE_DEFS[i + 1];
+      drawRoad(a.x + a.w, a.y + a.h / 2, b.x, b.y + b.h / 2);
+    }
+
+    GATES.forEach(drawGate);
+    ZONE_DEFS.forEach(drawZoneArea);
 
     ctx.fillStyle = onTreadmill ? "#fde68a" : "#94a3b8";
     ctx.fillRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
@@ -820,12 +1112,8 @@
     ctx.font = "bold 14px system-ui";
     ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 5);
 
-    bases.forEach(drawZone);
-
     pedestals.forEach(function (p) {
-      ctx.fillStyle = "#64748b";
-      ctx.fillRect(p.x - 10, p.y - 4, 20, 8);
-      if (p.egg) drawEgg(p.x, p.y - 16, p.egg);
+      if (p.egg) drawEgg(p.x, p.y - 10, p.egg);
     });
 
     trailDots.forEach(function (d) {
