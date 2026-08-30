@@ -1,31 +1,33 @@
-/** 3D-превью заготовок — картинка = то же, что встанет на карту */
+/** 3D-превью заготовок — отдельный canvas, не трогает главный экран */
 import * as THREE from "three";
 
 const PREVIEW_CACHE = {};
 let pvRenderer = null;
 let pvScene = null;
 let pvCam = null;
+let pvQueue = [];
+let pvRunning = false;
 
 function ensurePreview() {
   if (pvRenderer) return;
-  pvRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const c = document.createElement("canvas");
+  pvRenderer = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true, preserveDrawingBuffer: true });
   pvRenderer.setSize(96, 96);
   pvRenderer.setPixelRatio(1);
   pvScene = new THREE.Scene();
   pvScene.background = new THREE.Color(0x2d2d30);
-  pvScene.add(new THREE.AmbientLight(0xffffff, 0.65));
-  const sun = new THREE.DirectionalLight(0xfff4e6, 1);
-  sun.position.set(3, 5, 4);
-  pvScene.add(sun);
   pvCam = new THREE.PerspectiveCamera(32, 1, 0.05, 80);
 }
 
-function disposeObj(obj) {
+function disposePreviewObj(obj) {
   obj.traverse((c) => {
     if (c.geometry) c.geometry.dispose();
     if (c.material) {
-      if (Array.isArray(c.material)) c.material.forEach((m) => m.dispose());
-      else c.material.dispose();
+      const mats = Array.isArray(c.material) ? c.material : [c.material];
+      mats.forEach((m) => {
+        if (m.map && m.map.isCanvasTexture) { /* keep shared tex cache */ }
+        m.dispose();
+      });
     }
   });
 }
@@ -45,8 +47,8 @@ export function renderPrefabPreview(PREFABS, key) {
     box.getCenter(center);
     const maxDim = Math.max(size.x, size.y, size.z, 0.5);
     while (pvScene.children.length) pvScene.remove(pvScene.children[0]);
-    pvScene.add(new THREE.AmbientLight(0xffffff, 0.65));
-    const sun = new THREE.DirectionalLight(0xfff4e6, 1);
+    pvScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const sun = new THREE.DirectionalLight(0xfff4e6, 1.1);
     sun.position.set(3, 5, 4);
     pvScene.add(sun);
     obj.position.sub(center);
@@ -56,7 +58,7 @@ export function renderPrefabPreview(PREFABS, key) {
     pvRenderer.render(pvScene, pvCam);
     const url = pvRenderer.domElement.toDataURL("image/png");
     PREVIEW_CACHE[key] = url;
-    disposeObj(obj);
+    disposePreviewObj(obj);
     return url;
   } catch (_) {
     return null;
@@ -67,7 +69,7 @@ export async function preloadCategoryPreviews(PREFABS, keys, onDone) {
   for (const key of keys) {
     if (!PREVIEW_CACHE[key]) renderPrefabPreview(PREFABS, key);
     if (onDone) onDone(key, PREVIEW_CACHE[key]);
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 8));
   }
 }
 

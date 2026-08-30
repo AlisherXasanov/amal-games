@@ -8,7 +8,7 @@ import {
   loadUnlocks, saveUnlocks, loadCoins, saveCoins, shopPrice,
   buildCatalogPrefabs, buildPicPrefabs, FREE_ITEMS,
 } from "./studio3d-catalog.js?v=5";
-import { renderPrefabPreview, preloadCategoryPreviews } from "./studio3d-previews.js?v=1";
+import { renderPrefabPreview, preloadCategoryPreviews, getPreviewUrl } from "./studio3d-previews.js?v=2";
 
 const STORAGE = "amal-studio-world-v5";
 const canvas = document.getElementById("studio-canvas");
@@ -36,6 +36,9 @@ let showHitboxes = true;
 let playerHitboxMesh = null;
 let nearNpc = null;
 let speechRec = null;
+const soundState = new Map();
+const pickedUp = new Set();
+let previewsReady = false;
 
 function toast(msg) {
   toastEl.textContent = msg;
@@ -445,6 +448,7 @@ function attachEditOrbit() {
 }
 
 attachEditOrbit();
+renderer.render(scene, camera);
 
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
@@ -686,8 +690,10 @@ function buyAllItems() {
 }
 
 function thumbHtml(key, pf) {
-  const pv = renderPrefabPreview(PREFABS, key);
-  if (pv) return `<span class="thumb"><img src="${pv}" alt=""/></span>`;
+  if (previewsReady) {
+    const pv = getPreviewUrl(key);
+    if (pv) return `<span class="thumb"><img src="${pv}" alt=""/></span>`;
+  }
   if (key.startsWith("tex_") && TEX_PREVIEWS[key.slice(4)]) {
     return `<span class="thumb"><img src="${TEX_PREVIEWS[key.slice(4)]}" alt=""/></span>`;
   }
@@ -727,6 +733,24 @@ function renderToolbox() {
   preloadCategoryPreviews(PREFABS, entries.map(([k]) => k), (key, url) => {
     if (!url) return;
     const img = prefabList.querySelector(`[data-pf="${key}"] .thumb img`);
+    if (img) img.src = url;
+    else {
+      const btn = prefabList.querySelector(`[data-pf="${key}"]`);
+      if (btn) {
+        const thumb = btn.querySelector(".thumb");
+        if (thumb) thumb.innerHTML = `<img src="${url}" alt=""/>`;
+      }
+    }
+  });
+}
+
+function startPreviewGeneration() {
+  if (previewsReady) return;
+  previewsReady = true;
+  const keys = Object.keys(PREFABS);
+  preloadCategoryPreviews(PREFABS, keys, (key, url) => {
+    if (!url) return;
+    const img = document.querySelector(`[data-pf="${key}"] .thumb img`);
     if (img) img.src = url;
   });
 }
@@ -1245,4 +1269,5 @@ try {
 }
 updateShopUI();
 document.getElementById("btn-export")?.addEventListener("click", exportMap);
-toast("Amal Studio v5 — превью, хитбоксы, NPC слышит (T)!");
+toast("Amal Studio — зелёная база, ставь предметы!");
+setTimeout(startPreviewGeneration, 1500);
