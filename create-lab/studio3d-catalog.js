@@ -445,6 +445,24 @@ export function buildCatalogPrefabs(wrap) {
         return wrap(g, d);
       },
     },
+    npc: {
+      cat: "game", name: "NPC (говорит)", icon: "🗣",
+      create(d) {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.9, 0.32), makeMaterial({ color: "#6366f1" }));
+        body.position.y = 0.95;
+        g.add(body);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 12), makeMaterial({ color: 0xffcc99 }));
+        head.position.y = 1.55;
+        g.add(head);
+        return wrap(g, Object.assign({}, d, {
+          isNpc: true,
+          isTrigger: true,
+          npcText: d.npcText || "Привет! Нажми T и скажи что-нибудь",
+          hitboxW: 1.2, hitboxH: 2, hitboxD: 1.2,
+        }));
+      },
+    },
   };
 }
 

@@ -203,8 +203,10 @@
       <button type="button" class="tool-btn" data-mode="scale" title="Масштаб">
         <span class="ico">⤢</span> Размер
       </button>
+      <button type="button" class="tool-btn on" id="btn-hitbox" title="Хитбоксы">
+        <span class="ico">⬜</span> Hit
+      </button>
       <div class="sep"></div>
-      <button type="button" class="tool-btn" id="btn-grid" title="Сетка">
         <span class="ico">#</span> Сетка
       </button>
       <button type="button" class="tool-btn" id="btn-snap" title="Привязка">
@@ -238,7 +240,7 @@
       <div class="viewport-wrap">
         <canvas id="studio-canvas"></canvas>
         <div class="vp-label" id="vp-mode">РЕДАКТОР</div>
-        <div class="vp-hint" id="vp-hint">ПКМ камера · Двигать=тащи · Shift+тащи=вверх · Крутить=тащи · Размер=колёсико · Ctrl+D копия</div>
+        <div class="vp-hint" id="vp-hint">Превью=как встанет · Hit=хитбоксы · ▶ T=говорить с NPC</div>
       </div>
 
       <aside class="right">
@@ -267,6 +269,6 @@
 
   <script src="../shared/amal-orbit-cam.js?v=1"></script>
   <script src="../shared/amal-walk-player.js?v=1"></script>
-  <script type="module" src="./studio3d.js?v=4"></script>
+  <script type="module" src="./studio3d.js?v=5"></script>
 </body>
 </html>

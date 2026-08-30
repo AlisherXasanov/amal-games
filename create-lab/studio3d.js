@@ -3,13 +3,14 @@ import {
   initTextures, TEX_LIST, SOUND_LIST, PIC_LIST, TEX_PREVIEWS,
   makeMaterial, applyMaterialToObject, makeEmojiTexture, buildTexturePreviews,
   playSound, buildExtraPrefabs, setEditModeVisible, toggleSoundRings,
-} from "./studio3d-assets.js?v=3";
+} from "./studio3d-assets.js?v=5";
 import {
   loadUnlocks, saveUnlocks, loadCoins, saveCoins, shopPrice,
   buildCatalogPrefabs, buildPicPrefabs, FREE_ITEMS,
-} from "./studio3d-catalog.js?v=3";
+} from "./studio3d-catalog.js?v=5";
+import { renderPrefabPreview, preloadCategoryPreviews } from "./studio3d-previews.js?v=1";
 
-const STORAGE = "amal-studio-world-v4";
+const STORAGE = "amal-studio-world-v5";
 const canvas = document.getElementById("studio-canvas");
 const prefabList = document.getElementById("prefab-list");
 const explorer = document.getElementById("explorer");
@@ -31,8 +32,10 @@ let idCounter = 0;
 let playPlayer = null;
 let playOrbit = null;
 let ghostMesh = null;
-const soundState = new Map();
-const pickedUp = new Set();
+let showHitboxes = true;
+let playerHitboxMesh = null;
+let nearNpc = null;
+let speechRec = null;
 
 function toast(msg) {
   toastEl.textContent = msg;
@@ -312,6 +315,13 @@ function wrap(meshOrGroup, data) {
     isPortal: !!data.isPortal,
     isLight: !!data.isLight,
     scale: data.scale != null ? data.scale : 1,
+    hitboxW: data.hitboxW != null ? data.hitboxW : null,
+    hitboxH: data.hitboxH != null ? data.hitboxH : null,
+    hitboxD: data.hitboxD != null ? data.hitboxD : null,
+    solid: data.solid != null ? !!data.solid : isSolidDefault(data.prefab),
+    isTrigger: !!data.isTrigger || !!data.isBoss || !!data.isNpc || !!data.isPickup,
+    isNpc: !!data.isNpc,
+    npcText: data.npcText || "",
   };
   root.traverse((c) => {
     if (c.isMesh) {
@@ -319,7 +329,50 @@ function wrap(meshOrGroup, data) {
       c.receiveShadow = true;
     }
   });
+  autoHitboxSize(root);
+  syncHitboxVisual(root);
   return root;
+}
+
+function isSolidDefault(prefab) {
+  if (!prefab) return false;
+  if (prefab.startsWith("tex_")) return true;
+  return ["block", "ball", "plate", "cylinder", "wedge", "door", "window", "pillar", "ramp", "crate", "fence", "stairs", "bed", "sofa", "table", "chair"].includes(prefab);
+}
+
+function autoHitboxSize(root) {
+  const d = root.userData.studio;
+  if (d.hitboxW != null && d.hitboxH != null && d.hitboxD != null) return;
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root);
+  const s = new THREE.Vector3();
+  box.getSize(s);
+  if (d.hitboxW == null) d.hitboxW = Math.max(0.4, s.x || 1);
+  if (d.hitboxH == null) d.hitboxH = Math.max(0.4, s.y || 1);
+  if (d.hitboxD == null) d.hitboxD = Math.max(0.4, s.z || 1);
+}
+
+function syncHitboxVisual(obj) {
+  if (!obj?.userData?.studio) return;
+  const d = obj.userData.studio;
+  let hb = obj.getObjectByName("hitboxVis");
+  if (!hb) {
+    hb = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshBasicMaterial({ color: 0x22c55e, wireframe: true, transparent: true, opacity: 0.55 })
+    );
+    hb.name = "hitboxVis";
+    hb.userData.canTexture = false;
+    obj.add(hb);
+  }
+  hb.scale.set(d.hitboxW || 1, d.hitboxH || 1, d.hitboxD || 1);
+  hb.position.set(0, (d.hitboxH || 1) * 0.5, 0);
+  const show = editMode && showHitboxes && (selectedId === d.id || d.isBoss || d.isNpc);
+  hb.visible = show;
+}
+
+function syncAllHitboxes() {
+  objects.forEach(syncHitboxVisual);
 }
 
 function addObject(prefabKey, x, y, z, extra) {
@@ -439,6 +492,7 @@ function selectObject(obj) {
   }
   refreshExplorer();
   refreshProps();
+  syncAllHitboxes();
   canvas.classList.toggle("select-mode", toolMode === "select" && !placementPrefab);
 }
 
@@ -506,6 +560,15 @@ function refreshProps() {
     ${d.color !== undefined ? `<div class="prop-row"><label>Цвет</label><input id="p-color" type="color" value="${(d.color && d.color.startsWith("#")) ? d.color : "#38bdf8"}" /></div>` : ""}
     ${d.metalness != null ? `<div class="prop-row"><label>Металл</label><input id="p-metal" type="range" min="0" max="1" step="0.05" value="${d.metalness}" /></div>` : ""}
     ${extra}
+    <div class="prop-row"><label>Хитбокс W×H×D</label>
+      <div class="prop-grid">
+        <input id="p-hw" type="number" step="0.1" value="${(d.hitboxW || 1).toFixed(1)}" />
+        <input id="p-hh" type="number" step="0.1" value="${(d.hitboxH || 1).toFixed(1)}" />
+        <input id="p-hd" type="number" step="0.1" value="${(d.hitboxD || 1).toFixed(1)}" />
+      </div>
+    </div>
+    <div class="prop-row"><label><input id="p-solid" type="checkbox"${d.solid ? " checked" : ""}/> Твёрдый (столкновение)</label></div>
+    ${d.isNpc ? `<div class="prop-row"><label>Фраза NPC</label><input id="p-npc" value="${esc(d.npcText || "")}" /></div>` : ""}
     <button type="button" class="prop-del" id="p-del">🗑 Удалить объект</button>
   `;
   document.getElementById("p-name").oninput = (e) => { d.name = e.target.value; refreshExplorer(); };
@@ -558,6 +621,21 @@ function refreshProps() {
     o.scale.setScalar(s);
     selectionBox.setFromObject(o);
   };
+  ["p-hw", "p-hh", "p-hd"].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.onchange = (e) => {
+      const v = parseFloat(e.target.value) || 1;
+      if (i === 0) d.hitboxW = v;
+      else if (i === 1) d.hitboxH = v;
+      else d.hitboxD = v;
+      syncHitboxVisual(o);
+    };
+  });
+  const psol = document.getElementById("p-solid");
+  if (psol) psol.onchange = (e) => { d.solid = e.target.checked; };
+  const pnpc = document.getElementById("p-npc");
+  if (pnpc) pnpc.oninput = (e) => { d.npcText = e.target.value; };
   document.getElementById("p-del").onclick = () => deleteSelected();
 }
 
@@ -608,12 +686,13 @@ function buyAllItems() {
 }
 
 function thumbHtml(key, pf) {
+  const pv = renderPrefabPreview(PREFABS, key);
+  if (pv) return `<span class="thumb"><img src="${pv}" alt=""/></span>`;
   if (key.startsWith("tex_") && TEX_PREVIEWS[key.slice(4)]) {
     return `<span class="thumb"><img src="${TEX_PREVIEWS[key.slice(4)]}" alt=""/></span>`;
   }
-  if (pf.previewEmoji || (pf.cat === "pic" && pf.icon)) {
-    const em = pf.previewEmoji || pf.icon;
-    return `<span class="thumb preview-em">${em}</span>`;
+  if (pf.previewEmoji || pf.icon) {
+    return `<span class="thumb preview-em">${pf.previewEmoji || pf.icon}</span>`;
   }
   return `<span class="thumb">${pf.icon || "📦"}</span>`;
 }
@@ -629,6 +708,7 @@ function renderToolbox() {
   entries.forEach(([key, pf]) => {
     const btn = document.createElement("button");
     btn.type = "button";
+    btn.dataset.pf = key;
     btn.className = "prefab card" + (placementPrefab === key ? " on" : "");
     btn.innerHTML = thumbHtml(key, pf) + `<span class="pname">${pf.name}</span>`;
     btn.onclick = () => {
@@ -639,10 +719,15 @@ function renderToolbox() {
       renderToolbox();
       updateGhost();
       statusText.textContent = placementPrefab
-        ? "Клик — поставить «" + pf.name + "» · двигай/крути инструментами"
-        : "Выбери предмет слева";
+        ? "Клик — поставить «" + pf.name + "» (картинка = как будет)"
+        : "Выбери предмет — видишь как выглядит";
     };
     prefabList.appendChild(btn);
+  });
+  preloadCategoryPreviews(PREFABS, entries.map(([k]) => k), (key, url) => {
+    if (!url) return;
+    const img = prefabList.querySelector(`[data-pf="${key}"] .thumb img`);
+    if (img) img.src = url;
   });
 }
 
@@ -678,6 +763,14 @@ document.getElementById("btn-snap").onclick = (e) => {
 };
 document.getElementById("btn-snap").classList.add("on");
 document.getElementById("btn-grid").classList.add("on");
+
+document.getElementById("btn-hitbox")?.addEventListener("click", (e) => {
+  showHitboxes = !showHitboxes;
+  e.currentTarget.classList.toggle("on", showHitboxes);
+  syncAllHitboxes();
+  toast(showHitboxes ? "Хитбоксы видны" : "Хитбоксы скрыты");
+});
+document.getElementById("btn-hitbox")?.classList.add("on");
 
 function updateGhost() {
   if (ghostMesh) {
@@ -801,6 +894,10 @@ window.addEventListener("keydown", (e) => {
     if (n) selectObject(n);
     toast("Копия!");
   }
+  if (e.code === "KeyT" && !editMode) {
+    e.preventDefault();
+    listenNpc();
+  }
 });
 
 /* ── Save / Load ── */
@@ -831,6 +928,12 @@ function serialize() {
         imageChar: d.imageChar,
         signText: d.signText,
         scale: d.scale,
+        hitboxW: d.hitboxW,
+        hitboxH: d.hitboxH,
+        hitboxD: d.hitboxD,
+        solid: d.solid,
+        isNpc: d.isNpc,
+        npcText: d.npcText,
       };
     }),
   };
@@ -911,7 +1014,13 @@ function startPlay() {
     maxDist: 30,
     hint: false,
   });
-  toast("▶ Игра! Персонаж появился на старте");
+  playerHitboxMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.9, 1.75, 0.9),
+    new THREE.MeshBasicMaterial({ color: 0x007acc, wireframe: true, transparent: true, opacity: 0.35 })
+  );
+  scene.add(playerHitboxMesh);
+  objects.forEach((o) => syncHitboxVisual(o));
+  toast("▶ Игра! T — говорить с NPC · хитбоксы включены");
 }
 
 function stopPlay() {
@@ -919,10 +1028,14 @@ function stopPlay() {
   btnPlay.textContent = "▶ Играть";
   btnPlay.classList.remove("stop");
   vpMode.textContent = "РЕДАКТОР";
-  vpHint.textContent = "ПКМ — камера · Клик — поставить · Del — удалить";
+  vpHint.textContent = "WASD · T — говорить с NPC · ■ Стоп — редактор";
   if (playPlayer) {
     scene.remove(playPlayer.mesh);
     playPlayer = null;
+  }
+  if (playerHitboxMesh) {
+    scene.remove(playerHitboxMesh);
+    playerHitboxMesh = null;
   }
   if (playOrbit) {
     playOrbit.dispose();
@@ -945,6 +1058,93 @@ btnPlay.onclick = () => {
 };
 
 /* ── Demo starter map ── */
+function objAABB(o) {
+  const d = o.userData.studio;
+  const sc = o.scale.x || 1;
+  const hw = (d.hitboxW || 1) * sc * 0.5;
+  const hh = (d.hitboxH || 1) * sc;
+  const hd = (d.hitboxD || 1) * sc * 0.5;
+  return {
+    minX: o.position.x - hw, maxX: o.position.x + hw,
+    minY: o.position.y, maxY: o.position.y + hh,
+    minZ: o.position.z - hd, maxZ: o.position.z + hd,
+    cx: o.position.x, cz: o.position.z,
+  };
+}
+
+function playerBox(pos) {
+  return {
+    minX: pos.x - 0.45, maxX: pos.x + 0.45,
+    minY: pos.y, maxY: pos.y + 1.75,
+    minZ: pos.z - 0.45, maxZ: pos.z + 0.45,
+  };
+}
+
+function aabbOverlap(a, b) {
+  return a.minX < b.maxX && a.maxX > b.minX && a.minZ < b.maxZ && a.maxZ > b.minZ;
+}
+
+function resolveSolidCollision(pos) {
+  const pb = playerBox(pos);
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    if (!d.solid) return;
+    const ob = objAABB(o);
+    if (!aabbOverlap(pb, ob)) return;
+    const dx = pos.x - ob.cx;
+    const dz = pos.z - ob.cz;
+    const push = 0.55;
+    if (Math.abs(dx) > Math.abs(dz)) pos.x += dx > 0 ? push : -push;
+    else pos.z += dz > 0 ? push : -push;
+  });
+}
+
+function listenNpc() {
+  if (!nearNpc) { toast("Подойди к NPC"); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast("Браузер не слышит — Chrome лучше"); return; }
+  if (speechRec) try { speechRec.stop(); } catch (_) {}
+  speechRec = new SR();
+  speechRec.lang = "ru-RU";
+  speechRec.interimResults = false;
+  speechRec.onresult = (e) => {
+    const heard = e.results[0][0].transcript;
+    toast("NPC слышит: «" + heard + "»");
+    playSound("hatch", 0.6);
+  };
+  speechRec.onerror = () => toast("Не расслышал — ещё раз T");
+  speechRec.start();
+  toast("🎤 Говори! (T)");
+}
+
+function updatePlayNpcAndBoss(px, py, pz) {
+  nearNpc = null;
+  objects.forEach((o) => {
+    const d = o.userData.studio;
+    const ob = objAABB(o);
+    const pb = playerBox({ x: px, y: py, z: pz });
+    if (!aabbOverlap(pb, ob)) return;
+    if (d.isNpc) {
+      nearNpc = o;
+      if (!soundState.get("npc_" + d.id)) {
+        soundState.set("npc_" + d.id, true);
+        toast("🗣 " + (d.npcText || "Привет!") + " · T — говорить");
+      }
+    }
+    if (d.isBoss) {
+      toast("💥 Босс поймал! Беги!");
+      playSound("alarm", 0.8);
+      if (playPlayer) {
+        playPlayer.mesh.position.x += (px - o.position.x) * 0.5;
+        playPlayer.mesh.position.z += (pz - o.position.z) * 0.5;
+      }
+    }
+  });
+  if (!nearNpc) {
+    [...soundState.keys()].filter((k) => String(k).startsWith("npc_")).forEach((k) => soundState.delete(k));
+  }
+}
+
 function updatePlaySounds(px, pz, dt) {
   objects.forEach((o) => {
     const d = o.userData.studio;
@@ -1014,8 +1214,14 @@ function frame(now) {
   if (!editMode && playPlayer) {
     const bounds = { minX: -55, maxX: 55, minZ: -55, maxZ: 55 };
     playPlayer.update(dt, playOrbit.state.yaw, bounds);
+    resolveSolidCollision(playPlayer.mesh.position);
     playOrbit.follow(playPlayer.mesh.position);
-    updatePlaySounds(playPlayer.mesh.position.x, playPlayer.mesh.position.z, dt);
+    const p = playPlayer.mesh.position;
+    updatePlaySounds(p.x, p.z, dt);
+    updatePlayNpcAndBoss(p.x, p.y, p.z);
+    if (playerHitboxMesh) {
+      playerHitboxMesh.position.set(p.x, p.y + 0.875, p.z);
+    }
   }
 
   objects.forEach((o) => {
@@ -1038,6 +1244,5 @@ try {
   startEmpty();
 }
 updateShopUI();
-document.getElementById("btn-shop-all")?.addEventListener("click", buyAllItems);
 document.getElementById("btn-export")?.addEventListener("click", exportMap);
-toast("Amal Studio — пустая карта, всё бесплатно!");
+toast("Amal Studio v5 — превью, хитбоксы, NPC слышит (T)!");
