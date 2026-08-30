@@ -1,9 +1,11 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v3";
-  const W = 960;
-  const H = 640;
+  const SAVE_KEY = "amal-steal-egg-v4";
+  const VW = 960;
+  const VH = 640;
+  const MW = 2400;
+  const MH = 1800;
 
   const EGG_TYPES = [
     { id: "basic", name: "Обычное", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
@@ -87,23 +89,55 @@
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
 
-  const player = { x: 130, y: 500, r: 14, carry: null, color: "#38bdf8" };
+  const player = { x: 280, y: 1550, r: 14, carry: null, color: "#38bdf8" };
+  const cam = { x: 0, y: 0 };
+
+  /** 8 боссов + твоя база — большая карта как в Roblox */
+  const BOSS_DEFS = [
+    { id: "nub", name: "НУБ", speed: 5000, fill: "#94a3b8", stroke: "#cbd5e1", x: 700, y: 1300, r: 52, slots: 2 },
+    { id: "neighbor", name: "СОСЕД", speed: 800000, fill: "#ef4444", stroke: "#fca5a5", x: 1950, y: 1400, r: 58, slots: 2 },
+    { id: "katya", name: "КАТЯ", speed: 2000000, fill: "#f97316", stroke: "#fdba74", x: 1950, y: 450, r: 58, slots: 2 },
+    { id: "rick", name: "РИК", speed: 150000000, fill: "#3b82f6", stroke: "#93c5fd", x: 450, y: 450, r: 58, slots: 2 },
+    { id: "erox", name: "ЕРОКС", speed: 500000000, fill: "#a855f7", stroke: "#d8b4fe", x: 350, y: 1450, r: 62, slots: 3 },
+    { id: "dragon", name: "ДРАКОН", speed: 2000000000, fill: "#b91c1c", stroke: "#fca5a5", x: 2100, y: 900, r: 65, slots: 3 },
+    { id: "legend", name: "ЛЕГЕНДА", speed: 8000000000, fill: "#0891b2", stroke: "#67e8f9", x: 1200, y: 1650, r: 60, slots: 2 },
+    { id: "final", name: "👑 ФИНАЛ", speed: 50000000000, fill: "#eab308", stroke: "#fde68a", x: 1200, y: 220, r: 78, slots: 3, boss: true },
+  ];
 
   const bases = [
-    { id: "mine", name: "ТВОЯ БАЗА", x: 130, y: 500, r: 72, fill: "#22c55e", stroke: "#86efac" },
-    { id: "blue", name: "РИК", x: 130, y: 130, r: 58, fill: "#3b82f6", stroke: "#93c5fd" },
-    { id: "red", name: "СОСЕД", x: 830, y: 130, r: 58, fill: "#ef4444", stroke: "#fca5a5" },
-    { id: "orange", name: "КАТЯ", x: 830, y: 500, r: 58, fill: "#f97316", stroke: "#fdba74" },
-  ];
+    { id: "mine", name: "ТВОЯ БАЗА", x: 280, y: 1550, r: 76, fill: "#22c55e", stroke: "#86efac", slots: 0 },
+  ].concat(
+    BOSS_DEFS.map(function (b) {
+      return {
+        id: b.id,
+        name: b.name,
+        x: b.x,
+        y: b.y,
+        r: b.r,
+        fill: b.fill,
+        stroke: b.stroke,
+        slots: b.slots,
+        boss: !!b.boss,
+      };
+    })
+  );
 
-  const shop = { x: 480, y: 300, r: 52, label: "МАГАЗИН" };
-  const treadmill = { x: 280, y: 500, w: 110, h: 48, label: "ДОРОЖКА" };
+  const shop = { x: 1200, y: 900, r: 62, label: "МАГАЗИН" };
+  const treadmill = { x: 480, y: 1550, w: 120, h: 52, label: "ДОРОЖКА" };
 
-  const rivals = [
-    { name: "Сосед", speed: 800000, color: "#fca5a5", x: 830, y: 130, carry: null },
-    { name: "Рик", speed: 150000000, color: "#93c5fd", x: 130, y: 130, carry: null },
-    { name: "Катя", speed: 2000000, color: "#fdba74", x: 830, y: 500, carry: null },
-  ];
+  const rivals = BOSS_DEFS.map(function (b) {
+    return {
+      name: b.name,
+      speed: b.speed,
+      color: b.stroke,
+      x: b.x,
+      y: b.y,
+      homeX: b.x,
+      homeY: b.y,
+      carry: null,
+      boss: !!b.boss,
+    };
+  });
 
   const pedestals = [];
 
@@ -154,11 +188,11 @@
 
   function initPedestals() {
     pedestals.length = 0;
-    bases.forEach((base) => {
-      const slots = base.id === "mine" ? baseSlots : 2;
+    bases.forEach(function (base) {
+      const slots = base.id === "mine" ? baseSlots : base.slots || 2;
       for (let i = 0; i < slots; i++) {
         const ang = (i / slots) * Math.PI * 2 - Math.PI / 2;
-        const dist = base.id === "mine" ? 46 : 38;
+        const dist = base.id === "mine" ? 48 : base.r * 0.55;
         pedestals.push({
           x: base.x + Math.cos(ang) * dist,
           y: base.y + Math.sin(ang) * dist,
@@ -168,8 +202,9 @@
         });
       }
     });
-    pedestals.forEach((p) => {
-      if (p.baseId !== "mine") p.egg = rollEggLucky();
+    pedestals.forEach(function (p) {
+      if (p.baseId === "mine") return;
+      p.egg = p.baseId === "final" ? eggFromType("dragon") : rollEggLucky();
     });
   }
 
@@ -554,8 +589,8 @@
         if (trailDots.length > 30) trailDots.shift();
       }
     }
-    player.x = Math.max(20, Math.min(W - 20, player.x));
-    player.y = Math.max(20, Math.min(H - 140, player.y));
+    player.x = Math.max(24, Math.min(MW - 24, player.x));
+    player.y = Math.max(24, Math.min(MH - 24, player.y));
 
     onTreadmill =
       player.x > treadmill.x - treadmill.w / 2 &&
@@ -568,27 +603,34 @@
   function updateNpcs(dt) {
     npcTimer -= dt;
     if (npcTimer > 0 || lockUntil > performance.now()) return;
-    npcTimer = 3;
-    rivals.forEach((npc) => {
+    npcTimer = 2.2;
+    rivals.forEach(function (npc) {
       if (npc.carry) {
-        const d = dist(npc.x, npc.y, 830, 130);
-        if (d > 30) {
-          npc.x += ((830 - npc.x) / d) * 2 * dt * 60;
-          npc.y += ((130 - npc.y) / d) * 2 * dt * 60;
-        } else npc.carry = null;
+        const d = dist(npc.x, npc.y, npc.homeX, npc.homeY);
+        if (d > 36) {
+          npc.x += ((npc.homeX - npc.x) / d) * (npc.boss ? 2.8 : 2) * dt * 60;
+          npc.y += ((npc.homeY - npc.y) / d) * (npc.boss ? 2.8 : 2) * dt * 60;
+        } else {
+          npc.carry = null;
+        }
         return;
       }
-      const slots = myPedestals().filter((p) => p.egg);
-      if (!slots.length || Math.random() > 0.4) return;
+      const slots = myPedestals().filter(function (p) {
+        return p.egg;
+      });
+      if (!slots.length) return;
+      const chance = npc.boss ? 0.55 : 0.32;
+      if (Math.random() > chance) return;
       const target = slots[Math.floor(Math.random() * slots.length)];
       const d = dist(npc.x, npc.y, target.x, target.y);
-      if (d > 35) {
-        npc.x += ((target.x - npc.x) / d) * 2.2 * dt * 60;
-        npc.y += ((target.y - npc.y) / d) * 2.2 * dt * 60;
+      const spd = npc.boss ? 2.6 : 2;
+      if (d > 40) {
+        npc.x += ((target.x - npc.x) / d) * spd * dt * 60;
+        npc.y += ((target.y - npc.y) / d) * spd * dt * 60;
       } else {
         npc.carry = target.egg;
         target.egg = null;
-        showToast(npc.name + " украл!");
+        showToast((npc.boss ? "👑 " : "") + npc.name + " украл!");
       }
     });
   }
@@ -638,24 +680,6 @@
     ctx.stroke();
   }
 
-  function drawZone(base) {
-    const locked = base.id === "mine" && lockUntil > performance.now();
-    ctx.fillStyle = base.fill + "66";
-    ctx.beginPath();
-    ctx.arc(base.x, base.y, base.r, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = locked ? "#fde68a" : base.stroke;
-    ctx.lineWidth = locked ? 4 : 3;
-    ctx.stroke();
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 11px system-ui";
-    ctx.textAlign = "center";
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 3;
-    ctx.strokeText(base.name, base.x, base.y - base.r - 8);
-    ctx.fillText(base.name, base.x, base.y - base.r - 8);
-  }
-
   function drawEgg(x, y, egg) {
     ctx.save();
     ctx.translate(x, y);
@@ -672,28 +696,108 @@
     ctx.restore();
   }
 
-  function draw() {
-    const night = isNight();
+  function drawZone(base) {
+    const locked = base.id === "mine" && lockUntil > performance.now();
+    if (base.boss) {
+      ctx.strokeStyle = "#fde68a";
+      ctx.lineWidth = 5;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(base.x, base.y, base.r + 14, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.fillStyle = base.fill + "77";
+    ctx.beginPath();
+    ctx.arc(base.x, base.y, base.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = locked ? "#fde68a" : base.stroke;
+    ctx.lineWidth = locked ? 4 : 3;
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold " + (base.boss ? 13 : 11) + "px system-ui";
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 3;
+    ctx.strokeText(base.name, base.x, base.y - base.r - 10);
+    ctx.fillText(base.name, base.x, base.y - base.r - 10);
+  }
 
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
+  function drawMinimap() {
+    const mx = VW - 130;
+    const my = 72;
+    const mw = 118;
+    const mh = 78;
+    ctx.fillStyle = "rgba(15,23,42,0.85)";
+    ctx.fillRect(mx, my, mw, mh);
+    ctx.strokeStyle = "#fbbf24";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(mx, my, mw, mh);
+    ctx.fillStyle = "#fde68a";
+    ctx.font = "bold 9px system-ui";
+    ctx.textAlign = "left";
+    ctx.fillText("КАРТА", mx + 6, my + 12);
+
+    function dot(wx, wy, col, sz) {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(mx + (wx / MW) * mw, my + 14 + (wy / MH) * (mh - 18), sz || 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    bases.forEach(function (b) {
+      dot(b.x, b.y, b.id === "mine" ? "#22c55e" : b.boss ? "#fde68a" : b.fill, b.boss ? 4 : 3);
+    });
+    dot(shop.x, shop.y, "#c084fc", 4);
+    dot(player.x, player.y, "#38bdf8", 4);
+
+    const vw = (VW / MW) * mw;
+    const vh = (VH / MH) * (mh - 18);
+    const vx = mx + (cam.x / MW) * mw;
+    const vy = my + 14 + (cam.y / MH) * (mh - 18);
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(vx, vy, vw, vh);
+  }
+
+  function draw() {
+    cam.x = Math.max(0, Math.min(MW - VW, player.x - VW / 2));
+    cam.y = Math.max(0, Math.min(MH - VH, player.y - VH / 2));
+
+    const night = isNight();
+    ctx.fillStyle = night ? "#0f172a" : "#1e293b";
+    ctx.fillRect(0, 0, VW, VH);
+
+    ctx.save();
+    ctx.translate(-cam.x, -cam.y);
+
+    const sky = ctx.createLinearGradient(0, 0, 0, MH);
     if (night) {
       sky.addColorStop(0, "#1e1b4b");
-      sky.addColorStop(1, "#312e81");
+      sky.addColorStop(0.45, "#312e81");
+      sky.addColorStop(1, "#166534");
     } else {
       sky.addColorStop(0, "#7dd3fc");
-      sky.addColorStop(1, "#86efac");
+      sky.addColorStop(0.4, "#86efac");
+      sky.addColorStop(1, "#22c55e");
     }
     ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
+    ctx.fillRect(0, 0, MW, MH);
 
-    ctx.fillStyle = night ? "#166534" : "#4ade80";
-    ctx.fillRect(0, H * 0.35, W, H);
+    for (let gx = 0; gx < MW; gx += 80) {
+      for (let gy = 0; gy < MH; gy += 80) {
+        ctx.fillStyle = (gx + gy) % 160 === 0 ? (night ? "#14532d" : "#22c55e") : night ? "#166534" : "#4ade80";
+        ctx.globalAlpha = 0.35;
+        ctx.fillRect(gx, gy, 80, 80);
+        ctx.globalAlpha = 1;
+      }
+    }
 
-    drawRoad(130, 500, 480, 300);
-    drawRoad(830, 500, 480, 300);
-    drawRoad(130, 130, 480, 300);
-    drawRoad(830, 130, 480, 300);
-    drawRoad(130, 500, 280, 500);
+    drawRoad(280, 1550, shop.x, shop.y);
+    bases.forEach(function (b) {
+      if (b.id !== "mine") drawRoad(shop.x, shop.y, b.x, b.y);
+    });
+    drawRoad(280, 1550, treadmill.x, treadmill.y);
 
     ctx.fillStyle = onTreadmill ? "#fde68a" : "#94a3b8";
     ctx.fillRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
@@ -701,30 +805,30 @@
     ctx.lineWidth = 2;
     ctx.strokeRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 11px system-ui";
+    ctx.font = "bold 12px system-ui";
     ctx.textAlign = "center";
     ctx.fillText("🏃 " + treadmill.label, treadmill.x, treadmill.y + 4);
 
-    ctx.fillStyle = "rgba(168,85,247,0.35)";
+    ctx.fillStyle = "rgba(168,85,247,0.4)";
     ctx.beginPath();
     ctx.arc(shop.x, shop.y, shop.r, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = "#c084fc";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 12px system-ui";
-    ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 4);
+    ctx.font = "bold 14px system-ui";
+    ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 5);
 
     bases.forEach(drawZone);
 
-    pedestals.forEach((p) => {
+    pedestals.forEach(function (p) {
       ctx.fillStyle = "#64748b";
       ctx.fillRect(p.x - 10, p.y - 4, 20, 8);
       if (p.egg) drawEgg(p.x, p.y - 16, p.egg);
     });
 
-    trailDots.forEach((d) => {
+    trailDots.forEach(function (d) {
       ctx.globalAlpha = d.life * 0.7;
       ctx.fillStyle = d.color;
       ctx.beginPath();
@@ -733,11 +837,16 @@
     });
     ctx.globalAlpha = 1;
 
-    rivals.forEach((npc) => {
+    rivals.forEach(function (npc) {
       ctx.fillStyle = npc.color;
       ctx.beginPath();
-      ctx.arc(npc.x, npc.y, 12, 0, Math.PI * 2);
+      ctx.arc(npc.x, npc.y, npc.boss ? 15 : 12, 0, Math.PI * 2);
       ctx.fill();
+      if (npc.boss) {
+        ctx.font = "12px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("👑", npc.x, npc.y - 18);
+      }
       if (npc.carry) drawEgg(npc.x, npc.y - 22, npc.carry);
     });
 
@@ -746,7 +855,7 @@
       ctx.strokeStyle = "#fde68a";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(player.x, player.y, player.r + 7, 0, Math.PI * 2);
+      ctx.arc(player.x, player.y, player.r + 8, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -760,9 +869,12 @@
     if (player.carry) drawEgg(player.x, player.y - 26, player.carry);
 
     if (night) {
-      ctx.fillStyle = "rgba(15,23,42,0.28)";
-      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(15,23,42,0.25)";
+      ctx.fillRect(cam.x, cam.y, VW, VH);
     }
+
+    ctx.restore();
+    drawMinimap();
   }
 
   window.addEventListener("keydown", (e) => {
