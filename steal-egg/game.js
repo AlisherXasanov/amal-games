@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v6";
+  const SAVE_KEY = "amal-steal-egg-v7";
   const VW = 960;
   const VH = 640;
   const MW = 3920;
@@ -69,6 +69,7 @@
   const btnStart = document.getElementById("btnStart");
   const adminPanel = document.getElementById("adminPanel");
   const eventBanner = document.getElementById("eventBanner");
+  const alarmEl = document.getElementById("alarm");
 
   const panes = {
     eggs: document.getElementById("pane-eggs"),
@@ -96,6 +97,13 @@
   let blinkTimer = BLINK_EVERY;
   let hitFlash = 0;
   let audioCtx = null;
+  let hudAcc = 0;
+  let lastCoins = -1;
+  let lastIncome = -1;
+  let lastSpeed = -1;
+  let lastRankKey = "";
+  let grassTexDay = null;
+  let grassTexNight = null;
 
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
@@ -331,6 +339,36 @@
 
   const pedestals = [];
 
+  function initTextures() {
+    function makeGrass(night) {
+      const tile = document.createElement("canvas");
+      tile.width = 40;
+      tile.height = 40;
+      const t = tile.getContext("2d");
+      t.fillStyle = night ? "#14532d" : "#4ade80";
+      t.fillRect(0, 0, 40, 40);
+      t.fillStyle = night ? "#166534" : "#22c55e";
+      t.fillRect(0, 0, 20, 20);
+      t.fillRect(20, 20, 20, 20);
+      return ctx.createPattern(tile, "repeat");
+    }
+    grassTexDay = makeGrass(false);
+    grassTexNight = makeGrass(true);
+  }
+
+  function inView(x, y, w, h, pad) {
+    pad = pad || 48;
+    return x + (w || 0) >= cam.x - pad && x <= cam.x + VW + pad && y + (h || 0) >= cam.y - pad && y <= cam.y + VH + pad;
+  }
+
+  function isChased() {
+    if (!player.carry || !player.carry.fromZoneId || player.carry.fromZoneId === "shop" || player.carry.fromZoneId === "admin") {
+      return false;
+    }
+    return rivals.some(function (r) {
+      return r.angry && r.zoneId === player.carry.fromZoneId;
+    });
+  }
   function formatNum(n) {
     n = Number(n) || 0;
     if (n >= 1e12) return (n / 1e12).toFixed(1).replace(/\.0$/, "") + "T";
@@ -684,25 +722,44 @@
     toastTimer = 2.2;
   }
 
-  function updateHud() {
-    coinsEl.textContent = formatNum(coins);
-    incomeEl.innerHTML = "+" + formatNum(incomePerSec()) + '/сек · ⚡ <span id="speedStat">' + formatNum(speedStat) + "</span>";
-    carryEl.textContent = player.carry
-      ? "В руках: " + player.carry.emoji + " " + player.carry.name
-      : "В руках: пусто";
+  function updateHud(force) {
+    const inc = incomePerSec();
+    if (force || coins !== lastCoins) {
+      lastCoins = coins;
+      coinsEl.textContent = formatNum(coins);
+    }
+    if (force || inc !== lastIncome || speedStat !== lastSpeed) {
+      lastIncome = inc;
+      lastSpeed = speedStat;
+      const spEl = document.getElementById("speedStat");
+      if (spEl) spEl.textContent = formatNum(speedStat);
+      const incNum = document.getElementById("income");
+      if (incNum) incNum.textContent = formatNum(inc);
+    }
+    const carryTxt = player.carry ? "В руках: " + player.carry.emoji + " " + player.carry.name : "В руках: пусто";
+    if (force || carryEl.textContent !== carryTxt) carryEl.textContent = carryTxt;
+
     timeEl.textContent = isNight()
       ? "🌙 Ночь +" + Math.ceil(cycleLeft()) + "с"
       : "☀️ День · ночь через " + Math.ceil(cycleLeft()) + "с";
 
     const rows = getIndex();
-    indexList.innerHTML = "";
-    rows.forEach((row, i) => {
-      const li = document.createElement("li");
-      li.textContent = i + 1 + ". " + row.name + " " + formatNum(row.speed);
-      if (row.me) li.className = "me";
-      indexList.appendChild(li);
-    });
-    const myRank = rows.findIndex((r) => r.me) + 1;
+    const rankKey = rows.map(function (r, i) {
+      return i + ":" + r.name;
+    }).join("|");
+    if (force || rankKey !== lastRankKey) {
+      lastRankKey = rankKey;
+      indexList.innerHTML = "";
+      rows.forEach(function (row, i) {
+        const li = document.createElement("li");
+        li.textContent = i + 1 + ". " + row.name + " " + formatNum(row.speed);
+        if (row.me) li.className = "me";
+        indexList.appendChild(li);
+      });
+    }
+    const myRank = rows.findIndex(function (r) {
+      return r.me;
+    }) + 1;
     if (myRank === 1) {
       rankEl.textContent = "👑 ФИНАЛЬНЫЙ БОСС";
       rankEl.className = "rank final";
@@ -718,6 +775,8 @@
       else if (zoneUnlocked(z)) zoneEl.textContent = z.name + " · " + z.boss.name;
       else zoneEl.textContent = "🔒 " + z.name + " · нужно ⚡" + formatNum(z.needSpeed);
     }
+
+    if (alarmEl) alarmEl.hidden = !isChased();
 
     const lockLeft = Math.max(0, lockUntil - performance.now());
     btnLock.disabled = lockLeft > 0;
@@ -750,7 +809,7 @@
     showToast("Купил " + t.emoji);
     saveGame();
     refreshShop();
-    updateHud();
+    updateHud(true);
   }
 
   function buyLucky() {
@@ -760,7 +819,7 @@
     showToast("Lucky: " + player.carry.emoji + " " + player.carry.name);
     saveGame();
     refreshShop();
-    updateHud();
+    updateHud(true);
   }
 
   function buyTrail(id) {
@@ -771,7 +830,7 @@
     showToast("След: " + t.name);
     saveGame();
     refreshShop();
-    updateHud();
+    updateHud(true);
   }
 
   function upgradeTreadmill() {
@@ -787,7 +846,7 @@
     showToast("Дорожка: " + TREADMILL_LEVELS[next].label);
     saveGame();
     refreshShop();
-    updateHud();
+    updateHud(true);
   }
 
   function buyBaseSlot() {
@@ -799,7 +858,7 @@
     showToast("Вольер " + baseSlots + "/8");
     saveGame();
     refreshShop();
-    updateHud();
+    updateHud(true);
   }
 
   function tryPlace() {
@@ -843,7 +902,7 @@
     if (lockUntil > performance.now()) return;
     lockUntil = performance.now() + 12000 + lockBonus * 5000;
     showToast("База закрыта 🔒");
-    updateHud();
+    updateHud(true);
   }
 
   function paneHtml(name, html) {
@@ -1197,11 +1256,17 @@
       d.life -= dt * 2.5;
     });
     trailDots = trailDots.filter((d) => d.life > 0);
-    updateHud();
-    updatePrompt();
+
+    hudAcc += dt;
+    if (hudAcc >= 0.15) {
+      hudAcc = 0;
+      updateHud(false);
+      updatePrompt();
+    }
   }
 
   function drawRoad(x1, y1, x2, y2) {
+    if (!inView(Math.min(x1, x2) - 20, Math.min(y1, y2) - 20, Math.abs(x2 - x1) + 40, Math.abs(y2 - y1) + 40)) return;
     ctx.strokeStyle = "#d4a574";
     ctx.lineWidth = 28;
     ctx.lineCap = "round";
@@ -1215,6 +1280,7 @@
   }
 
   function drawEgg(x, y, egg, big) {
+    if (!inView(x - 20, y - 20, 40, 40)) return;
     const sc = big ? 1.15 : 1;
     ctx.save();
     ctx.translate(x, y);
@@ -1238,6 +1304,7 @@
   }
 
   function drawCharacter(x, y, look, angry, isBoss, carryEgg) {
+    if (!inView(x - 30, y - 30, 60, 60)) return;
     const w = 22;
     const h = 28;
     ctx.save();
@@ -1274,19 +1341,6 @@
     }
   }
 
-  function grassPattern(night) {
-    const tile = document.createElement("canvas");
-    tile.width = 40;
-    tile.height = 40;
-    const t = tile.getContext("2d");
-    t.fillStyle = night ? "#14532d" : "#4ade80";
-    t.fillRect(0, 0, 40, 40);
-    t.fillStyle = night ? "#166534" : "#22c55e";
-    t.fillRect(0, 0, 20, 20);
-    t.fillRect(20, 20, 20, 20);
-    return ctx.createPattern(tile, "repeat");
-  }
-
   function drawPen(pen, mine, locked) {
     ctx.fillStyle = mine ? "rgba(34,197,94,0.18)" : "rgba(248,113,113,0.12)";
     ctx.fillRect(pen.x, pen.y, pen.w, pen.h);
@@ -1306,6 +1360,7 @@
   }
 
   function drawGate(g) {
+    if (!inView(g.x, g.y, g.w, g.h)) return;
     const open = speedStat >= g.need;
     ctx.fillStyle = open ? "rgba(34,197,94,0.35)" : "rgba(239,68,68,0.55)";
     ctx.fillRect(g.x, g.y, g.w, g.h);
@@ -1323,6 +1378,7 @@
   }
 
   function drawZoneArea(zone) {
+    if (!inView(zone.x, zone.y, zone.w, zone.h)) return;
     const locked = zone.isHome && lockUntil > performance.now();
     const closed = !zone.isHome && !zoneUnlocked(zone);
     ctx.fillStyle = (closed ? "#0f172a" : zone.fill) + (closed ? "cc" : "aa");
@@ -1408,13 +1464,16 @@
     }
 
     const night = isNight();
+    const vx = cam.x;
+    const vy = cam.y;
+
     ctx.fillStyle = night ? "#0f172a" : "#1e293b";
     ctx.fillRect(0, 0, VW, VH);
 
     ctx.save();
-    ctx.translate(-cam.x, -cam.y);
+    ctx.translate(-vx, -vy);
 
-    const sky = ctx.createLinearGradient(0, 0, 0, MH);
+    const sky = ctx.createLinearGradient(0, vy, 0, vy + VH);
     if (night) {
       sky.addColorStop(0, "#1e1b4b");
       sky.addColorStop(0.45, "#312e81");
@@ -1425,19 +1484,28 @@
       sky.addColorStop(1, "#22c55e");
     }
     ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, MW, MH);
+    ctx.fillRect(vx, vy, VW, VH);
 
-    for (let gx = 0; gx < MW; gx += 80) {
-      for (let gy = 1400; gy < MH; gy += 80) {
-        ctx.fillStyle = grassPattern(night);
-        ctx.fillRect(gx, gy, 80, 80);
+    const grass = night ? grassTexNight : grassTexDay;
+    if (grass) {
+      ctx.fillStyle = grass;
+      const x0 = Math.max(0, Math.floor(vx / 80) * 80);
+      const x1 = Math.min(MW, vx + VW + 80);
+      const y0 = Math.max(1400, Math.floor(vy / 80) * 80);
+      const y1 = Math.min(MH, vy + VH + 80);
+      for (let gx = x0; gx < x1; gx += 80) {
+        for (let gy = y0; gy < y1; gy += 80) {
+          ctx.fillRect(gx, gy, 80, 80);
+        }
       }
     }
 
-    ctx.fillStyle = night ? "#0c4a6e" : "#38bdf8";
-    ctx.globalAlpha = 0.25;
-    ctx.fillRect(0, 0, MW, 1400);
-    ctx.globalAlpha = 1;
+    if (vy < 1500) {
+      ctx.fillStyle = night ? "#0c4a6e" : "#38bdf8";
+      ctx.globalAlpha = 0.25;
+      ctx.fillRect(vx, vy, VW, Math.min(1500 - vy, VH));
+      ctx.globalAlpha = 1;
+    }
 
     for (let i = 0; i < ZONE_DEFS.length - 1; i++) {
       const a = ZONE_DEFS[i];
@@ -1470,7 +1538,7 @@
     ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 5);
 
     pedestals.forEach(function (p) {
-      if (p.egg) drawEgg(p.x, p.y - 10, p.egg);
+      if (p.egg && inView(p.x - 20, p.y - 20, 40, 40)) drawEgg(p.x, p.y - 10, p.egg);
     });
 
     trailDots.forEach(function (d) {
@@ -1500,17 +1568,17 @@
 
     if (hitFlash > 0) {
       ctx.fillStyle = "rgba(239,68,68," + hitFlash + ")";
-      ctx.fillRect(cam.x, cam.y, VW, VH);
+      ctx.fillRect(vx, vy, VW, VH);
     }
 
     if (night) {
       ctx.fillStyle = "rgba(15,23,42,0.32)";
-      ctx.fillRect(cam.x, cam.y, VW, VH);
+      ctx.fillRect(vx, vy, VW, VH);
     }
 
     if (blinkLeft > 0) {
       ctx.fillStyle = "rgba(251,191,36,0.08)";
-      ctx.fillRect(cam.x, cam.y, VW, VH);
+      ctx.fillRect(vx, vy, VW, VH);
     }
 
     ctx.restore();
@@ -1638,10 +1706,11 @@
     }
   });
 
+  initTextures();
   initPedestals();
   loadGame();
   refreshShop();
-  updateHud();
+  updateHud(true);
   setInterval(saveGame, 12000);
 
   let last = performance.now();
