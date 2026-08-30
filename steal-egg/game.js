@@ -1,19 +1,38 @@
 (() => {
   "use strict";
 
-  const SAVE_KEY = "amal-steal-egg-v7";
+  const SAVE_KEY = "amal-steal-egg-v8";
   const VW = 960;
   const VH = 640;
   const MW = 3920;
   const MH = 2000;
 
   const EGG_TYPES = [
-    { id: "basic", name: "Обычное", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
-    { id: "gold", name: "Золотое", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4, weight: 240 },
-    { id: "rare", name: "Редкое", emoji: "💎", color: "#a855f7", price: 350, rate: 12, weight: 110 },
-    { id: "epic", name: "Эпик", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28, weight: 24 },
-    { id: "dragon", name: "Дракон", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70, weight: 5 },
-    { id: "final", name: "ФИНАЛ", emoji: "👑", color: "#fde68a", price: 0, rate: 200, weight: 1 },
+    { id: "basic", name: "Обычное яйцо", emoji: "🥚", color: "#fff", price: 0, rate: 1, weight: 620 },
+    { id: "gold", name: "Золотое яйцо", emoji: "🐣", color: "#fbbf24", price: 80, rate: 4, weight: 240 },
+    { id: "rare", name: "Редкое яйцо", emoji: "💎", color: "#a855f7", price: 350, rate: 12, weight: 110 },
+    { id: "epic", name: "Эпик яйцо", emoji: "🔮", color: "#6366f1", price: 1200, rate: 28, weight: 24 },
+    { id: "dragon", name: "Дракон яйцо", emoji: "🐉", color: "#ef4444", price: 8000, rate: 70, weight: 5 },
+    { id: "final", name: "ФИНАЛ яйцо", emoji: "👑", color: "#fde68a", price: 0, rate: 200, weight: 1 },
+  ];
+
+  /** Яйцо вылупляется в питомца — как в Roblox */
+  const PETS = {
+    basic: { name: "Цыпа", emoji: "🐤" },
+    gold: { name: "Золотуша", emoji: "🐥" },
+    rare: { name: "Кристаллик", emoji: "🦊" },
+    epic: { name: "Единорог", emoji: "🦄" },
+    dragon: { name: "Дракоша", emoji: "🐲" },
+    final: { name: "Король", emoji: "👑" },
+  };
+
+  const PLAYER_SKINS = [
+    { id: "cool", emoji: "😎", body: "#38bdf8", outline: "#0ea5e9", name: "Крутой" },
+    { id: "boy", emoji: "🧒", body: "#22c55e", outline: "#16a34a", name: "Мальчик" },
+    { id: "girl", emoji: "👧", body: "#f472b6", outline: "#db2777", name: "Девочка" },
+    { id: "cat", emoji: "🐱", body: "#fbbf24", outline: "#d97706", name: "Котик" },
+    { id: "robot", emoji: "🤖", body: "#94a3b8", outline: "#64748b", name: "Робот" },
+    { id: "alien", emoji: "👽", body: "#a855f7", outline: "#7e22ce", name: "Пришелец" },
   ];
 
   const TRAILS = [
@@ -104,13 +123,16 @@
   let lastRankKey = "";
   let grassTexDay = null;
   let grassTexNight = null;
+  let playerSkinId = "cool";
+  let treadmillRun = false;
+  let treadmillScroll = 0;
 
   const keys = {};
   const stick = { active: false, dx: 0, dy: 0, ox: 0, oy: 0, pid: null };
 
   const player = {
-    x: 200,
-    y: 1680,
+    x: 280,
+    y: 1700,
     r: 16,
     carry: null,
     color: "#38bdf8",
@@ -312,8 +334,9 @@
     { x: 3445, y: 1460, w: 32, h: 380, need: 600000000 },
   ];
 
-  const shop = { x: 340, y: 1540, r: 52, label: "МАГАЗИН" };
-  const treadmill = { x: 400, y: 1760, w: 130, h: 52, label: "ДОРОЖКА" };
+  const shop = { x: 340, y: 1520, r: 52, label: "МАГАЗИН" };
+  /** Большая дорожка внизу своей зоны — беги W чтобы качать ⚡ */
+  const treadmill = { x: 280, y: 1745, w: 360, h: 72, label: "ДОРОЖКА" };
 
   const rivals = ZONE_DEFS.filter(function (z) {
     return z.boss;
@@ -455,8 +478,37 @@
   }
 
   function eggFromType(typeId) {
-    const t = EGG_TYPES.find((e) => e.id === typeId) || EGG_TYPES[0];
-    return { typeId: t.id, name: t.name, emoji: t.emoji, color: t.color, rate: t.rate };
+    return hatchPet(typeId);
+  }
+
+  function hatchPet(typeId) {
+    const t = EGG_TYPES.find(function (e) {
+      return e.id === typeId;
+    }) || EGG_TYPES[0];
+    const p = PETS[t.id] || { name: t.name, emoji: t.emoji };
+    return {
+      typeId: t.id,
+      name: p.name,
+      emoji: p.emoji,
+      eggEmoji: t.emoji,
+      color: t.color,
+      rate: t.rate,
+      isPet: true,
+    };
+  }
+
+  function applyPlayerSkin(id) {
+    const s = PLAYER_SKINS.find(function (x) {
+      return x.id === id;
+    }) || PLAYER_SKINS[0];
+    playerSkinId = s.id;
+    player.emoji = s.emoji;
+    player.color = s.body;
+    CHAR_LOOK.player = { emoji: s.emoji, body: s.body, outline: s.outline };
+  }
+
+  function petSleeping(p) {
+    return isNight() && p && p.egg;
   }
 
   function returnEggToZone(zoneId, eggData) {
@@ -534,7 +586,7 @@
         eventBanner.classList.remove("show");
       }, 3500);
     }
-    showToast("🌙 Ночь — все яйца новые!");
+    showToast("🌙 Сон — питомцы спят · яйца обновились!");
   }
 
   function triggerBlinkEvent() {
@@ -655,6 +707,7 @@
           baseSlots,
           lockBonus,
           tut: tutorial.hidden,
+          skin: playerSkinId,
           eggs: pedestals.filter((p) => p.baseId === "mine").map((p) => (p.egg ? p.egg.typeId : null)),
         })
       );
@@ -671,6 +724,7 @@
       if (d.trailId != null) trailId = d.trailId;
       if (d.baseSlots != null) baseSlots = d.baseSlots;
       if (d.lockBonus != null) lockBonus = d.lockBonus;
+      if (d.skin) applyPlayerSkin(d.skin);
       if (d.tut) {
         tutorial.hidden = true;
         paused = false;
@@ -695,8 +749,10 @@
   }
 
   function incomePerSec() {
-    const m = isNight() ? 1.12 : 1;
-    return myPedestals().reduce((s, p) => s + (p.egg ? p.egg.rate : 0), 0) * m;
+    if (isNight()) return 0;
+    return myPedestals().reduce(function (s, p) {
+      return s + (p.egg && !petSleeping(p) ? p.egg.rate : 0);
+    }, 0);
   }
 
   function playerPower() {
@@ -736,11 +792,13 @@
       const incNum = document.getElementById("income");
       if (incNum) incNum.textContent = formatNum(inc);
     }
-    const carryTxt = player.carry ? "В руках: " + player.carry.emoji + " " + player.carry.name : "В руках: пусто";
+    const carryTxt = player.carry
+      ? "Несёшь: " + player.carry.emoji + " " + player.carry.name
+      : "В руках: пусто";
     if (force || carryEl.textContent !== carryTxt) carryEl.textContent = carryTxt;
 
     timeEl.textContent = isNight()
-      ? "🌙 Ночь +" + Math.ceil(cycleLeft()) + "с"
+      ? "🌙 Сон · питомцы спят · +" + Math.ceil(cycleLeft()) + "с"
       : "☀️ День · ночь через " + Math.ceil(cycleLeft()) + "с";
 
     const rows = getIndex();
@@ -806,7 +864,7 @@
     }
     coins -= t.price;
     player.carry = wrapCarry(eggFromType(typeId), "shop");
-    showToast("Купил " + t.emoji);
+    showToast("🐣 " + player.carry.emoji + " " + player.carry.name + " вылупился!");
     saveGame();
     refreshShop();
     updateHud(true);
@@ -870,7 +928,7 @@
     rivals.forEach(function (r) {
       r.angry = false;
     });
-    showToast("На базе! +" + slot.egg.rate + "/с");
+    showToast("В вольер! " + slot.egg.emoji + " " + slot.egg.name);
     saveGame();
     return true;
   }
@@ -888,7 +946,7 @@
     player.carry = wrapCarry(slot.egg, slot.zoneId);
     slot.egg = null;
     setBossAngry(slot.zoneId, true);
-    showToast("Украл! Беги — " + (ZONE_DEFS.find(function (z) { return z.id === slot.zoneId; }) || {}).name + " злится!");
+    showToast("Украл " + player.carry.emoji + "! Беги домой!");
     return true;
   }
 
@@ -1013,12 +1071,30 @@
   btnStart.onclick = () => {
     tutorial.hidden = true;
     paused = false;
+    player.x = 280;
+    player.y = 1700;
     saveGame();
+    showToast("Встань на 🏃 дорожку и жми W!");
   };
+
+  document.querySelectorAll(".char-btn").forEach(function (btn) {
+    btn.onclick = function () {
+      document.querySelectorAll(".char-btn").forEach(function (b) {
+        b.classList.remove("on");
+      });
+      btn.classList.add("on");
+      applyPlayerSkin(btn.dataset.skin);
+    };
+  });
+  const defaultChar = document.querySelector('.char-btn[data-skin="cool"]');
+  if (defaultChar) defaultChar.classList.add("on");
 
   function updatePrompt() {
     let t = "";
-    if (onTreadmill) t = "🏃 Качаешь +" + formatNum(treadmillGain()) + "/с";
+    if (onTreadmill) {
+      if (treadmillRun) t = "🏃 БЕГИ! +" + formatNum(treadmillGain()) + "/с ⚡";
+      else t = "👟 Встань на дорожку и жми W — бег!";
+    } else if (isNight()) t = "💤 Ночь — питомцы спят";
     else if (player.carry && nearestPedestal((p) => p.baseId === "mine" && !p.egg)) t = "E — в вольер";
     else if (!player.carry && nearestPedestal((p) => p.baseId !== "mine" && p.egg)) t = "E — украсть!";
     else if (player.carry && player.carry.fromZoneId) {
@@ -1107,7 +1183,11 @@
       player.x < treadmill.x + treadmill.w / 2 &&
       player.y > treadmill.y - treadmill.h / 2 &&
       player.y < treadmill.y + treadmill.h / 2;
-    if (onTreadmill && !paused) speedStat += treadmillGain() * dt;
+
+    const runInput = keys.KeyW || keys.ArrowUp || stick.dy < -0.25;
+    treadmillRun = onTreadmill && runInput;
+    if (onTreadmill) treadmillScroll += dt * (treadmillRun ? 140 : 35);
+    if (treadmillRun && !paused) speedStat += treadmillGain() * dt;
   }
 
   function npcMoveToward(npc, tx, ty, spd, dt) {
@@ -1279,6 +1359,63 @@
     ctx.stroke();
   }
 
+  function drawPetInPen(x, y, pet, sleeping) {
+    if (!inView(x - 24, y - 24, 48, 48)) return;
+    ctx.save();
+    ctx.translate(x, y);
+    if (sleeping) {
+      ctx.globalAlpha = 0.5;
+      ctx.font = "14px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("💤", 0, -20);
+    }
+    ctx.fillStyle = (pet.color || "#fff") + "55";
+    ctx.fillRect(-16, -10, 32, 26);
+    ctx.strokeStyle = pet.color || "#fff";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-16, -10, 32, 26);
+    ctx.globalAlpha = 1;
+    ctx.font = "22px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(pet.emoji, 0, 8);
+    ctx.font = "bold 8px system-ui";
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.strokeText(pet.name, 0, 22);
+    ctx.fillText(pet.name, 0, 22);
+    ctx.restore();
+  }
+
+  function drawTreadmill() {
+    if (!inView(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h)) return;
+    const tx = treadmill.x - treadmill.w / 2;
+    const ty = treadmill.y - treadmill.h / 2;
+    ctx.fillStyle = treadmillRun ? "#fde68a" : onTreadmill ? "#e2e8f0" : "#94a3b8";
+    ctx.fillRect(tx, ty, treadmill.w, treadmill.h);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(tx, ty, treadmill.w, treadmill.h);
+    ctx.clip();
+    ctx.strokeStyle = "#64748b";
+    ctx.lineWidth = 4;
+    for (let s = -30; s < treadmill.w + 30; s += 28) {
+      const off = (s + treadmillScroll) % 28;
+      ctx.beginPath();
+      ctx.moveTo(tx + off, ty);
+      ctx.lineTo(tx + off - 14, ty + treadmill.h);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.strokeStyle = treadmillRun ? "#f59e0b" : onTreadmill ? "#fbbf24" : "#475569";
+    ctx.lineWidth = treadmillRun ? 5 : 3;
+    ctx.strokeRect(tx, ty, treadmill.w, treadmill.h);
+    ctx.fillStyle = "#1e293b";
+    ctx.font = "bold 12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(treadmillRun ? "⚡ БЕЖИМ!" : "🏃 ДОРОЖКА — жми W", treadmill.x, treadmill.y + 5);
+  }
+
   function drawEgg(x, y, egg, big) {
     if (!inView(x - 20, y - 20, 40, 40)) return;
     const sc = big ? 1.15 : 1;
@@ -1301,6 +1438,19 @@
     ctx.textAlign = "center";
     ctx.fillText(egg.emoji, 0, 2);
     ctx.restore();
+  }
+
+  function drawCarriedPet(x, y, pet) {
+    if (!inView(x - 20, y - 30, 40, 40)) return;
+    ctx.font = (pet.typeId === "final" || pet.typeId === "dragon" ? "26" : "22") + "px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(pet.emoji, x, y);
+    ctx.font = "bold 9px system-ui";
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.strokeText(pet.name, x, y + 14);
+    ctx.fillText(pet.name, x, y + 14);
   }
 
   function drawCharacter(x, y, look, angry, isBoss, carryEgg) {
@@ -1337,7 +1487,7 @@
     ctx.restore();
     if (carryEgg) {
       const eg = typeof carryEgg === "string" ? eggFromType(carryEgg) : carryEgg;
-      drawEgg(x, y - 32, eg, false);
+      drawCarriedPet(x, y - 32, eg);
     }
   }
 
@@ -1516,15 +1666,7 @@
     GATES.forEach(drawGate);
     ZONE_DEFS.forEach(drawZoneArea);
 
-    ctx.fillStyle = onTreadmill ? "#fde68a" : "#94a3b8";
-    ctx.fillRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
-    ctx.strokeStyle = "#475569";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(treadmill.x - treadmill.w / 2, treadmill.y - treadmill.h / 2, treadmill.w, treadmill.h);
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 12px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("🏃 " + treadmill.label, treadmill.x, treadmill.y + 4);
+    drawTreadmill();
 
     ctx.fillStyle = "rgba(168,85,247,0.4)";
     ctx.beginPath();
@@ -1538,7 +1680,7 @@
     ctx.fillText("🛒 " + shop.label, shop.x, shop.y + 5);
 
     pedestals.forEach(function (p) {
-      if (p.egg && inView(p.x - 20, p.y - 20, 40, 40)) drawEgg(p.x, p.y - 10, p.egg);
+      if (p.egg) drawPetInPen(p.x, p.y, p.egg, petSleeping(p));
     });
 
     trailDots.forEach(function (d) {
@@ -1564,7 +1706,7 @@
     }
 
     drawCharacter(player.x, player.y, CHAR_LOOK.player, false, false, null);
-    if (player.carry) drawEgg(player.x, player.y - 34, player.carry, true);
+    if (player.carry) drawCarriedPet(player.x, player.y - 34, player.carry);
 
     if (hitFlash > 0) {
       ctx.fillStyle = "rgba(239,68,68," + hitFlash + ")";
