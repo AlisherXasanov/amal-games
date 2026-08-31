@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STORAGE = "milashki-save-v5";
+  const STORAGE = "milashki-save-v6";
 
   const WORLDS = [
     { id: 1, name: "Милашки 1", sub: "Fluvsies" },
@@ -28,7 +28,7 @@
     bed: { free: true },
     kitchen: { coins: 20, hint: "нужно 20 🪙" },
     bath: { care: 2, hint: "покорми 2 раза" },
-    play: { pets: 2, hint: "нужно 2 питомца" },
+    play: { eggs: 1, hint: "открой бесплатное яйцо 🥚" },
     garden: { coins: 55, hint: "нужно 55 🪙" },
   };
 
@@ -123,7 +123,7 @@
   function getSpecies(id) { return SPECIES.find((s) => s.id === id) || speciesList()[0]; }
   function prog() {
     const k = String(state.world);
-    if (!state.progress[k]) state.progress[k] = { care: 0, merged: 0 };
+    if (!state.progress[k]) state.progress[k] = { care: 0, merged: 0, eggs: 0 };
     return state.progress[k];
   }
   function unlockedList() {
@@ -144,7 +144,7 @@
       if (u.free) ok = true;
       if (u.coins && state.coins >= u.coins) ok = true;
       if (u.care && prog().care >= u.care) ok = true;
-      if (u.pets && state.pets.filter((p) => (p.world || 1) === state.world).length >= u.pets) ok = true;
+      if (u.eggs && prog().eggs >= u.eggs) ok = true;
       if (ok) { list.push(z.id); added = true; toast("Открыта комната: " + z.name + "! 🎉"); }
     });
     if (added) save();
@@ -214,10 +214,24 @@
     return "common";
   }
 
+  function worldPets() {
+    return state.pets.filter((p) => (p.world || 1) === state.world);
+  }
+
+  function fixActivePet() {
+    const list = worldPets();
+    if (!list.length) return;
+    const cur = state.pets[state.active];
+    if (!cur || (cur.world || 1) !== state.world) {
+      state.active = state.pets.indexOf(list[0]);
+    }
+  }
+
   function activePet() {
+    fixActivePet();
     const ap = state.pets[state.active];
     if (ap && (ap.world || state.world) === state.world) return ap;
-    return state.pets.find((p) => (p.world || 1) === state.world) || null;
+    return worldPets()[0] || null;
   }
 
   function resizeCanvas() {
@@ -241,7 +255,6 @@
     if ($("pet-label")) $("pet-label").textContent = sp ? sp.emoji + " " + sp.name : "—";
     const z = ZONES.find((z) => z.id === state.map.zone);
     if ($("zone-label")) $("zone-label").textContent = z ? z.icon + " " + z.name : "";
-    if ($("swipe-hint")) $("swipe-hint").textContent = "👆 Свайп влево/вправо — другая комната";
     renderEggs();
     renderCollection();
     renderZoneNav();
@@ -300,35 +313,59 @@
     const locked = !isUnlocked(z.id);
     mctx.save();
     mctx.translate(slideX, 0);
-    drawRoom(mctx, w, h, z, locked);
-    if (!locked) {
-      const ap = activePet();
-      if (ap) {
-        const sp = getSpecies(ap.speciesId);
-        const px = state.map.petX * w;
-        let py = state.map.petY * h;
-        if (walkTarget) {
-          const dx = walkTarget.x - px, dy = walkTarget.y - py;
-          const dist = Math.hypot(dx, dy);
-          if (dist < 4) walkTarget = null;
-          else { px += (dx / dist) * 4; py += (dy / dist) * 4; state.map.petX = px / w; state.map.petY = py / h; }
-        }
-        const mood = ap.happy < 40 ? "sad" : "happy";
-        window.MilashkiDraw.draw(mctx, px, py - 20, sp, animT, Math.min(w, h) / 380, mood);
-      }
-      if (walkTarget && !activePet()) walkTarget = null;
-      mctx.font = "bold 11px Nunito,sans-serif";
-      mctx.fillStyle = "rgba(74,4,78,.7)";
+    drawRoom(mctx, w, h, z, false);
+    if (locked) {
+      mctx.fillStyle = "rgba(74,4,78,.55)";
+      mctx.fillRect(0, 0, w, h * 0.35);
+      mctx.font = "bold 15px Nunito,sans-serif";
+      mctx.fillStyle = "#fff";
       mctx.textAlign = "center";
-      mctx.fillText("Тяни питомца · тапни куда идти · свайп — другая комната", w / 2, h - 10);
+      mctx.fillText("🔒 " + z.name + " закрыта", w / 2, h * 0.12);
+      mctx.font = "12px Nunito,sans-serif";
+      mctx.fillText(UNLOCK[z.id]?.hint || "", w / 2, h * 0.2);
     }
+    const ap = activePet();
+    if (ap) {
+      const sp = getSpecies(ap.speciesId);
+      const px = state.map.petX * w;
+      let py = state.map.petY * h;
+      if (walkTarget && !locked) {
+        const dx = walkTarget.x - px, dy = walkTarget.y - py;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 4) walkTarget = null;
+        else {
+          px += (dx / dist) * 4;
+          py += (dy / dist) * 4;
+          state.map.petX = px / w;
+          state.map.petY = py / h;
+        }
+      }
+      const mood = ap.happy < 40 ? "sad" : "happy";
+      if (window.MilashkiDraw) {
+        window.MilashkiDraw.draw(mctx, px, py - 10, sp, animT, Math.min(w, h) / 400, mood);
+      }
+    }
+    if (walkTarget && !activePet()) walkTarget = null;
     mctx.restore();
     animT += 0.016;
     if (activeTab === "home") requestAnimationFrame(drawMap);
   }
 
   function goZone(id, dir) {
-    if (!tryBuyUnlock(id) && !isUnlocked(id)) return;
+    if (!isUnlocked(id)) {
+      checkUnlocks();
+      if (!isUnlocked(id)) {
+        const u = UNLOCK[id] || {};
+        if (u.coins && state.coins >= u.coins) {
+          state.coins -= u.coins;
+          unlockedList().push(id);
+          toast("Комната открыта! 🎉");
+        } else {
+          toast("🔒 " + (u.hint || "ещё закрыто"));
+          return;
+        }
+      }
+    }
     const w = mapCanvas.clientWidth;
     transitioning = true;
     slideX = dir > 0 ? -w : w;
@@ -353,7 +390,12 @@
     const idx = ZONES.findIndex((z) => z.id === state.map.zone);
     let ni = idx + dir;
     while (ni >= 0 && ni < ZONES.length) {
-      goZone(ZONES[ni].id, dir);
+      const zid = ZONES[ni].id;
+      if (!isUnlocked(zid)) {
+        toast("🔒 " + (UNLOCK[zid]?.hint || "комната закрыта"));
+        return;
+      }
+      goZone(zid, dir);
       return;
     }
     toast(dir > 0 ? "Это последняя комната →" : "← Это первая комната");
@@ -371,7 +413,8 @@
 
   function setupInput() {
     mapCanvas.addEventListener("pointerdown", (e) => {
-      if (transitioning || !isUnlocked(state.map.zone)) return;
+      if (transitioning) return;
+      if (!isUnlocked(state.map.zone)) { toast("🔒 Сначала открой эту комнату"); return; }
       mapCanvas.setPointerCapture(e.pointerId);
       const p = pointerPos(e);
       swipe = { x0: e.clientX, y0: e.clientY, sx: p.sx, sy: p.sy, t: Date.now() };
@@ -410,9 +453,26 @@
   function care(kind, quiet) {
     const ap = activePet();
     if (!ap) return;
-    if (kind === "feed") { ap.fed = Math.min(100, ap.fed + 25); ap.happy = Math.min(100, ap.happy + 8); state.coins += 2; prog().care++; if (!quiet) toast("Ням-ням!"); goZone("kitchen", 1); }
-    if (kind === "wash") { ap.happy = Math.min(100, ap.happy + 15); if (!quiet) toast("Блестит!"); goZone("bath", 1); }
-    if (kind === "play") { ap.happy = Math.min(100, ap.happy + 20); state.coins += 5; if (!quiet) toast("Играем!"); goZone("play", 1); }
+    if (kind === "feed") {
+      ap.fed = Math.min(100, ap.fed + 25);
+      ap.happy = Math.min(100, ap.happy + 8);
+      state.coins += 2;
+      prog().care++;
+      if (!quiet) toast("Ням-ням! +2 🪙");
+      if (isUnlocked("kitchen")) goZone("kitchen", 1);
+    }
+    if (kind === "wash") {
+      ap.happy = Math.min(100, ap.happy + 15);
+      if (!quiet) toast("Блестит! ✨");
+      if (isUnlocked("bath")) goZone("bath", 1);
+    }
+    if (kind === "play") {
+      ap.happy = Math.min(100, ap.happy + 20);
+      state.coins += 5;
+      if (!quiet) toast("Играем! +5 🪙");
+      if (isUnlocked("play")) goZone("play", 1);
+      else if (!quiet) toast("Подсказка: вкладка 🥚 → бесплатное яйцо = 2-й питомец!");
+    }
     if (kind === "pet") { ap.happy = Math.min(100, ap.happy + 10); if (!quiet) toast("Мур-мур…"); }
     checkUnlocks();
     save();
@@ -448,10 +508,12 @@
     const pet = hatchRandom(egg.rareBoost);
     state.pets.push(pet);
     state.active = state.pets.length - 1;
+    prog().eggs++;
     checkUnlocks();
     save();
     updateUI();
     showHatch(pet);
+    if (prog().eggs === 1) toast("Ура! Теперь можно открыть игровую 🎾");
   }
 
   function renderEggs() {
@@ -491,12 +553,18 @@
   }
 
   function doMerge() {
+    const list = worldPets();
+    if (list.length < 2) {
+      toast("Нужны 2 питомца! Вкладка 🥚 → бесплатное яйцо");
+      return;
+    }
     const pa = state.pets.find((p) => p.uid === state.mergeA);
     const pb = state.pets.find((p) => p.uid === state.mergeB);
-    if (!pa || !pb) { toast("Положи 2 питомцев"); return; }
-    if (pa.speciesId !== pb.speciesId) { toast("Нужны одинаковые!"); return; }
+    if (!pa || !pb) { toast("Нажми слот + и выбери 2 питомцев"); return; }
+    if (pa.uid === pb.uid) { toast("Это один и тот же! Нужны 2 одинаковых вида"); return; }
+    if (pa.speciesId !== pb.speciesId) { toast("Нужны 2 одинаковых вида (например 2 зайчика)"); return; }
     const nextId = MERGE_NEXT[pa.speciesId];
-    if (!nextId) { toast("Это максимум!"); return; }
+    if (!nextId) { toast("Это уже максимальная форма!"); return; }
     state.pets = state.pets.filter((p) => p.uid !== pa.uid && p.uid !== pb.uid);
     const np = { uid: Date.now(), speciesId: nextId, world: state.world, happy: 100, fed: 100 };
     state.pets.push(np);
@@ -506,11 +574,13 @@
     state.mergeA = state.mergeB = null;
     $("slot-a").textContent = "+";
     $("slot-b").textContent = "+";
-    state.active = state.pets.length - 1;
+    state.active = state.pets.indexOf(np);
+    fixActivePet();
     checkUnlocks();
     save();
     updateUI();
     showHatch(np);
+    toast("✨ Слияние! Питомец эволюционировал");
   }
 
   function renderWorlds() {
@@ -552,8 +622,17 @@
   $("act-walk").onclick = () => goWalk();
   $("btn-merge").onclick = doMerge;
   $("hatch-ok").onclick = () => $("hatch-pop").classList.remove("on");
-  $("slot-a").onclick = () => { const ap = activePet(); if (ap) setMergeSlot("a", ap.uid); };
-  $("slot-b").onclick = () => { const ap = activePet(); if (ap) setMergeSlot("b", ap.uid); };
+  $("slot-a").onclick = () => {
+    const ap = activePet();
+    if (ap) { setMergeSlot("a", ap.uid); toast("Слот 1: " + getSpecies(ap.speciesId).name); }
+  };
+  $("slot-b").onclick = () => {
+    const list = worldPets();
+    if (list.length < 2) { toast("Сначала открой 🥚 бесплатное яйцо!"); return; }
+    const other = list.find((p) => p.uid !== state.mergeA) || list[1];
+    setMergeSlot("b", other.uid);
+    toast("Слот 2: " + getSpecies(other.speciesId).name);
+  };
 
   window.addEventListener("resize", () => { resizeCanvas(); });
   setInterval(() => {
@@ -568,7 +647,11 @@
   renderWorlds();
   setupInput();
   load();
+  fixActivePet();
   resizeCanvas();
   updateUI();
   drawMap();
+  if (worldPets().length < 2) {
+    setTimeout(() => toast("🥚 Второй питомец: вкладка Яйца → бесплатное яйцо"), 1200);
+  }
 })();

@@ -57,8 +57,12 @@ html, body {
 .tab.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
 .panel { display: none; }
 .panel.on { display: block; }
-.actions { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); gap: 5px; }
-.actions.compact .btn { padding: 10px 4px; font-size: 16px; }
+.actions.compact { grid-template-columns: repeat(5, 1fr); }
+.actions.compact .btn { padding: 12px 4px; font-size: 18px; min-height: 48px; }
+.egg-hint {
+  background: #fdf2f8; border-radius: 12px; padding: 10px; margin-bottom: 8px;
+  font-size: 12px; text-align: center; border: 2px solid #fbcfe8;
+}
 .btn { border: 0; border-radius: 12px; font: 800 13px inherit; cursor: pointer; color: #fff; touch-action: manipulation; }
 .btn-pink { background: linear-gradient(135deg, #ec4899, #db2777); }
 .btn-purple { background: linear-gradient(135deg, #a855f7, #7c3aed); }
