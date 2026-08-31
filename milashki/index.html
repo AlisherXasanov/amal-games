@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Милашки — пушистые питомцы | Amaya Games</title>
-  <meta name="description" content="Свои милашки: яйца-сюрприз, уход, слияние. Как Fluvsies, но бесплатно в браузере." />
+  <meta name="description" content="Свои милашки: яйца-сюрприз, уход, слияние, своя комната. Как Fluvsies, но бесплатно в браузере." />
   <meta name="theme-color" content="#fce7f3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <div class="shell">
@@ -16,24 +16,11 @@
       <a class="back" href="../">← Игры</a>
       <div>
         <h1>🐣 Милашки</h1>
-        <p class="sub">Пушистые питомцы из яиц-сюрприз</p>
+        <p class="sub">6 серий · яйца · уход · своя комната</p>
       </div>
     </header>
 
-    <div class="world-pick">
-      <button type="button" class="world-btn on" data-world="1">
-        <strong>Милашки 1</strong>
-        <small>Fluvsies-стиль · пушистики</small>
-      </button>
-      <button type="button" class="world-btn" data-world="2">
-        <strong>Милашки 2</strong>
-        <small>Smolsies-стиль · малыши</small>
-      </button>
-      <button type="button" class="world-btn" data-world="3">
-        <strong>Милашки 3</strong>
-        <small>Kpopsies-стиль · звёздочки</small>
-      </button>
-    </div>
+    <div class="world-pick" id="world-pick"></div>
 
     <div class="stats">
       <div class="stat">🪙<b id="coins">0</b>монеты</div>
@@ -41,12 +28,13 @@
       <div class="stat">❤️<b id="happy">100</b>счастье</div>
     </div>
 
-    <div class="stage-wrap">
+    <div class="stage-wrap" id="main-stage">
       <canvas id="stage" width="360" height="220"></canvas>
     </div>
 
     <nav class="tabs">
       <button type="button" class="tab on" data-tab="home">🏠 Дом</button>
+      <button type="button" class="tab" data-tab="room">🛋 Комната</button>
       <button type="button" class="tab" data-tab="eggs">🥚 Яйца</button>
       <button type="button" class="tab" data-tab="merge">✨ Слияние</button>
       <button type="button" class="tab" data-tab="book">📖 Книга</button>
@@ -59,7 +47,15 @@
         <button type="button" class="btn btn-purple" id="act-play">🎾 Играть</button>
         <button type="button" class="btn btn-green" id="act-pet">💕 Гладить</button>
       </div>
-      <p style="font-size:12px;color:var(--muted);text-align:center">Тапни по питомцу на картинке — он подпрыгнет!</p>
+      <p class="hint">Тапни по питомцу — он подпрыгнет!</p>
+    </section>
+
+    <section class="panel" id="panel-room">
+      <div class="stage-wrap room-wrap">
+        <canvas id="room" width="360" height="260"></canvas>
+      </div>
+      <p class="hint">Тяни питомца и вещи пальцем или мышкой 🖐️</p>
+      <div class="decor-palette" id="decor-palette"></div>
     </section>
 
     <section class="panel" id="panel-eggs">
@@ -93,6 +89,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=2"></script>
+  <script src="./app.js?v=3"></script>
 </body>
 </html>
