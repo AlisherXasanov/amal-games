@@ -57,6 +57,7 @@ html, body {
 .tab.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
 .panel { display: none; }
 .panel.on { display: block; }
+.actions { display: grid; gap: 5px; margin-bottom: 8px; }
 .actions.compact { grid-template-columns: repeat(5, 1fr); }
 .actions.compact .btn { padding: 12px 4px; font-size: 18px; min-height: 48px; }
 .egg-hint {
