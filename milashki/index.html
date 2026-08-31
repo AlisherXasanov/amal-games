@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Милашки — пушистые питомцы | Amaya Games</title>
+  <meta name="description" content="Свои милашки: яйца-сюрприз, уход, слияние. Как Fluvsies, но бесплатно в браузере." />
+  <meta name="theme-color" content="#fce7f3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <h2>🔒 Для родителей</h2>
+      <p>Это не пароль от телефона — просто защита, чтобы случайно не сбросить игру. Спроси у мамы или папы.</p>
+      <p style="font-size:11px;margin-bottom:8px">Подсказка: год, когда ты родилась, или <b>2020</b></p>
+      <input id="pin-in" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off" />
+      <button type="button" class="btn btn-pink" id="pin-go" style="width:100%">Войти играть</button>
+      <button type="button" class="btn btn-sky" id="pin-skip" style="width:100%;margin-top:8px;background:#e9d5ff;color:#4a044e">Пропустить (без пароля)</button>
+    </div>
+  </div>
+
+  <div class="shell">
+    <header class="top">
+      <a class="back" href="../">← Игры</a>
+      <div>
+        <h1>🐣 Милашки</h1>
+        <p class="sub">Пушистые питомцы из яиц-сюрприз</p>
+      </div>
+    </header>
+
+    <div class="world-pick">
+      <button type="button" class="world-btn on" data-world="1">
+        <strong>Милашки 1</strong>
+        <small>Fluvsies-стиль · пушистики</small>
+      </button>
+      <button type="button" class="world-btn" data-world="2">
+        <strong>Милашки 2</strong>
+        <small>Smolsies-стиль · малыши</small>
+      </button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">🪙<b id="coins">0</b>монеты</div>
+      <div class="stat">🐾<b id="pet-n">0</b>питомцы</div>
+      <div class="stat">❤️<b id="happy">100</b>счастье</div>
+    </div>
+
+    <div class="stage-wrap">
+      <canvas id="stage" width="360" height="220"></canvas>
+    </div>
+
+    <nav class="tabs">
+      <button type="button" class="tab on" data-tab="home">🏠 Дом</button>
+      <button type="button" class="tab" data-tab="eggs">🥚 Яйца</button>
+      <button type="button" class="tab" data-tab="merge">✨ Слияние</button>
+      <button type="button" class="tab" data-tab="book">📖 Книга</button>
+    </nav>
+
+    <section class="panel on" id="panel-home">
+      <div class="actions">
+        <button type="button" class="btn btn-pink" id="act-feed">🍎 Кормить</button>
+        <button type="button" class="btn btn-sky" id="act-wash">🛁 Мыть</button>
+        <button type="button" class="btn btn-purple" id="act-play">🎾 Играть</button>
+        <button type="button" class="btn btn-green" id="act-pet">💕 Гладить</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);text-align:center">Тапни по питомцу на картинке — он подпрыгнет!</p>
+    </section>
+
+    <section class="panel" id="panel-eggs">
+      <div class="egg-grid" id="egg-grid"></div>
+    </section>
+
+    <section class="panel" id="panel-merge">
+      <div class="merge-box">
+        <p style="font-size:13px;font-weight:800">Магическая машина</p>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0">Положи 2 одинаковых — получишь нового!</p>
+        <div class="merge-slots">
+          <div class="slot" id="slot-a" title="Слот 1">+</div>
+          <div class="slot" id="slot-b" title="Слот 2">+</div>
+        </div>
+        <button type="button" class="btn btn-purple" id="btn-merge" style="width:100%">✨ Слить!</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-book">
+      <div class="collection" id="collection"></div>
+    </section>
+  </div>
+
+  <div class="hatch-pop" id="hatch-pop">
+    <div class="hatch-card">
+      <div class="pet" id="hatch-emoji">🐣</div>
+      <h3 id="hatch-name">Новый милашка!</h3>
+      <p id="hatch-rare" style="color:var(--muted);font-size:13px"></p>
+      <button type="button" class="btn btn-pink" id="hatch-ok" style="margin-top:12px;width:100%">Ура!</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="./app.js?v=1"></script>
+</body>
+</html>
