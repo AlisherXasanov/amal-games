@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Escape Tsunami · бег от волны | Amaya Games</title>
+  <meta name="description" content="Беги от волны, собирай brainrot-мемы — как в Roblox Escape Tsunami." />
+  <meta name="theme-color" content="#0c4a6e" />
+  <link rel="stylesheet" href="./style.css?v=2" />
+</head>
+<body>
+  <a class="back" href="../">← Игры</a>
+  <header class="top">
+    <h1>🌊 Escape Tsunami</h1>
+    <p>Бег · сбор мемов · волна сзади</p>
+  </header>
+  <div class="stats">
+    <span>🪙 <b id="coins">0</b></span>
+    <span>🧠 <b id="brains">0</b></span>
+    <span>🌊 <b id="wave">1</b></span>
+  </div>
+  <canvas id="game" width="390" height="440"></canvas>
+  <div class="controls">
+    <button type="button" id="btn-up">⬆️</button>
+    <button type="button" id="btn-sprint" class="sprint">⚡ Спринт</button>
+    <button type="button" id="btn-down">⬇️</button>
+  </div>
+  <p class="hint">Вверх/вниз — полки · тяни влево-вправо · собирай 🧠 · убегай от 🌊</p>
+  <div class="toast" id="toast"></div>
+  <script src="./app.js?v=2"></script>
+</body>
+</html>
