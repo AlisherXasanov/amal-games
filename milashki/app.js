@@ -1,9 +1,7 @@
 (() => {
   "use strict";
 
-  const STORAGE = "milashki-save-v1";
-  const GATE_KEY = "milashki-gate-ok";
-  const PARENT_PIN = "2020"; /* родительский — не пароль телефона */
+  const STORAGE = "milashki-save-v2";
 
   const SPECIES = {
     1: [
@@ -24,11 +22,21 @@
       { id: "star", name: "Звёздочка", emoji: "⭐", color: "#fef9c3", rare: "epic" },
       { id: "rainbow", name: "Радуга", emoji: "🌈", color: "#fda4af", rare: "legendary" },
     ],
+    3: [
+      { id: "pup", name: "Щенок", emoji: "🐶", color: "#fde68a", rare: "common" },
+      { id: "duck", name: "Утёнок", emoji: "🦆", color: "#bae6fd", rare: "common" },
+      { id: "frog", name: "Лягушонок", emoji: "🐸", color: "#86efac", rare: "common" },
+      { id: "penguin", name: "Пингвин", emoji: "🐧", color: "#e5e7eb", rare: "rare" },
+      { id: "butterfly", name: "Бабочка", emoji: "🦋", color: "#f0abfc", rare: "rare" },
+      { id: "fairy", name: "Фея", emoji: "🧚", color: "#c4b5fd", rare: "epic" },
+      { id: "crystal", name: "Кристалл", emoji: "💎", color: "#67e8f9", rare: "legendary" },
+    ],
   };
 
   const MERGE_NEXT = {
     bunny: "fox", cat: "bear", fox: "uni", bear: "dragon", uni: "phoenix",
     chick: "panda", hamster: "koala", panda: "owl", koala: "star", owl: "rainbow",
+    pup: "frog", duck: "penguin", frog: "butterfly", penguin: "fairy", butterfly: "crystal",
   };
 
   const EGGS = [
@@ -124,8 +132,13 @@
     const H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     const grd = ctx.createLinearGradient(0, 0, 0, H);
-    grd.addColorStop(0, state.world === 2 ? "#bae6fd" : "#e9d5ff");
-    grd.addColorStop(1, state.world === 2 ? "#fef08a" : "#fbcfe8");
+    const bg = state.world === 2
+      ? ["#bae6fd", "#fef08a"]
+      : state.world === 3
+        ? ["#f0abfc", "#fef08a"]
+        : ["#e9d5ff", "#fbcfe8"];
+    grd.addColorStop(0, bg[0]);
+    grd.addColorStop(1, bg[1]);
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#86efac";
@@ -138,7 +151,7 @@
     const sp = getSpecies(ap.speciesId);
     const cx = W * 0.5;
     const cy = H * 0.55 + Math.sin(animT * 3) * 4 - bounce * 18;
-    const scale = state.world === 2 ? 0.85 : 1;
+    const scale = state.world === 2 ? 0.85 : state.world === 3 ? 0.92 : 1;
 
     ctx.fillStyle = sp.color;
     ctx.beginPath();
@@ -262,24 +275,11 @@
     toast("✨ Новый вид из слияния!");
   }
 
-  function setupGate() {
-    if (localStorage.getItem(GATE_KEY) === "1") {
-      $("gate").style.display = "none";
-      return;
-    }
-    $("pin-go").onclick = () => {
-      if ($("pin-in").value === PARENT_PIN || $("pin-in").value === "1234") {
-        localStorage.setItem(GATE_KEY, "1");
-        $("gate").style.display = "none";
-        toast("Добро пожаловать!");
-      } else toast("Неверный код — спроси у родителей");
-    };
-    $("pin-skip").onclick = () => {
-      localStorage.setItem(GATE_KEY, "1");
-      $("gate").style.display = "none";
-    };
-    $("pin-in").onkeydown = (e) => { if (e.key === "Enter") $("pin-go").click(); };
-  }
+  const WORLD_NAMES = {
+    1: "Милашки 1 — пушистики!",
+    2: "Милашки 2 — малыши!",
+    3: "Милашки 3 — звёздочки!",
+  };
 
   document.querySelectorAll(".world-btn").forEach((btn) => {
     btn.onclick = () => {
@@ -289,7 +289,7 @@
       if (!state.pets.length) state.pets.push(hatchRandom(0));
       save();
       updateUI();
-      toast(state.world === 1 ? "Милашки 1 — пушистики!" : "Милашки 2 — малыши!");
+      toast(WORLD_NAMES[state.world] || WORLD_NAMES[1]);
     };
   });
 
@@ -329,7 +329,6 @@
     updateUI();
   }, 8000);
 
-  setupGate();
   load();
   updateUI();
   drawScene();

@@ -8,20 +8,9 @@
   <meta name="theme-color" content="#fce7f3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <div class="gate" id="gate">
-    <div class="gate-card">
-      <h2>🔒 Для родителей</h2>
-      <p>Это не пароль от телефона — просто защита, чтобы случайно не сбросить игру. Спроси у мамы или папы.</p>
-      <p style="font-size:11px;margin-bottom:8px">Подсказка: год, когда ты родилась, или <b>2020</b></p>
-      <input id="pin-in" type="password" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off" />
-      <button type="button" class="btn btn-pink" id="pin-go" style="width:100%">Войти играть</button>
-      <button type="button" class="btn btn-sky" id="pin-skip" style="width:100%;margin-top:8px;background:#e9d5ff;color:#4a044e">Пропустить (без пароля)</button>
-    </div>
-  </div>
-
   <div class="shell">
     <header class="top">
       <a class="back" href="../">← Игры</a>
@@ -39,6 +28,10 @@
       <button type="button" class="world-btn" data-world="2">
         <strong>Милашки 2</strong>
         <small>Smolsies-стиль · малыши</small>
+      </button>
+      <button type="button" class="world-btn" data-world="3">
+        <strong>Милашки 3</strong>
+        <small>Kpopsies-стиль · звёздочки</small>
       </button>
     </div>
 
@@ -100,6 +93,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <script src="./app.js?v=1"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>

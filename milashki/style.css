@@ -79,7 +79,7 @@ h1 { font-size: 1.35rem; font-weight: 800; }
 }
 .col-item.locked { opacity: .35; filter: grayscale(1); }
 .col-item span { font-size: 8px; position: absolute; bottom: 2px; font-weight: 800; }
-.world-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.world-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
 .world-btn {
   border: 2px solid transparent; border-radius: 14px; padding: 12px 8px;
   background: var(--panel); cursor: pointer; font: inherit; text-align: center;
