@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const STORAGE = "milashki-save-v6";
+  const STORAGE = "milashki-save-v7";
 
   const WORLDS = [
     { id: 1, name: "Милашки 1", sub: "Fluvsies" },
@@ -185,6 +185,8 @@
     });
     if (!state.pets.length) state.pets.push(hatchStarter());
     if (!state.map) state.map = { zone: "living", petX: 0.5, petY: 0.72 };
+    const wp = state.pets.filter((p) => (p.world || 1) === state.world);
+    if (wp.length >= 2 && prog().eggs < 1) prog().eggs = 1;
   }
 
   function hatchStarter() {
@@ -283,14 +285,11 @@
     z.decor.forEach((ico, i) => {
       const col = i % 2, row = Math.floor(i / 2);
       c.font = `${Math.min(w, h) * 0.11}px serif`;
-      c.textAlign = "center";
-      c.textBaseline = "middle";
-      c.fillText(ico, w * (0.22 + col * 0.38), h * (0.42 + row * 0.18));
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText(ico, w * (0.22 + col * 0.38), h * (0.42 + row * 0.18));
     });
-    c.font = `bold ${Math.min(w, h) * 0.05}px Nunito,sans-serif`;
-    c.fillStyle = "#4a044e";
-    c.textAlign = "left";
-    c.fillText(z.icon + " " + z.name, 14, 28);
+    /* название комнаты только в полоске сверху — не дублируем */
     if (locked) {
       c.fillStyle = "rgba(74,4,78,.72)";
       c.fillRect(0, 0, w, h);
@@ -352,6 +351,10 @@
   }
 
   function goZone(id, dir) {
+    if (state.map.zone === id) return;
+    walkTarget = null;
+    drag = null;
+    swipe = null;
     if (!isUnlocked(id)) {
       checkUnlocks();
       if (!isUnlocked(id)) {
@@ -378,9 +381,6 @@
       else { slideX = 0; transitioning = false; }
     };
     state.map.zone = id;
-    state.map.petX = 0.5;
-    state.map.petY = 0.72;
-    walkTarget = null;
     save();
     updateUI();
     requestAnimationFrame(tick);
@@ -441,7 +441,6 @@
       } else if (drag?.kind === "map" && Math.hypot(dx, dy) < 10 && isUnlocked(state.map.zone)) {
         const p = pointerPos(e);
         walkTarget = { x: p.sx, y: p.sy };
-        toast("Идём! 👣");
       } else if (drag?.kind === "pet") save();
       drag = null;
       swipe = null;
@@ -497,7 +496,14 @@
       btn.type = "button";
       btn.className = "zone-btn" + (state.map.zone === z.id ? " on" : "") + (ok ? "" : " locked");
       btn.innerHTML = `<span>${ok ? z.icon : "🔒"}</span><small>${z.name}</small>`;
-      btn.onclick = () => goZone(z.id, ZONES.findIndex((x) => x.id === z.id) > ZONES.findIndex((x) => x.id === state.map.zone) ? 1 : -1);
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const zi = ZONES.findIndex((x) => x.id === z.id);
+        const cur = ZONES.findIndex((x) => x.id === state.map.zone);
+        if (zi === cur) return;
+        goZone(z.id, zi > cur ? 1 : -1);
+      };
       g.appendChild(btn);
     });
   }

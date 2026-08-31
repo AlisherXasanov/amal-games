@@ -14,7 +14,7 @@
       <a class="back" href="../">←</a>
       <div>
         <h1>🐣 Милашки</h1>
-        <p class="sub" id="swipe-hint">Свайп — другая комната</p>
+        <p class="sub">Свайп — другая комната</p>
       </div>
     </header>
 
@@ -43,22 +43,24 @@
         <button type="button" class="tab" data-tab="book">📖</button>
       </nav>
       <div class="actions compact">
-        <button type="button" class="btn btn-green" id="act-walk">🚶 Гулять</button>
-        <button type="button" class="btn btn-pink" id="act-feed">🍎</button>
-        <button type="button" class="btn btn-sky" id="act-wash">🛁</button>
-        <button type="button" class="btn btn-purple" id="act-play">🎾</button>
-        <button type="button" class="btn btn-pink" id="act-pet">💕</button>
+        <button type="button" class="btn btn-green" id="act-walk" title="Погулять">🚶</button>
+        <button type="button" class="btn btn-pink" id="act-feed" title="Кормить">🍎</button>
+        <button type="button" class="btn btn-sky" id="act-wash" title="Мыть">🛁</button>
+        <button type="button" class="btn btn-purple" id="act-play" title="Играть">🎾</button>
+        <button type="button" class="btn btn-pink" id="act-pet" title="Гладить">💕</button>
       </div>
     </section>
 
     <section class="panel" id="panel-eggs">
+      <p class="egg-hint">🥚 <b>Бесплатное яйцо</b> = второй питомец! Нажми «Обычное».</p>
       <div class="egg-grid" id="egg-grid"></div>
       <nav class="tabs inline"><button type="button" class="tab" data-tab="home">🏠 Дом</button></nav>
     </section>
 
     <section class="panel" id="panel-merge">
       <div class="merge-box">
-        <p style="font-size:13px;font-weight:800">Магическая машина</p>
+        <p style="font-size:13px;font-weight:800">Магическая машина слияния</p>
+        <p style="font-size:11px;color:var(--muted);margin:6px 0">2 одинаковых питомца → новый вид (не исчезнут!)</p>
         <div class="merge-slots">
           <div class="slot" id="slot-a">+</div>
           <div class="slot" id="slot-b">+</div>
@@ -83,7 +85,7 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="./pets-draw.js?v=5"></script>
-  <script src="./app.js?v=5"></script>
+  <script src="./pets-draw.js?v=6"></script>
+  <script src="./app.js?v=7"></script>
 </body>
 </html>
