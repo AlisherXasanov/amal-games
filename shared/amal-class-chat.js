@@ -106,7 +106,9 @@
   var AmalClassChat = {
     emojis: emojis,
 
-    mount: function (rootId) {
+    mount: function (rootId, opts) {
+      opts = opts || {};
+      if (opts.room === "friends") return; /* друзья: amal-friends-net.js */
       var root = $(rootId);
       if (!root) return;
 

@@ -6,45 +6,67 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=1" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=2" />
   <script src="./shared/amal-device.js?v=1"></script>
 </head>
 <body>
   <div id="locked" class="lock-screen" hidden>
     <div class="big">🔐</div>
     <h2>Только для друзей</h2>
-    <p>Нужен <strong>секретный QR-код</strong> от Амаля. Обычный QR из класса сюда не подходит.</p>
-    <p style="margin-top:12px"><a href="go.html">← На главную</a></p>
+    <p>Нужен <strong>секретный QR-код</strong> от Амаля — не обычный из класса.</p>
+    <p style="margin-top:12px"><a href="go.html?v=1">← Выбрать версию</a></p>
+  </div>
+
+  <!-- Приветствие при первом заходе по секретному QR -->
+  <div id="friends-welcome" class="friends-welcome" hidden>
+    <div class="friends-welcome-box">
+      <div class="star">⭐💜</div>
+      <h2>Спасибо, что зашли!</h2>
+      <p>Это <strong>только для вас</strong> — моих самых дорогих друзей.</p>
+      <p>Из садика «Эврика», из школы… те, кого я люблю. Не для всего класса — <strong>только мы</strong>.</p>
+      <p class="sign">— Амаль ♥</p>
+      <button type="button" id="friends-welcome-ok">Ура! Играем ✨</button>
+    </div>
   </div>
 
   <div class="hub" id="hub-root" hidden>
     <div id="device-switcher-slot"></div>
     <div class="top">
       <h1>⭐ Эксклюзив</h1>
-      <p class="device-tag" id="device-tag">Только для друзей Амаля</p>
+      <p class="device-tag">Только для друзей · секретный QR</p>
     </div>
 
     <nav class="tabs" id="tabs">
       <button type="button" class="tab on" data-tab="home">🏠</button>
-      <button type="button" class="tab" data-tab="exclusive">⭐ Новое</button>
-      <button type="button" class="tab" data-tab="games">🎮 Игры</button>
-      <button type="button" class="tab" data-tab="mila">🐣</button>
+      <button type="button" class="tab" data-tab="exclusive">⭐</button>
+      <button type="button" class="tab" data-tab="soon">📦</button>
+      <button type="button" class="tab" data-tab="games">🎮</button>
       <button type="button" class="tab" data-tab="chat">💬</button>
     </nav>
 
     <section class="panel on" id="panel-home">
-      <p class="tip">⭐ Это секретная страница. Здесь <strong>новые игры раньше всех</strong> — только по QR от Амаля.</p>
+      <p class="tip">💜 Вы в <strong>закрытой команде</strong>. Чат — только между вами. Обычный QR сюда не пускает.</p>
       <div class="cat-grid">
-        <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзив · новые игры</button>
-        <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Все игры</button>
-        <button type="button" class="cat-btn mila" data-go="mila"><span>🐣</span>Милашки</button>
+        <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзивные игры</button>
         <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат друзей</button>
+        <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Все игры</button>
+        <button type="button" class="cat-btn mila" data-go="mila" style="background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки</button>
       </div>
     </section>
 
     <section class="panel" id="panel-exclusive">
-      <p class="tip">🎁 Эти игры не на обычном QR для класса!</p>
+      <p class="tip">🎁 Этого нет на обычном QR для класса!</p>
       <div class="game-grid" id="list-exclusive"></div>
+    </section>
+
+    <section class="panel" id="panel-soon">
+      <p class="tip">📦 Скоро я сделаю — покажу друзьям первым:</p>
+      <div class="roadmap">
+        <div class="roadmap-item"><span>🎬</span> Своя программа для мультов (как у ютуберов, но свои)</div>
+        <div class="roadmap-item"><span>🎮</span> Новые игры — сначала здесь, потом для всех</div>
+        <div class="roadmap-item"><span>💬</span> Голосовые сообщения между друзьями</div>
+        <div class="roadmap-item"><span>🏠</span> Общий домик для всей команды</div>
+      </div>
     </section>
 
     <section class="panel" id="panel-games">
@@ -56,18 +78,20 @@
     </section>
 
     <section class="panel" id="panel-chat">
-      <p class="tip">💬 Чат только для друзей с секретным QR.</p>
-      <div id="chat-root"></div>
+      <p class="tip">💬 Только друзья с секретным QR. Напиши имя → пиши. Амаль видит, кто зашёл (если имя «Амаль»).</p>
+      <div id="friends-chat-root"></div>
     </section>
 
     <div class="bottom-links">
-      <a href="go.html">🔍 Авто-версия</a>
-      <a href="./?stay=1">💻 ПК</a>
+      <a href="go.html?v=1">🔍 Версии</a>
+      <a href="qr-friends.html">⭐ QR друзьям</a>
     </div>
   </div>
 
-  <script src="./shared/amal-hub-data.js?v=1"></script>
+  <script src="./shared/amal-hub-back.js?v=1"></script>
+  <script src="./shared/amal-hub-data.js?v=2"></script>
   <script src="./shared/amal-device-switcher.js?v=1"></script>
+  <script src="./shared/amal-friends-net.js?v=1"></script>
   <script>
     (function () {
       if (!AmalDevice.friendsAllowed()) {
@@ -79,9 +103,37 @@
       AmalDevice.remember(AmalDevice.detect(), "friends");
       AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
       AmalDeviceSwitcher.mount("device-switcher-slot");
+
+      AmalFriendsNet.init();
+      AmalFriendsNet.mountChat("friends-chat-root");
+
+      document.getElementById("hub-root").addEventListener("click", function (e) {
+        var a = e.target.closest("a.game-card");
+        if (a && window.AmalFriendsNet) {
+          var name = a.querySelector(".name");
+          AmalFriendsNet.trackGame(name ? name.textContent : "игра");
+        }
+      });
+
+      var tabs = document.getElementById("tabs");
+      tabs.addEventListener("click", function (e) {
+        var b = e.target.closest(".tab");
+        if (!b) return;
+        var id = b.getAttribute("data-tab");
+        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("on"); });
+        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("on"); });
+        var p = document.getElementById("panel-" + id);
+        if (p) p.classList.add("on");
+        b.classList.add("on");
+      });
+      document.querySelectorAll(".cat-btn[data-go]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.getAttribute("data-go");
+          var tab = document.querySelector('.tab[data-tab="' + id + '"]');
+          if (tab) tab.click();
+        });
+      });
     })();
   </script>
-  <script src="./shared/amal-chat-config.js?v=1"></script>
-  <script src="./shared/amal-class-chat.js?v=1"></script>
 </body>
 </html>

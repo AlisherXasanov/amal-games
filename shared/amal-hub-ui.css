@@ -146,6 +146,41 @@ body {
   font-size: 10px; color: var(--muted); font-weight: 700; margin-left: 4px;
 }
 
+/* Приветствие друзей */
+.friends-welcome {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(30, 16, 48, 0.92);
+}
+.friends-welcome[hidden] { display: none !important; }
+.friends-welcome-box {
+  max-width: 400px; background: linear-gradient(160deg, #faf5ff, #fce7f3);
+  border: 3px solid #a855f7; border-radius: 24px; padding: 28px 22px;
+  text-align: center; color: #4a044e; box-shadow: 0 24px 60px rgba(0,0,0,.4);
+}
+.friends-welcome-box .star { font-size: 56px; margin-bottom: 8px; }
+.friends-welcome-box h2 { color: #7c3aed; font-size: 1.35rem; margin-bottom: 10px; }
+.friends-welcome-box p { font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 8px; }
+.friends-welcome-box .sign { font-style: italic; color: #db2777; margin-top: 12px; }
+.friends-welcome-box button {
+  margin-top: 16px; border: 0; border-radius: 999px; padding: 14px 28px;
+  min-height: 48px; background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff; font: 800 16px inherit; cursor: pointer; width: 100%;
+}
+.roadmap { display: grid; gap: 8px; margin-top: 8px; }
+.roadmap-item {
+  background: #faf5ff; border: 2px dashed #d8b4fe; border-radius: 12px;
+  padding: 10px 12px; font-size: 12px; font-weight: 700; text-align: left;
+}
+.roadmap-item span { font-size: 20px; margin-right: 6px; }
+.owner-panel {
+  margin-top: 12px; padding: 12px; background: #fef3c7; border: 2px solid #f59e0b;
+  border-radius: 14px; font-size: 12px;
+}
+.owner-panel h3 { font-size: 13px; color: #92400e; margin-bottom: 8px; }
+.owner-panel ul { list-style: none; padding: 0; max-height: 140px; overflow-y: auto; }
+.owner-panel li { padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-weight: 600; }
+
 /* Чат */
 .chat-setup label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
 .chat-setup input {

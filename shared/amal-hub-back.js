@@ -15,8 +15,8 @@
 
   function detectFromUrl() {
     if (/[?&]from=phone/.test(location.search)) return "phone";
-    if (/[?&]from=tablet/.test(location.search)) return "tablet";
     if (/[?&]from=friends/.test(location.search)) return "friends";
+    if (/[?&]from=tablet/.test(location.search)) return "tablet";
     if (/[?&]from=desktop/.test(location.search)) return "desktop";
     try {
       var h = sessionStorage.getItem(KEY_HUB);
@@ -39,7 +39,7 @@
     var sel =
       'a.portal-back, a.back, a#back, a.task-exit, ' +
       'a[href="../"], a[href="../index.html"], a[href="../index.html?fresh=820"], ' +
-      'a[href="../phone.html"], a[href="../phone.html?v=2"]';
+      'a[href="../phone.html"], a[href="../phone.html?v=2"], a[href="../friends.html"]';
 
     document.querySelectorAll(sel).forEach(function (a) {
       a.setAttribute("href", back);
