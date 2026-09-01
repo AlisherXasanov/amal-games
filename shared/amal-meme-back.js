@@ -44,20 +44,25 @@
   }
 
   function backLabel(hub) {
-    if (hub === "phone") return "← Игры (телефон)";
-    if (hub === "tablet") return "← Игры (планшет)";
-    if (hub === "friends" || (hub === "desktop" && hasFriends())) return "← Игры ⭐";
-    return "← Игры Амаля";
+    if (hub === "phone") return "🏠 Игры Амаля (телефон)";
+    if (hub === "tablet") return "🏠 Игры Амаля (планшет)";
+    if (hub === "friends" || (hub === "desktop" && hasFriends())) return "🏠 Игры Амаля ⭐";
+    return "🏠 Игры Амаля";
   }
 
   function wire() {
+    if (document.documentElement.classList.contains("qr-lock")) return;
     var hub = hubFromUrl();
     try { sessionStorage.setItem("amal-device-hub-v1", hub); } catch (_) {}
     var url = backUrl(hub);
     var label = backLabel(hub);
-    document.querySelectorAll("a.back, a.portal-back, [data-meme-back]").forEach(function (a) {
+    document.querySelectorAll("a.back, a.portal-back, [data-meme-back], #home-quick, .home-quick").forEach(function (a) {
       a.setAttribute("href", url);
-      a.textContent = label;
+      if (a.classList.contains("home-quick") || a.id === "home-quick") {
+        a.textContent = label;
+      } else if (/^←|^🏠/.test((a.textContent || "").trim()) || a.hasAttribute("data-meme-back")) {
+        a.textContent = label.replace("🏠 ", "← ");
+      }
     });
   }
 

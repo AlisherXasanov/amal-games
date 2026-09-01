@@ -7,8 +7,18 @@
   <meta name="theme-color" content="#229ed9" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <script src="./shared/amal-device.js?v=2"></script>
-  <script src="./shared/amal-meme-back.js?v=1"></script>
+  <script>
+    (function () {
+      var q = "";
+      try { q = location.search; } catch (_) {}
+      if (/[?&](qr=1|lock=1)/.test(q)) {
+        document.documentElement.classList.add("qr-lock");
+        try { sessionStorage.setItem("amal-meme-qr-lock", "1"); } catch (_) {}
+      } else {
+        try { if (sessionStorage.getItem("amal-meme-qr-lock") === "1") document.documentElement.classList.add("qr-lock"); } catch (_) {}
+      }
+    })();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -95,17 +105,22 @@
       font: 700 14px/1.5 inherit;
     }
     .empty-feed span { font-size: 48px; display: block; margin-bottom: 12px; }
+    body.qr-lock .back-link,
+    body.qr-lock .qr-link,
+    body.qr-lock .explain-exit { display: none !important; }
+    body.qr-lock .explain-qr { display: block !important; }
+    .explain-qr { display: none; }
   </style>
 </head>
 <body>
   <header class="tg-top">
-    <a class="back" href="./?stay=1" data-meme-back>← Игры</a>
+    <a class="back back-link" href="./?stay=1" data-meme-back>← Игры</a>
     <div class="tg-avatar">😂</div>
     <div class="tg-info">
       <h1>Мемы и новости</h1>
       <p>дома · с семьёй и друзьями</p>
     </div>
-    <span class="ver">v6</span>
+    <span class="ver">v7</span>
     <a class="qr-link" href="qr-memes.html?print=1">🖨️ QR</a>
   </header>
 

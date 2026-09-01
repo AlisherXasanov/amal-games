@@ -9,18 +9,7 @@
 <body>
   <p style="font-family:system-ui;text-align:center;padding:2rem">Открываем мемы…</p>
   <script>
-    (function () {
-      var dev = AmalDevice.detect();
-      var hub = dev;
-      try {
-        if (AmalDevice.friendsAllowed && AmalDevice.friendsAllowed()) {
-          hub = "friends";
-        }
-      } catch (_) {}
-      AmalDevice.remember(dev, hub);
-      var url = "./meme-channel.html?v=6&stay=1&from=" + encodeURIComponent(hub);
-      location.replace(url);
-    })();
+    location.replace("./meme-channel.html?v=7&qr=1&lock=1&stay=1");
   </script>
 </body>
 </html>
