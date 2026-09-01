@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Игры Амаля · для телефона</title>
+  <meta name="theme-color" content="#0d6e5f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --teal: #0d6e5f;
+      --mint: #7ed9b8;
+      --paper: #f3efe6;
+      --ink: #102018;
+    }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: system-ui, "Segoe UI", sans-serif;
+      background: linear-gradient(165deg, #e8f4ef, #d5e4dc);
+      color: var(--ink);
+      min-height: 100dvh;
+      padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+    }
+    .top-bar {
+      text-align: center;
+      padding: 8px 0 16px;
+    }
+    .top-bar h1 {
+      font-size: 1.55rem;
+      color: var(--teal);
+    }
+    .top-bar p {
+      font-size: 14px;
+      color: #5a6a62;
+      margin-top: 4px;
+    }
+    .tip {
+      background: rgba(13, 110, 95, 0.12);
+      border: 2px solid rgba(13, 110, 95, 0.2);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 110px;
+      padding: 16px 10px;
+      border-radius: 16px;
+      background: #fff;
+      border: 2px solid rgba(13, 110, 95, 0.14);
+      box-shadow: 0 6px 18px rgba(16, 40, 32, 0.08);
+      text-decoration: none;
+      color: inherit;
+      font-weight: 800;
+      font-size: 13px;
+      text-align: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .game-card:active { transform: scale(0.97); }
+    .game-card .ico { font-size: 36px; margin-bottom: 6px; }
+    .game-card.featured {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      gap: 14px;
+      min-height: 72px;
+      justify-content: flex-start;
+      padding: 14px 18px;
+      background: linear-gradient(135deg, #fce7f3, #e9d5ff);
+      border-color: #ec4899;
+    }
+    .game-card.featured .ico { margin: 0; font-size: 40px; }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 20px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .links a {
+      padding: 10px 16px;
+      min-height: 44px;
+      border-radius: 999px;
+      background: #fff;
+      border: 2px solid rgba(13, 110, 95, 0.18);
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .links a.primary {
+      background: var(--teal);
+      color: #fff;
+      border-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <h1>📱 Игры Амаля</h1>
+    <p>Удобная версия для телефона</p>
+  </div>
+
+  <p class="tip">💡 В некоторых играх <strong>поверни телефон горизонтально</strong> — так удобнее. Большие кнопки — пальцем.</p>
+
+  <div class="grid">
+    <a class="game-card featured" href="milashki/?v=7">
+      <span class="ico">🐣</span>
+      <span>Милашки<br><small style="font-weight:600;color:#9d174d">питомцы, яйца</small></span>
+    </a>
+    <a class="game-card" href="escape-tsunami/?v=4">
+      <span class="ico">🌊</span>
+      Escape Tsunami
+    </a>
+    <a class="game-card" href="work-pizza/?v=3">
+      <span class="ico">🍕</span>
+      Пиццерия
+    </a>
+    <a class="game-card" href="snake-game/">
+      <span class="ico">🐍</span>
+      Snake
+    </a>
+    <a class="game-card" href="animal-hospital/">
+      <span class="ico">🐾</span>
+      Animal Hospital
+    </a>
+    <a class="game-card" href="bed-wars/">
+      <span class="ico">🛏️</span>
+      Bed Wars
+    </a>
+    <a class="game-card" href="relax-zone/?v=4">
+      <span class="ico">🌿</span>
+      Relax Zone
+    </a>
+    <a class="game-card" href="kick-buddy/">
+      <span class="ico">🥊</span>
+      Kick Buddy
+    </a>
+  </div>
+
+  <div class="links">
+    <a class="primary" href="./">Все игры</a>
+    <a href="qr-school.html">QR для класса</a>
+  </div>
+
+  <script src="./shared/amal-pwa.js?v=2" defer></script>
+</body>
+</html>

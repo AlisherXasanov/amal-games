@@ -1,68 +1,157 @@
 <!DOCTYPE html>
+
 <html lang="ru">
+
 <head>
+
   <meta charset="UTF-8" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+
   <title>Пиццерия · Work at a Pizza Place | Amaya Games</title>
+
   <meta name="description" content="Работа в пиццерии как в старой легенде Roblox 2008 года." />
+
   <meta name="theme-color" content="#78350f" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+
+  <link rel="stylesheet" href="./style.css?v=3" />
+
 </head>
+
 <body>
-  <a class="back" href="../">← Игры</a>
-  <header>
-    <h1>🍕 Пиццерия</h1>
-    <p>Work at a Pizza Place · легенда Roblox с 2008 года</p>
-  </header>
-  <div class="stats">
-    <span>🪙 <b id="coins">0</b></span>
-    <span>⭐ <b id="rep">0</b></span>
-    <span class="cust">Клиент: <b id="cust">🧑</b></span>
-  </div>
-  <div class="tabs">
-    <button type="button" class="tab on" data-tab="kitchen">👨‍🍳 Кухня</button>
-    <button type="button" class="tab" data-tab="counter">🛎️ Стойка</button>
-    <button type="button" class="tab" data-tab="delivery">🛵 Доставка</button>
-  </div>
 
-  <section class="panel on" id="panel-kitchen">
-    <p class="order" id="order">Заказ: …</p>
-    <div class="pizza-wrap">
-      <div class="pizza" id="pizza">
-        <div class="base"></div>
-        <div class="toppings" id="toppings"></div>
+  <div class="game-shell">
+
+    <div class="game-head">
+
+      <a class="back" href="../phone.html">←</a>
+
+      <div class="titles">
+
+        <h1>🍕 Пиццерия</h1>
+
+        <p>Work at a Pizza Place · 2008</p>
+
       </div>
-    </div>
-    <p class="timer" id="timer"></p>
-    <div class="bar">
-      <button type="button" data-top="sauce">🍅</button>
-      <button type="button" data-top="cheese">🧀</button>
-      <button type="button" data-top="pepper">🌶️</button>
-      <button type="button" data-top="mush">🍄</button>
-    </div>
-    <div class="bar">
-      <button type="button" class="big" id="btn-oven">🔥 Печь</button>
-      <button type="button" class="big" id="btn-box">📦 В коробку</button>
-    </div>
-  </section>
 
-  <section class="panel" id="panel-counter">
-    <p class="order">Отдай пиццу клиенту на стойке</p>
-    <div class="counter-scene">
-      <span class="big-emoji" id="cust-big">🧑</span>
-      <span class="big-emoji" id="box-pizza">📦?</span>
     </div>
-    <button type="button" class="big full" id="btn-serve">✅ Отдать заказ</button>
-  </section>
 
-  <section class="panel" id="panel-delivery">
-    <p class="order">Довези пиццу на скутере!</p>
-    <canvas id="drive" width="340" height="180"></canvas>
-    <button type="button" class="big full" id="btn-deliver">🏠 Доставил!</button>
-  </section>
+    <div class="stats">
 
-  <p class="hint">Кухня → коробка → стойка → доставка = больше монет!</p>
+      <span>🪙 <b id="coins">0</b></span>
+
+      <span>⭐ <b id="rep">0</b></span>
+
+      <span class="cust">Клиент: <b id="cust">🧑</b></span>
+
+    </div>
+
+    <div class="tabs">
+
+      <button type="button" class="tab on" data-tab="kitchen">👨‍🍳 Кухня</button>
+
+      <button type="button" class="tab" data-tab="counter">🛎️ Стойка</button>
+
+      <button type="button" class="tab" data-tab="delivery">🛵 Доставка</button>
+
+    </div>
+
+
+
+    <section class="panel on" id="panel-kitchen">
+
+      <p class="order" id="order">Заказ: …</p>
+
+      <div class="pizza-wrap">
+
+        <div class="pizza" id="pizza">
+
+          <div class="base"></div>
+
+          <div class="toppings" id="toppings"></div>
+
+        </div>
+
+      </div>
+
+      <p class="timer" id="timer"></p>
+
+      <div class="bar">
+
+        <button type="button" data-top="sauce">🍅</button>
+
+        <button type="button" data-top="cheese">🧀</button>
+
+        <button type="button" data-top="pepper">🌶️</button>
+
+        <button type="button" data-top="mush">🍄</button>
+
+      </div>
+
+      <div class="bar">
+
+        <button type="button" class="big" id="btn-oven">🔥 Печь</button>
+
+        <button type="button" class="big" id="btn-box">📦 В коробку</button>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="panel" id="panel-counter">
+
+      <p class="order">Отдай пиццу клиенту на стойке</p>
+
+      <div class="counter-scene">
+
+        <span class="big-emoji" id="cust-big">🧑</span>
+
+        <span class="big-emoji" id="box-pizza">📦?</span>
+
+      </div>
+
+      <button type="button" class="big full" id="btn-serve">✅ Отдать заказ</button>
+
+    </section>
+
+
+
+    <section class="panel" id="panel-delivery">
+
+      <p class="order">Довези пиццу на скутере!</p>
+
+      <div class="game-stage">
+
+        <canvas id="drive" width="340" height="180"></canvas>
+
+      </div>
+
+      <button type="button" class="big full" id="btn-deliver">🏠 Доставил!</button>
+
+    </section>
+
+
+
+    <p class="hint compact-hide">Кухня → коробка → стойка → доставка</p>
+
+  </div>
+
   <div class="toast" id="toast"></div>
+
+  <script src="../shared/amal-mobile.js?v=1"></script>
+
+  <script>
+
+    AmalMobile.init({ landscape: false, canvas: "#drive", fullscreen: true, lockScroll: false });
+
+  </script>
+
   <script src="./app.js?v=2"></script>
+
 </body>
+
 </html>
+
+

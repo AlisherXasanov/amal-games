@@ -6,12 +6,12 @@
   <title>Милашки — пушистые питомцы | Amaya Games</title>
   <meta name="theme-color" content="#fce7f3" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=6" />
+  <link rel="stylesheet" href="./style.css?v=7" />
 </head>
-<body>
-  <div class="shell">
-    <header class="top compact">
-      <a class="back" href="../">←</a>
+<body class="milashki-mobile">
+  <div class="shell game-shell">
+    <header class="top compact game-head">
+      <a class="back" href="../phone.html">←</a>
       <div>
         <h1>🐣 Милашки</h1>
         <p class="sub">Свайп — другая комната</p>
@@ -85,6 +85,10 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
+  <script src="../shared/amal-mobile.js?v=1"></script>
+  <script>
+    AmalMobile.init({ landscape: false, canvas: "#map", fullscreen: true, lockScroll: false });
+  </script>
   <script src="./pets-draw.js?v=6"></script>
   <script src="./app.js?v=7"></script>
 </body>
