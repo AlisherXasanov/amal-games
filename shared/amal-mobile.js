@@ -172,4 +172,14 @@
     isLandscape: isLandscape,
     fitCanvas: fitCanvas,
   };
+
+  /* Назад на phone.html если пришли с телефонной версии */
+  function loadPhoneBack() {
+    if (document.querySelector('script[data-amal-phone-back]')) return;
+    var s = document.createElement("script");
+    s.src = detectSharedPrefix() + "amal-phone-back.js?v=1";
+    s.setAttribute("data-amal-phone-back", "1");
+    document.head.appendChild(s);
+  }
+  loadPhoneBack();
 })(window);

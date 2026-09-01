@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Игры Амаля · для телефона</title>
+  <title>Игры Амаля · телефон</title>
   <meta name="theme-color" content="#0d6e5f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <style>
@@ -11,8 +11,8 @@
     :root {
       --teal: #0d6e5f;
       --mint: #7ed9b8;
-      --paper: #f3efe6;
       --ink: #102018;
+      --muted: #5a6a62;
     }
     html { -webkit-text-size-adjust: 100%; }
     body {
@@ -21,151 +21,351 @@
       color: var(--ink);
       min-height: 100dvh;
       padding:
-        max(12px, env(safe-area-inset-top))
-        max(12px, env(safe-area-inset-right))
-        max(16px, env(safe-area-inset-bottom))
-        max(12px, env(safe-area-inset-left));
+        max(8px, env(safe-area-inset-top))
+        max(10px, env(safe-area-inset-right))
+        max(72px, env(safe-area-inset-bottom))
+        max(10px, env(safe-area-inset-left));
     }
-    .top-bar {
-      text-align: center;
-      padding: 8px 0 16px;
-    }
-    .top-bar h1 {
-      font-size: 1.55rem;
-      color: var(--teal);
-    }
-    .top-bar p {
-      font-size: 14px;
-      color: #5a6a62;
-      margin-top: 4px;
-    }
-    .tip {
-      background: rgba(13, 110, 95, 0.12);
-      border: 2px solid rgba(13, 110, 95, 0.2);
-      border-radius: 14px;
-      padding: 12px 14px;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.45;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      max-width: 480px;
-      margin: 0 auto;
-    }
-    .game-card {
+    .top { text-align: center; padding: 6px 0 10px; }
+    .top h1 { font-size: 1.45rem; color: var(--teal); }
+    .top p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    .tabs {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 110px;
-      padding: 16px 10px;
-      border-radius: 16px;
-      background: #fff;
-      border: 2px solid rgba(13, 110, 95, 0.14);
-      box-shadow: 0 6px 18px rgba(16, 40, 32, 0.08);
-      text-decoration: none;
-      color: inherit;
-      font-weight: 800;
-      font-size: 13px;
-      text-align: center;
-      -webkit-tap-highlight-color: transparent;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
     }
-    .game-card:active { transform: scale(0.97); }
-    .game-card .ico { font-size: 36px; margin-bottom: 6px; }
-    .game-card.featured {
-      grid-column: 1 / -1;
-      flex-direction: row;
-      gap: 14px;
-      min-height: 72px;
-      justify-content: flex-start;
-      padding: 14px 18px;
-      background: linear-gradient(135deg, #fce7f3, #e9d5ff);
-      border-color: #ec4899;
-    }
-    .game-card.featured .ico { margin: 0; font-size: 40px; }
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 20px;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .links a {
-      padding: 10px 16px;
-      min-height: 44px;
+    .tab {
+      flex: 0 0 auto;
+      border: 0;
       border-radius: 999px;
+      padding: 10px 14px;
+      min-height: 44px;
       background: #fff;
-      border: 2px solid rgba(13, 110, 95, 0.18);
       color: var(--teal);
-      font-weight: 800;
-      font-size: 13px;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
+      font: 800 13px inherit;
+      cursor: pointer;
+      border: 2px solid rgba(13, 110, 95, 0.15);
     }
-    .links a.primary {
+    .tab.on {
       background: var(--teal);
       color: #fff;
       border-color: transparent;
     }
+
+    .panel { display: none; max-width: 520px; margin: 0 auto; }
+    .panel.on { display: block; }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .cat-btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 12px;
+      min-height: 100px;
+      font: 800 14px inherit;
+      cursor: pointer;
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
+    }
+    .cat-btn span { display: block; font-size: 36px; margin-bottom: 6px; }
+    .cat-btn.games { background: linear-gradient(145deg, #0d6e5f, #0a5248); grid-column: 1 / -1; }
+    .cat-btn.mila { background: linear-gradient(145deg, #ec4899, #a855f7); }
+    .cat-btn.d3 { background: linear-gradient(145deg, #64748b, #334155); }
+    .cat-btn.chat { background: linear-gradient(145deg, #f59e0b, #ea580c); }
+
+    .search {
+      width: 100%;
+      border: 2px solid rgba(13,110,95,.18);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: 700 14px inherit;
+      margin-bottom: 10px;
+      min-height: 48px;
+    }
+
+    .game-list { display: grid; gap: 8px; }
+    .game-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 2px solid rgba(13,110,95,.12);
+      text-decoration: none;
+      color: inherit;
+      font-weight: 800;
+      font-size: 14px;
+      min-height: 64px;
+    }
+    .game-row:active { transform: scale(.98); }
+    .game-row .ico { font-size: 32px; flex: 0 0 40px; text-align: center; }
+    .game-row .info { flex: 1; min-width: 0; }
+    .game-row .info small {
+      display: block;
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .game-row .badge {
+      font-size: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      flex: 0 0 auto;
+    }
+    .game-row.locked {
+      opacity: .72;
+      pointer-events: none;
+      background: #f1f5f9;
+    }
+    .game-row.locked .badge { background: #fee2e2; color: #991b1b; }
+
+    .tip {
+      background: rgba(13,110,95,.1);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+      margin-bottom: 10px;
+      color: var(--teal);
+    }
+
+    /* Чат */
+    .chat-setup label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
+    .chat-setup input {
+      width: 100%; margin-top: 4px; border: 2px solid rgba(13,110,95,.2);
+      border-radius: 12px; padding: 10px; font: 700 14px inherit; min-height: 44px;
+    }
+    .chat-online {
+      font-size: 12px; font-weight: 800; margin: 8px 0;
+      padding: 8px 10px; background: #fff; border-radius: 12px;
+    }
+    .chat-online .on-user { margin-right: 8px; }
+    .chat-log {
+      height: 220px; overflow-y: auto; background: #fff;
+      border-radius: 14px; padding: 10px; margin-bottom: 8px;
+      border: 2px solid rgba(13,110,95,.12);
+    }
+    .chat-msg { margin-bottom: 8px; }
+    .chat-msg.mine .chat-text { background: #d1fae5; margin-left: 20px; }
+    .chat-meta { font-size: 10px; color: var(--muted); font-weight: 700; }
+    .chat-text {
+      background: #f1f5f9; border-radius: 12px; padding: 8px 10px;
+      font-size: 14px; font-weight: 600; margin-top: 2px; word-break: break-word;
+    }
+    .chat-emojis { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+    .chat-emojis button {
+      border: 0; background: #fff; border-radius: 10px; padding: 6px 8px;
+      font-size: 20px; cursor: pointer; min-width: 40px; min-height: 40px;
+    }
+    .chat-form { display: flex; gap: 8px; }
+    .chat-form input {
+      flex: 1; border: 2px solid rgba(13,110,95,.2); border-radius: 12px;
+      padding: 10px; font: 600 14px inherit; min-height: 48px;
+    }
+    .chat-form button {
+      border: 0; border-radius: 12px; background: var(--teal); color: #fff;
+      font: 800 18px inherit; min-width: 52px; min-height: 48px; cursor: pointer;
+    }
+    .chat-note { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 8px; line-height: 1.4; }
+
+    .bottom-links {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      display: flex; gap: 8px; justify-content: center;
+      padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+      background: rgba(232,244,239,.95);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(13,110,95,.12);
+    }
+    .bottom-links a {
+      padding: 10px 14px; min-height: 44px; border-radius: 999px;
+      background: #fff; color: var(--teal); font-weight: 800; font-size: 12px;
+      text-decoration: none; border: 2px solid rgba(13,110,95,.15);
+      display: inline-flex; align-items: center;
+    }
+    .bottom-links a.primary { background: var(--teal); color: #fff; border-color: transparent; }
   </style>
 </head>
 <body>
-  <div class="top-bar">
+  <div class="top">
     <h1>📱 Игры Амаля</h1>
-    <p>Удобная версия для телефона</p>
+    <p>Полные игры · не урезанные · для телефона</p>
   </div>
 
-  <p class="tip">💡 В некоторых играх <strong>поверни телефон горизонтально</strong> — так удобнее. Большие кнопки — пальцем.</p>
+  <nav class="tabs" id="tabs">
+    <button type="button" class="tab on" data-tab="home">🏠 Меню</button>
+    <button type="button" class="tab" data-tab="games">🎮 Игры</button>
+    <button type="button" class="tab" data-tab="mila">🐣 Милашки</button>
+    <button type="button" class="tab" data-tab="d3">🧊 3D</button>
+    <button type="button" class="tab" data-tab="chat">💬 Чат</button>
+  </nav>
 
-  <div class="grid">
-    <a class="game-card featured" href="milashki/?v=7">
-      <span class="ico">🐣</span>
-      <span>Милашки<br><small style="font-weight:600;color:#9d174d">питомцы, яйца</small></span>
-    </a>
-    <a class="game-card" href="escape-tsunami/?v=4">
-      <span class="ico">🌊</span>
-      Escape Tsunami
-    </a>
-    <a class="game-card" href="work-pizza/?v=3">
-      <span class="ico">🍕</span>
-      Пиццерия
-    </a>
-    <a class="game-card" href="snake-game/">
-      <span class="ico">🐍</span>
-      Snake
-    </a>
-    <a class="game-card" href="animal-hospital/">
-      <span class="ico">🐾</span>
-      Animal Hospital
-    </a>
-    <a class="game-card" href="bed-wars/">
-      <span class="ico">🛏️</span>
-      Bed Wars
-    </a>
-    <a class="game-card" href="relax-zone/?v=4">
-      <span class="ico">🌿</span>
-      Relax Zone
-    </a>
-    <a class="game-card" href="kick-buddy/">
-      <span class="ico">🥊</span>
-      Kick Buddy
-    </a>
+  <!-- Меню категорий -->
+  <section class="panel on" id="panel-home">
+    <p class="tip">Сначала выбери категорию — не все игры сразу. 3D на телефоне пока закрыты (нужен компьютер).</p>
+    <div class="cat-grid">
+      <button type="button" class="cat-btn games" data-go="games">
+        <span>🎮</span>Игры для телефона<br><small style="font-weight:600;opacity:.9">полная версия</small>
+      </button>
+      <button type="button" class="cat-btn mila" data-go="mila">
+        <span>🐣</span>Милашки
+      </button>
+      <button type="button" class="cat-btn d3" data-go="d3">
+        <span>🧊</span>3D игры<br><small style="font-weight:600;opacity:.85">🔒 на телефоне</small>
+      </button>
+      <button type="button" class="cat-btn chat" data-go="chat">
+        <span>💬</span>Чат класса
+      </button>
+    </div>
+  </section>
+
+  <!-- 2D игры -->
+  <section class="panel" id="panel-games">
+    <p class="tip">↩️ Из игры «назад» вернёт сюда. Поверни телефон ↔ если попросит.</p>
+    <input class="search" id="search-games" type="search" placeholder="🔍 Найти игру…" />
+    <div class="game-list" id="list-games"></div>
+  </section>
+
+  <!-- Милашки -->
+  <section class="panel" id="panel-mila">
+    <p class="tip">🐣 Милашки — последняя версия v7: 6 миров, 42 вида, комнаты, яйца, слияние.</p>
+    <div class="game-list" id="list-mila"></div>
+  </section>
+
+  <!-- 3D — заблокировано -->
+  <section class="panel" id="panel-d3">
+    <p class="tip">🔒 3D игры на телефоне не работают нормально (Bed Wars, Minecraft, 3D Lab…). Играй на компьютере через «Все игры».</p>
+    <div class="game-list" id="list-d3"></div>
+  </section>
+
+  <!-- Чат -->
+  <section class="panel" id="panel-chat">
+    <p class="tip">💬 Напиши имя → пиши сообщения. Смайлики внизу. 🟢 = в сети (когда включён общий чат).</p>
+    <div id="chat-root"></div>
+  </section>
+
+  <div class="bottom-links">
+    <a href="./">Все игры (ПК)</a>
+    <a class="primary" href="qr-school.html">QR для класса</a>
   </div>
 
-  <div class="links">
-    <a class="primary" href="./">Все игры</a>
-    <a href="qr-school.html">QR для класса</a>
-  </div>
+  <script>
+    (function () {
+      var FROM = "?from=phone";
 
+      var GAMES_2D = [
+        { ico: "🌊", name: "Escape Tsunami", href: "escape-tsunami/?v=4" + FROM, note: "бег от волны · v4", ok: true },
+        { ico: "🍕", name: "Пиццерия", href: "work-pizza/?v=3" + FROM, note: "Work at a Pizza Place · v3", ok: true },
+        { ico: "🐍", name: "Snake", href: "snake-game/" + FROM, note: "змейка · палец/кнопки", ok: true },
+        { ico: "🐾", name: "Animal Hospital", href: "animal-hospital/" + FROM, note: "больница · 2D", ok: true },
+        { ico: "🌿", name: "Relax Zone", href: "relax-zone/?v=4" + FROM, note: "антистресс · v4", ok: true },
+        { ico: "🥊", name: "Kick Buddy", href: "kick-buddy/" + FROM, note: "тапай по кукле", ok: true },
+        { ico: "🏠", name: "Желейная хата", href: "jelly-lab/" + FROM, note: "квартира Валеры", ok: true },
+        { ico: "🧟", name: "Зомби vs растения", href: "zombie-vs-plants/" + FROM, note: "полная игра · тяжёлая", ok: true },
+        { ico: "🕯️", name: "Свеча в шахте", href: "candle-mine/" + FROM, note: "кликер", ok: true },
+        { ico: "🍲", name: "Котёл и молот", href: "pot-hammer/" + FROM, note: "варка", ok: true },
+        { ico: "🧗", name: "Obby", href: "obby/" + FROM, note: "полоса препятствий", ok: true },
+        { ico: "🌱", name: "Grow Garden", href: "grow-garden/" + FROM, note: "сад", ok: true },
+        { ico: "🐕", name: "Pet Simulator", href: "pet-simulator/" + FROM, note: "питомцы", ok: true },
+        { ico: "🏰", name: "Tower Defense", href: "tower-defense/" + FROM, note: "башни", ok: true },
+        { ico: "🏭", name: "Tycoon", href: "tycoon/" + FROM, note: "фабрика", ok: true },
+        { ico: "🥚", name: "Steal Egg", href: "steal-egg/" + FROM, note: "яйца · 2D режим", ok: true },
+        { ico: "🧠", name: "Steal Brainrot", href: "steal-brainrot/" + FROM, note: "мемы", ok: true },
+        { ico: "🏃", name: "Speed Escape", href: "speed-escape/" + FROM, note: "побег", ok: true },
+      ];
+
+      var GAMES_3D = [
+        { ico: "🛏️", name: "Bed Wars", href: "bed-wars/", note: "❌ не играет на телефоне", ok: false },
+        { ico: "⛏️", name: "CraftWorld (Minecraft)", href: "minecraft/", note: "❌ только ПК", ok: false },
+        { ico: "🧊", name: "3D Lab", href: "create-lab/lab3d.html", note: "❌ WebGL · ПК", ok: false },
+        { ico: "🎬", name: "Studio 3D", href: "create-lab/studio3d.html", note: "❌ Roblox Studio · ПК", ok: false },
+        { ico: "🌀", name: "Portal 3D", href: "portal-3d/", note: "❌ 3D · ПК", ok: false },
+        { ico: "🌍", name: "Globe Battle", href: "globe-battle/", note: "❌ 3D · ПК", ok: false },
+        { ico: "⭐", name: "Bravol Stars 3D", href: "bravol-stars/", note: "❌ тяжёлая 3D", ok: false },
+        { ico: "🧱", name: "Blockbust", href: "blockbust/", note: "❌ удобнее на ПК", ok: false },
+        { ico: "🌌", name: "Шторм Разломов", href: "rift-storm/", note: "❌ тяжёлая", ok: false },
+        { ico: "🚀", name: "Space Courier", href: "space-courier/", note: "❌ 3D · ПК", ok: false },
+      ];
+
+      var MILA = [
+        { ico: "🐣", name: "Милашки v7", href: "milashki/?v=7" + FROM, note: "6 миров · 42 вида · комнаты · яйца · слияние", ok: true },
+      ];
+
+      function row(g, locked) {
+        var el = document.createElement(locked ? "div" : "a");
+        el.className = "game-row" + (locked ? " locked" : "");
+        if (!locked) el.href = g.href;
+        el.innerHTML =
+          '<span class="ico">' + g.ico + '</span>' +
+          '<span class="info">' + g.name + '<small>' + g.note + '</small></span>' +
+          '<span class="badge">' + (locked ? "🔒 ПК" : "✅ OK") + '</span>';
+        return el;
+      }
+
+      function fill(id, list, locked) {
+        var box = document.getElementById(id);
+        if (!box) return;
+        box.innerHTML = "";
+        list.forEach(function (g) { box.appendChild(row(g, locked)); });
+      }
+
+      fill("list-games", GAMES_2D, false);
+      fill("list-mila", MILA, false);
+      fill("list-d3", GAMES_3D, true);
+
+      document.getElementById("search-games").addEventListener("input", function (e) {
+        var q = e.target.value.toLowerCase();
+        fill("list-games", GAMES_2D.filter(function (g) {
+          return !q || g.name.toLowerCase().indexOf(q) >= 0 || g.note.toLowerCase().indexOf(q) >= 0;
+        }), false);
+      });
+
+      function showTab(id) {
+        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("on"); });
+        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("on"); });
+        var panel = document.getElementById("panel-" + id);
+        var tab = document.querySelector('.tab[data-tab="' + id + '"]');
+        if (panel) panel.classList.add("on");
+        if (tab) tab.classList.add("on");
+        if (id === "chat" && !window.__chatMounted) {
+          window.__chatMounted = true;
+          if (window.AmalClassChat) AmalClassChat.mount("chat-root");
+        }
+        try { sessionStorage.setItem("amal-phone-tab", id); } catch (_) {}
+      }
+
+      document.getElementById("tabs").addEventListener("click", function (e) {
+        var btn = e.target.closest(".tab");
+        if (btn) showTab(btn.getAttribute("data-tab"));
+      });
+
+      document.querySelectorAll(".cat-btn[data-go]").forEach(function (b) {
+        b.addEventListener("click", function () { showTab(b.getAttribute("data-go")); });
+      });
+
+      try {
+        var saved = sessionStorage.getItem("amal-phone-tab");
+        if (saved && document.getElementById("panel-" + saved)) showTab(saved);
+      } catch (_) {}
+
+      try { sessionStorage.setItem("amal-from-phone", "1"); } catch (_) {}
+    })();
+  </script>
+  <script src="./shared/amal-chat-config.js?v=1"></script>
+  <script src="./shared/amal-class-chat.js?v=1"></script>
   <script src="./shared/amal-pwa.js?v=2" defer></script>
 </body>
 </html>

@@ -1,43 +1,85 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Escape Tsunami · бег от волны | Amaya Games</title>
-  <meta name="description" content="Беги от волны, собирай brainrot-мемы — как в Roblox Escape Tsunami." />
-  <meta name="theme-color" content="#0c4a6e" />
-  <link rel="stylesheet" href="./style.css?v=4" />
-</head>
-<body>
-  <div class="game-shell">
-    <div class="game-head">
-      <a class="back" href="../phone.html">←</a>
-      <div class="titles">
-        <h1>🌊 Escape Tsunami</h1>
-        <p>Бег · мемы · волна сзади</p>
-      </div>
-    </div>
-    <div class="stats">
-      <span>🪙 <b id="coins">0</b></span>
-      <span>🧠 <b id="brains">0</b></span>
-      <span>🌊 <b id="wave">1</b></span>
-    </div>
-    <div class="game-stage">
-      <canvas id="game" width="390" height="440"></canvas>
-    </div>
-    <div class="controls">
-      <button type="button" id="btn-up" aria-label="Вверх">⬆️</button>
-      <button type="button" id="btn-sprint" class="sprint">⚡ Спринт</button>
-      <button type="button" id="btn-down" aria-label="Вниз">⬇️</button>
-    </div>
-    <p class="hint compact-hide">Вверх/вниз — полки · собирай 🧠 · беги к 🏁 когда волна близко</p>
-  </div>
-  <div class="toast" id="toast"></div>
-  <script src="../shared/amal-mobile.js?v=1"></script>
-  <script>
-    AmalMobile.init({ landscape: true, canvas: "#game", fullscreen: true });
-  </script>
-  <script src="./app.js?v=3"></script>
-</body>
-</html>
-
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+
+  <title>Escape Tsunami · бег от волны | Amaya Games</title>
+
+  <meta name="description" content="Беги от волны, собирай brainrot-мемы — как в Roblox Escape Tsunami." />
+
+  <meta name="theme-color" content="#0c4a6e" />
+
+  <link rel="stylesheet" href="./style.css?v=4" />
+
+</head>
+
+<body>
+
+  <div class="game-shell">
+
+    <div class="game-head">
+
+      <a class="back" href="../phone.html?v=2">←</a>
+
+      <div class="titles">
+
+        <h1>🌊 Escape Tsunami</h1>
+
+        <p>Бег · мемы · волна сзади</p>
+
+      </div>
+
+    </div>
+
+    <div class="stats">
+
+      <span>🪙 <b id="coins">0</b></span>
+
+      <span>🧠 <b id="brains">0</b></span>
+
+      <span>🌊 <b id="wave">1</b></span>
+
+    </div>
+
+    <div class="game-stage">
+
+      <canvas id="game" width="390" height="440"></canvas>
+
+    </div>
+
+    <div class="controls">
+
+      <button type="button" id="btn-up" aria-label="Вверх">⬆️</button>
+
+      <button type="button" id="btn-sprint" class="sprint">⚡ Спринт</button>
+
+      <button type="button" id="btn-down" aria-label="Вниз">⬇️</button>
+
+    </div>
+
+    <p class="hint compact-hide">Вверх/вниз — полки · собирай 🧠 · беги к 🏁 когда волна близко</p>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="../shared/amal-phone-back.js?v=1"></script>
+
+  <script>
+
+    AmalMobile.init({ landscape: true, canvas: "#game", fullscreen: true });
+
+  </script>
+
+  <script src="./app.js?v=3"></script>
+
+</body>
+
+</html>
+
+
