@@ -98,7 +98,7 @@
   <meta http-equiv="Cache-Control" content="max-age=3600" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <script src="./shared/amal-device.js?v=1"></script>
-  <script>AmalDevice.maybeRedirectFromIndex();</script>
+  <script src="./shared/amal-device-switcher.js?v=1"></script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1246,16 +1246,16 @@
     <a href="create-lab/comic.html">комикс</a> · <a href="create-lab/game.html">создать игру</a> · <a href="apps/">Приложения</a>
     <span class="dot" aria-hidden="true"></span>
   </div>
+  <div id="device-switcher-slot"></div>
 
   <header>
     <p class="eyebrow">ИГРЫ АМАЛЯ</p>
     <h1>Игры Амаля</h1>
     <p class="sub">Лаборатория игр: выбирай, играй, создавай. Без лишнего шума.</p>
     <div class="mobile-banner" id="mobileBanner">
-      📱 На телефоне удобнее через
-      <a href="go.html?v=1">версию для телефона</a>
-      · для класса —
-      <a href="qr-school.html">QR-листок</a>
+      📱 Выбери версию в полоске выше: <strong>📱 📟 💻</strong>
+      · или <a href="go.html?v=1">меню выбора</a>
+      · <a href="qr-school.html">QR класс</a>
     </div>
     <p class="games-count" id="games-count" aria-live="polite">
       <span class="stat-open">можно играть: <strong id="stat-open">—</strong></span>
@@ -2163,9 +2163,9 @@
     <a class="card featured" href="invisible-spy/">
       <div class="card-img" style="background:linear-gradient(135deg,#1e293b,#64748b)">🕵️</div>
       <div class="card-body">
-        <span class="badge">Не трогал</span>
+        <span class="badge new">Игра</span>
         <h2>Невидимый шпион</h2>
-        <p>Черновик шпиона. Почти не трогал.</p>
+        <p>Плащ-невидимка · фабрика конфет · охранники и камеры.</p>
         <span class="play-btn" style="background:#475569">Играть</span>
       </div>
     </a>
@@ -2968,5 +2968,10 @@
   <script src="./shared/amal-secret-dream.js?v=2" defer></script>
   <script src="./shared/amal-hub.js?v=68" defer></script>
   <script src="./shared/amal-gallery-ratings.js?v=2" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.AmalDeviceSwitcher) AmalDeviceSwitcher.mount("device-switcher-slot");
+    });
+  </script>
 </body>
 </html>

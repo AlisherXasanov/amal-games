@@ -18,6 +18,7 @@
   </div>
 
   <div class="hub" id="hub-root" hidden>
+    <div id="device-switcher-slot"></div>
     <div class="top">
       <h1>⭐ Эксклюзив</h1>
       <p class="device-tag" id="device-tag">Только для друзей Амаля</p>
@@ -66,6 +67,7 @@
   </div>
 
   <script src="./shared/amal-hub-data.js?v=1"></script>
+  <script src="./shared/amal-device-switcher.js?v=1"></script>
   <script>
     (function () {
       if (!AmalDevice.friendsAllowed()) {
@@ -75,11 +77,8 @@
       document.getElementById("hub-root").hidden = false;
       AmalDevice.setHub("friends");
       AmalDevice.remember(AmalDevice.detect(), "friends");
-      var dev = AmalDevice.detect();
-      AmalHubUI.init({
-        from: "friends",
-        d3Playable: dev !== "phone",
-      });
+      AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
+      AmalDeviceSwitcher.mount("device-switcher-slot");
     })();
   </script>
   <script src="./shared/amal-chat-config.js?v=1"></script>

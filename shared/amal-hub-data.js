@@ -22,6 +22,7 @@
     { ico: "🏭", name: "Tycoon", path: "tycoon/", note: "фабрика" },
     { ico: "🥚", name: "Steal Egg", path: "steal-egg/", note: "яйца" },
     { ico: "🧠", name: "Steal Brainrot", path: "steal-brainrot/", note: "мемы" },
+    { ico: "🕵️", name: "Невидимый шпион", path: "invisible-spy/", note: "плащ · фабрика конфет" },
     { ico: "🏃", name: "Speed Escape", path: "speed-escape/", note: "побег" },
   ];
 

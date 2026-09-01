@@ -10,6 +10,7 @@
 </head>
 <body>
   <div class="hub" id="hub-root">
+    <div id="device-switcher-slot"></div>
     <div class="top">
       <h1>📟 Игры Амаля</h1>
       <p class="device-tag" id="device-tag">Версия для планшета · iPad</p>
@@ -59,10 +60,12 @@
   </div>
 
   <script src="./shared/amal-hub-data.js?v=1"></script>
+  <script src="./shared/amal-device-switcher.js?v=1"></script>
   <script>
     AmalDevice.setHub("tablet");
     AmalDevice.remember("tablet", "tablet");
     AmalHubUI.init({ from: "tablet", cols: 3, d3Playable: true });
+    AmalDeviceSwitcher.mount("device-switcher-slot");
   </script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/amal-class-chat.js?v=1"></script>
