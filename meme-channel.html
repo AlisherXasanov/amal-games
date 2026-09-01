@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>😂 Мемы · семья и класс</title>
+  <title>😂 Мемы и новости · Амаль</title>
   <meta name="theme-color" content="#229ed9" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <style>
@@ -19,6 +19,7 @@
       position: sticky; top: 0; z-index: 10;
     }
     .tg-top a.back { color: #6ab2f2; text-decoration: none; font: 700 15px inherit; }
+    .tg-top a.qr-link { margin-left: auto; color: #fde68a; font: 800 12px inherit; text-decoration: none; }
     .tg-avatar {
       width: 42px; height: 42px; border-radius: 50%;
       background: linear-gradient(135deg, #fbbf24, #f59e0b);
@@ -26,6 +27,10 @@
     }
     .tg-info h1 { font-size: 16px; font-weight: 800; }
     .tg-info p { font-size: 12px; color: #8ba0b5; font-weight: 600; }
+    .explain {
+      padding: 10px 14px; background: #1a2634; border-bottom: 1px solid rgba(255,255,255,.06);
+      font: 700 13px/1.45 inherit; color: #cbd5e1;
+    }
     .name-row {
       display: flex; gap: 8px; padding: 8px 12px; background: #17212b;
       border-bottom: 1px solid rgba(255,255,255,.06);
@@ -34,20 +39,19 @@
       flex: 1; border: 0; border-radius: 12px; padding: 10px 12px;
       background: #242f3d; color: #fff; font: 600 14px inherit;
     }
-    .tabs {
-      display: flex; gap: 6px; padding: 8px 12px; background: #17212b;
-    }
+    .tabs { display: flex; gap: 6px; padding: 8px 12px; background: #17212b; }
     .tabs button {
-      flex: 1; border: 0; border-radius: 12px; padding: 10px 8px;
-      background: #242f3d; color: #8ba0b5; font: 800 13px inherit; cursor: pointer;
+      flex: 1; border: 0; border-radius: 12px; padding: 10px 6px;
+      background: #242f3d; color: #8ba0b5; font: 800 12px inherit; cursor: pointer; line-height: 1.3;
     }
     .tabs button.on { background: #2b5278; color: #fff; }
+    .tabs button small { display: block; font-weight: 600; font-size: 10px; opacity: .85; margin-top: 2px; }
     .channel-note {
       text-align: center; padding: 8px 16px 0;
       font: 700 12px/1.4 inherit; color: #6ab2f2;
     }
     .feed {
-      flex: 1; overflow-y: auto; padding: 12px 10px 140px;
+      flex: 1; overflow-y: auto; padding: 12px 10px 160px;
       background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23ffffff08'/%3E%3C/svg%3E");
     }
     .post-wrap { clear: both; margin-bottom: 12px; }
@@ -60,6 +64,8 @@
     }
     .msg.them .bubble { background: #182533; border-top-left-radius: 4px; }
     .msg.me .bubble { background: #2b5278; border-top-right-radius: 4px; }
+    .bubble.news { background: linear-gradient(135deg, #422006, #713f12) !important; border: 1px solid rgba(251,191,36,.35); }
+    .bubble.news .news-tag { font-size: 11px; color: #fde68a; margin-bottom: 4px; }
     .sticker { font-size: 64px; line-height: 1; padding: 4px 8px; background: transparent !important; box-shadow: none !important; }
     .meme-card {
       background: #1e2c3a; border-radius: 12px; overflow: hidden;
@@ -78,6 +84,7 @@
       border: 0; border-radius: 10px; padding: 8px 10px;
       background: #242f3d; color: #fff; font: 700 12px inherit; cursor: pointer;
     }
+    .composer-tools button.news-btn { background: #422006; color: #fde68a; }
     .composer-row { display: flex; gap: 6px; align-items: center; }
     .composer input {
       flex: 1; border: 0; border-radius: 20px; padding: 10px 14px;
@@ -88,16 +95,10 @@
       background: #2b5278; color: #fff; font-size: 18px; cursor: pointer;
     }
     .sticker-bar {
-      display: none; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; max-height: 100px; overflow-y: auto;
+      display: none; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; max-height: 110px; overflow-y: auto;
     }
     .sticker-bar.open { display: flex; }
     .sticker-bar button { border: 0; border-radius: 10px; padding: 6px 8px; background: #242f3d; font-size: 28px; cursor: pointer; }
-    .qr-hint {
-      margin: 8px 12px 0; padding: 10px 12px; border-radius: 12px;
-      background: rgba(251,191,36,.12); border: 1px dashed rgba(251,191,36,.4);
-      color: #fde68a; font: 700 12px/1.45 inherit;
-    }
-    .qr-hint a { color: #93c5fd; }
     .empty-feed {
       text-align: center; padding: 40px 20px; color: #8ba0b5;
       font: 700 14px/1.5 inherit;
@@ -111,25 +112,23 @@
     <div class="tg-avatar" id="ch-icon">😂</div>
     <div class="tg-info">
       <h1 id="ch-title">Мемы</h1>
-      <p id="ch-sub">семья и класс</p>
+      <p id="ch-sub">общаемся и смеёмся</p>
     </div>
+    <a class="qr-link" href="qr-memes.html">📷 QR</a>
   </header>
 
+  <p class="explain" id="ch-hint">Выбери вкладку: семья или твой класс. Потом пиши, кидай стикеры и новости.</p>
+
   <div class="name-row">
-    <input id="nick" maxlength="16" placeholder="Твоё имя (чтобы все видели кто скинул)" />
+    <input id="nick" maxlength="16" placeholder="Как тебя зовут? (напиши имя)" />
   </div>
 
   <nav class="tabs">
-    <button type="button" class="tab on" data-ch="family">👨‍👩‍👧 Семья</button>
-    <button type="button" class="tab" data-ch="class">🏫 Класс</button>
+    <button type="button" class="tab on" data-ch="family">👨‍👩‍👧 Семья<small>дома</small></button>
+    <button type="button" class="tab" data-ch="class">🏫 Мой класс<small>2 класс</small></button>
   </nav>
 
   <p class="channel-note" id="net-note">Подключение…</p>
-
-  <p class="qr-hint">
-    📷 <strong>QR-код</strong> — это для входа на сайт с листка (телефон или <a href="qr-scanner.html">сканер на компьютере</a>).
-    <strong>Мемы</strong> — отдельно: сюда кидаете смешняшки 👇
-  </p>
 
   <main class="feed" id="feed"></main>
 
@@ -137,33 +136,41 @@
     <div class="sticker-bar" id="sticker-bar"></div>
     <div class="composer-tools">
       <button type="button" id="btn-stickers">😄 Стикер</button>
-      <button type="button" id="btn-meme">🖼 Мем-карточка</button>
+      <button type="button" id="btn-news" class="news-btn">📰 Новость</button>
+      <button type="button" id="btn-meme">🖼 Мем</button>
     </div>
     <div class="composer-row">
-      <input type="text" id="msg-input" placeholder="Кинуть мем или текст…" maxlength="200" />
+      <input type="text" id="msg-input" placeholder="Написать сообщение…" maxlength="200" />
       <button type="button" class="send" id="btn-send" title="Отправить">➤</button>
     </div>
   </div>
 
   <script src="./shared/amal-chat-config.js?v=1"></script>
-  <script src="./shared/amal-meme-net.js?v=2"></script>
+  <script src="./shared/amal-meme-net.js?v=3"></script>
   <script>
     (function () {
       var feed = document.getElementById("feed");
       var bar = document.getElementById("sticker-bar");
       var myNick = AmalMemeNet.getNick();
+      var startCh = "family";
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("ch") === "class") startCh = "class";
+        if (q.get("ch") === "family") startCh = "family";
+      } catch (_) {}
 
       document.getElementById("nick").value = myNick;
-      document.getElementById("nick").addEventListener("change", function () {
+      document.getElementById("nick").addEventListener("input", function () {
         AmalMemeNet.setNick(this.value);
         myNick = AmalMemeNet.getNick();
-        document.getElementById("msg-input").placeholder = "Кинуть мем как " + (myNick || "…") + "…";
+        updatePlaceholder();
       });
 
       AmalMemeNet.stickers.forEach(function (s) {
         var b = document.createElement("button");
         b.type = "button";
         b.textContent = s;
+        b.title = "Отправить стикер " + s;
         b.onclick = function () {
           if (!ensureNick()) return;
           AmalMemeNet.sendSticker(s);
@@ -172,9 +179,18 @@
         bar.appendChild(b);
       });
 
+      function updatePlaceholder() {
+        document.getElementById("msg-input").placeholder =
+          myNick ? ("Пиши, " + myNick + "…") : "Сначала имя ↑ потом пиши…";
+      }
+
       function ensureNick() {
         var n = document.getElementById("nick").value.trim();
-        if (!n) { alert("Сначала напиши имя — чтобы все видели, кто скинул мем!"); return false; }
+        if (!n) {
+          alert("Напиши имя вверху — тогда все увидят, что это ты отправил!");
+          document.getElementById("nick").focus();
+          return false;
+        }
         AmalMemeNet.setNick(n);
         myNick = n;
         return true;
@@ -184,7 +200,6 @@
         var mine = p.name === myNick;
         var wrap = document.createElement("div");
         wrap.className = "post-wrap";
-        wrap.dataset.id = p.id;
 
         var msg = document.createElement("div");
         msg.className = "msg " + (mine ? "me" : "them");
@@ -201,6 +216,9 @@
             '<div class="pic" style="background:' + (p.bg || "#334155") + '">' + (p.emoji || "😂") + "</div>" +
             '<div class="cap">' + AmalMemeNet.esc(p.cap || "") + "</div>";
           bubble.appendChild(card);
+        } else if (p.type === "news") {
+          bubble.className += " news";
+          bubble.innerHTML = '<div class="news-tag">📰 Новость</div>' + AmalMemeNet.esc(p.text);
         } else {
           bubble.style.whiteSpace = "pre-wrap";
           bubble.textContent = p.text;
@@ -219,7 +237,7 @@
         feed.innerHTML = "";
         if (!posts.length) {
           feed.innerHTML =
-            '<div class="empty-feed"><span>😂</span>Пока пусто — будь первым!<br>Напиши имя и кинь мем 👇</div>';
+            '<div class="empty-feed"><span>💬</span>Пока никто ничего не кидал.<br>Напиши имя ↑ и отправь первым!<br><small style="opacity:.8">Или отсканируй <a href="qr-memes.html" style="color:#6ab2f2">QR-код</a> — друзья зайдут сюда</small></div>';
           return;
         }
         posts.forEach(function (p) { feed.appendChild(renderPost(p)); });
@@ -231,9 +249,10 @@
           b.classList.toggle("on", b.getAttribute("data-ch") === ch);
         });
         var info = AmalMemeNet.channels[ch];
-        document.getElementById("ch-title").textContent = "Мемы · " + info.title;
+        document.getElementById("ch-title").textContent = info.title;
         document.getElementById("ch-sub").textContent = info.sub;
-        document.getElementById("ch-icon").textContent = ch === "family" ? "👨‍👩‍👧" : "🏫";
+        document.getElementById("ch-hint").textContent = info.hint;
+        document.getElementById("ch-icon").textContent = info.icon;
         AmalMemeNet.setChannel(ch);
       }
 
@@ -251,21 +270,27 @@
         if (e.key === "Enter") document.getElementById("btn-send").click();
       };
       document.getElementById("btn-stickers").onclick = function () {
+        if (!ensureNick()) return;
         bar.classList.toggle("open");
+      };
+      document.getElementById("btn-news").onclick = function () {
+        if (!ensureNick()) return;
+        var t = prompt("📰 Какая новость? (все увидят):", "");
+        if (t && t.trim()) AmalMemeNet.sendNews(t.trim());
       };
       document.getElementById("btn-meme").onclick = function () {
         if (!ensureNick()) return;
-        var cap = prompt("Текст мема (смешная подпись):", "");
-        if (cap === null) return;
+        var cap = prompt("Текст мема (смешное):", "");
+        if (cap === null || !cap.trim()) return;
         var emojis = ["🐱", "🎮", "🌊", "🐣", "🍕", "🤣", "🏫", "💀"];
-        var emoji = emojis[Math.floor(Math.random() * emojis.length)];
-        AmalMemeNet.sendMeme(emoji, cap);
+        AmalMemeNet.sendMeme(emojis[Math.floor(Math.random() * emojis.length)], cap.trim());
       };
 
-      AmalMemeNet.init({ channel: "family" });
+      AmalMemeNet.init({ channel: startCh });
+      setChannel(startCh);
       AmalMemeNet.onUpdate(renderAll);
       document.getElementById("net-note").textContent = AmalMemeNet.networkNote();
-      document.getElementById("msg-input").placeholder = "Кинуть мем как " + (myNick || "…") + "…";
+      updatePlaceholder();
     })();
   </script>
 </body>

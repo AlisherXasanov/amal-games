@@ -12,8 +12,16 @@
   var STICKERS = ["🤣", "😭", "💀", "🗿", "🤡", "👀", "🫠", "🥶", "😎", "🤯", "🫡", "🙈", "🐸", "🍕", "🧊", "⭐", "💜", "🎮", "🐣", "🧟", "🐱", "🐈", "😺"];
 
   var channels = {
-    family: { id: "family", room: "amal-memes-family", title: "Семья", icon: "👨‍👩‍👧", sub: "родственники кидают мемы друг другу" },
-    class: { id: "class", room: "amal-memes-class", title: "Класс", icon: "🏫", sub: "одноклассники скидывают мемы" },
+    family: {
+      id: "family", room: "amal-memes-family", title: "Семья", icon: "👨‍👩‍👧",
+      sub: "мама, папа, бабушка — общаемся дома",
+      hint: "Сюда — родственникам. Кидайте мемы и новости, даже если не в школе.",
+    },
+    class: {
+      id: "class", room: "amal-memes-class", title: "Мой класс", icon: "🏫",
+      sub: "одноклассники · 2 класс",
+      hint: "Сюда — друзьям из твоего класса в школе. Не вся школа — только ваш класс.",
+    },
   };
 
   var state = {
@@ -197,9 +205,19 @@
 
     networkNote: function () {
       if (CFG.enabled && CFG.databaseURL) {
-        return "💬 Общая лента · все видят мемы (интернет)";
+        return "💬 Все видят сообщения · можно общаться из дома";
       }
-      return "📡 Когда друзья/родня онлайн — мемы летят сразу. Или попроси включить общий чат (Firebase).";
+      return "📡 Откройте вместе с друзьями — тогда сразу увидите мемы друг друга";
+    },
+
+    sendNews: function (text) {
+      text = String(text || "").trim();
+      if (!text) return false;
+      if (!nick()) return false;
+      var post = { id: uid(), channel: state.channel, name: nick(), type: "news", text: text, t: Date.now() };
+      mergePosts(post);
+      broadcast(post);
+      return true;
     },
 
     sendText: function (text) {
