@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>QR · Канал мемов — распечатать</title>
+  <title>QR · Мемы — распечатать</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: "Segoe UI", system-ui, sans-serif; background: #e8ecea; color: #102018; padding: 16px; }
@@ -16,71 +16,86 @@
     }
     .no-print a.btn.secondary { background: #fff; color: #229ed9; border: 2px solid #229ed9; }
     .page {
-      max-width: 520px; margin: 0 auto 20px; background: #fff; border-radius: 20px;
-      padding: 24px 20px; border: 3px solid #229ed9; box-shadow: 0 10px 30px rgba(0,0,0,.1);
+      width: 210mm; min-height: 280mm; margin: 0 auto; background: #fff;
+      padding: 14mm 12mm; border: 1px solid #cbd5e1; box-shadow: 0 8px 30px rgba(0,0,0,.12);
     }
-    .page h2 { text-align: center; color: #229ed9; font-size: 1.4rem; margin-bottom: 4px; }
-    .page .sub { text-align: center; color: #64748b; font-weight: 700; font-size: 13px; margin-bottom: 14px; line-height: 1.4; }
-    .qr-wrap { text-align: center; }
-    .qr-wrap img {
-      width: min(220px, 60vw); height: min(220px, 60vw);
-      border: 4px solid #229ed9; border-radius: 16px; padding: 8px; background: #fff;
+    .head { text-align: center; border-bottom: 3px solid #229ed9; padding-bottom: 8mm; margin-bottom: 8mm; }
+    .head h1 { font-size: 26pt; color: #229ed9; margin: 4mm 0; }
+    .head .lead { font-size: 14pt; font-weight: 700; color: #334155; }
+    .qr-block { text-align: center; margin: 8mm 0; }
+    .qr-frame {
+      display: inline-block; padding: 6mm; border: 4px solid #229ed9;
+      border-radius: 8mm; background: #fff;
     }
-    .url { margin-top: 8px; font: 700 9px monospace; color: #94a3b8; word-break: break-all; }
-    .steps { margin-top: 14px; font-size: 13px; font-weight: 700; line-height: 1.5; color: #334155; }
-    .steps li { margin: 6px 0 6px 18px; }
-    @media print { body { background: #fff; } .no-print { display: none; } .page { box-shadow: none; } }
+    #qr-img { width: 65mm; height: 65mm; display: block; }
+    .scan-me { margin-top: 5mm; font: 800 18pt system-ui; color: #229ed9; }
+    .url-text { margin-top: 3mm; font: 700 9pt monospace; color: #64748b; word-break: break-all; }
+    .steps { display: grid; gap: 4mm; margin-top: 8mm; }
+    .step {
+      display: flex; gap: 4mm; align-items: center; background: #e0f2fe;
+      border-radius: 4mm; padding: 4mm 5mm; font-size: 12pt; font-weight: 700; line-height: 1.35;
+    }
+    .step i {
+      flex: 0 0 9mm; height: 9mm; border-radius: 50%; background: #229ed9; color: #fff;
+      font-style: normal; font-weight: 800; display: grid; place-items: center;
+    }
+    .foot { text-align: center; margin-top: 8mm; font-size: 11pt; color: #64748b; font-weight: 700; }
+    .sign { text-align: center; margin-top: 4mm; font: 700 16pt "Comic Sans MS", cursive; color: #e25a3c; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none !important; }
+      .page { box-shadow: none; border: none; width: auto; margin: 0; }
+      #qr-img { width: 75mm; height: 75mm; }
+    }
+    @page { size: A4; margin: 10mm; }
   </style>
 </head>
 <body>
   <div class="no-print">
-    <p><strong>Распечатай</strong> — отдай семье или повесь в классе. Сканируют → попадают в канал мемов.</p>
+    <p><strong>Нажми «Печать»</strong> — один QR для мемов и новостей. Семья и друзья — все в одном месте.</p>
     <button type="button" onclick="window.print()">🖨️ Печать</button>
-    <a class="btn secondary" href="meme-channel.html?v=3">😂 Открыть канал</a>
+    <a class="btn secondary" href="meme-channel.html?v=5">😂 Открыть мемы</a>
     <a class="btn secondary" href="./">← Игры</a>
   </div>
 
   <div class="page">
-    <h2>👨‍👩‍👧 Семья</h2>
-    <p class="sub">Мама, папа, бабушка — мемы и новости дома</p>
-    <div class="qr-wrap">
-      <img id="qr-family" width="512" height="512" alt="QR мемы семья" />
-      <p class="url" id="url-family"></p>
+    <div class="head">
+      <p class="lead">Бесплатно · без скачивания</p>
+      <h1>😂 Мемы Амаля</h1>
+      <p class="lead">Что случилось дома · смешняшки · новости</p>
     </div>
-    <ol class="steps">
-      <li>Отсканируй камерой</li>
-      <li>Напиши своё имя</li>
-      <li>Кидай мемы, стикеры, новости</li>
-    </ol>
-  </div>
 
-  <div class="page">
-    <h2>🏫 Мой класс</h2>
-    <p class="sub">Одноклассники · 2 класс — общаемся и смеёмся</p>
-    <div class="qr-wrap">
-      <img id="qr-class" width="512" height="512" alt="QR мемы класс" />
-      <p class="url" id="url-class"></p>
+    <div class="qr-block">
+      <div class="qr-frame">
+        <img id="qr-img" width="512" height="512" alt="QR мемы" />
+      </div>
+      <p class="scan-me">📷 Наведи камеру сюда</p>
+      <p class="url-text" id="site-url"></p>
     </div>
-    <ol class="steps">
-      <li>Отсканируй → вкладка «Мой класс» откроется сама</li>
-      <li>Видишь мемы одноклассников (если они уже кидали)</li>
-      <li>Или лента пустая — будь первым!</li>
-    </ol>
-    <p class="sub" style="margin-top:12px">💻 На компьютере: <strong>Игры Амаля → Сканер QR</strong></p>
+
+    <div class="steps">
+      <div class="step"><i>1</i><span>Открой <strong>камеру</strong> на телефоне</span></div>
+      <div class="step"><i>2</i><span>Наведи на <strong>QR</strong> — нажми на ссылку</span></div>
+      <div class="step"><i>3</i><span>Напиши <strong>имя</strong> и кидай мемы, стикеры, новости</span></div>
+    </div>
+
+    <p class="foot">Один канал для всех · дома и не только в школе</p>
+    <p class="foot">💻 На компьютере: Игры Амаля → Сканер QR</p>
+    <p class="sign">— Амаль ♥</p>
   </div>
 
   <script>
     (function () {
-      var BASE = "https://alisherxasanov.github.io/amal-games/meme-channel.html?v=3";
-      var family = BASE + "&ch=family";
-      var klass = BASE + "&ch=class";
-      function qr(url) {
-        return "https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=" + encodeURIComponent(url);
+      var SITE = "https://alisherxasanov.github.io/amal-games/meme-channel.html?v=5";
+      document.getElementById("site-url").textContent = SITE;
+      document.getElementById("qr-img").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=" +
+        encodeURIComponent(SITE);
+      if (location.search.indexOf("print=1") >= 0) {
+        document.getElementById("qr-img").onload = function () {
+          setTimeout(function () { window.print(); }, 500);
+        };
       }
-      document.getElementById("url-family").textContent = family;
-      document.getElementById("url-class").textContent = klass;
-      document.getElementById("qr-family").src = qr(family);
-      document.getElementById("qr-class").src = qr(klass);
     })();
   </script>
 </body>

@@ -1,39 +1,17 @@
 /**
- * Мемы — общая лента для семьи и класса.
- * Trystero P2P (когда онлайн вместе) + Firebase (если настроен в amal-chat-config.js).
+ * Мемы — один общий канал (дома, семья, друзья).
  */
 (function (global) {
   "use strict";
 
   var CFG = global.AMAL_CHAT_CONFIG || { enabled: false };
   var STORE_NICK = "amal-meme-name-v2";
-  var STORE_LOCAL = "amal-meme-local-v3";
+  var STORE_LOCAL = "amal-meme-local-v4";
   var APP_ID = "amal-games-memes-v1";
-  var STICKERS = ["🤣", "😭", "💀", "🗿", "🤡", "👀", "🫠", "🥶", "😎", "🤯", "🫡", "🙈", "🐸", "🍕", "🧊", "⭐", "💜", "🎮", "🐣", "🧟", "🐱", "🐈", "😺"];
+  var ROOM = "amal-memes-home";
+  var STICKERS = ["🤣", "😭", "💀", "🗿", "🤡", "👀", "🫠", "😎", "🤯", "🐸", "🍕", "⭐", "💜", "🎮", "🐣", "🐱", "😺", "🏠", "🌙"];
 
-  var channels = {
-    family: {
-      id: "family", room: "amal-memes-family", title: "Семья", icon: "👨‍👩‍👧",
-      sub: "мама, папа, бабушка — общаемся дома",
-      hint: "Сюда — родственникам. Кидайте мемы и новости, даже если не в школе.",
-    },
-    class: {
-      id: "class", room: "amal-memes-class", title: "Мой класс", icon: "🏫",
-      sub: "одноклассники · 2 класс",
-      hint: "Сюда — друзьям из твоего класса в школе. Не вся школа — только ваш класс.",
-    },
-  };
-
-  var state = {
-    channel: "family",
-    posts: [],
-    peers: {},
-    rooms: {},
-    senders: {},
-    listeners: [],
-  };
-
-  function $(id) { return document.getElementById(id); }
+  var state = { posts: [], peers: {}, room: null, sendPost: null, listeners: [] };
 
   function nick() {
     try {
@@ -60,16 +38,12 @@
     return "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function localKey(ch) {
-    return STORE_LOCAL + "-" + ch;
+  function loadLocal() {
+    try { return JSON.parse(localStorage.getItem(STORE_LOCAL) || "[]"); } catch (_) { return []; }
   }
 
-  function loadLocal(ch) {
-    try { return JSON.parse(localStorage.getItem(localKey(ch)) || "[]"); } catch (_) { return []; }
-  }
-
-  function saveLocal(ch, posts) {
-    try { localStorage.setItem(localKey(ch), JSON.stringify(posts.slice(-100))); } catch (_) {}
+  function saveLocal(posts) {
+    try { localStorage.setItem(STORE_LOCAL, JSON.stringify(posts.slice(-100))); } catch (_) {}
   }
 
   function mergePosts(incoming) {
@@ -78,14 +52,8 @@
     state.posts.push(incoming);
     state.posts.sort(function (a, b) { return (a.t || 0) - (b.t || 0); });
     if (state.posts.length > 120) state.posts = state.posts.slice(-120);
-    saveLocal(state.channel, state.posts);
-    notify();
-  }
-
-  function notify() {
-    state.listeners.forEach(function (fn) {
-      try { fn(state.posts.slice()); } catch (_) {}
-    });
+    saveLocal(state.posts);
+    state.listeners.forEach(function (fn) { try { fn(state.posts.slice()); } catch (_) {} });
   }
 
   function fbBase() {
@@ -94,162 +62,83 @@
   }
 
   function fbPush(path, data) {
-    var base = fbBase();
-    if (!base) return Promise.reject(new Error("no firebase"));
-    return fetch(base.replace(".json", "/" + path + ".json"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+    return fetch(fbBase().replace(".json", "/" + path + ".json"), {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
     });
   }
 
   function fbGet(path) {
-    var base = fbBase();
-    if (!base) return Promise.reject(new Error("no firebase"));
-    return fetch(base.replace(".json", "/" + path + ".json"), { cache: "no-store" }).then(function (r) {
-      return r.json();
-    });
+    return fetch(fbBase().replace(".json", "/" + path + ".json"), { cache: "no-store" }).then(function (r) { return r.json(); });
   }
 
-  function loadFirebase(ch) {
+  function loadFirebase() {
     if (!CFG.enabled || !CFG.databaseURL) return;
-    fbGet("memes/" + ch + "/posts").then(function (data) {
+    fbGet("memes/home/posts").then(function (data) {
       if (!data || typeof data !== "object") return;
-      Object.keys(data).forEach(function (k) {
-        mergePosts(data[k]);
-      });
+      Object.keys(data).forEach(function (k) { mergePosts(data[k]); });
     }).catch(function () {});
   }
 
-  function startP2P(ch) {
-    if (state.rooms[ch]) return Promise.resolve(true);
+  function startP2P() {
+    if (state.room) return Promise.resolve(true);
     return import("https://esm.sh/trystero@0.21.0").then(function (mod) {
-      if (state.rooms[ch]) return true;
-        var joinRoom = mod.joinRoom;
-        var room = joinRoom({ appId: APP_ID }, channels[ch].room);
-        var postAct = room.makeAction("post");
-        var pingAct = room.makeAction("ping");
-        state.senders[ch] = postAct[0];
-        state.rooms[ch] = room;
-
-        postAct[1](function (data) {
-          if (data && data.channel === ch) mergePosts(data);
-        });
-
-        pingAct[1](function (data, peerId) {
-          if (!data) return;
-          state.peers[peerId] = { name: data.name, t: Date.now() };
-        });
-
-        var sendPing = pingAct[0];
-        room.onPeerJoin(function () {
-          if (sendPing && nick()) sendPing({ name: nick(), t: Date.now() });
-        });
-
-        setInterval(function () {
-          if (sendPing && nick()) sendPing({ name: nick(), t: Date.now() });
-        }, 10000);
-
-        return true;
-      }).catch(function () { return false; });
+      var room = mod.joinRoom({ appId: APP_ID }, ROOM);
+      var postAct = room.makeAction("post");
+      state.sendPost = postAct[0];
+      state.room = room;
+      postAct[1](function (data) { mergePosts(data); });
+      return true;
+    }).catch(function () { return false; });
   }
 
   function broadcast(post) {
-    var ch = state.channel;
-    var send = state.senders[ch];
-    if (send) send(post);
-    if (CFG.enabled && CFG.databaseURL) {
-      fbPush("memes/" + ch + "/posts", post).catch(function () {});
-    }
+    if (state.sendPost) state.sendPost(post);
+    if (CFG.enabled && CFG.databaseURL) fbPush("memes/home/posts", post).catch(function () {});
   }
 
-  var AmalMemeNet = {
+  function send(type, extra) {
+    if (!nick()) return false;
+    var post = Object.assign({ id: uid(), name: nick(), type: type, t: Date.now() }, extra || {});
+    mergePosts(post);
+    broadcast(post);
+    return true;
+  }
+
+  global.AmalMemeNet = {
     stickers: STICKERS,
-    channels: channels,
-
-    init: function (opts) {
-      opts = opts || {};
-      state.channel = opts.channel || "family";
-      state.posts = loadLocal(state.channel);
-      notify();
-      startP2P("family");
-      startP2P("class");
-      loadFirebase(state.channel);
-      if (CFG.enabled && CFG.databaseURL) {
-        setInterval(function () { loadFirebase(state.channel); }, 12000);
-      }
-    },
-
-    setChannel: function (ch) {
-      if (!channels[ch]) return;
-      state.channel = ch;
-      state.posts = loadLocal(ch);
-      notify();
-      loadFirebase(ch);
-    },
-
-    onUpdate: function (fn) {
-      state.listeners.push(fn);
-      try { fn(state.posts.slice()); } catch (_) {}
-    },
-
     getNick: nick,
     setNick: setNick,
     fmtTime: fmtTime,
     esc: esc,
-
-    onlineCount: function () {
-      var n = Object.keys(state.peers).length;
-      return nick() ? n + 1 : n;
+    init: function () {
+      state.posts = loadLocal();
+      state.listeners.forEach(function (fn) { try { fn(state.posts.slice()); } catch (_) {} });
+      startP2P();
+      loadFirebase();
+      if (CFG.enabled && CFG.databaseURL) setInterval(loadFirebase, 12000);
     },
-
+    setChannel: function () {},
+    onUpdate: function (fn) {
+      state.listeners.push(fn);
+      try { fn(state.posts.slice()); } catch (_) {}
+    },
     networkNote: function () {
-      if (CFG.enabled && CFG.databaseURL) {
-        return "💬 Все видят сообщения · можно общаться из дома";
-      }
-      return "📡 Откройте вместе с друзьями — тогда сразу увидите мемы друг друга";
+      return CFG.enabled && CFG.databaseURL
+        ? "💬 Все видят сообщения · интернет"
+        : "📡 Откройте вместе — сразу увидите мемы друг друга";
     },
-
-    sendNews: function (text) {
-      text = String(text || "").trim();
-      if (!text) return false;
-      if (!nick()) return false;
-      var post = { id: uid(), channel: state.channel, name: nick(), type: "news", text: text, t: Date.now() };
-      mergePosts(post);
-      broadcast(post);
-      return true;
-    },
-
     sendText: function (text) {
       text = String(text || "").trim();
-      if (!text) return false;
-      if (!nick()) return false;
-      var post = { id: uid(), channel: state.channel, name: nick(), type: "text", text: text, t: Date.now() };
-      mergePosts(post);
-      broadcast(post);
-      return true;
+      return text ? send("text", { text: text }) : false;
     },
-
-    sendSticker: function (emoji) {
-      if (!nick()) return false;
-      var post = { id: uid(), channel: state.channel, name: nick(), type: "sticker", emoji: emoji, t: Date.now() };
-      mergePosts(post);
-      broadcast(post);
-      return true;
+    sendSticker: function (emoji) { return send("sticker", { emoji: emoji }); },
+    sendNews: function (text) {
+      text = String(text || "").trim();
+      return text ? send("news", { text: text }) : false;
     },
-
     sendMeme: function (emoji, cap, bg) {
-      if (!nick()) return false;
-      var post = {
-        id: uid(), channel: state.channel, name: nick(), type: "meme",
-        emoji: emoji || "😂", cap: String(cap || "").slice(0, 120),
-        bg: bg || "linear-gradient(135deg,#334155,#1e293b)", t: Date.now(),
-      };
-      mergePosts(post);
-      broadcast(post);
-      return true;
+      return send("meme", { emoji: emoji || "😂", cap: String(cap || "").slice(0, 120), bg: bg || "linear-gradient(135deg,#334155,#1e293b)" });
     },
+    channels: { home: { title: "Мемы", sub: "дома", hint: "", icon: "😂" } },
   };
-
-  global.AmalMemeNet = AmalMemeNet;
 })(window);
