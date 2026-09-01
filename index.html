@@ -94,12 +94,14 @@
     ]
   }
   </script>
-  <!-- Кэш страницы разрешён для офлайна (управляет Service Worker) -->
-  <meta http-equiv="Cache-Control" content="max-age=3600" />
+  <!-- Свежая версия — не кэшировать в браузере (офлайн через Service Worker) -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta name="amal-site-build" content="2026-09-01-v3" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
-  <script src="./shared/amal-lite-ui.js?v=1"></script>
-  <script src="./shared/amal-device.js?v=1"></script>
-  <script src="./shared/amal-device-switcher.js?v=2"></script>
+  <script src="./shared/amal-lite-ui.js?v=2"></script>
+  <script src="./shared/amal-device.js?v=2"></script>
+  <script src="./shared/amal-device-switcher.js?v=3"></script>
   <script>
     try {
       if (/[?&]hub=friends/.test(location.search)) {
@@ -2979,7 +2981,7 @@
       sync();
     })();
   </script>
-  <script src="./shared/amal-pwa.js?v=2" defer></script>
+  <script src="./shared/amal-pwa.js?v=3" defer></script>
   <script src="./owner-cheats.js" defer></script>
   <script src="./shared/amal-owner-powers.js?v=23" defer></script>
   <script src="./shared/amal-throne.js?v=7" defer></script>

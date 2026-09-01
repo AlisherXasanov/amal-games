@@ -98,6 +98,11 @@
       color: #fde68a; font: 700 12px/1.45 inherit;
     }
     .qr-hint a { color: #93c5fd; }
+    .empty-feed {
+      text-align: center; padding: 40px 20px; color: #8ba0b5;
+      font: 700 14px/1.5 inherit;
+    }
+    .empty-feed span { font-size: 48px; display: block; margin-bottom: 12px; }
   </style>
 </head>
 <body>
@@ -141,7 +146,7 @@
   </div>
 
   <script src="./shared/amal-chat-config.js?v=1"></script>
-  <script src="./shared/amal-meme-net.js?v=1"></script>
+  <script src="./shared/amal-meme-net.js?v=2"></script>
   <script>
     (function () {
       var feed = document.getElementById("feed");
@@ -212,6 +217,11 @@
 
       function renderAll(posts) {
         feed.innerHTML = "";
+        if (!posts.length) {
+          feed.innerHTML =
+            '<div class="empty-feed"><span>😂</span>Пока пусто — будь первым!<br>Напиши имя и кинь мем 👇</div>';
+          return;
+        }
         posts.forEach(function (p) { feed.appendChild(renderPost(p)); });
         feed.scrollTop = feed.scrollHeight;
       }
@@ -245,7 +255,7 @@
       };
       document.getElementById("btn-meme").onclick = function () {
         if (!ensureNick()) return;
-        var cap = prompt("Текст мема (смешная подпись):", "У меня две кошки и они обе хозяева 🐱🐱");
+        var cap = prompt("Текст мема (смешная подпись):", "");
         if (cap === null) return;
         var emojis = ["🐱", "🎮", "🌊", "🐣", "🍕", "🤣", "🏫", "💀"];
         var emoji = emojis[Math.floor(Math.random() * emojis.length)];

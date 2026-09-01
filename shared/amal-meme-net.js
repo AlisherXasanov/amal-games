@@ -7,7 +7,7 @@
 
   var CFG = global.AMAL_CHAT_CONFIG || { enabled: false };
   var STORE_NICK = "amal-meme-name-v2";
-  var STORE_LOCAL = "amal-meme-local-v2";
+  var STORE_LOCAL = "amal-meme-local-v3";
   var APP_ID = "amal-games-memes-v1";
   var STICKERS = ["🤣", "😭", "💀", "🗿", "🤡", "👀", "🫠", "🥶", "😎", "🤯", "🫡", "🙈", "🐸", "🍕", "🧊", "⭐", "💜", "🎮", "🐣", "🧟", "🐱", "🐈", "😺"];
 
@@ -155,24 +155,6 @@
     }
   }
 
-  function seedPosts(ch) {
-    var key = "amal-meme-seeded-v1-" + ch;
-    try { if (localStorage.getItem(key) === "1") return; } catch (_) {}
-    var seeds = ch === "family"
-      ? [
-          { id: uid(), name: "Амаль", type: "text", text: "Семейный канал! Кидайте мемы сюда — все увидят 💜", t: Date.now() - 600000 },
-          { id: uid(), name: "Амаль", type: "text", text: "У меня теперь ДВЕ кошки! 🐱🐱 Вторая тоже милашка", t: Date.now() - 500000 },
-          { id: uid(), name: "Амаль", type: "sticker", emoji: "🐱", t: Date.now() - 400000 },
-        ]
-      : [
-          { id: uid(), name: "Амаль", type: "text", text: "Класс! Скидывайте мемы сюда — все одноклассники увидят 🏫", t: Date.now() - 600000 },
-          { id: uid(), name: "Амаль", type: "meme", emoji: "📷", cap: "Учитель: «Уберите телефоны!»\nКласс: *сканирует QR Игры Амаля*", bg: "linear-gradient(135deg,#0d6e5f,#34d399)", t: Date.now() - 500000 },
-          { id: uid(), name: "Амаль", type: "sticker", emoji: "🤣", t: Date.now() - 400000 },
-        ];
-    seeds.forEach(mergePosts);
-    try { localStorage.setItem(key, "1"); } catch (_) {}
-  }
-
   var AmalMemeNet = {
     stickers: STICKERS,
     channels: channels,
@@ -181,7 +163,6 @@
       opts = opts || {};
       state.channel = opts.channel || "family";
       state.posts = loadLocal(state.channel);
-      seedPosts(state.channel);
       notify();
       startP2P("family");
       startP2P("class");
@@ -195,7 +176,6 @@
       if (!channels[ch]) return;
       state.channel = ch;
       state.posts = loadLocal(ch);
-      seedPosts(ch);
       notify();
       loadFirebase(ch);
     },

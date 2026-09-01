@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v86";
+  var VERSION = "amal-offline-v88";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -109,6 +109,23 @@
     }
   }
 
+  function hasCacheBust(url) {
+    try {
+      var s = new URL(url).search;
+      return /[?&]v=/.test(s) || /[?&]fresh=/.test(s);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function putRuntime(req, res) {
+    if (!res || res.status !== 200 || res.type === "opaque") return;
+    var copy = res.clone();
+    caches.open(RUNTIME).then(function (c) {
+      c.put(req, copy);
+    });
+  }
+
   self.addEventListener("fetch", function (event) {
     var req = event.request;
     if (req.method !== "GET") return;
@@ -123,19 +140,17 @@
       return;
     }
 
-    if (isNav(req)) {
+    if (isNav(req) || hasCacheBust(req.url)) {
       event.respondWith(
         fetch(req)
           .then(function (res) {
-            var copy = res.clone();
-            caches.open(RUNTIME).then(function (c) {
-              c.put(req, copy);
-            });
+            putRuntime(req, res);
             return res;
           })
           .catch(function () {
             return caches.match(req).then(function (hit) {
               if (hit) return hit;
+              if (!isNav(req)) return caches.match(u("./offline.html"));
               return caches.match(u("./index.html")).then(function (hub) {
                 if (hub) return hub;
                 return caches.match(u("./offline.html"));
@@ -151,11 +166,7 @@
         if (hit) return hit;
         return fetch(req)
           .then(function (res) {
-            if (!res || res.status !== 200 || res.type === "opaque") return res;
-            var copy = res.clone();
-            caches.open(RUNTIME).then(function (c) {
-              c.put(req, copy);
-            });
+            putRuntime(req, res);
             return res;
           })
           .catch(function () {
