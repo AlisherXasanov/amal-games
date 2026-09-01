@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v90";
+  var VERSION = "amal-offline-v91";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -137,6 +137,11 @@
           return caches.match(req);
         })
       );
+      return;
+    }
+
+    if (/meme-channel|go-memes|qr-memes|amal-meme-net/.test(req.url)) {
+      event.respondWith(fetch(req, { cache: "no-store" }).catch(function () { return caches.match(req); }));
       return;
     }
 

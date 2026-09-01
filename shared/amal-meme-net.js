@@ -5,8 +5,8 @@
   "use strict";
 
   var CFG = global.AMAL_CHAT_CONFIG || { enabled: false };
-  var STORE_NICK = "amal-meme-name-v2";
-  var STORE_LOCAL = "amal-meme-local-v4";
+  var STORE_NICK = "amal-meme-nick-only-v1";
+  var STORE_LOCAL = "amal-meme-feed-only-v5";
   var APP_ID = "amal-games-memes-v1";
   var ROOM = "amal-memes-home";
   var STICKERS = ["🤣", "😭", "💀", "🗿", "🤡", "👀", "🫠", "😎", "🤯", "🐸", "🍕", "⭐", "💜", "🎮", "🐣", "🐱", "😺", "🏠", "🌙"];
