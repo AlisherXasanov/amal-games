@@ -3,34 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Игры Амаля · телефон</title>
+  <title>Игры Амаля · планшет</title>
   <meta name="theme-color" content="#0d6e5f" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=1" />
   <script src="./shared/amal-device.js?v=1"></script>
 </head>
 <body>
   <div class="hub" id="hub-root">
     <div class="top">
-      <h1>📱 Игры Амаля</h1>
-      <p class="device-tag" id="device-tag">Версия для телефона</p>
+      <h1>📟 Игры Амаля</h1>
+      <p class="device-tag" id="device-tag">Версия для планшета · iPad</p>
     </div>
 
     <nav class="tabs" id="tabs">
       <button type="button" class="tab on" data-tab="home">🏠</button>
-      <button type="button" class="tab" data-tab="games">🎮</button>
-      <button type="button" class="tab" data-tab="mila">🐣</button>
-      <button type="button" class="tab" data-tab="d3">🧊</button>
+      <button type="button" class="tab" data-tab="games">🎮 Игры</button>
+      <button type="button" class="tab" data-tab="mila">🐣 Милашки</button>
+      <button type="button" class="tab" data-tab="d3">🧊 3D</button>
       <button type="button" class="tab" data-tab="chat">💬</button>
     </nav>
 
     <section class="panel on" id="panel-home">
-      <p class="tip">Полные игры · не урезанные. 3D 🔒 — только на ПК.</p>
-      <div class="cat-grid">
-        <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Игры для телефона</button>
+      <p class="tip">Планшет — между телефоном и компьютером. Некоторые 3D можно попробовать.</p>
+      <div class="cat-grid cat-grid-4">
+        <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Игры</button>
         <button type="button" class="cat-btn mila" data-go="mila"><span>🐣</span>Милашки</button>
-        <button type="button" class="cat-btn d3" data-go="d3"><span>🧊</span>3D 🔒</button>
-        <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат класса</button>
+        <button type="button" class="cat-btn d3" data-go="d3"><span>🧊</span>3D</button>
+        <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат</button>
       </div>
     </section>
 
@@ -44,7 +43,7 @@
     </section>
 
     <section class="panel" id="panel-d3">
-      <p class="tip">🔒 Bed Wars и 3D на телефоне не работают — нужен компьютер.</p>
+      <p class="tip">⚠️ 3D на планшете — пробуй, но лучше на компьютере.</p>
       <div class="game-grid" id="list-d3"></div>
     </section>
 
@@ -53,18 +52,17 @@
     </section>
 
     <div class="bottom-links">
-      <a href="./?stay=1">💻 ПК</a>
-      <a href="tablet.html?v=1&stay=1">📟 Планшет</a>
+      <a href="./?stay=1">💻 Полный сайт</a>
+      <a href="phone.html?v=2&stay=1">📱 Телефон</a>
       <a class="primary" href="qr-school.html">QR класс</a>
     </div>
   </div>
 
   <script src="./shared/amal-hub-data.js?v=1"></script>
   <script>
-    AmalDevice.setHub("phone");
-    AmalDevice.remember("phone", "phone");
-    AmalHubUI.init({ from: "phone", d3Playable: false });
-    if (AmalDevice.detect() !== "phone") AmalDevice.wrongDeviceBanner("hub-root");
+    AmalDevice.setHub("tablet");
+    AmalDevice.remember("tablet", "tablet");
+    AmalHubUI.init({ from: "tablet", cols: 3, d3Playable: true });
   </script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/amal-class-chat.js?v=1"></script>

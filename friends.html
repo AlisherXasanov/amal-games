@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>⭐ Эксклюзив · друзья Амаля</title>
+  <meta name="theme-color" content="#7c3aed" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=1" />
+  <script src="./shared/amal-device.js?v=1"></script>
+</head>
+<body>
+  <div id="locked" class="lock-screen" hidden>
+    <div class="big">🔐</div>
+    <h2>Только для друзей</h2>
+    <p>Нужен <strong>секретный QR-код</strong> от Амаля. Обычный QR из класса сюда не подходит.</p>
+    <p style="margin-top:12px"><a href="go.html">← На главную</a></p>
+  </div>
+
+  <div class="hub" id="hub-root" hidden>
+    <div class="top">
+      <h1>⭐ Эксклюзив</h1>
+      <p class="device-tag" id="device-tag">Только для друзей Амаля</p>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab on" data-tab="home">🏠</button>
+      <button type="button" class="tab" data-tab="exclusive">⭐ Новое</button>
+      <button type="button" class="tab" data-tab="games">🎮 Игры</button>
+      <button type="button" class="tab" data-tab="mila">🐣</button>
+      <button type="button" class="tab" data-tab="chat">💬</button>
+    </nav>
+
+    <section class="panel on" id="panel-home">
+      <p class="tip">⭐ Это секретная страница. Здесь <strong>новые игры раньше всех</strong> — только по QR от Амаля.</p>
+      <div class="cat-grid">
+        <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзив · новые игры</button>
+        <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Все игры</button>
+        <button type="button" class="cat-btn mila" data-go="mila"><span>🐣</span>Милашки</button>
+        <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат друзей</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-exclusive">
+      <p class="tip">🎁 Эти игры не на обычном QR для класса!</p>
+      <div class="game-grid" id="list-exclusive"></div>
+    </section>
+
+    <section class="panel" id="panel-games">
+      <div class="game-grid" id="list-games"></div>
+    </section>
+
+    <section class="panel" id="panel-mila">
+      <div class="game-grid" id="list-mila"></div>
+    </section>
+
+    <section class="panel" id="panel-chat">
+      <p class="tip">💬 Чат только для друзей с секретным QR.</p>
+      <div id="chat-root"></div>
+    </section>
+
+    <div class="bottom-links">
+      <a href="go.html">🔍 Авто-версия</a>
+      <a href="./?stay=1">💻 ПК</a>
+    </div>
+  </div>
+
+  <script src="./shared/amal-hub-data.js?v=1"></script>
+  <script>
+    (function () {
+      if (!AmalDevice.friendsAllowed()) {
+        document.getElementById("locked").hidden = false;
+        return;
+      }
+      document.getElementById("hub-root").hidden = false;
+      AmalDevice.setHub("friends");
+      AmalDevice.remember(AmalDevice.detect(), "friends");
+      var dev = AmalDevice.detect();
+      AmalHubUI.init({
+        from: "friends",
+        d3Playable: dev !== "phone",
+      });
+    })();
+  </script>
+  <script src="./shared/amal-chat-config.js?v=1"></script>
+  <script src="./shared/amal-class-chat.js?v=1"></script>
+</body>
+</html>

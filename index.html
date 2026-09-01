@@ -97,6 +97,8 @@
   <!-- Кэш страницы разрешён для офлайна (управляет Service Worker) -->
   <meta http-equiv="Cache-Control" content="max-age=3600" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <script src="./shared/amal-device.js?v=1"></script>
+  <script>AmalDevice.maybeRedirectFromIndex();</script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1251,7 +1253,7 @@
     <p class="sub">Лаборатория игр: выбирай, играй, создавай. Без лишнего шума.</p>
     <div class="mobile-banner" id="mobileBanner">
       📱 На телефоне удобнее через
-      <a href="phone.html?v=2">версию для телефона</a>
+      <a href="go.html?v=1">версию для телефона</a>
       · для класса —
       <a href="qr-school.html">QR-листок</a>
     </div>

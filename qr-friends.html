@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⭐ Секретный QR · только друзья</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(160deg, #1e1030, #4c1d95 40%, #db2777);
+      color: #fff; min-height: 100dvh; padding: 16px;
+    }
+    .no-print { text-align: center; max-width: 480px; margin: 0 auto 16px; }
+    .no-print p { margin-bottom: 12px; line-height: 1.5; font-weight: 600; }
+    .no-print button, .no-print a {
+      display: inline-block; border: 0; border-radius: 999px; padding: 14px 22px;
+      margin: 4px; font: 800 15px inherit; cursor: pointer; text-decoration: none;
+    }
+    .no-print button { background: #fde047; color: #1a1400; }
+    .no-print a { background: rgba(255,255,255,.15); color: #fff; border: 2px solid rgba(255,255,255,.3); }
+    .page {
+      max-width: 520px; margin: 0 auto; background: #fff; color: #1e1030;
+      border-radius: 24px; padding: 28px 24px; border: 4px solid #a855f7;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .page h1 { text-align: center; color: #7c3aed; font-size: 1.8rem; margin-bottom: 4px; }
+    .page .sub { text-align: center; color: #64748b; font-weight: 700; margin-bottom: 16px; }
+    .secret-tag {
+      text-align: center; background: linear-gradient(135deg, #faf5ff, #fce7f3);
+      border: 2px dashed #a855f7; border-radius: 16px; padding: 12px;
+      font-weight: 800; color: #7c3aed; margin-bottom: 16px;
+    }
+    .qr-wrap { text-align: center; }
+    #qr-img {
+      width: min(260px, 70vw); height: min(260px, 70vw);
+      border: 4px solid #7c3aed; border-radius: 16px; padding: 8px; background: #fff;
+    }
+    .warn {
+      margin-top: 16px; font-size: 12px; color: #64748b; font-weight: 700;
+      line-height: 1.45; text-align: center;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none; }
+      .page { box-shadow: none; border-width: 2px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <p>⭐ <strong>Это секретный листок</strong> — не для всего класса! Только для лучших друзей. Распечатай и не показывай всем.</p>
+    <button type="button" onclick="window.print()">🖨️ Печать</button>
+    <a href="qr-school.html">Обычный QR для класса</a>
+  </div>
+
+  <div class="page">
+    <h1>⭐ Эксклюзив</h1>
+    <p class="sub">Игры Амаля · только для друзей</p>
+    <p class="secret-tag">🔐 СЕКРЕТ · новые игры раньше всех</p>
+    <div class="qr-wrap">
+      <img id="qr-img" width="512" height="512" alt="Секретный QR" />
+      <p class="warn" id="url-text" style="margin-top:10px;font-size:10px;word-break:break-all"></p>
+    </div>
+    <p class="warn">
+      📷 Сканируй камерой → сайт сам поймёт телефон / планшет / компьютер.<br>
+      🎁 Откроются <strong>эксклюзивные игры</strong>, которых нет на обычном QR.
+    </p>
+  </div>
+
+  <script>
+    (function () {
+      var URL = "https://alisherxasanov.github.io/amal-games/go.html?exclusive=1&code=amal-star-friends&v=1";
+      document.getElementById("url-text").textContent = URL;
+      document.getElementById("qr-img").src =
+        "https://api.qrserver.com/v1/create-qr-code/?size=512x512&margin=10&data=" +
+        encodeURIComponent(URL);
+    })();
+  </script>
+</body>
+</html>

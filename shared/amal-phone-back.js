@@ -1,45 +1,18 @@
 /**
- * Если зашли с phone.html (?from=phone) — «назад» ведёт на телефонную версию.
+ * Совместимость: amal-phone-back → amal-hub-back
  */
 (function () {
   "use strict";
-
-  var PHONE = "../phone.html?v=2";
-  var KEY = "amal-from-phone";
-
-  function cameFromPhone() {
-    try {
-      if (/[?&]from=phone(?:&|$)/.test(location.search)) {
-        sessionStorage.setItem(KEY, "1");
-        return true;
+  var s = document.createElement("script");
+  s.src = (function () {
+    var scripts = document.getElementsByTagName("script");
+    for (var i = 0; i < scripts.length; i++) {
+      var src = scripts[i].src || "";
+      if (src.indexOf("amal-phone-back.js") >= 0) {
+        return src.replace("amal-phone-back.js", "amal-hub-back.js?v=1");
       }
-      return sessionStorage.getItem(KEY) === "1";
-    } catch (_) {
-      return /[?&]from=phone/.test(location.search);
     }
-  }
-
-  function wire() {
-    if (!cameFromPhone()) return;
-
-    var sel =
-      'a.portal-back, a.back, a#back, a.task-exit, ' +
-      'a[href="../"], a[href="../index.html"], a[href="../index.html?fresh=820"]';
-
-    document.querySelectorAll(sel).forEach(function (a) {
-      a.setAttribute("href", PHONE);
-      var t = (a.textContent || "").trim();
-      if (/^←|^Все|^Каталог|^Игры|^назад|^Выйти/i.test(t) || t === "←") {
-        a.textContent = "← Телефон";
-      }
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", wire);
-  } else {
-    wire();
-  }
-
-  window.AmalPhoneBack = { wire: wire, phoneUrl: PHONE };
+    return "../shared/amal-hub-back.js?v=1";
+  })();
+  document.head.appendChild(s);
 })();
