@@ -97,8 +97,16 @@
   <!-- Кэш страницы разрешён для офлайна (управляет Service Worker) -->
   <meta http-equiv="Cache-Control" content="max-age=3600" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <script src="./shared/amal-lite-ui.js?v=1"></script>
   <script src="./shared/amal-device.js?v=1"></script>
-  <script src="./shared/amal-device-switcher.js?v=1"></script>
+  <script src="./shared/amal-device-switcher.js?v=2"></script>
+  <script>
+    try {
+      if (/[?&]hub=friends/.test(location.search)) {
+        sessionStorage.setItem("amal-device-hub-v1", "friends");
+      }
+    } catch (_) {}
+  </script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -996,8 +1004,18 @@
        прячем только на узких телефонных экранах, чтобы на компьютере
        кнопки куба (в т.ч. «Телепорт») оставались доступны. */
     .amal-buddy { display: none !important; }
-    @media (max-width: 820px) {
-      .side-cube { display: none !important; }
+    /* Куб на главной — только легенда, не мешает каталогу */
+    .side-cube { display: none !important; }
+    .cube-legend {
+      max-width: min(720px, 94vw);
+      margin: 0.5rem auto 0;
+      padding: 0.45rem 0.75rem;
+      border-radius: 12px;
+      background: rgba(240, 180, 41, 0.15);
+      border: 1px dashed rgba(13, 110, 95, 0.25);
+      font: 700 11px/1.4 Nunito, system-ui, sans-serif;
+      color: var(--muted);
+      text-align: center;
     }
     /* Подпись автора — видна всем: сверху и сбоку */
     .amal-sign { font-family: 'Caveat', cursive; line-height: 1; }
@@ -1243,10 +1261,11 @@
   <div class="lab-top">
     <span class="dot" aria-hidden="true"></span>
     <span>🎮 Игры Амаля · все игры в браузере</span>
-    <a href="create-lab/comic.html">комикс</a> · <a href="create-lab/game.html">создать игру</a> · <a href="apps/">Приложения</a>
+    <a href="create-lab/comic.html">комикс</a> · <a href="create-lab/game.html">создать игру</a> · <a href="qr-scanner.html">📷 Сканер QR</a> · <a href="meme-channel.html">😂 Мемы</a> · <a href="apps/">Приложения</a>
     <span class="dot" aria-hidden="true"></span>
   </div>
   <div id="device-switcher-slot"></div>
+  <p class="cube-legend">🎲 Легенда куба: в играх — маленькая кнопка <strong>⚡ Силы</strong>, не мешает играть</p>
 
   <header>
     <p class="eyebrow">ИГРЫ АМАЛЯ</p>
@@ -1256,6 +1275,7 @@
       📱 Выбери версию в полоске выше: <strong>📱 📟 💻</strong>
       · или <a href="go.html?v=1">меню выбора</a>
       · <a href="qr-school.html">QR класс</a>
+      · <a href="qr-scanner.html">📷 Сканер QR</a>
     </div>
     <p class="games-count" id="games-count" aria-live="polite">
       <span class="stat-open">можно играть: <strong id="stat-open">—</strong></span>
@@ -2309,7 +2329,7 @@
         "create-lab", "voice-ai-proposal", "apps", "portal-3d",
         // черновики · почти не трогал — замок есть, карточки на месте
         "beetle-evo", "blind-zone", "bug-audio", "catastrophe-gen",
-        "folder-doors", "forest-network", "invisible-spy", "mantis-crab-arena",
+        "folder-doors", "forest-network", "mantis-crab-arena",
         "office-smash", "polygon", "space-elevator", "spice-scale",
         "spicy-debate", "ten-pack", "tesla-arena", "tesla-planet",
         "tesla-wires", "wardenclyffe-defense",

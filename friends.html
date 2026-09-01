@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=2" />
+  <script src="./shared/amal-lite-ui.js?v=1"></script>
   <script src="./shared/amal-device.js?v=1"></script>
 </head>
 <body>
@@ -41,6 +42,7 @@
       <button type="button" class="tab" data-tab="exclusive">⭐</button>
       <button type="button" class="tab" data-tab="soon">📦</button>
       <button type="button" class="tab" data-tab="games">🎮</button>
+      <button type="button" class="tab" data-tab="memes">😂</button>
       <button type="button" class="tab" data-tab="chat">💬</button>
     </nav>
 
@@ -77,6 +79,11 @@
       <div class="game-grid" id="list-mila"></div>
     </section>
 
+    <section class="panel" id="panel-memes">
+      <p class="tip">😂 Закрытый канал — мемы только для друзей</p>
+      <a class="cat-btn" href="meme-channel.html" style="display:block;text-align:center;text-decoration:none;color:#fff;padding:16px;border-radius:16px;background:linear-gradient(145deg,#229ed9,#7c3aed);font-weight:800">😂 Канал мемов</a>
+    </section>
+
     <section class="panel" id="panel-chat">
       <p class="tip">💬 Только друзья с секретным QR. Напиши имя → пиши. Амаль видит, кто зашёл (если имя «Амаль»).</p>
       <div id="friends-chat-root"></div>
@@ -85,12 +92,14 @@
     <div class="bottom-links">
       <a href="go.html?v=1">🔍 Версии</a>
       <a href="qr-friends.html">⭐ QR друзьям</a>
+      <a href="qr-scanner.html">📷 Сканер</a>
+      <a href="meme-channel.html">😂 Мемы</a>
     </div>
   </div>
 
   <script src="./shared/amal-hub-back.js?v=1"></script>
   <script src="./shared/amal-hub-data.js?v=2"></script>
-  <script src="./shared/amal-device-switcher.js?v=1"></script>
+  <script src="./shared/amal-device-switcher.js?v=2"></script>
   <script src="./shared/amal-friends-net.js?v=1"></script>
   <script>
     (function () {

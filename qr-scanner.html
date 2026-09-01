@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📷 Сканер QR · Игры Амаля</title>
+  <meta name="description" content="Сканируй QR-код с компьютера — камера или фото. Игры Амаля." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 70% 50% at 10% 0%, rgba(13,110,95,.18), transparent 55%),
+        linear-gradient(165deg, #e8f4ef, #d5e4dc);
+      color: #102018;
+      padding: 16px 16px 40px;
+    }
+    .top { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .top a {
+      display: inline-block; padding: 8px 14px; border-radius: 999px;
+      background: rgba(255,255,255,.92); border: 1px solid rgba(13,110,95,.2);
+      color: #0d6e5f; font: 800 13px inherit; text-decoration: none;
+    }
+    .hero { text-align: center; max-width: 520px; margin: 0 auto 16px; }
+    .hero h1 { font-size: clamp(1.6rem, 5vw, 2.1rem); color: #0d6e5f; margin-bottom: 6px; }
+    .hero p { color: #475569; font-weight: 700; line-height: 1.45; font-size: 14px; }
+    .card {
+      max-width: 520px; margin: 0 auto 14px; background: #fff;
+      border: 1px solid rgba(13,110,95,.14); border-radius: 20px;
+      padding: 16px; box-shadow: 0 10px 30px rgba(13,110,95,.08);
+    }
+    .card h2 { font-size: 15px; color: #0d6e5f; margin-bottom: 10px; }
+    .cam-wrap {
+      position: relative; border-radius: 16px; overflow: hidden;
+      background: #0f172a; aspect-ratio: 4/3; max-height: 360px;
+    }
+    #video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    #overlay {
+      position: absolute; inset: 0; pointer-events: none;
+      border: 3px solid rgba(52,211,153,.7); border-radius: 16px;
+      box-shadow: inset 0 0 0 9999px rgba(0,0,0,.25);
+    }
+    .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    button, .file-btn {
+      flex: 1 1 auto; min-width: 120px; border: 0; border-radius: 12px;
+      padding: 12px 14px; font: 800 14px inherit; cursor: pointer;
+    }
+    .primary { background: linear-gradient(135deg, #0d6e5f, #0a5248); color: #fff; }
+    .secondary { background: #ecfdf5; color: #0d6e5f; border: 2px solid #a7f3d0; }
+    .file-btn { display: inline-block; text-align: center; background: #fff7ed; color: #9a3412; border: 2px solid #fed7aa; }
+    #file-input { display: none; }
+    .status {
+      margin-top: 10px; padding: 10px 12px; border-radius: 12px;
+      background: #f1f5f9; font: 700 13px/1.4 inherit; color: #334155;
+    }
+    .status.ok { background: #ecfdf5; color: #065f46; }
+    .status.err { background: #fef2f2; color: #991b1b; }
+    .result {
+      display: none; margin-top: 12px; padding: 14px; border-radius: 14px;
+      background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #6ee7b7;
+    }
+    .result.show { display: block; }
+    .result .url { word-break: break-all; font: 700 12px monospace; color: #0f766e; margin: 8px 0; }
+    .result a.go {
+      display: inline-block; margin-top: 6px; padding: 12px 18px; border-radius: 12px;
+      background: #0d6e5f; color: #fff; font: 800 14px inherit; text-decoration: none;
+    }
+    .tips { font-size: 13px; line-height: 1.5; color: #64748b; font-weight: 600; }
+    .tips li { margin: 6px 0 6px 18px; }
+    .hint-box {
+      margin-top: 10px; padding: 12px; border-radius: 12px;
+      background: #fffbeb; border: 1px dashed #fbbf24; color: #92400e;
+      font: 700 13px/1.45 inherit;
+    }
+    canvas { display: none; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <a href="./">← Все игры</a>
+    <a href="qr-school.html">🖨️ QR для класса</a>
+    <a href="go.html?v=1">🔍 Выбор версии</a>
+  </div>
+
+  <header class="hero">
+    <h1>📷 Сканер QR</h1>
+    <p>На <strong>компьютере</strong> нет камеры как на телефоне? Здесь можно отсканировать QR с листка — камерой ноутбука или с фото.</p>
+  </header>
+
+  <section class="card">
+    <h2>1. Камера (если есть на ноутбуке)</h2>
+    <div class="cam-wrap">
+      <video id="video" playsinline muted></video>
+      <div id="overlay" aria-hidden="true"></div>
+    </div>
+    <div class="btns">
+      <button type="button" class="primary" id="btn-start">▶ Включить камеру</button>
+      <button type="button" class="secondary" id="btn-stop" hidden>⏹ Стоп</button>
+    </div>
+    <p class="status" id="cam-status">Нажми «Включить камеру» и наведи на QR-код с листка.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. Или загрузи фото QR</h2>
+    <p class="tips" style="margin-bottom:10px">Сфотографируй QR на телефоне → перекинь на компьютер → выбери файл.</p>
+    <label class="file-btn" for="file-input">📁 Выбрать картинку с QR</label>
+    <input type="file" id="file-input" accept="image/*" />
+    <p class="status" id="file-status" hidden></p>
+  </section>
+
+  <section class="card">
+    <h2>3. Результат</h2>
+    <div class="result" id="result">
+      <strong>✅ QR найден!</strong>
+      <p class="url" id="result-url"></p>
+      <a class="go" id="result-go" href="#" target="_blank" rel="noopener">🚀 Открыть ссылку</a>
+    </div>
+    <p class="status" id="scan-status">Пока ничего не отсканировано.</p>
+  </section>
+
+  <section class="card">
+    <h2>💡 Подсказка</h2>
+    <ul class="tips">
+      <li>На телефоне проще — просто камерой навёл на QR с доски.</li>
+      <li>На компьютере: зайди на <strong>Игры Амаля</strong> → <strong>Сканер QR</strong> (эта страница).</li>
+      <li>Обычный QR класса и секретный для друзей — оба сканируются здесь.</li>
+    </ul>
+    <p class="hint-box">🖨️ На всех QR-листках написано: «На компьютере — Игры Амаля → Сканер QR»</p>
+  </section>
+
+  <canvas id="canvas"></canvas>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script>
+    (function () {
+      var video = document.getElementById("video");
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      var stream = null;
+      var raf = 0;
+      var lastText = "";
+      var hasBarcodeDetector = "BarcodeDetector" in window;
+      var detector = hasBarcodeDetector ? new BarcodeDetector({ formats: ["qr_code"] }) : null;
+
+      function setStatus(el, text, kind) {
+        el.textContent = text;
+        el.className = "status" + (kind ? " " + kind : "");
+        el.hidden = false;
+      }
+
+      function showResult(text) {
+        if (!text || text === lastText) return;
+        lastText = text;
+        document.getElementById("result-url").textContent = text;
+        var go = document.getElementById("result-go");
+        go.href = text;
+        document.getElementById("result").classList.add("show");
+        setStatus(document.getElementById("scan-status"), "Готово! Можно открыть ссылку.", "ok");
+        try { navigator.vibrate && navigator.vibrate(80); } catch (_) {}
+      }
+
+      function decodeWithJsQR(imageData) {
+        var code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "attemptBoth" });
+        return code && code.data ? code.data : null;
+      }
+
+      function scanImageData(imageData) {
+        if (detector) {
+          return detector.detect(canvas).then(function (codes) {
+            if (codes && codes[0] && codes[0].rawValue) return codes[0].rawValue;
+            return decodeWithJsQR(imageData);
+          }).catch(function () {
+            return decodeWithJsQR(imageData);
+          });
+        }
+        return Promise.resolve(decodeWithJsQR(imageData));
+      }
+
+      function tick() {
+        if (!stream || video.readyState !== video.HAVE_ENOUGH_DATA) {
+          raf = requestAnimationFrame(tick);
+          return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        scanImageData(imageData).then(function (text) {
+          if (text) showResult(text);
+          raf = requestAnimationFrame(tick);
+        });
+      }
+
+      document.getElementById("btn-start").onclick = function () {
+        if (stream) return;
+        setStatus(document.getElementById("cam-status"), "Запрашиваем камеру…");
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
+          .then(function (s) {
+            stream = s;
+            video.srcObject = s;
+            return video.play();
+          })
+          .then(function () {
+            document.getElementById("btn-stop").hidden = false;
+            setStatus(document.getElementById("cam-status"), "Сканирую… Наведи QR в рамку.", "ok");
+            tick();
+          })
+          .catch(function () {
+            setStatus(document.getElementById("cam-status"), "Камера недоступна. Загрузи фото QR ниже ↑", "err");
+          });
+      };
+
+      document.getElementById("btn-stop").onclick = function () {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        if (stream) {
+          stream.getTracks().forEach(function (t) { t.stop(); });
+          stream = null;
+        }
+        video.srcObject = null;
+        document.getElementById("btn-stop").hidden = true;
+        setStatus(document.getElementById("cam-status"), "Камера выключена.");
+      };
+
+      document.getElementById("file-input").onchange = function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var img = new Image();
+        img.onload = function () {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          scanImageData(imageData).then(function (text) {
+            if (text) {
+              showResult(text);
+              setStatus(document.getElementById("file-status"), "QR на фото найден!", "ok");
+            } else {
+              setStatus(document.getElementById("file-status"), "На картинке QR не видно. Попробуй другое фото.", "err");
+            }
+          });
+        };
+        img.onerror = function () {
+          setStatus(document.getElementById("file-status"), "Не удалось открыть файл.", "err");
+        };
+        img.src = URL.createObjectURL(file);
+      };
+
+      window.addEventListener("beforeunload", function () {
+        document.getElementById("btn-stop").click();
+      });
+    })();
+  </script>
+</body>
+</html>

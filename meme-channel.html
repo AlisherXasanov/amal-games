@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>😂 Канал мемов · Амаль</title>
+  <meta name="theme-color" content="#229ed9" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #0e1621;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    .tg-top {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; padding-top: max(10px, env(safe-area-inset-top));
+      background: #17212b; border-bottom: 1px solid rgba(255,255,255,.06);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .tg-top a.back {
+      color: #6ab2f2; text-decoration: none; font: 700 15px inherit;
+    }
+    .tg-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      display: grid; place-items: center; font-size: 22px;
+    }
+    .tg-info h1 { font-size: 16px; font-weight: 800; }
+    .tg-info p { font-size: 12px; color: #8ba0b5; font-weight: 600; }
+    .feed {
+      flex: 1; overflow-y: auto; padding: 12px 10px 90px;
+      background:
+        url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23ffffff08'/%3E%3C/svg%3E");
+    }
+    .date-pill {
+      text-align: center; margin: 8px auto 14px;
+      display: inline-block; width: 100%;
+    }
+    .date-pill span {
+      background: rgba(0,0,0,.35); color: #8ba0b5;
+      font: 700 11px inherit; padding: 4px 10px; border-radius: 999px;
+    }
+    .msg {
+      max-width: 88%; margin-bottom: 10px; clear: both;
+    }
+    .msg.me { float: right; }
+    .msg.them { float: left; }
+    .bubble {
+      padding: 10px 12px; border-radius: 14px;
+      font: 600 14px/1.45 inherit; position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .msg.them .bubble {
+      background: #182533; border-top-left-radius: 4px;
+    }
+    .msg.me .bubble {
+      background: #2b5278; border-top-right-radius: 4px;
+    }
+    .sticker {
+      font-size: 64px; line-height: 1; padding: 4px 8px;
+      background: transparent !important; box-shadow: none !important;
+    }
+    .meme-card {
+      background: #1e2c3a; border-radius: 12px; overflow: hidden;
+      max-width: 260px; border: 1px solid rgba(255,255,255,.08);
+    }
+    .meme-card .pic {
+      min-height: 120px; display: grid; place-items: center;
+      font-size: 48px; padding: 16px;
+    }
+    .meme-card .cap {
+      padding: 8px 10px 10px; font: 800 13px/1.35 inherit;
+      color: #e8edf2;
+    }
+    .meta {
+      font-size: 10px; color: #6d7f92; margin-top: 3px; text-align: right;
+      clear: both; padding: 0 4px 8px;
+    }
+    .msg.me + .meta { text-align: right; }
+    .reactions {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+    }
+    .reactions button {
+      border: 0; border-radius: 999px; padding: 4px 8px;
+      background: rgba(255,255,255,.08); color: #fff;
+      font: 700 12px inherit; cursor: pointer;
+    }
+    .reactions button.on { background: #3d6fa5; }
+    .composer {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      background: #17212b; border-top: 1px solid rgba(255,255,255,.06);
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    }
+    .composer input {
+      flex: 1 1 140px; border: 0; border-radius: 20px;
+      padding: 10px 14px; background: #242f3d; color: #fff;
+      font: 600 14px inherit;
+    }
+    .composer button, .composer .sticker-btn {
+      border: 0; border-radius: 50%; width: 40px; height: 40px;
+      background: #2b5278; color: #fff; font-size: 18px; cursor: pointer;
+    }
+    .sticker-bar {
+      width: 100%; display: flex; flex-wrap: wrap; gap: 6px;
+      max-height: 0; overflow: hidden; transition: max-height .25s;
+    }
+    .sticker-bar.open { max-height: 120px; }
+    .sticker-bar button {
+      border: 0; border-radius: 10px; padding: 6px 8px;
+      background: #242f3d; font-size: 28px; cursor: pointer;
+    }
+    .channel-note {
+      text-align: center; padding: 8px 16px 0;
+      font: 700 12px/1.4 inherit; color: #6ab2f2;
+    }
+  </style>
+</head>
+<body>
+  <header class="tg-top">
+    <a class="back" href="./">←</a>
+    <div class="tg-avatar">😂</div>
+    <div class="tg-info">
+      <h1>Мемы Амаля</h1>
+      <p>канал · 42 подписчика · только смех</p>
+    </div>
+  </header>
+
+  <p class="channel-note">Как в Телеграме — мемы, стикеры, чтобы мама не выгоняла со смеху 😄</p>
+
+  <main class="feed" id="feed"></main>
+
+  <div class="composer">
+    <div class="sticker-bar" id="sticker-bar"></div>
+    <button type="button" id="btn-stickers" title="Стикеры">😄</button>
+    <input type="text" id="msg-input" placeholder="Написать в канал…" maxlength="200" />
+    <button type="button" id="btn-send" title="Отправить">➤</button>
+  </div>
+
+  <script>
+    (function () {
+      var STICKERS = ["🤣","😭","💀","🗿","🤡","👀","🫠","🥶","😎","🤯","🫡","🙈","🐸","🍕","🧊","⭐","💜","🎮","🐣","🧟"];
+      var POSTS = [
+        { who: "them", type: "meme", bg: "linear-gradient(135deg,#fbbf24,#f59e0b)", emoji: "🧊", cap: "Когда в Bed Wars упал с моста в лаву", time: "10:02" },
+        { who: "them", type: "sticker", emoji: "🤣", time: "10:03" },
+        { who: "them", type: "text", text: "Мама: «Выключай компьютер!»\nЯ: ещё одну волну в Tsunami…", time: "10:05" },
+        { who: "them", type: "meme", bg: "linear-gradient(135deg,#a855f7,#ec4899)", emoji: "🐣", cap: "Милашки смотрят на тебя, когда ты не кормишь", time: "10:08" },
+        { who: "them", type: "sticker", emoji: "💀", time: "10:09" },
+        { who: "them", type: "text", text: "Друг: «Дай секретный QR»\nЯ: только если съешь брокколи 🥦", time: "10:12" },
+        { who: "them", type: "meme", bg: "linear-gradient(135deg,#34d399,#0d9488)", emoji: "🏥", cap: "В больнице: пациент здоров, врач в шоке", time: "10:15" },
+        { who: "them", type: "sticker", emoji: "🗿", time: "10:16" },
+        { who: "them", type: "text", text: "Учитель: «Кто сделал домашку?»\nКласс: *сканирует QR Игры Амаля*", time: "10:20" },
+        { who: "them", type: "sticker", emoji: "😭", time: "10:21" },
+        { who: "them", type: "meme", bg: "linear-gradient(135deg,#60a5fa,#2563eb)", emoji: "🌊", cap: "Escape Tsunami: волна 9999 — это нормально?", time: "10:25" },
+      ];
+
+      var feed = document.getElementById("feed");
+      var bar = document.getElementById("sticker-bar");
+      var myName = "Я";
+
+      try {
+        var saved = localStorage.getItem("amal-meme-name");
+        if (saved) myName = saved;
+      } catch (_) {}
+
+      STICKERS.forEach(function (s) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = s;
+        b.onclick = function () { sendSticker(s); bar.classList.remove("open"); };
+        bar.appendChild(b);
+      });
+
+      function renderPost(p, isNew) {
+        var wrap = document.createElement("div");
+        wrap.style.clear = "both";
+        if (isNew) wrap.style.animation = "none";
+
+        var date = document.createElement("div");
+        date.className = "date-pill";
+        date.innerHTML = "<span>" + (p.time || "сейчас") + "</span>";
+        wrap.appendChild(date);
+
+        var msg = document.createElement("div");
+        msg.className = "msg " + (p.who === "me" ? "me" : "them");
+
+        var bubble = document.createElement("div");
+        bubble.className = "bubble";
+
+        if (p.type === "sticker") {
+          bubble.className += " sticker";
+          bubble.textContent = p.emoji;
+        } else if (p.type === "meme") {
+          var card = document.createElement("div");
+          card.className = "meme-card";
+          card.innerHTML =
+            '<div class="pic" style="background:' + (p.bg || "#334155") + '">' + p.emoji + "</div>" +
+            '<div class="cap">' + p.cap + "</div>";
+          bubble.appendChild(card);
+        } else {
+          bubble.style.whiteSpace = "pre-wrap";
+          bubble.textContent = p.text;
+        }
+        msg.appendChild(bubble);
+        wrap.appendChild(msg);
+
+        var meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = (p.who === "me" ? myName : "Амаль") + " · " + (p.time || "сейчас");
+        wrap.appendChild(meta);
+
+        if (p.who === "them") {
+          var reacts = document.createElement("div");
+          reacts.className = "reactions";
+          ["😂","🔥","💯"].forEach(function (r) {
+            var rb = document.createElement("button");
+            rb.type = "button";
+            rb.textContent = r + " " + (Math.floor(Math.random() * 40) + 3);
+            rb.onclick = function () { rb.classList.toggle("on"); };
+            reacts.appendChild(rb);
+          });
+          wrap.appendChild(reacts);
+        }
+
+        feed.appendChild(wrap);
+      }
+
+      POSTS.forEach(function (p) { renderPost(p, false); });
+      feed.scrollTop = feed.scrollHeight;
+
+      function nowTime() {
+        var d = new Date();
+        return (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+      }
+
+      function sendText() {
+        var input = document.getElementById("msg-input");
+        var t = (input.value || "").trim();
+        if (!t) return;
+        renderPost({ who: "me", type: "text", text: t, time: nowTime() }, true);
+        input.value = "";
+        feed.scrollTop = feed.scrollHeight;
+        setTimeout(function () {
+          renderPost({ who: "them", type: "sticker", emoji: STICKERS[Math.floor(Math.random() * STICKERS.length)], time: nowTime() }, true);
+          feed.scrollTop = feed.scrollHeight;
+        }, 800);
+      }
+
+      function sendSticker(s) {
+        renderPost({ who: "me", type: "sticker", emoji: s, time: nowTime() }, true);
+        feed.scrollTop = feed.scrollHeight;
+      }
+
+      document.getElementById("btn-send").onclick = sendText;
+      document.getElementById("msg-input").onkeydown = function (e) {
+        if (e.key === "Enter") sendText();
+      };
+      document.getElementById("btn-stickers").onclick = function () {
+        bar.classList.toggle("open");
+      };
+
+      document.getElementById("msg-input").placeholder = "Написать как " + myName + "…";
+    })();
+  </script>
+</body>
+</html>

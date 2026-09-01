@@ -709,6 +709,10 @@
       buttons = buttons.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
       quick = quick.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
     }
+    if (isFriend()) {
+      buttons = buttons.filter((b) => !FRIEND_BLOCKED.has(b.id));
+      quick = quick.filter((b) => !FRIEND_BLOCKED.has(b.id));
+    }
     return { ...base, buttons, quick };
   }
 
@@ -750,6 +754,25 @@
   }
 
   const LUCKY_ADMIN_KEY = "amal-lucky-admin-v1";
+  const FRIEND_KEY = "amal-friends-access-v1";
+  const FRIEND_BLOCKED = new Set([
+    "owner-wave", "owner-secret", "owner-legend", "__hub",
+    "surprise-gift", "owner-abuse",
+  ]);
+
+  function isFriend() {
+    if (isGuestMode() || isOwner()) return false;
+    try {
+      if (localStorage.getItem(FRIEND_KEY) === "1") return true;
+    } catch (_) {}
+    try {
+      if (/[?&]from=friends/.test(location.search)) return true;
+    } catch (_) {}
+    try {
+      if (global.AmalDevice && global.AmalDevice.friendsAllowed && AmalDevice.friendsAllowed()) return true;
+    } catch (_) {}
+    return false;
+  }
 
   function isLuckyAdmin() {
     if (isGuestMode() || isOwner()) return false;
@@ -769,9 +792,9 @@
     return false;
   }
 
-  /** Хозяин, lucky 5%, или выданная админка игры — силы в игре, без прав хозяина сайта. */
+  /** Хозяин, lucky 5%, админка игры, или друг с секретным QR. */
   function canUsePowers() {
-    return isOwner() || isLuckyAdmin() || isGrantedGameAdmin();
+    return isOwner() || isLuckyAdmin() || isGrantedGameAdmin() || isFriend();
   }
 
   /** Выдача подарков / спавн другим — только настоящий хозяин. */
@@ -901,8 +924,8 @@
         jset(key, ah);
       }
     }
-    // Флаги хозяина сайта — только настоящему хозяину
-    if (isOwner()) {
+    // Флаги хозяина сайта — только настоящему хозяину (не друзьям)
+    if (isOwner() && !isFriend()) {
       jset("animal-hospital-owner-god", true);
       try {
         localStorage.setItem("pixel-terrarium-host-v1", "1");
@@ -1031,7 +1054,15 @@
   function syncUi() {
     const fab = document.getElementById("amal-powers-fab");
     const pack = packFor(gameId());
-    if (fab) fab.textContent = "⚡ " + (pack.title || "Силы");
+    if (fab) {
+      const tag = isFriend() ? " ⭐" : "";
+      fab.textContent = "⚡ " + (pack.title || "Силы") + tag;
+    }
+    if (isFriend()) {
+      try {
+        document.documentElement.classList.add("amal-friend-powers");
+      } catch (_) {}
+    }
   }
 
   function readGiveAmount() {
@@ -1086,8 +1117,10 @@
 #amal-powers-quick button:nth-child(1){background:linear-gradient(135deg,#6ee7b7,#10b981)}
 #amal-powers-quick button:nth-child(2){background:linear-gradient(135deg,#93c5fd,#3b82f6);color:#eff6ff}
 @media (max-width:820px),(pointer:coarse){
-  #amal-powers-quick,#amal-powers-fab,#amal-powers-panel{display:none!important}
+  #amal-powers-quick,#amal-admin-things{display:none!important}
 }
+body.amal-lite-ui #amal-powers-fab{display:block!important}
+body.amal-lite-ui #amal-powers-panel.open{display:block!important}
 #amal-powers-tag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:rgba(251,191,36,.2);color:#fde68a;font-size:10px}
 #amal-powers-give{grid-column:1/-1;margin:4px 0 8px;padding:10px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
 #amal-powers-give .give-title{font-size:12px;margin-bottom:6px;opacity:.9}
@@ -1113,7 +1146,8 @@
       fab.onclick = () => panel.classList.toggle("open");
     }
 
-    const giveBlock = `
+    const giveBlock = canGiveToPlayers()
+      ? `
       <div id="amal-powers-give">
         <div class="give-title">Выдать себе число · монеты / очки / кубки</div>
         <input id="amal-powers-amount" type="text" inputmode="numeric" placeholder="Напиши цифру, напр. 50000" value="100000" />
@@ -1129,10 +1163,17 @@
           <button type="button" data-give="score">🏆 Очки</button>
           <button type="button" data-give="cups">🏅 Кубки</button>
         </div>
-      </div>`;
+      </div>`
+      : isFriend()
+        ? `<div class="sub" style="margin-bottom:8px;opacity:.9">⭐ Силы друга — почти как у Амаля, но без выдачи другим</div>`
+        : "";
+
+    const hubBtn = isOwner()
+      ? `<button type="button" class="wide" data-ap="__hub">👑 Меню хозяина</button>`
+      : "";
 
     panel.innerHTML =
-      `<h3>⚡ ${pack.title} <span class="amal-powers-tag">эта игра</span></h3>` +
+      `<h3>⚡ ${pack.title} <span class="amal-powers-tag">${isFriend() ? "друг ⭐" : "эта игра"}</span></h3>` +
       `<div class="sub">${pack.subtitle}</div>` +
       `<div id="amal-powers-grid">` +
       giveBlock +
@@ -1143,7 +1184,7 @@
         )
         .join("") +
       `<button type="button" class="wide" data-ap="__reload">↻ Обновить игру</button>` +
-      `<button type="button" class="wide" data-ap="__hub">👑 Меню хозяина</button>` +
+      hubBtn +
       `</div>`;
 
     panel.querySelectorAll("[data-ap]").forEach((btn) => {
@@ -1224,6 +1265,7 @@
   }
 
   function boot() {
+    injectSharedScript("amal-lite-ui.js?v=1", "__AMAL_HIDE_CUBE__");
     ensureSurprisesLib();
     ensureAdminThingsLib();
     ensureFaqLib();
@@ -1260,6 +1302,7 @@
 
   global.AmalPowers = {
     isOwner,
+    isFriend,
     isLuckyAdmin,
     canUsePowers,
     canGiveToPlayers,

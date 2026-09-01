@@ -22,6 +22,7 @@
       <button type="button" class="tab" data-tab="games">🎮</button>
       <button type="button" class="tab" data-tab="mila">🐣</button>
       <button type="button" class="tab" data-tab="d3">🧊</button>
+      <button type="button" class="tab" data-tab="memes">😂</button>
       <button type="button" class="tab" data-tab="chat">💬</button>
     </nav>
 
@@ -32,6 +33,7 @@
         <button type="button" class="cat-btn mila" data-go="mila"><span>🐣</span>Милашки</button>
         <button type="button" class="cat-btn d3" data-go="d3"><span>🧊</span>3D 🔒</button>
         <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат класса</button>
+        <a class="cat-btn" href="meme-channel.html" style="text-decoration:none;color:inherit;background:linear-gradient(145deg,#229ed9,#17212b)"><span>😂</span>Мемы</a>
       </div>
     </section>
 
@@ -49,6 +51,11 @@
       <div class="game-grid" id="list-d3"></div>
     </section>
 
+    <section class="panel" id="panel-memes">
+      <p class="tip">Канал как в Телеграме — мемы и стикеры от Амаля 😄</p>
+      <a class="cat-btn" href="meme-channel.html" style="display:block;text-align:center;text-decoration:none;color:inherit;padding:16px;border-radius:16px;background:linear-gradient(145deg,#229ed9,#0e1621);font-weight:800">😂 Открыть канал мемов</a>
+    </section>
+
     <section class="panel" id="panel-chat">
       <div id="chat-root"></div>
     </section>
@@ -56,12 +63,13 @@
     <div class="bottom-links">
       <a href="./?stay=1">💻 ПК</a>
       <a href="tablet.html?v=1&stay=1">📟 Планшет</a>
-      <a class="primary" href="qr-school.html">QR класс</a>
+      <a href="qr-school.html">QR класс</a>
+      <a href="qr-scanner.html">📷 Сканер</a>
     </div>
   </div>
 
   <script src="./shared/amal-hub-data.js?v=1"></script>
-  <script src="./shared/amal-device-switcher.js?v=1"></script>
+  <script src="./shared/amal-device-switcher.js?v=2"></script>
   <script>
     AmalDevice.setHub("phone");
     AmalDevice.remember("phone", "phone");
