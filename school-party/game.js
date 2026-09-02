@@ -76,7 +76,17 @@
   }
 
   function canPlay() {
-    if (window.__SCHOOL_PARTY_OK__) return true;
+    if (window.__SCHOOL_PARTY_OK__ || window.__AMAL_OWNER__) return true;
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.get("owner") === "AmalOwner2026") {
+        window.__AMAL_OWNER__ = true;
+        return true;
+      }
+      if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" || q.get("friends") === "1") {
+        return true;
+      }
+    } catch (_) {}
     if (window.AmalHubBack && AmalHubBack.wire) AmalHubBack.wire();
     if (window.AmalDevice) {
       if (AmalDevice.isSiteOwner && AmalDevice.isSiteOwner()) return true;

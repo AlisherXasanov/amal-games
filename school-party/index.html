@@ -9,17 +9,20 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <script>
     (function () {
+      var q = new URLSearchParams(location.search);
+      var owner = q.get("owner") === "AmalOwner2026";
+      var friends = q.get("from") === "friends" || q.get("code") === "amal-star-friends" || q.get("friends") === "1";
+      if (owner) {
+        window.__AMAL_OWNER__ = true;
+        window.__SCHOOL_PARTY_OK__ = true;
+      }
+      if (friends) window.__SCHOOL_PARTY_OK__ = true;
       try {
-        var q = new URLSearchParams(location.search);
-        if (q.get("from") === "friends" || q.get("code") === "amal-star-friends" ||
-            q.get("owner") === "AmalOwner2026" || q.get("friends") === "1") {
-          localStorage.setItem("amal-friends-access-v1", "1");
-        }
-        if (q.get("owner") === "AmalOwner2026") {
-          localStorage.setItem("amal-owner-v1", "1");
-        }
-        if (localStorage.getItem("amal-owner-v1") === "1" ||
-            localStorage.getItem("amal-friends-access-v1") === "1") {
+        if (owner || friends) localStorage.setItem("amal-friends-access-v1", "1");
+        if (owner) localStorage.setItem("amal-owner-v1", "1");
+        if (!window.__SCHOOL_PARTY_OK__ && (
+          localStorage.getItem("amal-owner-v1") === "1" ||
+          localStorage.getItem("amal-friends-access-v1") === "1")) {
           window.__SCHOOL_PARTY_OK__ = true;
         }
       } catch (_) {}
@@ -140,7 +143,7 @@
       <h2>Только для друзей</h2>
       <p>Открой через <strong>⭐ Друзья</strong> или секретный QR.</p>
       <p style="margin-top:10px"><a href="../friends.html?from=friends&stay=1">← К друзьям</a></p>
-      <p style="margin-top:8px;font-size:12px;color:#a5b4fc">Амаль (админ): <a href="?owner=AmalOwner2026">войти как хозяин</a></p>
+      <p style="margin-top:8px;font-size:12px;color:#a5b4fc">Амаль (админ): <a href="?owner=AmalOwner2026&v=5&fresh=1">войти как хозяин</a></p>
     </div>
   </div>
 
@@ -205,9 +208,21 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="../shared/amal-device.js?v=4"></script>
+  <script src="../shared/amal-device.js?v=5"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
-  <script src="../shared/amal-friends-net.js?v=2"></script>
-  <script src="./game.js?v=4"></script>
+  <script src="../shared/amal-friends-net.js?v=3"></script>
+  <script src="./game.js?v=5"></script>
+  <script>
+    if (window.__SCHOOL_PARTY_OK__) {
+      var _unlock = function () {
+        var L = document.getElementById("locked");
+        var A = document.getElementById("app");
+        if (L) L.hidden = true;
+        if (A) A.hidden = false;
+      };
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", _unlock);
+      else _unlock();
+    }
+  </script>
 </body>
 </html>

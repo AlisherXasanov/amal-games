@@ -134,15 +134,15 @@
   function isSiteOwner() {
     try {
       if (global.__AMAL_OWNER__ === true) return true;
+      var q = query();
+      if (q.get("owner") === "AmalOwner2026") {
+        global.__AMAL_OWNER__ = true;
+        try { localStorage.setItem("amal-owner-v1", "1"); } catch (_) {}
+        return true;
+      }
       if (["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
         return localStorage.getItem(k) === "1";
       })) return true;
-      var q = query();
-      if (q.get("owner") === "AmalOwner2026") {
-        localStorage.setItem("amal-owner-v1", "1");
-        global.__AMAL_OWNER__ = true;
-        return true;
-      }
     } catch (_) {}
     return false;
   }

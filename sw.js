@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v94";
+  var VERSION = "amal-offline-v95";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -140,7 +140,7 @@
       return;
     }
 
-    if (/meme-channel|go-memes|qr-memes|amal-meme-net/.test(req.url)) {
+    if (/meme-channel|go-memes|qr-memes|amal-meme-net|school-party|friends\.html/.test(req.url)) {
       event.respondWith(fetch(req, { cache: "no-store" }).catch(function () { return caches.match(req); }));
       return;
     }
