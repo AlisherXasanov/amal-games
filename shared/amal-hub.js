@@ -79,6 +79,17 @@
     { id: "pet-simulator", name: "Pet Simulator" },
     { id: "flee-facility", name: "Flee the Facility" },
     { id: "build-boat", name: "Build a Boat" },
+    { id: "steal-brainrot", name: "Steal Brainrot" },
+    { id: "grow-garden", name: "Grow Garden" },
+    { id: "jelly-lab", name: "Желейная хата" },
+    { id: "mult-studio", name: "Полка Валеры" },
+    { id: "school-party", name: "Школьная вечеринка" },
+    { id: "anim-master", name: "Кадр · анимации" },
+    { id: "milashki", name: "Милашки" },
+    { id: "relax-zone", name: "Relax Zone" },
+    { id: "escape-tsunami", name: "Escape Tsunami" },
+    { id: "bed-wars", name: "Bed Wars" },
+    { id: "speed-escape", name: "Speed Escape" },
   ];
 
   const CHANGELOG = [
@@ -1322,6 +1333,33 @@
       "blind-zone": "Слепая зона",
       "spicy-debate": "Острый спор",
       "tesla-wires": "Электросеть",
+      "steal-brainrot": "Steal Brainrot",
+      "grow-garden": "Grow Garden",
+      "jelly-lab": "Желейная хата",
+      "mult-studio": "Полка Валеры",
+      "school-party": "Школьная вечеринка",
+      "anim-master": "Кадр · анимации",
+      milashki: "Милашки",
+      "relax-zone": "Relax Zone",
+      "escape-tsunami": "Escape Tsunami",
+      "work-pizza": "Пиццерия",
+      "bed-wars": "Bed Wars",
+      "speed-escape": "Speed Escape",
+      "pet-simulator": "Pet Simulator",
+      tycoon: "Tycoon",
+      obby: "Obby",
+      "tower-defense": "Tower Defense",
+      "steal-egg": "Steal Egg",
+      "candle-mine": "Свеча в шахте",
+      "pot-hammer": "Котёл и молот",
+      "portal-3d": "Portal 3D",
+      "rift-storm": "Шторм Разломов",
+      "kind-calendar": "Добрый календарь",
+      "meme-channel": "Канал мемов",
+      friends: "⭐ Друзья",
+      "we-two": "Мы с тобой",
+      "joy-surprise": "Joy Surprise",
+      "invisible-spy": "Невидимый шпион",
     };
     return map[id] || id;
   }
@@ -5731,6 +5769,7 @@
 
   /** Личный предмет в каждой игре: взять → активировать → несколько разделов админки. */
   function mountSecretCube() {
+    if (global.__AMAL_HIDE_CUBE__) return;
     if (!isOwner()) return;
     // На оболочке полигона куб не нужен — он появляется внутри загруженной игры.
     if (gameIdFromPath() === "polygon") return;
