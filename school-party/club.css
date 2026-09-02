@@ -97,8 +97,29 @@ main { padding: 0 14px 28px; max-width: 540px; margin: 0 auto; }
 .share-card img {
   display: block; max-width: 100%; max-height: 220px; border-radius: 12px; margin-top: 8px;
 }
-.play-modes, .diff-row {
-  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; align-items: center;
+.owner-powers {
+  margin: 8px 0 10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(251,191,36,.22), rgba(244,114,182,.18));
+  border: 2px solid rgba(251,191,36,.55);
+}
+.op-title {
+  font: 900 12px inherit; color: #fde68a; text-align: center; margin-bottom: 8px;
+}
+.op-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.op-grid button {
+  border: 0; border-radius: 12px; padding: 10px 8px;
+  font: 800 11px/1.25 inherit; cursor: pointer; color: #111;
+  background: linear-gradient(135deg, #fbbf24, #f472b6);
+}
+.op-grid button:active { transform: scale(.96); }
+.op-grid button.mega {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #ef4444, #a855f7, #fbbf24);
+  color: #fff; font-size: 13px;
 }
 .play-modes .pm, .diff-row .df {
   border: 1px solid rgba(255,255,255,.18); border-radius: 999px;

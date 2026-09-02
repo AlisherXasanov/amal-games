@@ -7,15 +7,28 @@
 
   var host, statusEl, vsAi = true, playMode = "ai", difficulty = 2;
   var current = null, onToast = function () {}, onMove = null, applyFn = null;
+  var powerApi = null;
+  var botFrozen = 0;
 
   function setStatus(t) { if (statusEl) statusEl.textContent = t; }
-  function clear() { if (host) host.innerHTML = ""; current = null; applyFn = null; }
+  function clear() {
+    if (host) host.innerHTML = "";
+    current = null; applyFn = null; powerApi = null; botFrozen = 0;
+  }
   function toast(m) { onToast(m); }
   function emit(payload) {
     if (typeof onMove === "function") onMove(payload);
   }
   function useAi() { return playMode === "ai" || (playMode !== "hotseat" && playMode !== "online" && vsAi); }
   function online() { return playMode === "online"; }
+  function botMayMove() {
+    if (botFrozen > 0) {
+      botFrozen--;
+      toast("🧊 Бот заморожен · ход пропущен");
+      return false;
+    }
+    return true;
+  }
 
   function pickSmart(empties, board, me, enemy) {
     // экстрим: выиграть / блок; средний: иногда; лёгкий: почти рандом
@@ -89,8 +102,13 @@
           emit({ game: "xo", type: "move", i: i, side: turn, board: board.slice() });
           if (afterMove()) return;
           if (useAi() && turn === 1) {
-            aiMove();
-            if (!afterMove()) setStatus("Твой ход ❌");
+            if (botMayMove()) {
+              aiMove();
+              if (!afterMove()) setStatus("Твой ход ❌");
+            } else {
+              turn = 1;
+              setStatus("Твой ход ❌ · бот заморожен");
+            }
           } else {
             turn = turn === 1 ? 2 : 1;
             setStatus(turn === 1 ? "Ход ❌" : "Ход ⭕");
@@ -115,6 +133,57 @@
         over = false;
         render();
       }
+    };
+    powerApi = {
+      game: "xo",
+      teleport: function () {
+        if (over) return toast("Игра уже кончилась");
+        var empties = [];
+        for (var i = 0; i < 9; i++) if (!board[i]) empties.push(i);
+        if (!empties.length) return toast("Нет клетки для телепорта");
+        var pick = empties[Math.floor(Math.random() * empties.length)];
+        board[pick] = 1;
+        toast("🌀 Астральный телепорт!");
+        afterMove();
+        render();
+      },
+      disintegrate: function () {
+        for (var i = 0; i < 9; i++) if (board[i] === 2) board[i] = 0;
+        toast("☢️ Распыление кругов!");
+        render();
+      },
+      freeze: function () {
+        botFrozen = 3;
+        toast("🧊 Заморозка бота ×3");
+      },
+      foresight: function () {
+        var empties = [];
+        for (var i = 0; i < 9; i++) if (!board[i]) empties.push(i);
+        var pick = pickSmart(empties, board, 1, 2);
+        if (pick < 0) return;
+        board[pick] = 1;
+        toast("🔮 Предвидение — лучший ход!");
+        afterMove();
+        render();
+      },
+      chaos: function () {
+        for (var i = 0; i < 9; i++) if (board[i] === 2 && Math.random() < 0.7) board[i] = 0;
+        toast("🌊 Волна хаоса!");
+        render();
+      },
+      throne: function () {
+        over = true;
+        board = [1,1,1,0,1,0,0,0,0];
+        setStatus("👑 Трон хозяина — ❌ победил!");
+        toast("👑 Победа силой трона!");
+        render();
+      },
+      rift: function () {
+        over = true;
+        setStatus("⚡ Разлом реальности — ты сильнее всех!");
+        toast("⚡ Разлом! Бот стёрт из партии");
+        render();
+      },
     };
     host.appendChild(wrap);
     setStatus(useAi() ? ("Ты ❌ · бот ⭕ (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : online() ? "С другом онлайн · ход ❌" : "Ход ❌");
@@ -286,9 +355,15 @@
             emit({ game: "checkers", type: "move", fx: sel[0], fy: sel[1], tx: cx, ty: cy, cap: hit[2] });
             sel = null;
             if (useAi() && turn === 2) {
-              setStatus("Ход бота…");
-              render();
-              setTimeout(aiTurn, difficulty === 1 ? 200 : 350);
+              if (botMayMove()) {
+                setStatus("Ход бота…");
+                render();
+                setTimeout(aiTurn, difficulty === 1 ? 200 : 350);
+              } else {
+                turn = 1;
+                setStatus("Твой ход ⚪ · бот заморожен");
+                render();
+              }
             } else {
               setStatus(turn === 1 ? "Ход ⚪" : "Ход 🔴");
               render();
@@ -299,6 +374,60 @@
       }
     }
     host.appendChild(wrap);
+    powerApi = {
+      game: "checkers",
+      teleport: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (board[y][x] === 1) { board[y][x] = 0; board[Math.max(0, y - 2)][x] = 1; toast("🌀 Телепорт вперёд!"); render(); return; }
+        }
+      },
+      disintegrate: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (board[y][x] === 2 || board[y][x] === 4) board[y][x] = 0;
+        }
+        toast("☢️ Все красные распылены!");
+        render();
+      },
+      freeze: function () { botFrozen = 3; toast("🧊 Бот заморожен ×3"); },
+      foresight: function () {
+        turn = 1;
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (board[y][x] === 1 || board[y][x] === 3) {
+            var ms = movesFrom(x, y);
+            if (ms.length) {
+              applyMove(x, y, ms[0][0], ms[0][1], ms[0][2]);
+              toast("🔮 Автоход по предвидению!");
+              render();
+              return;
+            }
+          }
+        }
+      },
+      chaos: function () {
+        var n = 0;
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if ((board[y][x] === 2 || board[y][x] === 4) && Math.random() < 0.5) { board[y][x] = 0; n++; }
+        }
+        toast("🌊 Хаос снёс " + n + " врагов");
+        render();
+      },
+      throne: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (board[y][x] === 1) board[y][x] = 3;
+          if (board[y][x] === 2 || board[y][x] === 4) board[y][x] = 0;
+        }
+        toast("👑 Все твои — дамки, враг стёрт!");
+        render();
+      },
+      rift: function () {
+        setStatus("⚡ Разлом — ⚪ победили!");
+        toast("⚡ Реальность переписана под тебя");
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (board[y][x] === 2 || board[y][x] === 4) board[y][x] = 0;
+        }
+        render();
+      },
+    };
     setStatus(useAi() ? ("Ты ⚪ · бот 🔴 (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : "Ход ⚪");
     render();
     current = "checkers";
@@ -433,9 +562,15 @@
             emit({ game: "chess", type: "move", fx: fx, fy: fy, tx: cx, ty: cy });
             sel = null;
             if (useAi() && turn === "b") {
-              setStatus("Ход бота…");
-              render();
-              setTimeout(aiMove, difficulty === 1 ? 180 : 280);
+              if (botMayMove()) {
+                setStatus("Ход бота…");
+                render();
+                setTimeout(aiMove, difficulty === 1 ? 180 : 280);
+              } else {
+                turn = "w";
+                setStatus("Твой ход ♔ · бот заморожен");
+                render();
+              }
             } else {
               setStatus(turn === "w" ? "Ход белых ♔" : "Ход чёрных ♚");
               render();
@@ -446,6 +581,73 @@
       }
     }
     host.appendChild(wrap);
+    powerApi = {
+      game: "chess",
+      teleport: function () {
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (board[y][x] === "wQ") {
+            board[y][x] = null;
+            board[3][3] = "wQ";
+            toast("🌀 Ферзь телепортирован в центр!");
+            render();
+            return;
+          }
+        }
+        toast("Нет ферзя — призван новый!");
+        board[4][4] = "wQ";
+        render();
+      },
+      disintegrate: function () {
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (board[y][x] && board[y][x][0] === "b" && board[y][x] !== "bK") board[y][x] = null;
+        }
+        toast("☢️ Чёрные (кроме короля) распылены!");
+        render();
+      },
+      freeze: function () { botFrozen = 3; toast("🧊 Бот заморожен ×3"); },
+      foresight: function () {
+        var all = [];
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (color(board[y][x]) !== "w") continue;
+          genMoves(x, y).forEach(function (m) { all.push([x, y, m[0], m[1]]); });
+        }
+        all.sort(function (a, b) {
+          return (board[b[3]][b[2]] ? 1 : 0) - (board[a[3]][a[2]] ? 1 : 0);
+        });
+        if (!all.length) return;
+        doMove(all[0][0], all[0][1], all[0][2], all[0][3]);
+        turn = "w";
+        toast("🔮 Предвидение сыграло лучший ход!");
+        render();
+      },
+      chaos: function () {
+        var n = 0;
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (board[y][x] && board[y][x][0] === "b" && board[y][x] !== "bK" && Math.random() < 0.45) {
+            board[y][x] = null; n++;
+          }
+        }
+        toast("🌊 Хаос убрал " + n + " фигур");
+        render();
+      },
+      throne: function () {
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (board[y][x] === "wP") board[y][x] = "wQ";
+        }
+        board[0][4] = null;
+        toast("👑 Все пешки — ферзи, король врага пал!");
+        setStatus("👑 Трон хозяина — белые победили!");
+        render();
+      },
+      rift: function () {
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
+          if (board[y][x] && board[y][x][0] === "b") board[y][x] = null;
+        }
+        setStatus("⚡ Разлом реальности — победа Амаля!");
+        toast("⚡ Сильнее экстрима и всех ботов вместе!");
+        render();
+      },
+    };
     setStatus(useAi() ? ("Ты белые ♔ · бот (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : "Ход белых ♔");
     render();
     current = "chess";
@@ -545,6 +747,65 @@
     wrap.appendChild(enemyBoard);
     wrap.appendChild(myBoard);
     host.appendChild(wrap);
+    powerApi = {
+      game: "sea",
+      teleport: function () { toast("🌀 Флот прыгнул — твой ход снова!"); myTurn = true; setStatus("Твой выстрел!"); },
+      disintegrate: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
+        }
+        over = true;
+        setStatus("☢️ Флот врага распылён!");
+        toast("☢️ Распыление!");
+        render();
+      },
+      freeze: function () { botFrozen = 5; toast("🧊 Бот не стреляет ×5"); },
+      foresight: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (enemy[y][x] === 1 && fog[y][x] !== 3) {
+            fog[y][x] = 3; enemy[y][x] = 3;
+            toast("🔮 Предвидение нашло корабль!");
+            if (!alive(enemy)) { over = true; setStatus("Победа!"); }
+            render();
+            return;
+          }
+        }
+      },
+      chaos: function () {
+        var shots = 0;
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (!fog[y][x] && Math.random() < 0.35) {
+            if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
+            else fog[y][x] = 2;
+            shots++;
+          }
+        }
+        toast("🌊 Хаос: " + shots + " выстрелов!");
+        if (!alive(enemy)) { over = true; setStatus("Победа!"); }
+        render();
+      },
+      throne: function () {
+        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+          if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
+        }
+        over = true;
+        setStatus("👑 Трон — море твоё!");
+        toast("👑");
+        render();
+      },
+      rift: function () {
+        over = true;
+        setStatus("⚡ Разлом — вражеский флот стёрт!");
+        toast("⚡");
+        render();
+      },
+    };
+    // wrap aiShoot with freeze
+    var _aiShoot = aiShoot;
+    aiShoot = function () {
+      if (!botMayMove()) { myTurn = true; setStatus("Твой выстрел!"); render(); return; }
+      _aiShoot();
+    };
     setStatus("Твой выстрел по верхней карте!");
     render();
     current = "sea";
@@ -587,6 +848,15 @@
       if (applyFn) applyFn(data);
     },
     current: function () { return current; },
+    usePower: function (id) {
+      if (!powerApi || typeof powerApi[id] !== "function") {
+        toast("Эта сила сейчас недоступна");
+        return false;
+      }
+      powerApi[id]();
+      return true;
+    },
+    hasPowers: function () { return !!powerApi; },
     start: start,
     clear: clear,
   };

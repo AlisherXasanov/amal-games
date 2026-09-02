@@ -280,6 +280,35 @@
       },
     });
     ClubBoardGames.start(name);
+    renderOwnerPowers();
+  }
+
+  function renderOwnerPowers() {
+    var box = $("owner-powers");
+    var grid = $("op-grid");
+    if (!box || !grid) return;
+    if (!isHost() || !ClubBoardGames.hasPowers || !ClubBoardGames.hasPowers()) {
+      box.hidden = true;
+      return;
+    }
+    box.hidden = false;
+    var powers = [
+      { id: "teleport", label: "🌀 Астральный телепорт" },
+      { id: "disintegrate", label: "☢️ Распыление" },
+      { id: "freeze", label: "🧊 Заморозка бота" },
+      { id: "foresight", label: "🔮 Предвидение" },
+      { id: "chaos", label: "🌊 Волна хаоса" },
+      { id: "throne", label: "👑 Трон хозяина" },
+      { id: "rift", label: "⚡ Разлом реальности", mega: true },
+    ];
+    grid.innerHTML = powers.map(function (p) {
+      return '<button type="button" data-pow="' + p.id + '" class="' + (p.mega ? "mega" : "") + '">' + p.label + "</button>";
+    }).join("");
+    grid.onclick = function (e) {
+      var b = e.target.closest("[data-pow]");
+      if (!b) return;
+      ClubBoardGames.usePower(b.getAttribute("data-pow"));
+    };
   }
 
   function init() {
@@ -383,6 +412,8 @@
       ClubBoardGames.clear();
       $("game-stage").hidden = true;
       $("game-pick").hidden = false;
+      var op = $("owner-powers");
+      if (op) op.hidden = true;
     };
     $("btn-invite").onclick = function () {
       if (!window.AmalFriendsNet) return;
