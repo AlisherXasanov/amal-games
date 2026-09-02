@@ -103,16 +103,16 @@
 
   function squishSound() {
     ensureAudio();
-    playTone(140 + Math.random() * 30, 0.12, "sine", 0.45);
-    setTimeout(() => playTone(70 + Math.random() * 20, 0.18, "triangle", 0.35), 35);
-    setTimeout(() => noiseBurst(0.06, 900, 0.2, "bandpass"), 20);
+    playTone(95 + Math.random() * 15, 0.18, "sine", 0.22);
+    setTimeout(() => playTone(68 + Math.random() * 12, 0.24, "sine", 0.16), 40);
+    setTimeout(() => noiseBurst(0.05, 380, 0.1, "lowpass"), 25);
   }
 
   function iceCrack() {
     ensureAudio();
-    noiseBurst(0.1, 5000, 0.55, "highpass");
-    playTone(1200 + Math.random() * 600, 0.04, "square", 0.15);
-    setTimeout(() => noiseBurst(0.05, 3000, 0.3, "bandpass"), 40);
+    noiseBurst(0.05, 750, 0.14, "bandpass");
+    playTone(260 + Math.random() * 60, 0.035, "sine", 0.06);
+    setTimeout(() => noiseBurst(0.03, 520, 0.08, "lowpass"), 50);
   }
 
   function popSound() {

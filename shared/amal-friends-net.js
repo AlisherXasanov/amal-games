@@ -17,10 +17,17 @@
   var sendChat = null;
   var sendPing = null;
   var sendAct = null;
+  var sendChallenge = null;
+  var sendRace = null;
+  var sendResult = null;
   var messages = [];
   var peers = {};
   var activities = [];
+  var challenges = [];
+  var challengeListeners = [];
+  var raceListeners = [];
   var isOwner = false;
+  var netReady = false;
 
   function $(id) { return document.getElementById(id); }
 
@@ -145,6 +152,40 @@
         renderOwner();
       });
 
+      var chAct = room.makeAction("challenge");
+      sendChallenge = chAct[0];
+      chAct[1](function (data) {
+        if (!data || !data.from || data.from === nick()) return;
+        var id = data.id || String(data.t || Date.now());
+        if (challenges.some(function (c) { return c.id === id; })) return;
+        challenges.unshift({
+          id: id,
+          from: data.from,
+          game: data.game || "",
+          mode: data.mode || "tap",
+          label: data.label || "соревнование",
+          t: data.t || Date.now(),
+        });
+        if (challenges.length > 8) challenges.length = 8;
+        notifyChallenges();
+      });
+
+      var raceAct = room.makeAction("race");
+      sendRace = raceAct[0];
+      raceAct[1](function (data) {
+        if (!data) return;
+        raceListeners.forEach(function (fn) { fn(data); });
+      });
+
+      var resAct = room.makeAction("result");
+      sendResult = resAct[0];
+      resAct[1](function (data) {
+        if (!data || !data.name) return;
+        var txt = data.name + " набрал " + data.score + " в «" + (data.game || "?") + "» 🎉";
+        addMessage({ name: "🏆", text: txt, t: Date.now() });
+      });
+
+      netReady = true;
       room.onPeerJoin(function (peerId) {
         peers[peerId] = { name: "?", alive: true, t: Date.now() };
         if (sendPing && nick()) sendPing({ name: nick(), t: Date.now() });
@@ -270,8 +311,73 @@
       logActivity("играет", gameName);
     },
 
+    /** Лёгкий старт сети без полного чата (для игр) */
+    initLite: function (onDone) {
+      checkOwner();
+      startNetwork().then(function () {
+        if (onDone) onDone(netReady);
+      });
+    },
+
+    nick: nick,
+    setNick: setNick,
+
+    sendChallenge: function (opts) {
+      opts = opts || {};
+      if (!nick()) { alert("Сначала имя!"); return; }
+      var payload = {
+        id: "ch-" + Date.now(),
+        from: nick(),
+        game: opts.game || "game",
+        mode: opts.mode || "tap",
+        label: opts.label || "соревнование",
+        t: Date.now(),
+      };
+      if (sendChallenge) sendChallenge(payload);
+      addMessage({ name: nick(), text: "📣 Вызываю всех: " + payload.label + "!", t: Date.now() });
+      if (sendChat) sendChat({ name: nick(), text: "📣 Вызываю всех: " + payload.label + "!", t: Date.now() });
+    },
+
+    acceptChallenge: function (id) {
+      challenges = challenges.filter(function (c) { return c.id !== id; });
+      notifyChallenges();
+      if (sendRace) sendRace({ phase: "join", name: nick(), t: Date.now() });
+    },
+
+    dismissChallenge: function (id) {
+      challenges = challenges.filter(function (c) { return c.id !== id; });
+      notifyChallenges();
+    },
+
+    onChallenges: function (fn) {
+      challengeListeners.push(fn);
+      fn(challenges.slice());
+    },
+
+    broadcastRace: function (data) {
+      if (!sendRace || !nick()) return;
+      data.name = data.name || nick();
+      sendRace(data);
+    },
+
+    onRaceUpdate: function (fn) {
+      raceListeners.push(fn);
+    },
+
+    postResult: function (game, score, mode) {
+      if (!nick()) return;
+      var payload = { name: nick(), game: game, score: score, mode: mode || "", t: Date.now() };
+      if (sendResult) sendResult(payload);
+      logActivity("закончил " + game + " · " + score + " очков", game);
+    },
+
     isOwner: checkOwner,
   };
+
+  function notifyChallenges() {
+    var copy = challenges.slice();
+    challengeListeners.forEach(function (fn) { fn(copy); });
+  }
 
   global.AmalFriendsNet = AmalFriendsNet;
 })(window);

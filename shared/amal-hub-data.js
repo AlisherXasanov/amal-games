@@ -44,14 +44,14 @@
 
   var EXCLUSIVE = [
     { ico: "✦", name: "Мы с тобой", path: "we-two/", note: "⭐ секрет · только друзья" },
-    { ico: "📺", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
     { ico: "🎬", name: "Мульт-эфир", path: "efir/", note: "эфир" },
-    { ico: "🎨", name: "Valera Draft", path: "mult-draft/", note: "черновик мультов" },
+    { ico: "🎨", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
     { ico: "✨", name: "Создать игру", path: "create-lab/game.html", note: "новая · раньше всех" },
     { ico: "🌙", name: "Secret Dream", path: "secret-dream/", note: "тайна" },
     { ico: "🧠", name: "Steal Brainrot+", path: "steal-brainrot/", note: "ранний доступ" },
     { ico: "🌱", name: "Grow Garden+", path: "grow-garden/", note: "эксклюзив сад" },
     { ico: "🎁", name: "Joy Surprise", path: "joy-surprise/", note: "сюрприз" },
+    { ico: "🏫", name: "Школьная вечеринка", path: "school-party/", note: "соревнования · только друзья" },
   ];
 
   global.AmalHubData = {

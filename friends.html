@@ -50,7 +50,8 @@
       <p class="tip">💜 Вы в <strong>закрытой команде</strong>. Чат — только между вами. Обычный QR сюда не пускает.</p>
       <div class="cat-grid">
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзивные игры</button>
-        <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат друзей</button>
+        <a class="cat-btn" href="school-party/?from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#4f46e5,#7c3aed)"><span>🏫</span>Школьная вечеринка</a>
+        <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат + вызовы</button>
         <button type="button" class="cat-btn games" data-go="games"><span>🎮</span>Все игры</button>
         <button type="button" class="cat-btn mila" data-go="mila" style="background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки</button>
       </div>
@@ -64,6 +65,7 @@
     <section class="panel" id="panel-soon">
       <p class="tip">📦 Скоро я сделаю — покажу друзьям первым:</p>
       <div class="roadmap">
+        <div class="roadmap-item"><span>🏫</span> Школьная вечеринка — вызывай друзей на соревнования!</div>
         <div class="roadmap-item"><span>🎬</span> Своя программа для мультов (как у ютуберов, но свои)</div>
         <div class="roadmap-item"><span>🎮</span> Новые игры — сначала здесь, потом для всех</div>
         <div class="roadmap-item"><span>💬</span> Голосовые сообщения между друзьями</div>
@@ -100,7 +102,7 @@
   <script src="./shared/amal-hub-back.js?v=1"></script>
   <script src="./shared/amal-hub-data.js?v=2"></script>
   <script src="./shared/amal-device-switcher.js?v=2"></script>
-  <script src="./shared/amal-friends-net.js?v=1"></script>
+  <script src="./shared/amal-friends-net.js?v=2"></script>
   <script>
     (function () {
       if (!AmalDevice.friendsAllowed()) {
