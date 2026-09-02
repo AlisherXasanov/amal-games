@@ -20,6 +20,7 @@
   var sendChallenge = null;
   var sendRace = null;
   var sendResult = null;
+  var sendHello = null;
   var messages = [];
   var peers = {};
   var activities = [];
@@ -27,8 +28,12 @@
   var challengeListeners = [];
   var raceListeners = [];
   var chatListeners = [];
+  var joinListeners = [];
+  var leaveListeners = [];
   var isOwner = false;
   var netReady = false;
+  var myPlace = "";
+  var announcedNames = {};
 
   function $(id) { return document.getElementById(id); }
 
@@ -125,8 +130,29 @@
     chatListeners.forEach(function (fn) { try { fn(m); } catch (_) {} });
   }
 
+  function notifyJoin(name, place, peerId) {
+    if (!name || name === "?" || name === nick()) return;
+    var key = name + "|" + (peerId || "");
+    if (announcedNames[key] && Date.now() - announcedNames[key] < 8000) return;
+    announcedNames[key] = Date.now();
+    var info = { name: name, place: place || "", peerId: peerId || "", t: Date.now() };
+    joinListeners.forEach(function (fn) { try { fn(info); } catch (_) {} });
+    addMessage({
+      name: "🔔",
+      text: "друг «" + name + "» зашёл" + (place ? " в «" + place + "»" : "") + "!",
+      t: Date.now(),
+    });
+  }
+
+  function notifyLeave(name) {
+    if (!name || name === "?" || name === nick()) return;
+    leaveListeners.forEach(function (fn) {
+      try { fn({ name: name, t: Date.now() }); } catch (_) {}
+    });
+  }
+
   function startNetwork() {
-    if (room || !global.Trystero) return Promise.resolve(false);
+    if (room) return Promise.resolve(true);
 
     return import("https://esm.sh/trystero@0.21.0").then(function (mod) {
       var joinRoom = mod.joinRoom;
@@ -141,8 +167,33 @@
       sendPing = pingAct[0];
       pingAct[1](function (data, peerId) {
         if (!data) return;
-        peers[peerId] = { name: data.name, alive: true, t: Date.now() };
+        var prev = peers[peerId];
+        var wasUnknown = !prev || !prev.name || prev.name === "?";
+        var nameChanged = prev && prev.name && data.name && prev.name !== data.name;
+        peers[peerId] = {
+          name: data.name || (prev && prev.name) || "?",
+          alive: true,
+          t: Date.now(),
+          place: data.place || (prev && prev.place) || "",
+        };
         renderOnline();
+        if (data.name && (wasUnknown || nameChanged || data.hello)) {
+          notifyJoin(data.name, data.place || myPlace, peerId);
+        }
+      });
+
+      var helloAct = room.makeAction("hello");
+      sendHello = helloAct[0];
+      helloAct[1](function (data, peerId) {
+        if (!data || !data.name || data.name === nick()) return;
+        peers[peerId] = {
+          name: data.name,
+          alive: true,
+          t: Date.now(),
+          place: data.place || "",
+        };
+        renderOnline();
+        notifyJoin(data.name, data.place || "", peerId);
       });
 
       var actAct = room.makeAction("activity");
@@ -189,26 +240,37 @@
 
       netReady = true;
       room.onPeerJoin(function (peerId) {
-        peers[peerId] = { name: "?", alive: true, t: Date.now() };
-        if (sendPing && nick()) sendPing({ name: nick(), t: Date.now() });
+        peers[peerId] = { name: "?", alive: true, t: Date.now(), place: "" };
+        if (sendPing && nick()) {
+          sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
+        }
+        if (sendHello && nick()) {
+          sendHello({ name: nick(), place: myPlace || "клуб", t: Date.now() });
+        }
         renderOnline();
       });
 
       room.onPeerLeave(function (peerId) {
+        var leftName = peers[peerId] && peers[peerId].name;
         delete peers[peerId];
         renderOnline();
+        notifyLeave(leftName);
       });
 
       setInterval(function () {
-        if (sendPing && nick()) sendPing({ name: nick(), t: Date.now() });
+        if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, t: Date.now() });
         Object.keys(peers).forEach(function (id) {
           if (Date.now() - (peers[id].t || 0) > 25000) peers[id].alive = false;
         });
         renderOnline();
       }, 8000);
 
+      // сразу сказать «я здесь»
+      if (nick() && sendPing) sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
+
       return true;
-    }).catch(function () {
+    }).catch(function (err) {
+      console.warn("[AmalFriendsNet] сеть не поднялась", err);
       return false;
     });
   }
@@ -355,12 +417,41 @@
     },
 
     /** Лёгкий старт сети без полного чата (для игр) */
-    initLite: function (onDone) {
+    initLite: function (onDone, place) {
       checkOwner();
-      startNetwork().then(function () {
-        if (onDone) onDone(netReady);
+      if (place) myPlace = String(place).slice(0, 40);
+      // если хозяин без имени — зовём Амаль, чтобы сеть сразу работала
+      if (!nick() && checkOwner()) setNick("Амаль");
+      try {
+        if (!nick() && global.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) {
+          setNick("Амаль");
+        }
+      } catch (_) {}
+      startNetwork().then(function (ok) {
+        if (ok && nick()) {
+          if (sendPing) sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
+          if (sendHello) sendHello({ name: nick(), place: myPlace || "клуб", t: Date.now() });
+          logActivity("зашёл", myPlace || "клуб");
+        }
+        if (onDone) onDone(ok);
       });
     },
+
+    setPlace: function (place) {
+      myPlace = String(place || "").slice(0, 40);
+      if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, t: Date.now() });
+      if (sendHello && nick()) sendHello({ name: nick(), place: myPlace, t: Date.now() });
+    },
+
+    onFriendJoin: function (fn) {
+      if (typeof fn === "function") joinListeners.push(fn);
+    },
+
+    onFriendLeave: function (fn) {
+      if (typeof fn === "function") leaveListeners.push(fn);
+    },
+
+    isOnline: function () { return !!netReady; },
 
     nick: nick,
     setNick: setNick,

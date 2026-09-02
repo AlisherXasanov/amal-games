@@ -12,7 +12,7 @@
     window.__SCHOOL_PARTY_OK__ = true;
     if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) AmalOwnerSession.admitLikeQrScanned();
   </script>
-  <link rel="stylesheet" href="./club.css?v=1" />
+  <link rel="stylesheet" href="./club.css?v=2" />
 </head>
 <body>
   <div id="app">
@@ -21,6 +21,8 @@
       <h1>🏫 Клуб друзей</h1>
       <button type="button" class="badge" id="btn-surprise" title="Сюрприз">🎁</button>
     </header>
+
+    <div id="join-banner" class="join-banner" hidden></div>
 
     <nav class="tabs" id="tabs">
       <button type="button" class="tab on" data-panel="home">🏠</button>
@@ -126,8 +128,8 @@
   <script src="../owner-cheats.js"></script>
   <script src="../shared/amal-device.js?v=8"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
-  <script src="../shared/amal-friends-net.js?v=4"></script>
+  <script src="../shared/amal-friends-net.js?v=5"></script>
   <script src="./board-games.js?v=1"></script>
-  <script src="./club.js?v=1"></script>
+  <script src="./club.js?v=2"></script>
 </body>
 </html>

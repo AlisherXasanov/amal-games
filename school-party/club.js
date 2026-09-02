@@ -29,14 +29,43 @@
   function esc(s) {
     return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
   }
-  function toast(msg) {
+  function toast(msg, kind) {
     var el = $("toast");
     if (!el) return;
     el.textContent = msg;
+    el.classList.toggle("friend", kind === "friend");
     el.classList.add("show");
     clearTimeout(toast._t);
-    toast._t = setTimeout(function () { el.classList.remove("show"); }, 2400);
+    toast._t = setTimeout(function () { el.classList.remove("show"); el.classList.remove("friend"); }, kind === "friend" ? 4500 : 2400);
   }
+
+  function showJoinBanner(text) {
+    var b = $("join-banner");
+    if (!b) return;
+    b.hidden = false;
+    b.textContent = text;
+    clearTimeout(showJoinBanner._t);
+    showJoinBanner._t = setTimeout(function () { b.hidden = true; }, 6000);
+  }
+
+  function ding() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = ding._ctx || (ding._ctx = new Ctx());
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 660;
+      g.gain.value = 0.0001;
+      o.connect(g); g.connect(ctx.destination);
+      var now = ctx.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.05, now + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+      o.start(now); o.stop(now + 0.55);
+    } catch (_) {}
+  }
+
   function nick() {
     return (window.AmalFriendsNet && AmalFriendsNet.nick && AmalFriendsNet.nick()) || "Гость";
   }
@@ -227,7 +256,8 @@
       if (!n) { toast("Напиши имя"); return; }
       if (window.AmalFriendsNet && AmalFriendsNet.setNick) AmalFriendsNet.setNick(n);
       else try { localStorage.setItem("amal-friends-nick-v1", n); } catch (_) {}
-      toast("Привет, " + n + "!");
+      if (window.AmalFriendsNet && AmalFriendsNet.setPlace) AmalFriendsNet.setPlace("Клуб друзей");
+      toast("Привет, " + n + "! Друзья увидят, что ты здесь");
       renderChat();
     };
 
@@ -309,12 +339,30 @@
     $("btn-surprise-ok").onclick = claimSurprise;
     if (hasGolden()) document.body.classList.add("golden-night");
 
-    // net
+    // net — оповещаем, когда друг зашёл
     if (window.AmalFriendsNet) {
-      AmalFriendsNet.initLite(function () {
-        toast("Клуб онлайн 💜");
+      AmalFriendsNet.onFriendJoin(function (info) {
+        var place = info.place ? " в «" + info.place + "»" : " в твою игру";
+        var msg = "👋 Друг «" + info.name + "» зашёл" + place + "!";
+        showJoinBanner(msg);
+        toast(msg, "friend");
+        ding();
         renderChat();
       });
+      AmalFriendsNet.onFriendLeave(function (info) {
+        toast("👋 " + info.name + " вышел");
+      });
+      AmalFriendsNet.initLite(function (ok) {
+        if (ok) {
+          toast("Клуб онлайн · жду друзей 💜");
+          showJoinBanner("Ты в клубе. Когда друг зайдёт — я скажу!");
+        } else {
+          toast("Нет сети — обнови страницу");
+        }
+        var ni2 = $("nick-input");
+        if (ni2 && nick() && nick() !== "Гость") ni2.value = nick();
+        renderChat();
+      }, "Клуб друзей");
       if (AmalFriendsNet.onChat) AmalFriendsNet.onChat(renderChat);
       setInterval(renderChat, 2000);
       setInterval(function () {
