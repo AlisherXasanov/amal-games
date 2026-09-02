@@ -14,14 +14,8 @@
       if (/[?&](qr=1|lock=1)/.test(q)) {
         document.documentElement.classList.add("qr-lock");
         document.body.classList.add("qr-lock");
-        try { sessionStorage.setItem("amal-meme-qr-lock", "1"); } catch (_) {}
       } else {
-        try {
-          if (sessionStorage.getItem("amal-meme-qr-lock") === "1") {
-            document.documentElement.classList.add("qr-lock");
-            document.body.classList.add("qr-lock");
-          }
-        } catch (_) {}
+        try { sessionStorage.removeItem("amal-meme-qr-lock"); } catch (_) {}
       }
     })();
   </script>
