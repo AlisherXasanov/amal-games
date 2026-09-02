@@ -164,6 +164,9 @@
   }
 
   function friendsAllowed() {
+    if (global.AmalOwnerSession && AmalOwnerSession.hasFriendsAccess && AmalOwnerSession.hasFriendsAccess()) {
+      return true;
+    }
     if (isSiteOwner()) {
       try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
       return true;

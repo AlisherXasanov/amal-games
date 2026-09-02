@@ -8,20 +8,14 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=3" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
-  <script src="./shared/amal-owner-session.js?v=1"></script>
+  <script src="./shared/amal-owner-session.js?v=2"></script>
   <script src="./owner-cheats.js"></script>
-  <script src="./shared/amal-device.js?v=7"></script>
+  <script src="./shared/amal-device.js?v=8"></script>
 </head>
 <body>
-  <div id="locked" class="lock-screen" hidden>
-    <div class="big">🔐</div>
-    <h2>Только для друзей</h2>
-    <p>Это закрытая зона. <strong>QR не нужен</strong> — достаточно ссылки от Амаля.</p>
-    <p style="margin-top:10px"><a href="go.html?v=1">← Выбрать версию</a></p>
-    <p style="margin-top:10px"><button type="button" id="amal-enter-btn" style="border:0;border-radius:999px;padding:12px 18px;font:800 14px inherit;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f472b6);color:#111">👑 Я Амаль — войти</button></p>
-  </div>
+  <!-- Замок убран: зашёл = как будто QR уже отсканирован -->
+  <div id="locked" class="lock-screen" hidden></div>
 
-  <!-- Приветствие при первом заходе по секретному QR -->
   <div id="friends-welcome" class="friends-welcome" hidden>
     <div class="friends-welcome-box">
       <div class="star">⭐💜</div>
@@ -33,7 +27,7 @@
     </div>
   </div>
 
-  <div class="hub" id="hub-root" hidden>
+  <div class="hub" id="hub-root">
     <div id="device-switcher-slot"></div>
     <div class="top">
       <h1>⭐ Эксклюзив</h1>
@@ -126,43 +120,30 @@
   <script src="./shared/amal-device-switcher.js?v=3"></script>
   <script src="./shared/amal-friends-net.js?v=3"></script>
   <script>
-    var _friendsStarted = false;
-    function startFriendsHub() {
-      if (_friendsStarted) return;
-      _friendsStarted = true;
-      document.getElementById("locked").hidden = true;
-      document.getElementById("hub-root").hidden = false;
-      var owner = AmalOwnerSession.isOwner();
-      var tag = document.getElementById("friends-tag");
-      if (tag && owner) tag.textContent = "👑 Амаль — твоя зона · Chrome тебя помнит";
-      AmalDevice.setHub("friends");
-      AmalDevice.remember(AmalDevice.detect(), "friends");
-      AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
-      AmalDeviceSwitcher.mount("device-switcher-slot");
-      AmalFriendsNet.init();
-      AmalFriendsNet.mountChat("friends-chat-root");
-      document.getElementById("hub-root").addEventListener("click", function (e) {
-        var a = e.target.closest("a.game-card");
-        if (a && window.AmalFriendsNet) {
-          var name = a.querySelector(".name");
-          AmalFriendsNet.trackGame(name ? name.textContent : "игра");
-        }
-      });
-    }
-
     (function () {
-      var enterBtn = document.getElementById("amal-enter-btn");
-      if (enterBtn) {
-        enterBtn.onclick = function () {
-          AmalOwnerSession.markOwner();
-          startFriendsHub();
-        };
+      if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) {
+        AmalOwnerSession.admitLikeQrScanned();
       }
-      if (AmalOwnerSession.isOwner() || AmalDevice.friendsAllowed()) {
-        startFriendsHub();
-      } else {
-        document.getElementById("locked").hidden = false;
+      function startFriendsHub() {
+        var tag = document.getElementById("friends-tag");
+        if (tag && AmalOwnerSession.isOwner()) {
+          tag.textContent = "👑 Амаль — твоя зона · доступ уже есть";
+        }
+        AmalDevice.setHub("friends");
+        AmalDevice.remember(AmalDevice.detect(), "friends");
+        AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
+        AmalDeviceSwitcher.mount("device-switcher-slot");
+        AmalFriendsNet.init();
+        AmalFriendsNet.mountChat("friends-chat-root");
+        document.getElementById("hub-root").addEventListener("click", function (e) {
+          var a = e.target.closest("a.game-card");
+          if (a && window.AmalFriendsNet) {
+            var name = a.querySelector(".name");
+            AmalFriendsNet.trackGame(name ? name.textContent : "игра");
+          }
+        });
       }
+      startFriendsHub();
     })();
   </script>
 </body>

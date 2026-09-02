@@ -76,32 +76,12 @@
   }
 
   function canPlay() {
-    if (window.__SCHOOL_PARTY_OK__ || window.__AMAL_OWNER__) return true;
-    if (window.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) return true;
-    try {
-      var q = new URLSearchParams(location.search);
-      if (q.get("owner") === "AmalOwner2026") {
-        window.__AMAL_OWNER__ = true;
-        return true;
-      }
-      if (["amal", "1234", "buddy", "amalowner2026"].indexOf((q.get("owner") || "").toLowerCase()) >= 0) {
-        window.__AMAL_OWNER__ = true;
-        return true;
-      }
-      if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" || q.get("friends") === "1") {
-        return true;
-      }
-    } catch (_) {}
-    if (window.AmalHubBack && AmalHubBack.wire) AmalHubBack.wire();
-    if (window.AmalDevice) {
-      if (AmalDevice.isSiteOwner && AmalDevice.isSiteOwner()) return true;
-      if (AmalDevice.friendsAllowed && AmalDevice.friendsAllowed()) return true;
+    // Зашёл на страницу = уже «как после QR». Без замков.
+    if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) {
+      AmalOwnerSession.admitLikeQrScanned();
     }
-    try {
-      return localStorage.getItem("amal-friends-access-v1") === "1" ||
-        localStorage.getItem("amal-owner-v1") === "1" ||
-        localStorage.getItem("amal-owner-v3") === "1";
-    } catch (_) { return false; }
+    window.__SCHOOL_PARTY_OK__ = true;
+    return true;
   }
 
   function loadAch() {
@@ -513,20 +493,9 @@
   }
 
   function init() {
-    if (!canPlay()) {
-      $("locked").hidden = false;
-      var enterBtn = $("amal-party-enter");
-      if (enterBtn) {
-        enterBtn.onclick = function () {
-          if (window.AmalOwnerSession && AmalOwnerSession.markOwner) AmalOwnerSession.markOwner();
-          window.__SCHOOL_PARTY_OK__ = true;
-          window.__AMAL_OWNER__ = true;
-          $("locked").hidden = true;
-          bootGame();
-        };
-      }
-      return;
-    }
+    canPlay();
+    var L = $("locked");
+    if (L) L.hidden = true;
     $("app").hidden = false;
     bootGame();
   }

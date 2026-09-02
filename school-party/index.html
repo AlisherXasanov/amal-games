@@ -7,16 +7,12 @@
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#4f46e5" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <script src="../shared/amal-owner-session.js?v=1"></script>
+  <script src="../shared/amal-owner-session.js?v=2"></script>
   <script>
-    (function () {
-      var q = new URLSearchParams(location.search);
-      if (q.get("from") === "friends" || q.get("code") === "amal-star-friends" || q.get("friends") === "1") {
-        window.__SCHOOL_PARTY_OK__ = true;
-        try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
-      }
-      if (window.AmalOwnerSession && AmalOwnerSession.isOwner()) window.__SCHOOL_PARTY_OK__ = true;
-    })();
+    window.__SCHOOL_PARTY_OK__ = true;
+    if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) {
+      AmalOwnerSession.admitLikeQrScanned();
+    }
   </script>
   <style>
     :root {
@@ -127,19 +123,9 @@
   </style>
 </head>
 <body>
-  <div id="locked" class="lock" hidden>
-    <div>
-      <div style="font-size:48px">🔐</div>
-      <h2>Только для друзей</h2>
-      <p>Закрытая игра. <strong>QR не нужен</strong> — открой из ⭐ Друзья или нажми ниже.</p>
-      <p style="margin-top:10px"><a href="../friends.html?v=4&stay=1">← К друзьям</a></p>
-      <p style="margin-top:10px"><button type="button" id="amal-party-enter" style="border:0;border-radius:999px;padding:12px 18px;font:800 14px inherit;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f472b6);color:#111">👑 Я Амаль — играть</button></p>
-    </div>
-  </div>
-
-  <div id="app" hidden>
+  <div id="app">
     <header>
-      <a class="back" href="../friends.html">← Друзья</a>
+      <a class="back" href="../friends.html?v=5&stay=1">← Друзья</a>
       <h1>🏫 Школьная вечеринка</h1>
       <span class="badge" id="badge-star" title="Секреты">⭐ ЭКСКЛЮЗИВ</span>
     </header>
@@ -199,9 +185,9 @@
   <div class="toast" id="toast"></div>
 
   <script src="../owner-cheats.js"></script>
-  <script src="../shared/amal-device.js?v=7"></script>
+  <script src="../shared/amal-device.js?v=8"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
   <script src="../shared/amal-friends-net.js?v=3"></script>
-  <script src="./game.js?v=7"></script>
+  <script src="./game.js?v=8"></script>
 </body>
 </html>

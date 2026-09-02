@@ -84,11 +84,55 @@
     return false;
   }
 
+  function markFriendsAccess() {
+    try { global.localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
+    try { global.sessionStorage.setItem("amal-friends-session-v1", "1"); } catch (_) {}
+    try {
+      document.cookie = "amal_friends=1; path=/; max-age=31536000; SameSite=Lax";
+    } catch (_) {}
+  }
+
+  function hasFriendsAccess() {
+    if (isOwner()) {
+      markFriendsAccess();
+      return true;
+    }
+    try {
+      var q = query();
+      if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" ||
+          q.get("friends") === "1" || q.get("hub") === "friends") {
+        markFriendsAccess();
+        return true;
+      }
+    } catch (_) {}
+    try {
+      if (global.localStorage.getItem("amal-friends-access-v1") === "1") return true;
+      if (global.sessionStorage.getItem("amal-friends-session-v1") === "1") return true;
+    } catch (_) {}
+    try {
+      if ((document.cookie || "").indexOf("amal_friends=1") >= 0) {
+        markFriendsAccess();
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /** Зашёл на страницу друзей / вечеринки = как будто уже отсканировал QR */
+  function admitLikeQrScanned() {
+    markFriendsAccess();
+    if (isOwner() || ownerFromUrl()) markOwner();
+  }
+
   if (ownerFromUrl()) markOwner();
+  isOwner();
 
   global.AmalOwnerSession = {
     isOwner: isOwner,
     markOwner: markOwner,
     ownerFromUrl: ownerFromUrl,
+    markFriendsAccess: markFriendsAccess,
+    hasFriendsAccess: hasFriendsAccess,
+    admitLikeQrScanned: admitLikeQrScanned,
   };
 })(window);
