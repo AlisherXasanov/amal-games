@@ -97,6 +97,18 @@ main { padding: 0 14px 28px; max-width: 540px; margin: 0 auto; }
 .share-card img {
   display: block; max-width: 100%; max-height: 220px; border-radius: 12px; margin-top: 8px;
 }
+.play-modes, .diff-row {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; align-items: center;
+}
+.play-modes .pm, .diff-row .df {
+  border: 1px solid rgba(255,255,255,.18); border-radius: 999px;
+  padding: 8px 12px; background: rgba(255,255,255,.08); color: #fff;
+  font: 800 12px inherit; cursor: pointer;
+}
+.play-modes .pm.on, .diff-row .df.on {
+  background: rgba(251,191,36,.3); border-color: #fbbf24; color: #fde68a;
+}
+.diff-row span { font-size: 12px; color: var(--mute); font-weight: 700; margin-right: 4px; }
 .mode-btn {
   display: block; width: 100%; text-align: left; margin-bottom: 8px;
   border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px 16px;

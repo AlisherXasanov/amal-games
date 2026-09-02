@@ -216,7 +216,44 @@
   }
 
   /* ——— Games panel ——— */
+  var playMode = "ai";
+  var difficulty = 2;
+  var currentGame = "";
+  var THANKS = [
+    "Спасибо, что зашли! Я так рада вас видеть 💜",
+    "Спасибо, что вообще зашли — вы лучшие!",
+    "Я знала, что вы зайдёте. Спасибо, что пришли!",
+    "Спасибо, что зашли в клуб. Давно хотела с вами встретиться!",
+    "Ура, вы здесь! Спасибо, что зашли — давайте играть вместе ⭐",
+  ];
+
+  function isHost() {
+    try {
+      if (window.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) return true;
+      if (window.AmalFriendsNet && AmalFriendsNet.isOwner && AmalFriendsNet.isOwner()) return true;
+    } catch (_) {}
+    var n = (nick() || "").toLowerCase();
+    return n === "амаль" || n === "amal";
+  }
+
+  function hostThank(friendName) {
+    if (!isHost()) return;
+    var phrase = THANKS[Math.floor(Math.random() * THANKS.length)];
+    var text = "💜 " + phrase + (friendName ? " (привет, " + friendName + "!)" : "");
+    showJoinBanner(text);
+    toast(text, "friend");
+    if (window.AmalFriendsNet && AmalFriendsNet.sendText) AmalFriendsNet.sendText(text);
+  }
+
+  function syncDiffUi() {
+    document.querySelectorAll("#diff-row .df").forEach(function (b) {
+      b.classList.toggle("on", Number(b.getAttribute("data-diff")) === difficulty);
+    });
+    $("diff-row").style.opacity = playMode === "ai" ? "1" : "0.45";
+  }
+
   function openGame(name) {
+    currentGame = name;
     $("game-pick").hidden = true;
     $("game-stage").hidden = false;
     var titles = {
@@ -224,13 +261,24 @@
       xo: "❌⭕ Крестики-нолики", memory: "🃏 Память", tap: "👏 Хлоп-хлоп",
     };
     $("game-title").textContent = titles[name] || "Игра";
+    if (playMode === "online" && window.AmalFriendsNet) {
+      if (AmalFriendsNet.friendCount && AmalFriendsNet.friendCount() < 1) {
+        toast("Пока нет друга онлайн — позови или выбери бота");
+      } else {
+        AmalFriendsNet.invitePlay(name, titles[name] || name);
+      }
+      AmalFriendsNet.setPlace && AmalFriendsNet.setPlace(titles[name] || name);
+    }
     ClubBoardGames.mount({
       host: $("board-host"),
       status: $("game-status"),
       toast: toast,
-      vsAi: true,
+      mode: playMode,
+      difficulty: difficulty,
+      onMove: function (payload) {
+        if (playMode === "online" && window.AmalFriendsNet) AmalFriendsNet.sendBoard(payload);
+      },
     });
-    $("btn-vs").textContent = "👤 vs 🤖";
     ClubBoardGames.start(name);
   }
 
@@ -308,6 +356,25 @@
     renderShare();
 
     // games
+    $("play-modes").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-mode]");
+      if (!b) return;
+      playMode = b.getAttribute("data-mode");
+      document.querySelectorAll("#play-modes .pm").forEach(function (x) {
+        x.classList.toggle("on", x === b);
+      });
+      syncDiffUi();
+      toast(playMode === "online" ? "Режим: с другом онлайн ⭐" : playMode === "hotseat" ? "Режим: вдвоём на экране" : "Режим: против бота");
+    });
+    $("diff-row").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-diff]");
+      if (!b) return;
+      difficulty = Number(b.getAttribute("data-diff")) || 2;
+      syncDiffUi();
+      ClubBoardGames.setDifficulty(difficulty);
+      toast(difficulty === 1 ? "Бот лёгкий 🌱" : difficulty === 3 ? "Бот экстрим 🔥" : "Бот средний 🧠");
+    });
+    syncDiffUi();
     $("game-pick").addEventListener("click", function (e) {
       var b = e.target.closest("[data-game]");
       if (b) openGame(b.getAttribute("data-game"));
@@ -317,11 +384,14 @@
       $("game-stage").hidden = true;
       $("game-pick").hidden = false;
     };
-    $("btn-vs").onclick = function () {
-      var next = !ClubBoardGames.isVsAi();
-      ClubBoardGames.setVsAi(next);
-      $("btn-vs").textContent = next ? "👤 vs 🤖" : "👥 вдвоём";
-      toast(next ? "Против компьютера" : "Вдвоём на одном экране");
+    $("btn-invite").onclick = function () {
+      if (!window.AmalFriendsNet) return;
+      if (AmalFriendsNet.friendCount && AmalFriendsNet.friendCount() < 1) {
+        toast("Друг ещё не зашёл — подожди или скинь ссылку");
+        return;
+      }
+      AmalFriendsNet.invitePlay(currentGame || "xo", $("game-title").textContent || "игру");
+      toast("Приглашение отправлено друзьям!");
     };
 
     // rest
@@ -339,23 +409,37 @@
     $("btn-surprise-ok").onclick = claimSurprise;
     if (hasGolden()) document.body.classList.add("golden-night");
 
-    // net — оповещаем, когда друг зашёл
+    // net — оповещаем, когда друг зашёл (только если друг РЕАЛЬНО пришёл)
     if (window.AmalFriendsNet) {
       AmalFriendsNet.onFriendJoin(function (info) {
-        var place = info.place ? " в «" + info.place + "»" : " в твою игру";
+        if (!info || !info.name) return;
+        var place = info.place ? " в «" + info.place + "»" : " в клуб";
         var msg = "👋 Друг «" + info.name + "» зашёл" + place + "!";
         showJoinBanner(msg);
         toast(msg, "friend");
         ding();
+        hostThank(info.name);
         renderChat();
       });
       AmalFriendsNet.onFriendLeave(function (info) {
+        if (!info || !info.name) return;
         toast("👋 " + info.name + " вышел");
+      });
+      AmalFriendsNet.onBoard(function (data) {
+        if (!data) return;
+        if (data.type === "invite") {
+          toast("🎮 " + data.from + " зовёт: " + (data.label || data.game), "friend");
+          showJoinBanner("Друг зовёт играть: " + (data.label || data.game) + " · вкладка Настолки → «С другом»");
+          return;
+        }
+        if (playMode === "online") ClubBoardGames.applyRemote(data);
       });
       AmalFriendsNet.initLite(function (ok) {
         if (ok) {
           toast("Клуб онлайн · жду друзей 💜");
-          showJoinBanner("Ты в клубе. Когда друг зайдёт — я скажу!");
+          // без ложных «друг зашёл», пока никого нет
+          var box = $("online-box");
+          if (box) box.textContent = "Ты в клубе. Когда друг зайдёт — скажу и поблагодарю.";
         } else {
           toast("Нет сети — обнови страницу");
         }
@@ -367,9 +451,11 @@
       setInterval(renderChat, 2000);
       setInterval(function () {
         var box = $("online-box");
-        if (!box) return;
-        if (AmalFriendsNet.renderOnlineInto) AmalFriendsNet.renderOnlineInto(box);
-        else box.textContent = "💜 Имя: " + nick() + (hasGolden() ? " · ⭐ " + stars() + " звёзд" : "");
+        if (!box || !AmalFriendsNet.renderOnlineInto) return;
+        AmalFriendsNet.renderOnlineInto(box);
+        if (hasGolden() && AmalFriendsNet.friendCount) {
+          box.textContent += " · ⭐ " + stars();
+        }
       }, 2000);
     }
 

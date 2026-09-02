@@ -12,7 +12,7 @@
     window.__SCHOOL_PARTY_OK__ = true;
     if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) AmalOwnerSession.admitLikeQrScanned();
   </script>
-  <link rel="stylesheet" href="./club.css?v=2" />
+  <link rel="stylesheet" href="./club.css?v=3" />
 </head>
 <body>
   <div id="app">
@@ -76,20 +76,31 @@
       </section>
 
       <section class="panel" id="panel-games">
-        <p class="tip">🎮 Выбери игру. Можно играть вдвоём на одном экране или против компьютера.</p>
+        <p class="tip">🎮 Можно с <strong>другом онлайн</strong>, вдвоём на одном экране или против бота. У бота есть уровни: лёгкий → экстрим.</p>
+        <div class="play-modes" id="play-modes">
+          <button type="button" class="pm on" data-mode="ai">🤖 Бот</button>
+          <button type="button" class="pm" data-mode="hotseat">👥 На одном экране</button>
+          <button type="button" class="pm" data-mode="online">⭐ С другом онлайн</button>
+        </div>
+        <div class="diff-row" id="diff-row">
+          <span>Сложность бота:</span>
+          <button type="button" class="df" data-diff="1">🌱 Лёгкий</button>
+          <button type="button" class="df on" data-diff="2">🧠 Средний</button>
+          <button type="button" class="df" data-diff="3">🔥 Экстрим</button>
+        </div>
         <div class="game-pick" id="game-pick">
-          <button type="button" class="mode-btn" data-game="chess"><strong>♟️ Шахматы</strong><span>классика · vs ПК или вдвоём</span></button>
-          <button type="button" class="mode-btn" data-game="checkers"><strong>🔴 Шашки</strong><span>русские шашки · вдвоём / vs ПК</span></button>
-          <button type="button" class="mode-btn" data-game="sea"><strong>🚢 Морской бой</strong><span>найди корабли друга</span></button>
-          <button type="button" class="mode-btn" data-game="xo"><strong>❌⭕ Крестики-нолики</strong><span>быстрая дуэль</span></button>
+          <button type="button" class="mode-btn" data-game="chess"><strong>♟️ Шахматы</strong><span>с другом / бот по уровню</span></button>
+          <button type="button" class="mode-btn" data-game="checkers"><strong>🔴 Шашки</strong><span>с другом / бот по уровню</span></button>
+          <button type="button" class="mode-btn" data-game="sea"><strong>🚢 Морской бой</strong><span>против бота</span></button>
+          <button type="button" class="mode-btn" data-game="xo"><strong>❌⭕ Крестики-нолики</strong><span>удобно с другом онлайн</span></button>
           <button type="button" class="mode-btn" data-game="memory"><strong>🃏 Память</strong><span>найди пары</span></button>
-          <button type="button" class="mode-btn" data-game="tap"><strong>👏 Хлоп-хлоп</strong><span>кто быстрее нажмёт</span></button>
+          <button type="button" class="mode-btn" data-game="tap"><strong>👏 Хлоп-хлоп</strong><span>кто быстрее</span></button>
         </div>
         <div id="game-stage" class="game-stage" hidden>
           <div class="game-bar">
             <button type="button" class="ghost" id="btn-game-back">← Настолки</button>
             <strong id="game-title">Игра</strong>
-            <button type="button" id="btn-vs">👤 vs 🤖</button>
+            <button type="button" id="btn-invite">📣 Звать друга</button>
           </div>
           <p class="game-status" id="game-status">—</p>
           <div id="board-host"></div>
@@ -128,8 +139,8 @@
   <script src="../owner-cheats.js"></script>
   <script src="../shared/amal-device.js?v=8"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
-  <script src="../shared/amal-friends-net.js?v=5"></script>
-  <script src="./board-games.js?v=1"></script>
-  <script src="./club.js?v=2"></script>
+  <script src="../shared/amal-friends-net.js?v=6"></script>
+  <script src="./board-games.js?v=2"></script>
+  <script src="./club.js?v=3"></script>
 </body>
 </html>

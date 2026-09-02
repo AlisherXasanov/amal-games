@@ -1,21 +1,52 @@
 /**
  * Настолки клуба друзей: шахматы, шашки, морской бой, крестики, память, хлопки.
- * Режим: hotseat (вдвоём) или vs AI.
+ * Режимы: бот (лёгкий/средний/экстрим) · вдвоём на экране · с другом онлайн.
  */
 (function (global) {
   "use strict";
 
-  var host, statusEl, vsAi = true, current = null, onToast = function () {};
+  var host, statusEl, vsAi = true, playMode = "ai", difficulty = 2;
+  var current = null, onToast = function () {}, onMove = null, applyFn = null;
 
   function setStatus(t) { if (statusEl) statusEl.textContent = t; }
-  function clear() { if (host) host.innerHTML = ""; current = null; }
-
+  function clear() { if (host) host.innerHTML = ""; current = null; applyFn = null; }
   function toast(m) { onToast(m); }
+  function emit(payload) {
+    if (typeof onMove === "function") onMove(payload);
+  }
+  function useAi() { return playMode === "ai" || (playMode !== "hotseat" && playMode !== "online" && vsAi); }
+  function online() { return playMode === "online"; }
+
+  function pickSmart(empties, board, me, enemy) {
+    // экстрим: выиграть / блок; средний: иногда; лёгкий: почти рандом
+    var lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    function findWin(side) {
+      for (var i = 0; i < lines.length; i++) {
+        var L = lines[i], vals = [board[L[0]], board[L[1]], board[L[2]]];
+        var count = vals.filter(function (v) { return v === side; }).length;
+        var empty = vals.filter(function (v) { return !v; }).length;
+        if (count === 2 && empty === 1) {
+          for (var j = 0; j < 3; j++) if (!board[L[j]]) return L[j];
+        }
+      }
+      return -1;
+    }
+    if (difficulty >= 3) {
+      var w = findWin(me); if (w >= 0) return w;
+      var b = findWin(enemy); if (b >= 0) return b;
+      if (empties.indexOf(4) >= 0) return 4;
+    } else if (difficulty === 2 && Math.random() < 0.55) {
+      var w2 = findWin(me); if (w2 >= 0) return w2;
+      var b2 = findWin(enemy); if (b2 >= 0 && Math.random() < 0.7) return b2;
+    }
+    return empties[Math.floor(Math.random() * empties.length)];
+  }
 
   /* ——— Крестики-нолики ——— */
   function startXO() {
     clear();
     var board = [0,0,0,0,0,0,0,0,0], turn = 1, over = false;
+    var mySide = 1;
     var wrap = document.createElement("div");
     wrap.className = "board xo";
     wrap.style.gridTemplateColumns = "repeat(3,1fr)";
@@ -31,8 +62,18 @@
       var empties = [];
       for (var i = 0; i < 9; i++) if (!board[i]) empties.push(i);
       if (!empties.length) return;
-      var pick = empties[Math.floor(Math.random() * empties.length)];
+      var pick = pickSmart(empties, board, 2, 1);
       board[pick] = 2;
+    }
+    function afterMove() {
+      var w = winner(board);
+      if (w) {
+        over = true;
+        setStatus(w === 3 ? "Ничья!" : (w === 1 ? "❌ победил!" : "⭕ победил!"));
+        render();
+        return true;
+      }
+      return false;
     }
     function render() {
       wrap.innerHTML = "";
@@ -43,14 +84,13 @@
         c.textContent = v === 1 ? "❌" : v === 2 ? "⭕" : "";
         c.onclick = function () {
           if (over || board[i]) return;
+          if (online() && turn !== mySide) { toast("Сейчас ход друга"); return; }
           board[i] = turn;
-          var w = winner(board);
-          if (w) { over = true; setStatus(w === 3 ? "Ничья!" : (w === 1 ? "❌ победил!" : "⭕ победил!")); render(); return; }
-          if (vsAi && turn === 1) {
+          emit({ game: "xo", type: "move", i: i, side: turn, board: board.slice() });
+          if (afterMove()) return;
+          if (useAi() && turn === 1) {
             aiMove();
-            w = winner(board);
-            if (w) { over = true; setStatus(w === 3 ? "Ничья!" : (w === 1 ? "❌ победил!" : "⭕ победил!")); }
-            else setStatus("Твой ход ❌");
+            if (!afterMove()) setStatus("Твой ход ❌");
           } else {
             turn = turn === 1 ? 2 : 1;
             setStatus(turn === 1 ? "Ход ❌" : "Ход ⭕");
@@ -60,8 +100,24 @@
         wrap.appendChild(c);
       });
     }
+    applyFn = function (data) {
+      if (!data || data.game !== "xo") return;
+      if (data.type === "move" && typeof data.i === "number" && !board[data.i] && !over) {
+        board[data.i] = data.side || turn;
+        turn = board[data.i] === 1 ? 2 : 1;
+        afterMove();
+        if (!over) setStatus(turn === mySide ? "Твой ход!" : "Ход друга…");
+        render();
+      }
+      if (data.type === "start" && data.board) {
+        board = data.board.slice();
+        turn = data.turn || 1;
+        over = false;
+        render();
+      }
+    };
     host.appendChild(wrap);
-    setStatus(vsAi ? "Ты ❌ · компьютер ⭕" : "Ход ❌");
+    setStatus(useAi() ? ("Ты ❌ · бот ⭕ (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : online() ? "С другом онлайн · ход ❌" : "Ход ❌");
     render();
     current = "xo";
   }
@@ -196,7 +252,14 @@
         movesFrom(x, y).forEach(function (m) { all.push([x, y, m[0], m[1], m[2]]); });
       }
       if (!all.length) { setStatus("⚪ победили!"); return; }
-      var pick = all[Math.floor(Math.random() * all.length)];
+      // лёгкий — случайно; средний/экстрим — чаще бить
+      all.sort(function (a, b) {
+        var ca = a[4] ? 2 : 0;
+        var cb = b[4] ? 2 : 0;
+        return cb - ca;
+      });
+      var pool = difficulty >= 2 ? all.slice(0, Math.max(1, Math.ceil(all.length * (difficulty === 3 ? 0.25 : 0.5)))) : all;
+      var pick = pool[Math.floor(Math.random() * pool.length)];
       applyMove(pick[0], pick[1], pick[2], pick[3], pick[4]);
       setStatus("Твой ход ⚪");
       render();
@@ -211,7 +274,7 @@
         c.textContent = piece(board[y][x]);
         (function (cx, cy) {
           c.onclick = function () {
-            if (vsAi && turn === 2) return;
+            if (useAi() && turn === 2) return;
             if (sel && sel[0] === cx && sel[1] === cy) { sel = null; render(); return; }
             if (isMine(board[cy][cx])) { sel = [cx, cy]; render(); return; }
             if (!sel) return;
@@ -220,11 +283,12 @@
             for (var i = 0; i < ms.length; i++) if (ms[i][0] === cx && ms[i][1] === cy) hit = ms[i];
             if (!hit) return;
             applyMove(sel[0], sel[1], cx, cy, hit[2]);
+            emit({ game: "checkers", type: "move", fx: sel[0], fy: sel[1], tx: cx, ty: cy, cap: hit[2] });
             sel = null;
-            if (vsAi && turn === 2) {
-              setStatus("Ход компьютера…");
+            if (useAi() && turn === 2) {
+              setStatus("Ход бота…");
               render();
-              setTimeout(aiTurn, 350);
+              setTimeout(aiTurn, difficulty === 1 ? 200 : 350);
             } else {
               setStatus(turn === 1 ? "Ход ⚪" : "Ход 🔴");
               render();
@@ -235,7 +299,7 @@
       }
     }
     host.appendChild(wrap);
-    setStatus(vsAi ? "Ты ⚪ · компьютер 🔴" : "Ход ⚪");
+    setStatus(useAi() ? ("Ты ⚪ · бот 🔴 (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : "Ход ⚪");
     render();
     current = "checkers";
   }
@@ -325,13 +389,22 @@
         genMoves(x, y).forEach(function (m) { all.push([x, y, m[0], m[1]]); });
       }
       if (!all.length) { setStatus("Белые победили! 🎉"); return; }
-      // предпочесть взятие
       all.sort(function (a, b) {
         var ca = board[a[3]][a[2]] ? 1 : 0;
         var cb = board[b[3]][b[2]] ? 1 : 0;
+        if (difficulty >= 3) {
+          // чуть умнее: бить дорогие фигуры
+          var score = function (m) {
+            var p = board[m[3]][m[2]];
+            if (!p) return 0;
+            return ({ P: 1, N: 3, B: 3, R: 5, Q: 9, K: 99 }[p[1]] || 0);
+          };
+          return score(b) - score(a);
+        }
         return cb - ca;
       });
-      var pick = all[Math.floor(Math.random() * Math.min(3, all.length))];
+      var top = difficulty === 1 ? all : all.slice(0, Math.max(1, Math.ceil(all.length * (difficulty === 3 ? 0.2 : 0.4))));
+      var pick = top[Math.floor(Math.random() * top.length)];
       doMove(pick[0], pick[1], pick[2], pick[3]);
       setStatus("Твой ход ♔");
       render();
@@ -348,19 +421,21 @@
         c.textContent = p ? CHESS[p] : "";
         (function (cx, cy) {
           c.onclick = function () {
-            if (vsAi && turn === "b") return;
+            if (useAi() && turn === "b") return;
             var piece = board[cy][cx];
             if (sel && sel[0] === cx && sel[1] === cy) { sel = null; render(); return; }
             if (piece && color(piece) === turn) { sel = [cx, cy]; render(); return; }
             if (!sel) return;
             var ok = genMoves(sel[0], sel[1]).some(function (m) { return m[0] === cx && m[1] === cy; });
             if (!ok) return;
-            doMove(sel[0], sel[1], cx, cy);
+            var fx = sel[0], fy = sel[1];
+            doMove(fx, fy, cx, cy);
+            emit({ game: "chess", type: "move", fx: fx, fy: fy, tx: cx, ty: cy });
             sel = null;
-            if (vsAi && turn === "b") {
-              setStatus("Ход компьютера…");
+            if (useAi() && turn === "b") {
+              setStatus("Ход бота…");
               render();
-              setTimeout(aiMove, 280);
+              setTimeout(aiMove, difficulty === 1 ? 180 : 280);
             } else {
               setStatus(turn === "w" ? "Ход белых ♔" : "Ход чёрных ♚");
               render();
@@ -371,7 +446,7 @@
       }
     }
     host.appendChild(wrap);
-    setStatus(vsAi ? "Ты белые ♔ · компьютер ♚" : "Ход белых ♔");
+    setStatus(useAi() ? ("Ты белые ♔ · бот (" + (difficulty === 1 ? "лёгкий" : difficulty === 3 ? "экстрим" : "средний") + ")") : "Ход белых ♔");
     render();
     current = "chess";
   }
@@ -489,10 +564,29 @@
       host = opts.host;
       statusEl = opts.status;
       onToast = opts.toast || function () {};
-      vsAi = opts.vsAi !== false;
+      onMove = opts.onMove || null;
+      if (opts.mode) playMode = opts.mode;
+      if (opts.difficulty) difficulty = opts.difficulty;
+      vsAi = playMode === "ai";
     },
-    setVsAi: function (v) { vsAi = !!v; },
-    isVsAi: function () { return vsAi; },
+    setVsAi: function (v) {
+      vsAi = !!v;
+      playMode = v ? "ai" : "hotseat";
+    },
+    isVsAi: function () { return playMode === "ai"; },
+    setMode: function (m) {
+      playMode = m === "online" ? "online" : m === "hotseat" ? "hotseat" : "ai";
+      vsAi = playMode === "ai";
+    },
+    getMode: function () { return playMode; },
+    setDifficulty: function (d) {
+      difficulty = d === 1 || d === 3 ? d : 2;
+    },
+    getDifficulty: function () { return difficulty; },
+    applyRemote: function (data) {
+      if (applyFn) applyFn(data);
+    },
+    current: function () { return current; },
     start: start,
     clear: clear,
   };

@@ -21,6 +21,8 @@
   var sendRace = null;
   var sendResult = null;
   var sendHello = null;
+  var sendBoard = null;
+  var boardListeners = [];
   var messages = [];
   var peers = {};
   var activities = [];
@@ -238,6 +240,13 @@
         addMessage({ name: "🏆", text: txt, t: Date.now() });
       });
 
+      var boardAct = room.makeAction("board");
+      sendBoard = boardAct[0];
+      boardAct[1](function (data) {
+        if (!data || data.from === nick()) return;
+        boardListeners.forEach(function (fn) { try { fn(data); } catch (_) {} });
+      });
+
       netReady = true;
       room.onPeerJoin(function (peerId) {
         peers[peerId] = { name: "?", alive: true, t: Date.now(), place: "" };
@@ -452,6 +461,43 @@
     },
 
     isOnline: function () { return !!netReady; },
+
+    friendCount: function () {
+      var me = nick();
+      return Object.keys(peers).filter(function (id) {
+        return peers[id].alive && peers[id].name && peers[id].name !== "?" && peers[id].name !== me;
+      }).length;
+    },
+
+    friendNames: function () {
+      var me = nick();
+      var out = [];
+      Object.keys(peers).forEach(function (id) {
+        var p = peers[id];
+        if (p.alive && p.name && p.name !== "?" && p.name !== me) out.push(p.name);
+      });
+      return out;
+    },
+
+    sendBoard: function (payload) {
+      if (!sendBoard || !nick()) return false;
+      payload = payload || {};
+      payload.from = nick();
+      payload.t = Date.now();
+      sendBoard(payload);
+      return true;
+    },
+
+    onBoard: function (fn) {
+      if (typeof fn === "function") boardListeners.push(fn);
+    },
+
+    invitePlay: function (game, label) {
+      if (!nick()) return;
+      var text = "🎮 " + nick() + " зовёт играть: " + (label || game) + "! Заходи в Настолки → тот же режим «С другом»";
+      AmalFriendsNet.send(text);
+      AmalFriendsNet.sendBoard({ type: "invite", game: game, label: label || game });
+    },
 
     nick: nick,
     setNick: setNick,
