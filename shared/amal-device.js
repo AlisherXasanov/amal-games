@@ -134,15 +134,28 @@
   function isSiteOwner() {
     try {
       if (global.__AMAL_OWNER__ === true) return true;
-      var q = query();
-      if (q.get("owner") === "AmalOwner2026") {
+      if (global.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) {
         global.__AMAL_OWNER__ = true;
-        try { localStorage.setItem("amal-owner-v1", "1"); } catch (_) {}
+        return true;
+      }
+      var q = query();
+      var ownerCode = (q.get("owner") || "").trim().toLowerCase();
+      var ownerCodes = ["amalowner2026", "amal", "1234", "buddy"];
+      if (ownerCodes.indexOf(ownerCode) >= 0) {
+        global.__AMAL_OWNER__ = true;
+        try {
+          localStorage.setItem("amal-owner-v1", "1");
+          localStorage.setItem("amal-owner-v3", "1");
+          localStorage.setItem(STORE_FRIENDS, "1");
+        } catch (_) {}
         return true;
       }
       if (["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
         return localStorage.getItem(k) === "1";
-      })) return true;
+      })) {
+        global.__AMAL_OWNER__ = true;
+        return true;
+      }
     } catch (_) {}
     return false;
   }

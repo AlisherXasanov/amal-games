@@ -83,6 +83,10 @@
         window.__AMAL_OWNER__ = true;
         return true;
       }
+      if (["amal", "1234", "buddy", "amalowner2026"].indexOf((q.get("owner") || "").toLowerCase()) >= 0) {
+        window.__AMAL_OWNER__ = true;
+        return true;
+      }
       if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" || q.get("friends") === "1") {
         return true;
       }
@@ -94,7 +98,8 @@
     }
     try {
       return localStorage.getItem("amal-friends-access-v1") === "1" ||
-        localStorage.getItem("amal-owner-v1") === "1";
+        localStorage.getItem("amal-owner-v1") === "1" ||
+        localStorage.getItem("amal-owner-v3") === "1";
     } catch (_) { return false; }
   }
 

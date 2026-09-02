@@ -8,26 +8,38 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=3" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
+  <script src="./owner-cheats.js"></script>
   <script>
     (function () {
-      try {
-        var q = new URLSearchParams(location.search);
-        if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" ||
-            q.get("owner") === "AmalOwner2026" || q.get("friends") === "1") {
+      var q = new URLSearchParams(location.search);
+      var owner = q.get("owner");
+      if (owner === "AmalOwner2026" || owner === "amal" || owner === "1234" || owner === "buddy") {
+        window.__AMAL_OWNER__ = true;
+        try {
+          localStorage.setItem("amal-owner-v1", "1");
+          localStorage.setItem("amal-owner-v3", "1");
           localStorage.setItem("amal-friends-access-v1", "1");
+        } catch (_) {}
+      }
+      if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" || q.get("friends") === "1") {
+        try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
+      }
+      try {
+        if (localStorage.getItem("amal-owner-v3") === "1" || localStorage.getItem("amal-owner-v1") === "1") {
+          window.__AMAL_OWNER__ = true;
         }
-        if (q.get("owner") === "AmalOwner2026") localStorage.setItem("amal-owner-v1", "1");
       } catch (_) {}
     })();
   </script>
-  <script src="./shared/amal-device.js?v=4"></script>
+  <script src="./shared/amal-device.js?v=6"></script>
 </head>
 <body>
   <div id="locked" class="lock-screen" hidden>
     <div class="big">🔐</div>
     <h2>Только для друзей</h2>
-    <p>Нужен <strong>секретный QR-код</strong> от Амаля — не обычный из класса.</p>
-    <p style="margin-top:12px"><a href="go.html?v=1">← Выбрать версию</a></p>
+    <p>Это закрытая зона. <strong>QR не нужен</strong> — достаточно ссылки от Амаля.</p>
+    <p style="margin-top:10px"><a href="go.html?v=1">← Выбрать версию</a></p>
+    <p style="margin-top:10px"><button type="button" id="amal-enter-btn" style="border:0;border-radius:999px;padding:12px 18px;font:800 14px inherit;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f472b6);color:#111">👑 Я Амаль — войти</button></p>
   </div>
 
   <!-- Приветствие при первом заходе по секретному QR -->
@@ -46,7 +58,7 @@
     <div id="device-switcher-slot"></div>
     <div class="top">
       <h1>⭐ Эксклюзив</h1>
-      <p class="device-tag">Только для друзей · секретный QR</p>
+      <p class="device-tag" id="friends-tag">Закрытая зона · только команда Амаля</p>
     </div>
 
     <nav class="tabs" id="tabs">
@@ -59,7 +71,7 @@
     </nav>
 
     <section class="panel on" id="panel-home">
-      <p class="tip">💜 Закрытая команда · только друзья с секретным QR</p>
+      <p class="tip">💜 Закрытая команда · ссылка от Амаля (QR — только чтобы распечатать друзьям)</p>
       <div class="cat-grid">
         <a class="cat-btn" href="milashki/?v=7&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки — играть!</a>
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзивные игры</button>
@@ -118,7 +130,7 @@
     </section>
 
     <section class="panel" id="panel-chat">
-      <p class="tip">💬 Только друзья с секретным QR. Напиши имя → пиши. Амаль видит, кто зашёл (если имя «Амаль»).</p>
+      <p class="tip">💬 Напиши имя → пиши друзьям. Амаль видит, кто зашёл.</p>
       <div id="friends-chat-root"></div>
     </section>
 
@@ -136,13 +148,27 @@
   <script src="./shared/amal-friends-net.js?v=3"></script>
   <script>
     (function () {
-      var ok = AmalDevice.friendsAllowed() ||
-        (AmalDevice.isSiteOwner && AmalDevice.isSiteOwner());
+      var owner = AmalDevice.isSiteOwner && AmalDevice.isSiteOwner();
+      var ok = owner || AmalDevice.friendsAllowed();
+      var enterBtn = document.getElementById("amal-enter-btn");
+      if (enterBtn) {
+        enterBtn.onclick = function () {
+          try {
+            localStorage.setItem("amal-owner-v3", "1");
+            localStorage.setItem("amal-owner-v1", "1");
+            localStorage.setItem("amal-friends-access-v1", "1");
+          } catch (_) {}
+          window.__AMAL_OWNER__ = true;
+          location.href = "friends.html?v=4&stay=1";
+        };
+      }
       if (!ok) {
         document.getElementById("locked").hidden = false;
         return;
       }
       document.getElementById("hub-root").hidden = false;
+      var tag = document.getElementById("friends-tag");
+      if (tag && owner) tag.textContent = "👑 Амаль — твоя зона · без QR";
       AmalDevice.setHub("friends");
       AmalDevice.remember(AmalDevice.detect(), "friends");
       AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });

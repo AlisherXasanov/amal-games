@@ -10,7 +10,8 @@
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
-      var owner = q.get("owner") === "AmalOwner2026";
+      var ownerCode = (q.get("owner") || "").toLowerCase();
+      var owner = ownerCode === "amalowner2026" || ownerCode === "amal" || ownerCode === "1234" || ownerCode === "buddy";
       var friends = q.get("from") === "friends" || q.get("code") === "amal-star-friends" || q.get("friends") === "1";
       if (owner) {
         window.__AMAL_OWNER__ = true;
@@ -18,11 +19,17 @@
       }
       if (friends) window.__SCHOOL_PARTY_OK__ = true;
       try {
+        if (localStorage.getItem("amal-owner-v3") === "1" ||
+            localStorage.getItem("amal-owner-v1") === "1") {
+          window.__AMAL_OWNER__ = true;
+          window.__SCHOOL_PARTY_OK__ = true;
+        }
         if (owner || friends) localStorage.setItem("amal-friends-access-v1", "1");
-        if (owner) localStorage.setItem("amal-owner-v1", "1");
-        if (!window.__SCHOOL_PARTY_OK__ && (
-          localStorage.getItem("amal-owner-v1") === "1" ||
-          localStorage.getItem("amal-friends-access-v1") === "1")) {
+        if (owner) {
+          localStorage.setItem("amal-owner-v1", "1");
+          localStorage.setItem("amal-owner-v3", "1");
+        }
+        if (!window.__SCHOOL_PARTY_OK__ && localStorage.getItem("amal-friends-access-v1") === "1") {
           window.__SCHOOL_PARTY_OK__ = true;
         }
       } catch (_) {}
@@ -141,9 +148,9 @@
     <div>
       <div style="font-size:48px">🔐</div>
       <h2>Только для друзей</h2>
-      <p>Открой через <strong>⭐ Друзья</strong> или секретный QR.</p>
-      <p style="margin-top:10px"><a href="../friends.html?from=friends&stay=1">← К друзьям</a></p>
-      <p style="margin-top:8px;font-size:12px;color:#a5b4fc">Амаль (админ): <a href="?owner=AmalOwner2026&v=5&fresh=1">войти как хозяин</a></p>
+      <p>Закрытая игра. <strong>QR не нужен</strong> — открой из ⭐ Друзья или нажми ниже.</p>
+      <p style="margin-top:10px"><a href="../friends.html?v=4&stay=1">← К друзьям</a></p>
+      <p style="margin-top:10px"><button type="button" id="amal-party-enter" style="border:0;border-radius:999px;padding:12px 18px;font:800 14px inherit;cursor:pointer;background:linear-gradient(135deg,#fbbf24,#f472b6);color:#111">👑 Я Амаль — играть</button></p>
     </div>
   </div>
 
@@ -208,11 +215,25 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="../shared/amal-device.js?v=5"></script>
+  <script src="../owner-cheats.js"></script>
+  <script src="../shared/amal-device.js?v=6"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
   <script src="../shared/amal-friends-net.js?v=3"></script>
-  <script src="./game.js?v=5"></script>
+  <script src="./game.js?v=6"></script>
   <script>
+    var _partyEnter = document.getElementById("amal-party-enter");
+    if (_partyEnter) {
+      _partyEnter.onclick = function () {
+        try {
+          localStorage.setItem("amal-owner-v3", "1");
+          localStorage.setItem("amal-owner-v1", "1");
+          localStorage.setItem("amal-friends-access-v1", "1");
+        } catch (_) {}
+        window.__AMAL_OWNER__ = true;
+        window.__SCHOOL_PARTY_OK__ = true;
+        location.href = "./?owner=amal&v=6&fresh=1";
+      };
+    }
     if (window.__SCHOOL_PARTY_OK__) {
       var _unlock = function () {
         var L = document.getElementById("locked");
