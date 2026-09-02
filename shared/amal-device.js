@@ -137,6 +137,10 @@
       try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
       return true;
     }
+    if (q.get("from") === "friends" || q.get("friends") === "1") {
+      try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
+      return true;
+    }
     try { return localStorage.getItem(STORE_FRIENDS) === "1"; } catch (_) { return false; }
   }
 

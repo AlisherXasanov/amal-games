@@ -317,6 +317,7 @@
   }
 
   function init() {
+    if (window.AmalHubBack && AmalHubBack.wire) AmalHubBack.wire();
     if (!window.AmalDevice || !AmalDevice.friendsAllowed()) {
       $("locked").hidden = false;
       return;
