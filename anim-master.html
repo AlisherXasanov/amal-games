@@ -60,7 +60,7 @@
 
   <div class="hero">
     <h1>🎬 Кадр</h1>
-    <span class="tag">мастер анимаций · v2</span>
+    <span class="tag">мастер анимаций · v3</span>
     <p>Напиши, какой мульт сделать — Кадр нарисует сам. Плавно, как настоящий, не «страшная нейросеть».</p>
   </div>
 
@@ -82,7 +82,7 @@
   <p class="status" id="status">Нажми пример или напиши своё</p>
   <input class="nick" id="nick" maxlength="16" placeholder="Имя (для мемов)" />
 
-  <script src="./shared/anim-master-ai.js?v=2"></script>
+  <script src="./shared/anim-master-ai.js?v=3"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/amal-meme-net.js?v=7"></script>
   <script>
@@ -178,7 +178,7 @@
         document.getElementById("prompt").value = qParam;
         make(qParam);
       } else {
-        make("кот мяу");
+        make(qParam || "клубничный слон");
       }
     })();
   </script>

@@ -38,17 +38,30 @@
     }
   }
 
+  var extra = { text: "" };
+
   function parsePrompt(raw) {
     var t = String(raw || "").toLowerCase();
-    if (/мяу|кот|кош|cat|meow|котик/.test(t)) return { id: "cat", title: "Котик «Мяу!» 🐱", fps: 14 };
-    if (/эльф|труб|brainrot|брейн|брын|укради|steal|pipe|elf/.test(t)) return { id: "elf", title: "Эльф с трубой 🧝", fps: 14 };
-    if (/школ|класс|праздник|линейк|1 сент|первоклас/.test(t)) return { id: "school", title: "Школьный праздник 🎒", fps: 12 };
-    if (/дракон|dragon|огон/.test(t)) return { id: "dragon", title: "Дракон 🔥", fps: 12 };
-    if (/супер|герой|hero|полёт|лет/.test(t)) return { id: "hero", title: "Супергерой 🦸", fps: 14 };
-    if (/танц|dance|пляш/.test(t)) return { id: "dance", title: "Танец 🕺", fps: 14 };
-    if (/косм|ракет|space|rocket/.test(t)) return { id: "rocket", title: "Ракета 🚀", fps: 12 };
-    if (/день рожд|birthday|8 лет|торт/.test(t)) return { id: "birthday", title: "День рождения 🎂", fps: 12 };
-    return { id: "story", title: "Мульт-история ✨", fps: 12 };
+    var orig = String(raw || "").trim();
+    if (/клубнич|strawberry|земляник/.test(t) && /слон|elephant|слоник/.test(t)) {
+      return { id: "strawberry_elephant", title: "Клубничный слон 🍓🐘", fps: 12, understood: "клубничный слон" };
+    }
+    if (/слон|elephant|слоник/.test(t)) return { id: "elephant", title: "Слон 🐘", fps: 12, understood: "слон" };
+    if (/клубнич|strawberry|земляник/.test(t)) return { id: "strawberry", title: "Клубничка 🍓", fps: 12, understood: "клубника" };
+    if (/мяу|кот|кош|cat|meow|котик/.test(t)) return { id: "cat", title: "Котик «Мяу!» 🐱", fps: 14, understood: "кот" };
+    if (/эльф|труб|brainrot|брейн|брын|укради|steal|pipe|elf/.test(t)) {
+      return { id: "elf", title: "Эльф с трубой 🧝", fps: 14, understood: "эльф с трубой" };
+    }
+    if (/школ|класс|праздник|линейк|1 сент|первоклас/.test(t)) {
+      return { id: "school", title: "Школьный праздник 🎒", fps: 12, understood: "школа" };
+    }
+    if (/дракон|dragon|огон/.test(t)) return { id: "dragon", title: "Дракон 🔥", fps: 12, understood: "дракон" };
+    if (/супер|герой|hero|полёт|лет/.test(t)) return { id: "hero", title: "Супергерой 🦸", fps: 14, understood: "супергерой" };
+    if (/танц|dance|пляш/.test(t)) return { id: "dance", title: "Танец 🕺", fps: 14, understood: "танец" };
+    if (/косм|ракет|space|rocket/.test(t)) return { id: "rocket", title: "Ракета 🚀", fps: 12, understood: "ракета" };
+    if (/день рожд|birthday|8 лет|торт/.test(t)) return { id: "birthday", title: "День рождения 🎂", fps: 12, understood: "день рождения" };
+    var short = orig.slice(0, 36);
+    return { id: "custom", title: short || "Твой мульт ✨", fps: 12, understood: short, customText: short };
   }
 
   function drawCat(ctx, f, n) {
@@ -434,27 +447,137 @@
     ctx.fillText("🎈", cx + 70, cy - 30 - pop * 20);
   }
 
-  function drawStory(ctx, f, n) {
+  function drawStrawberryElephant(ctx, f, n) {
     var t = f / n;
-    var bg = ctx.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, "#1e3a5f");
-    bg.addColorStop(1, "#7c3aed");
+    var cycle = t * Math.PI * 2;
+    var bounce = Math.sin(cycle) * 6;
+    var trunkWave = Math.sin(cycle * 2) * 18;
+
+    var bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#ecfccb");
+    bg.addColorStop(1, "#bbf7d0");
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#4ade80";
+    ctx.fillRect(0, H * 0.72, W, H * 0.28);
 
-    for (var i = 0; i < 24; i++) {
-      var a = t * Math.PI * 2 + i * 0.5;
-      ctx.fillStyle = i % 2 ? "#fde68a" : "#f472b6";
+    var cx = W * 0.5;
+    var cy = H * 0.5 + bounce;
+    ctx.fillStyle = "rgba(0,0,0,.1)";
+    ctx.beginPath();
+    ctx.ellipse(cx, H * 0.82, 70, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#dc2626";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 10, 72, 58, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fbbf24";
+    for (var i = 0; i < 15; i++) {
       ctx.beginPath();
-      ctx.arc(W / 2 + Math.cos(a) * (50 + i * 3), H / 2 + Math.sin(a * 1.2) * (35 + i * 2), 5, 0, Math.PI * 2);
+      ctx.arc(cx - 50 + (i % 5) * 22, cy - 5 + Math.floor(i / 5) * 20, 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.font = "900 52px system-ui";
+
+    ctx.fillStyle = "#15803d";
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 48);
+    ctx.lineTo(cx, cy - 72);
+    ctx.lineTo(cx + 8, cy - 48);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = "#fca5a5";
+    ctx.beginPath();
+    ctx.ellipse(cx - 52, cy - 5, 28, 38, 0.2, 0, Math.PI * 2);
+    ctx.ellipse(cx + 52, cy - 5, 28, 38, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#b91c1c";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 22, 38, 34, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#0f172a";
+    ctx.beginPath();
+    ctx.arc(cx - 14, cy - 26, 5, 0, Math.PI * 2);
+    ctx.arc(cx + 14, cy - 26, 5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#991b1b";
+    ctx.lineWidth = 10;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 8);
+    ctx.quadraticCurveTo(cx + 30 + trunkWave, cy + 10, cx + 50 + trunkWave, cy - 20);
+    ctx.stroke();
+
+    ctx.font = "800 18px system-ui,sans-serif";
+    ctx.fillStyle = "#14532d";
     ctx.textAlign = "center";
-    ctx.fillText("✨", W / 2, H / 2 + 18);
+    ctx.fillText("🍓 КЛУБНИЧНЫЙ СЛОН 🐘", W / 2, 36);
+  }
+
+  function drawElephant(ctx, f, n) {
+    var t = f / n;
+    var bounce = Math.sin(t * Math.PI * 2) * 5;
+    var cx = W / 2;
+    var cy = H * 0.52 + bounce;
+    ctx.fillStyle = "#dbeafe";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#94a3b8";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 30, 65, 55, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#64748b";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 15, 40, 38, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 9;
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx + 10, cy);
+    ctx.quadraticCurveTo(cx + 45, cy + 20, cx + 55, cy - 15 + Math.sin(t * 12) * 12);
+    ctx.stroke();
+  }
+
+  function drawStrawberry(ctx, f, n) {
+    var t = f / n;
+    var wobble = Math.sin(t * Math.PI * 2) * 8;
+    var cx = W / 2 + wobble;
+    var cy = H * 0.52;
+    ctx.fillStyle = "#fef3c7";
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 55);
+    ctx.bezierCurveTo(cx + 65, cy - 20, cx + 55, cy + 55, cx, cy + 65);
+    ctx.bezierCurveTo(cx - 55, cy + 55, cx - 65, cy - 20, cx, cy - 55);
+    ctx.fill();
+    ctx.fillStyle = "#22c55e";
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 58);
+    ctx.lineTo(cx - 15, cy - 78);
+    ctx.lineTo(cx + 15, cy - 78);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawCustom(ctx, f, n) {
+    var t = f / n;
+    var text = extra.text || "Твой мульт";
+    ctx.fillStyle = "#1e1b4b";
+    ctx.fillRect(0, 0, W, H);
+    ctx.font = "900 56px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("🎬", W / 2, H * 0.38 + Math.sin(t * Math.PI * 2) * 8);
     ctx.fillStyle = "#fff";
-    ctx.font = "800 16px system-ui,sans-serif";
-    ctx.fillText("Твой мульт", W / 2, H - 28);
+    ctx.font = "800 18px system-ui,sans-serif";
+    ctx.fillText(text, W / 2, H * 0.55);
+    ctx.fillStyle = "#a5b4fc";
+    ctx.font = "700 13px system-ui,sans-serif";
+    ctx.fillText("Попробуй: клубничный слон · кот мяу · эльф", W / 2, H - 30);
   }
 
   var SCENES = {
@@ -466,7 +589,10 @@
     dance: drawDance,
     rocket: drawRocket,
     birthday: drawBirthday,
-    story: drawStory,
+    strawberry_elephant: drawStrawberryElephant,
+    elephant: drawElephant,
+    strawberry: drawStrawberry,
+    custom: drawCustom,
   };
 
   function renderFrame(sceneId, i, count) {
@@ -474,27 +600,32 @@
     c.width = W;
     c.height = H;
     var ctx = c.getContext("2d");
-    (SCENES[sceneId] || drawStory)(ctx, i, count);
+    (SCENES[sceneId] || drawCustom)(ctx, i, count);
     polish(ctx, i);
     return c;
   }
 
   function generate(raw) {
     var plan = parsePrompt(raw);
+    extra.text = plan.customText || plan.understood || plan.title;
     var count = 20;
     var frames = [];
     for (var i = 0; i < count; i++) frames.push(renderFrame(plan.id, i, count));
+    var reply = plan.id === "custom"
+      ? "Кадр пока не знает «" + extra.text + "». Попробуй «клубничный слон» или «кот мяу»!"
+      : "Понял: «" + (plan.understood || plan.title) + "» — " + count + " кадров, смотри!";
     return {
       frames: frames,
       name: plan.title,
       fps: plan.fps,
       sceneId: plan.id,
-      reply: "Готово! «" + plan.title + "» — " + count + " кадров, плавный мульт. Нажми ▶ Смотреть.",
+      understood: plan.understood || plan.title,
+      reply: reply,
     };
   }
 
   function hints() {
-    return ["кот мяу", "эльф с трубой brainrot", "школьный праздник", "дракон", "супергерой", "день рождения 8 лет"];
+    return ["клубничный слон", "кот мяу", "эльф с трубой brainrot", "школьный праздник", "дракон", "день рождения 8 лет"];
   }
 
   var loops = new WeakMap();
@@ -529,7 +660,7 @@
 
   global.AnimMaster = {
     NAME: "Кадр",
-    VERSION: "v2",
+    VERSION: "v3",
     generate: generate,
     parsePrompt: parsePrompt,
     hints: hints,
