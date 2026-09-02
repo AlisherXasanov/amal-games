@@ -8,30 +8,9 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=3" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
+  <script src="./shared/amal-owner-session.js?v=1"></script>
   <script src="./owner-cheats.js"></script>
-  <script>
-    (function () {
-      var q = new URLSearchParams(location.search);
-      var owner = q.get("owner");
-      if (owner === "AmalOwner2026" || owner === "amal" || owner === "1234" || owner === "buddy") {
-        window.__AMAL_OWNER__ = true;
-        try {
-          localStorage.setItem("amal-owner-v1", "1");
-          localStorage.setItem("amal-owner-v3", "1");
-          localStorage.setItem("amal-friends-access-v1", "1");
-        } catch (_) {}
-      }
-      if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" || q.get("friends") === "1") {
-        try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
-      }
-      try {
-        if (localStorage.getItem("amal-owner-v3") === "1" || localStorage.getItem("amal-owner-v1") === "1") {
-          window.__AMAL_OWNER__ = true;
-        }
-      } catch (_) {}
-    })();
-  </script>
-  <script src="./shared/amal-device.js?v=6"></script>
+  <script src="./shared/amal-device.js?v=7"></script>
 </head>
 <body>
   <div id="locked" class="lock-screen" hidden>
@@ -147,36 +126,21 @@
   <script src="./shared/amal-device-switcher.js?v=3"></script>
   <script src="./shared/amal-friends-net.js?v=3"></script>
   <script>
-    (function () {
-      var owner = AmalDevice.isSiteOwner && AmalDevice.isSiteOwner();
-      var ok = owner || AmalDevice.friendsAllowed();
-      var enterBtn = document.getElementById("amal-enter-btn");
-      if (enterBtn) {
-        enterBtn.onclick = function () {
-          try {
-            localStorage.setItem("amal-owner-v3", "1");
-            localStorage.setItem("amal-owner-v1", "1");
-            localStorage.setItem("amal-friends-access-v1", "1");
-          } catch (_) {}
-          window.__AMAL_OWNER__ = true;
-          location.href = "friends.html?v=4&stay=1";
-        };
-      }
-      if (!ok) {
-        document.getElementById("locked").hidden = false;
-        return;
-      }
+    var _friendsStarted = false;
+    function startFriendsHub() {
+      if (_friendsStarted) return;
+      _friendsStarted = true;
+      document.getElementById("locked").hidden = true;
       document.getElementById("hub-root").hidden = false;
+      var owner = AmalOwnerSession.isOwner();
       var tag = document.getElementById("friends-tag");
-      if (tag && owner) tag.textContent = "👑 Амаль — твоя зона · без QR";
+      if (tag && owner) tag.textContent = "👑 Амаль — твоя зона · Chrome тебя помнит";
       AmalDevice.setHub("friends");
       AmalDevice.remember(AmalDevice.detect(), "friends");
       AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
       AmalDeviceSwitcher.mount("device-switcher-slot");
-
       AmalFriendsNet.init();
       AmalFriendsNet.mountChat("friends-chat-root");
-
       document.getElementById("hub-root").addEventListener("click", function (e) {
         var a = e.target.closest("a.game-card");
         if (a && window.AmalFriendsNet) {
@@ -184,6 +148,21 @@
           AmalFriendsNet.trackGame(name ? name.textContent : "игра");
         }
       });
+    }
+
+    (function () {
+      var enterBtn = document.getElementById("amal-enter-btn");
+      if (enterBtn) {
+        enterBtn.onclick = function () {
+          AmalOwnerSession.markOwner();
+          startFriendsHub();
+        };
+      }
+      if (AmalOwnerSession.isOwner() || AmalDevice.friendsAllowed()) {
+        startFriendsHub();
+      } else {
+        document.getElementById("locked").hidden = false;
+      }
     })();
   </script>
 </body>

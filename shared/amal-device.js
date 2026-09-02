@@ -133,6 +133,9 @@
 
   function isSiteOwner() {
     try {
+      if (global.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) {
+        return true;
+      }
       if (global.__AMAL_OWNER__ === true) return true;
       if (global.AmalOwner && AmalOwner.isOwner && AmalOwner.isOwner()) {
         global.__AMAL_OWNER__ = true;

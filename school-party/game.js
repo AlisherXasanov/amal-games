@@ -77,6 +77,7 @@
 
   function canPlay() {
     if (window.__SCHOOL_PARTY_OK__ || window.__AMAL_OWNER__) return true;
+    if (window.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) return true;
     try {
       var q = new URLSearchParams(location.search);
       if (q.get("owner") === "AmalOwner2026") {
@@ -514,10 +515,28 @@
   function init() {
     if (!canPlay()) {
       $("locked").hidden = false;
+      var enterBtn = $("amal-party-enter");
+      if (enterBtn) {
+        enterBtn.onclick = function () {
+          if (window.AmalOwnerSession && AmalOwnerSession.markOwner) AmalOwnerSession.markOwner();
+          window.__SCHOOL_PARTY_OK__ = true;
+          window.__AMAL_OWNER__ = true;
+          $("locked").hidden = true;
+          bootGame();
+        };
+      }
       return;
     }
     $("app").hidden = false;
-    isOwner = !!(window.AmalDevice && AmalDevice.isSiteOwner && AmalDevice.isSiteOwner());
+    bootGame();
+  }
+
+  function bootGame() {
+    if (bootGame._done) return;
+    bootGame._done = true;
+    $("app").hidden = false;
+    isOwner = !!(window.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner());
+    if (window.AmalDevice && AmalDevice.isSiteOwner && AmalDevice.isSiteOwner()) isOwner = true;
     if (window.AmalFriendsNet && AmalFriendsNet.isOwner && AmalFriendsNet.isOwner()) isOwner = true;
 
     canvas = $("c");
