@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🎬 Кадр · мастер анимаций</title>
+  <meta name="theme-color" content="#7c3aed" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh; font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(165deg, #0f172a, #312e81 50%, #581c87);
+      color: #f8fafc; padding: 12px;
+      padding-top: max(12px, env(safe-area-inset-top));
+      max-width: 560px; margin: 0 auto;
+    }
+    a.back { color: #c4b5fd; font: 700 14px inherit; text-decoration: none; }
+    .hero { text-align: center; margin: 10px 0 14px; }
+    .hero h1 { font-size: 1.5rem; font-weight: 900; }
+    .hero .tag { display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(52,211,153,.2); color: #6ee7b7; font: 800 11px inherit; }
+    .hero p { margin-top: 8px; font-size: 13px; color: #c4b5fd; font-weight: 600; line-height: 1.45; }
+    .screen {
+      background: #0f172a; border-radius: 20px; overflow: hidden;
+      border: 2px solid rgba(167,139,250,.35); box-shadow: 0 20px 50px rgba(0,0,0,.4);
+    }
+    canvas { display: block; width: 100%; aspect-ratio: 4/3; background: #1e1b4b; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background: #1e1b4b; justify-content: center; }
+    .bar button {
+      border: 0; border-radius: 999px; padding: 12px 18px;
+      font: 800 14px inherit; cursor: pointer; color: #fff;
+    }
+    .go { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .share { background: linear-gradient(135deg, #229ed9, #7c3aed); }
+    .prompt {
+      margin-top: 14px; background: rgba(255,255,255,.06); border-radius: 16px; padding: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .prompt label { display: block; font: 800 13px inherit; color: #ddd6fe; margin-bottom: 8px; }
+    .prompt input {
+      width: 100%; border: 0; border-radius: 12px; padding: 12px 14px;
+      font: 600 14px inherit; margin-bottom: 8px;
+    }
+    .prompt button {
+      width: 100%; border: 0; border-radius: 12px; padding: 14px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c); color: #fff;
+      font: 800 15px inherit; cursor: pointer;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chips button {
+      border: 1px solid rgba(255,255,255,.15); border-radius: 999px; padding: 8px 12px;
+      background: rgba(255,255,255,.08); color: #e9d5ff; font: 700 12px inherit; cursor: pointer;
+    }
+    .status { margin-top: 10px; font: 700 13px inherit; color: #a5b4fc; text-align: center; min-height: 20px; }
+    .nick { width: 100%; margin-top: 10px; border: 0; border-radius: 12px; padding: 10px 12px; font: 600 14px inherit; }
+  </style>
+</head>
+<body>
+  <a class="back" href="meme-channel.html?v=10&stay=1">← Мемы</a>
+
+  <div class="hero">
+    <h1>🎬 Кадр</h1>
+    <span class="tag">мастер анимаций · v2</span>
+    <p>Напиши, какой мульт сделать — Кадр нарисует сам. Плавно, как настоящий, не «страшная нейросеть».</p>
+  </div>
+
+  <div class="screen">
+    <canvas id="stage" width="480" height="360"></canvas>
+    <div class="bar">
+      <button type="button" class="go" id="btn-play">▶ Смотреть</button>
+      <button type="button" class="share" id="btn-share">📤 В мемы</button>
+    </div>
+  </div>
+
+  <div class="prompt">
+    <label for="prompt">Что нарисовать?</label>
+    <input id="prompt" maxlength="120" placeholder="кот мяу · эльф с трубой · школьный праздник…" />
+    <button type="button" id="btn-make">✨ Сделать анимацию</button>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <p class="status" id="status">Нажми пример или напиши своё</p>
+  <input class="nick" id="nick" maxlength="16" placeholder="Имя (для мемов)" />
+
+  <script src="./shared/anim-master-ai.js?v=2"></script>
+  <script src="./shared/amal-chat-config.js?v=1"></script>
+  <script src="./shared/amal-meme-net.js?v=7"></script>
+  <script>
+    (function () {
+      var stage = document.getElementById("stage");
+      var ctx = stage.getContext("2d");
+      var frames = [];
+      var fps = 12;
+      var playing = false;
+      var timer = null;
+      var cur = 0;
+      var title = "Мульт ✨";
+
+      var nickEl = document.getElementById("nick");
+      var statusEl = document.getElementById("status");
+      if (AmalMemeNet.getNick()) nickEl.value = AmalMemeNet.getNick();
+      nickEl.oninput = function () { AmalMemeNet.setNick(this.value); };
+
+      function drawFrame(i) {
+        if (!frames.length) return;
+        ctx.clearRect(0, 0, 480, 360);
+        ctx.drawImage(frames[i], 0, 0);
+      }
+
+      function stop() {
+        playing = false;
+        clearInterval(timer);
+        document.getElementById("btn-play").textContent = "▶ Смотреть";
+      }
+
+      function play() {
+        if (!frames.length) { statusEl.textContent = "Сначала нажми «Сделать анимацию»"; return; }
+        if (playing) { stop(); return; }
+        playing = true;
+        document.getElementById("btn-play").textContent = "■ Стоп";
+        timer = setInterval(function () {
+          cur = (cur + 1) % frames.length;
+          drawFrame(cur);
+        }, 1000 / fps);
+      }
+
+      function make(text) {
+        stop();
+        statusEl.textContent = "Кадр рисует…";
+        setTimeout(function () {
+          var r = AnimMaster.generate(text);
+          frames = r.frames;
+          fps = r.fps;
+          title = r.name;
+          cur = 0;
+          drawFrame(0);
+          statusEl.textContent = r.reply;
+          play();
+        }, 400);
+      }
+
+      document.getElementById("btn-make").onclick = function () {
+        var t = document.getElementById("prompt").value.trim();
+        if (!t) { statusEl.textContent = "Напиши, что нарисовать!"; return; }
+        make(t);
+      };
+
+      document.getElementById("btn-play").onclick = play;
+
+      document.getElementById("btn-share").onclick = function () {
+        var n = nickEl.value.trim();
+        if (!n) { alert("Напиши имя!"); nickEl.focus(); return; }
+        if (!frames.length) { statusEl.textContent = "Сначала сделай анимацию"; return; }
+        AmalMemeNet.setNick(n);
+        AmalMemeNet.init();
+        if (AmalMemeNet.sendAnim("master-v2", title, "Смотри мульт от Кадра!")) {
+          statusEl.textContent = "📤 Скинул в мемы!";
+        }
+      };
+
+      AnimMaster.hints().forEach(function (h) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = h;
+        b.onclick = function () {
+          document.getElementById("prompt").value = h;
+          make(h);
+        };
+        document.getElementById("chips").appendChild(b);
+      });
+
+      AmalMemeNet.init();
+      var qParam = "";
+      try {
+        qParam = new URLSearchParams(location.search).get("q") || "";
+      } catch (_) {}
+      if (qParam) {
+        document.getElementById("prompt").value = qParam;
+        make(qParam);
+      } else {
+        make("кот мяу");
+      }
+    })();
+  </script>
+</body>
+</html>

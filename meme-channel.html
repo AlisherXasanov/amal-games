@@ -152,9 +152,9 @@
       <h1>Мемы и новости</h1>
       <p>дома · с семьёй и друзьями</p>
     </div>
-    <span class="ver">v9</span>
+    <span class="ver">v10</span>
     <a class="qr-link cal-link" href="kind-calendar.html">📅</a>
-    <a class="qr-link" href="amal-hair-wave.html" title="Анимация">🎬</a>
+    <a class="qr-link" href="anim-master.html" title="Кадр — мастер анимаций">🎬</a>
     <a class="qr-link print-qr-link" href="qr-memes.html?print=1">🖨️</a>
   </header>
 
@@ -190,8 +190,8 @@
   <script src="./shared/amal-device.js?v=2"></script>
   <script src="./shared/amal-meme-back.js?v=3"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
-  <script src="./shared/amal-hair-wave.js?v=1"></script>
-  <script src="./shared/amal-meme-net.js?v=6"></script>
+  <script src="./shared/anim-master-ai.js?v=2"></script>
+  <script src="./shared/amal-meme-net.js?v=7"></script>
   <script>
     (function () {
       var feed = document.getElementById("feed");
@@ -260,12 +260,12 @@
           }
           var watch = document.createElement("a");
           watch.className = "watch";
-          watch.href = p.href || "amal-hair-wave.html";
+          watch.href = p.href || "anim-master.html";
           watch.textContent = "▶ Смотреть";
           ac.appendChild(watch);
           bubble.appendChild(ac);
           setTimeout(function () {
-            if (window.AmalHairWave) AmalHairWave.play(mini, { mini: true });
+            if (window.AnimMaster) AnimMaster.playPreview(mini);
           }, 30);
         } else if (p.type === "news") {
           bubble.className += " news";
@@ -314,7 +314,7 @@
       };
       document.getElementById("btn-anim").onclick = function () {
         if (!ensureNick()) return;
-        if (AmalMemeNet.sendAnim("hair-wave-v1", "Волосы волной 🌬️", "Смотри — волосы развеваются!")) {
+        if (AmalMemeNet.sendAnim("master-v2", "Мульт от Кадра 🎬", "Нажми «Смотреть» — там мастер анимаций!")) {
           alert("🎬 Анимация в ленте! Нажми «Смотреть» на карточке.");
         }
       };

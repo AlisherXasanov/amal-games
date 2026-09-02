@@ -144,7 +144,7 @@
         animId: String(animId || "hair-wave-v1"),
         title: String(title || "Анимация").slice(0, 80),
         cap: String(cap || "").slice(0, 120),
-        href: "amal-hair-wave.html",
+        href: "anim-master.html",
       });
     },
     channels: { home: { title: "Мемы", sub: "дома", hint: "", icon: "😂" } },

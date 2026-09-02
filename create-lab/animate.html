@@ -45,12 +45,8 @@
             <div class="ear right"></div>
             <div class="ai-body"><div class="ai-face"><div class="eyes"><span class="eye"></span><span class="eye"></span></div><div class="mouth"></div><span></span></div></div>
           </div>
-          <p id="ai-status-text" style="text-align:center;font-size:0.85rem;color:rgba(26,36,32,0.7)">🎬 <strong>Маэстро</strong> — напиши, какую анимацию сделать. Или микрофон.</p>
-          <form id="maestro-form" class="maestro-form" style="margin-top:0.5rem;width:100%">
-            <input type="text" id="maestro-input" placeholder="кот мяу · эльф с трубой · волосы волной…" style="width:100%" />
-            <button class="btn primary" type="submit" style="width:100%;margin-top:0.35rem">✨ Сделать анимацию</button>
-          </form>
-          <div class="maestro-chips" id="maestro-chips"></div>
+          <p id="ai-status-text" style="text-align:center;font-size:0.85rem;color:rgba(26,36,32,0.7)">🎬 Новый <strong>Кадр</strong> — мастер анимаций. <a href="../anim-master.html" style="color:#7c3aed;font-weight:800">Открыть →</a></p>
+          <p style="text-align:center;font-size:0.78rem;color:rgba(26,36,32,0.55);margin-top:0.35rem">Здесь — рисовать кадры вручную. Для ИИ-мультов используй Кадра.</p>
           <div class="mic-row" style="margin-top:0.35rem">
             <button type="button" class="mic-btn" id="btn-mic" aria-pressed="false" aria-label="Сказать" style="min-width:110px;padding:0.65rem 1rem;font-size:0.92rem">
               <span class="mic-ico">🎤</span>
@@ -73,7 +69,7 @@
           <label class="field" style="margin:0;min-width:110px"><span>FPS</span><input type="number" id="fps" min="1" max="24" value="8" /></label>
           <button type="button" class="btn" id="btn-play">▶ Плей</button>
           <button type="button" class="btn primary" id="btn-save">Сохранить</button>
-          <button type="button" class="btn" id="btn-meme" title="В канал мемов">📤 В мемы</button>
+          <button type="button" class="btn" id="btn-meme" title="Кадр — мастер анимаций">🎬 Кадр</button>
         </div>
         <canvas id="stage" width="480" height="360" aria-label="Холст анимации"></canvas>
         <div class="toolbar">
@@ -93,13 +89,9 @@
     </div>
   </div>
 
-  <script src="../shared/amal-hair-wave.js?v=1"></script>
-  <script src="../shared/amal-chat-config.js?v=1"></script>
-  <script src="../shared/amal-meme-net.js?v=6"></script>
-  <script src="./anim-maestro.js?v=1"></script>
   <script src="./storage.js"></script>
   <script src="./ai.js?v=4"></script>
-  <script src="./animate.js?v=3"></script>
+  <script src="./animate.js?v=4"></script>
   <script src="../shared/amal-owner-powers.js?v=20"></script>
   <script src="../shared/amal-hub.js?v=65"></script>
   <script src="../shared/amal-owner-powers.js?v=20"></script>

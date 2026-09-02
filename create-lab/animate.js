@@ -330,54 +330,23 @@
     );
   }
 
-  function applyMaestro(raw) {
-    if (!window.AnimMaestro) return false;
-    stopPlay();
-    ai.say("Рисую кадры… секунду!");
-    const result = AnimMaestro.generate(raw);
-    frames = result.frames.map((f) => cloneFrame(f));
-    current = 0;
-    nameEl.value = result.name;
-    fpsEl.value = result.fps;
-    redraw();
-    ai.say(result.reply);
+  function goKadr(raw) {
+    const q = encodeURIComponent(String(raw || "").trim());
+    location.href = "../anim-master.html" + (q ? "?q=" + q : "");
     return true;
   }
 
-  function isMaestroRequest(low) {
+  function isKadrRequest(low) {
     return (
-      /сделай|нарисуй|анимац|мульт|ожив|maestro|маэстро|сгенер|придумай|хочу/.test(low) ||
-      (/мяу|кот|эльф|труб|brainrot|брейн|брын|укради|волос|волной|танц|ракет|рыб/.test(low) &&
+      /сделай|нарисуй|анимац|мульт|ожив|кадр|сгенер|придумай|хочу/.test(low) ||
+      (/мяу|кот|эльф|труб|brainrot|брейн|брын|укради|школ|дракон|супер|танц|ракет|день рожд/.test(low) &&
         !/новый кадр|очисти|сохрани|плей|стоп/.test(low))
     );
   }
 
   document.getElementById("btn-meme").onclick = () => {
-    const nick = prompt("Как тебя зовут в мемах?", "");
-    if (!nick || !nick.trim()) return;
-    if (!window.AmalMemeNet) {
-      ai.say("Открой с сайта — тогда можно скинуть в мемы.");
-      return;
-    }
-    AmalMemeNet.setNick(nick.trim());
-    AmalMemeNet.init();
-    const cap = nameEl.value.trim() || "Моя анимация из Create Lab";
-    if (AmalMemeNet.sendAnim("custom-lab", cap, "Смотри — я сделал в аниматоре!")) {
-      ai.say("📤 Скинул в мемы! Открой канал мемов.");
-    }
+    location.href = "../anim-master.html";
   };
-
-  const maestroForm = document.getElementById("maestro-form");
-  const maestroInput = document.getElementById("maestro-input");
-  if (maestroForm && maestroInput) {
-    maestroForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const text = maestroInput.value.trim();
-      if (!text) return;
-      maestroInput.value = "";
-      applyMaestro(text);
-    });
-  }
 
   const ai = Ushastik.create({
     autoNavigate: false,
@@ -438,6 +407,20 @@
       if (!text) return;
       input.value = "";
       ai.handleTranscript(text);
+    });
+  }
+
+  const chips = document.getElementById("maestro-chips");
+  if (chips && window.AnimMaestro) {
+    AnimMaestro.hints().forEach((h) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = h;
+      b.onclick = () => {
+        if (maestroInput) maestroInput.value = h;
+        applyMaestro(h);
+      };
+      chips.appendChild(b);
     });
   }
 })();
