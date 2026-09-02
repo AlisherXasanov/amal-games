@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>📺 ASMR видео · Зона отдыха</title>
+  <meta name="theme-color" content="#0c4a6e" />
+  <link rel="stylesheet" href="./style.css?v=3" />
+  <style>
+    .cinema { max-width: 520px; margin: 0 auto; padding: 0 12px 24px; }
+    .screen-wrap {
+      background: #000; border-radius: 16px; overflow: hidden;
+      border: 2px solid rgba(125,211,252,.25); box-shadow: 0 16px 40px rgba(0,0,0,.45);
+    }
+    #screen { display: block; width: 100%; aspect-ratio: 16/10; background: #0f172a; cursor: pointer; }
+    .cinema-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; justify-content: center; }
+    .cinema-bar button {
+      border: 0; border-radius: 999px; padding: 10px 16px;
+      font: 800 13px inherit; cursor: pointer; color: #fff;
+      background: var(--accent, #6366f1);
+    }
+    .cinema-bar button.ghost { background: rgba(255,255,255,.1); color: #e2e8f0; }
+    .vol-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+    .vol-row input { flex: 1; }
+    .playlist { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .pl-item {
+      text-align: left; border: 1px solid rgba(255,255,255,.08); border-radius: 12px;
+      padding: 10px 12px; background: rgba(255,255,255,.04); color: inherit; cursor: pointer;
+    }
+    .pl-item.on { border-color: #7dd3fc; background: rgba(56,189,248,.12); }
+    .pl-item strong { display: block; font-size: 14px; margin-bottom: 2px; }
+    .pl-item span { font-size: 11px; color: var(--muted, #94a3b8); }
+    .note { font-size: 12px; color: var(--muted); line-height: 1.45; margin: 10px 0; }
+    #vid-title, #vid-sub { display: none; }
+  </style>
+</head>
+<body>
+  <div class="shell cinema">
+    <header class="top">
+      <a class="back" href="./">← Зона отдыха</a>
+      <div class="title-block">
+        <h1>📺 ASMR видео</h1>
+        <p>свои ролики · баттер · слоники · лёд</p>
+      </div>
+    </header>
+
+    <p class="note">Это <strong>наши</strong> ASMR-ролики — как на YouTube, но без чужой рекламы. Нажми экран для squish/брызг.</p>
+
+    <div class="screen-wrap">
+      <canvas id="screen" width="480" height="300"></canvas>
+    </div>
+
+    <div class="vol-row">
+      <span>🔊</span>
+      <input id="vol" type="range" min="0" max="100" value="55" />
+    </div>
+
+    <div class="cinema-bar">
+      <button type="button" class="ghost" id="btn-prev">←</button>
+      <button type="button" id="btn-play">▶ Смотреть</button>
+      <button type="button" class="ghost" id="btn-next">→</button>
+    </div>
+
+    <p id="vid-title"></p>
+    <p id="vid-sub"></p>
+
+    <h2 style="font-size:14px;margin:12px 0 6px;color:#cbd5e1">📋 Что посмотреть</h2>
+    <div class="playlist" id="playlist"></div>
+  </div>
+
+  <script src="../shared/amal-phone-back.js?v=1"></script>
+  <script src="./asmr-watch.js?v=1"></script>
+</body>
+</html>
