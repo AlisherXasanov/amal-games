@@ -11,7 +11,8 @@
     (function () {
       var q = "";
       try { q = location.search; } catch (_) {}
-      if (/[?&](qr=1|lock=1)/.test(q)) {
+      var fromSite = /[?&]from=(phone|tablet|friends|desktop)/.test(q);
+      if (/[?&]lock=1/.test(q) && !fromSite) {
         document.documentElement.classList.add("qr-lock");
         document.body.classList.add("qr-lock");
       } else {
@@ -114,6 +115,17 @@
     html.qr-lock .explain-qr,
     body.qr-lock .explain-qr { display: block !important; }
     .explain-qr { display: none; }
+    .exit-games {
+      display: none; position: fixed; left: 12px; right: 12px; bottom: calc(118px + env(safe-area-inset-bottom));
+      z-index: 9; text-align: center;
+    }
+    .exit-games a {
+      display: inline-block; padding: 12px 20px; border-radius: 999px;
+      background: linear-gradient(135deg, #0d6e5f, #047857); color: #fff;
+      font: 800 15px inherit; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    }
+    html:not(.qr-lock) .exit-games,
+    body:not(.qr-lock) .exit-games { display: block; }
   </style>
 </head>
 <body>
@@ -124,12 +136,12 @@
       <h1>Мемы и новости</h1>
       <p>дома · с семьёй и друзьями</p>
     </div>
-    <span class="ver">v7</span>
+    <span class="ver">v8</span>
     <a class="qr-link" href="qr-memes.html?print=1">🖨️ QR</a>
   </header>
 
   <p class="explain explain-exit">💬 <strong>Только мемы</strong> — кидай смешняшки и новости. «Назад» — в Игры Амаля.</p>
-  <p class="explain explain-qr">📷 <strong>С QR-листка</strong> — только мемы и новости. Пиши имя и отправляй!</p>
+  <p class="explain explain-qr">📷 <strong>С QR-листка</strong> — только мемы. Кнопки «назад» нет специально. В игры — через сайт на телефоне (не этот QR).</p>
 
   <div class="name-row">
     <input id="nick" maxlength="16" placeholder="Как тебя зовут?" />
@@ -138,6 +150,10 @@
   <p class="channel-note" id="net-note">…</p>
 
   <main class="feed" id="feed"></main>
+
+  <div class="exit-games" id="exit-games">
+    <a href="./phone.html?v=2&stay=1" id="exit-games-btn" data-meme-back>🏠 Выйти в игры</a>
+  </div>
 
   <div class="composer">
     <div class="sticker-bar" id="sticker-bar"></div>
@@ -153,7 +169,7 @@
   </div>
 
   <script src="./shared/amal-device.js?v=2"></script>
-  <script src="./shared/amal-meme-back.js?v=2"></script>
+  <script src="./shared/amal-meme-back.js?v=3"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/amal-meme-net.js?v=5"></script>
   <script>

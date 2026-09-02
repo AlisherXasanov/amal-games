@@ -56,9 +56,11 @@
     try { sessionStorage.setItem("amal-device-hub-v1", hub); } catch (_) {}
     var url = backUrl(hub);
     var label = backLabel(hub);
-    document.querySelectorAll("a.back, a.portal-back, [data-meme-back], #home-quick, .home-quick").forEach(function (a) {
+    document.querySelectorAll("a.back, a.portal-back, [data-meme-back], #exit-games-btn, #home-quick, .home-quick").forEach(function (a) {
       a.setAttribute("href", url);
       if (a.classList.contains("home-quick") || a.id === "home-quick") {
+        a.textContent = label;
+      } else if (a.id === "exit-games-btn") {
         a.textContent = label;
       } else if (/^←|^🏠/.test((a.textContent || "").trim()) || a.hasAttribute("data-meme-back")) {
         a.textContent = label.replace("🏠 ", "← ");
