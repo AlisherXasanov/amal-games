@@ -13,9 +13,15 @@
       try { q = location.search; } catch (_) {}
       if (/[?&](qr=1|lock=1)/.test(q)) {
         document.documentElement.classList.add("qr-lock");
+        document.body.classList.add("qr-lock");
         try { sessionStorage.setItem("amal-meme-qr-lock", "1"); } catch (_) {}
       } else {
-        try { if (sessionStorage.getItem("amal-meme-qr-lock") === "1") document.documentElement.classList.add("qr-lock"); } catch (_) {}
+        try {
+          if (sessionStorage.getItem("amal-meme-qr-lock") === "1") {
+            document.documentElement.classList.add("qr-lock");
+            document.body.classList.add("qr-lock");
+          }
+        } catch (_) {}
       }
     })();
   </script>
@@ -105,9 +111,13 @@
       font: 700 14px/1.5 inherit;
     }
     .empty-feed span { font-size: 48px; display: block; margin-bottom: 12px; }
+    html.qr-lock .back-link,
+    html.qr-lock .qr-link,
+    html.qr-lock .explain-exit,
     body.qr-lock .back-link,
     body.qr-lock .qr-link,
     body.qr-lock .explain-exit { display: none !important; }
+    html.qr-lock .explain-qr,
     body.qr-lock .explain-qr { display: block !important; }
     .explain-qr { display: none; }
   </style>
@@ -124,7 +134,8 @@
     <a class="qr-link" href="qr-memes.html?print=1">🖨️ QR</a>
   </header>
 
-  <p class="explain">💬 <strong>Только мемы</strong> — это не чат класса в телефоне. Кидай смешняшки и новости сюда. «Назад» — в обычные Игры Амаля.</p>
+  <p class="explain explain-exit">💬 <strong>Только мемы</strong> — кидай смешняшки и новости. «Назад» — в Игры Амаля.</p>
+  <p class="explain explain-qr">📷 <strong>С QR-листка</strong> — только мемы и новости. Пиши имя и отправляй!</p>
 
   <div class="name-row">
     <input id="nick" maxlength="16" placeholder="Как тебя зовут?" />
@@ -147,6 +158,8 @@
     </div>
   </div>
 
+  <script src="./shared/amal-device.js?v=2"></script>
+  <script src="./shared/amal-meme-back.js?v=2"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/amal-meme-net.js?v=5"></script>
   <script>
@@ -245,7 +258,8 @@
       AmalMemeNet.init();
       AmalMemeNet.onUpdate(renderAll);
       document.getElementById("net-note").textContent = AmalMemeNet.networkNote();
-      if (window.AmalMemeBack) AmalMemeBack.wire();
+      var locked = document.documentElement.classList.contains("qr-lock") || document.body.classList.contains("qr-lock");
+      if (!locked && window.AmalMemeBack) AmalMemeBack.wire();
     })();
   </script>
 </body>

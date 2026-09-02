@@ -51,7 +51,7 @@
   }
 
   function wire() {
-    if (document.documentElement.classList.contains("qr-lock")) return;
+    if (document.documentElement.classList.contains("qr-lock") || document.body.classList.contains("qr-lock")) return;
     var hub = hubFromUrl();
     try { sessionStorage.setItem("amal-device-hub-v1", hub); } catch (_) {}
     var url = backUrl(hub);
