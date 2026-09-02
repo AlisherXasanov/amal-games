@@ -131,13 +131,33 @@
     root.insertBefore(bar, root.firstChild);
   }
 
+  function isSiteOwner() {
+    try {
+      if (global.__AMAL_OWNER__ === true) return true;
+      if (["amal-owner-v1", "amal-owner-v2", "amal-owner-v3"].some(function (k) {
+        return localStorage.getItem(k) === "1";
+      })) return true;
+      var q = query();
+      if (q.get("owner") === "AmalOwner2026") {
+        localStorage.setItem("amal-owner-v1", "1");
+        global.__AMAL_OWNER__ = true;
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function friendsAllowed() {
+    if (isSiteOwner()) {
+      try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
+      return true;
+    }
     var q = query();
     if (q.get("code") === FRIENDS_CODE) {
       try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
       return true;
     }
-    if (q.get("from") === "friends" || q.get("friends") === "1") {
+    if (q.get("from") === "friends" || q.get("friends") === "1" || q.get("hub") === "friends") {
       try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
       return true;
     }
@@ -156,6 +176,7 @@
     maybeRedirectFromIndex: maybeRedirectFromIndex,
     wrongDeviceBanner: wrongDeviceBanner,
     friendsAllowed: friendsAllowed,
+    isSiteOwner: isSiteOwner,
     FRIENDS_CODE: FRIENDS_CODE,
     STORE_HUB: STORE_HUB,
   };

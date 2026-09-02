@@ -147,6 +147,12 @@
         href: "anim-master.html",
       });
     },
+    sendVideo: function (title, url, emoji) {
+      title = String(title || "Видео").slice(0, 100);
+      url = String(url || "").trim().slice(0, 500);
+      if (!url) return false;
+      return send("video", { title: title, url: url, emoji: emoji || "📺" });
+    },
     channels: { home: { title: "Мемы", sub: "дома", hint: "", icon: "😂" } },
   };
 })(window);

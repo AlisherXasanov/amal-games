@@ -90,6 +90,19 @@
       display: block; text-align: center; padding: 8px; margin: 0 8px 8px;
       border-radius: 10px; background: #2b5278; color: #fff; font: 800 12px inherit; text-decoration: none;
     }
+    .video-card {
+      background: #1e2c3a; border-radius: 12px; overflow: hidden;
+      max-width: 280px; border: 1px solid rgba(255,255,255,.08);
+    }
+    .video-card .pic {
+      min-height: 88px; display: grid; place-items: center; font-size: 42px;
+      background: linear-gradient(135deg, #0c4a6e, #1e3a5f);
+    }
+    .video-card .cap { padding: 8px 10px 10px; font: 800 13px/1.35 inherit; color: #e8edf2; }
+    .video-card a.watch {
+      display: block; text-align: center; padding: 8px; margin: 0 8px 8px;
+      border-radius: 10px; background: #229ed9; color: #fff; font: 800 12px inherit; text-decoration: none;
+    }
     .meta { font-size: 10px; color: #6d7f92; margin-top: 3px; clear: both; padding: 0 4px 4px; }
     .composer {
       position: fixed; left: 0; right: 0; bottom: 0;
@@ -152,13 +165,13 @@
       <h1>Мемы и новости</h1>
       <p>дома · с семьёй и друзьями</p>
     </div>
-    <span class="ver">v10</span>
+    <span class="ver">v11</span>
     <a class="qr-link cal-link" href="kind-calendar.html">📅</a>
     <a class="qr-link" href="anim-master.html" title="Кадр — мастер анимаций">🎬</a>
     <a class="qr-link print-qr-link" href="qr-memes.html?print=1">🖨️</a>
   </header>
 
-  <p class="explain explain-exit">💬 <strong>Только мемы</strong> — кидай смешняшки и новости. «Назад» — в Игры Амаля.</p>
+  <p class="explain explain-exit">💬 <strong>Как Telegram</strong> — кидай мемы, новости и <strong>видео</strong> друзьям. Наши ролики или ссылку.</p>
   <p class="explain explain-qr">📷 <strong>С QR-листка</strong> — только мемы. Кнопки «назад» нет специально. В игры — через сайт на телефоне (не этот QR).</p>
 
   <div class="name-row">
@@ -180,6 +193,7 @@
       <button type="button" id="btn-news" class="news-btn">📰 Новость</button>
       <button type="button" id="btn-meme">🖼 Мем</button>
       <button type="button" id="btn-anim">🎬 Аним</button>
+      <button type="button" id="btn-video">📺 Видео</button>
     </div>
     <div class="composer-row">
       <input type="text" id="msg-input" placeholder="Написать…" maxlength="200" />
@@ -187,12 +201,12 @@
     </div>
   </div>
 
-  <script src="./shared/amal-device.js?v=2"></script>
+  <script src="./shared/amal-device.js?v=3"></script>
   <script src="./shared/amal-meme-back.js?v=3"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
   <script src="./shared/anim-master-ai.js?v=4"></script>
   <script src="./shared/anim-master-scenes-extra.js?v=1"></script>
-  <script src="./shared/amal-meme-net.js?v=7"></script>
+  <script src="./shared/amal-meme-net.js?v=8"></script>
   <script>
     (function () {
       var feed = document.getElementById("feed");
@@ -271,6 +285,18 @@
         } else if (p.type === "news") {
           bubble.className += " news";
           bubble.innerHTML = '<div class="news-tag">📰 Новость</div>' + AmalMemeNet.esc(p.text);
+        } else if (p.type === "video") {
+          var vc = document.createElement("div");
+          vc.className = "video-card";
+          vc.innerHTML =
+            '<div class="pic">' + (p.emoji || "📺") + "</div>" +
+            '<div class="cap">' + AmalMemeNet.esc(p.title || "Видео") + "</div>";
+          var vwatch = document.createElement("a");
+          vwatch.className = "watch";
+          vwatch.href = p.url || "#";
+          vwatch.textContent = "▶ Смотреть";
+          vc.appendChild(vwatch);
+          bubble.appendChild(vc);
         } else {
           bubble.style.whiteSpace = "pre-wrap";
           bubble.textContent = p.text;
@@ -318,6 +344,37 @@
         if (AmalMemeNet.sendAnim("master-v2", "Мульт от Кадра 🎬", "Нажми «Смотреть» — там мастер анимаций!")) {
           alert("🎬 Анимация в ленте! Нажми «Смотреть» на карточке.");
         }
+      };
+      document.getElementById("btn-video").onclick = function () {
+        if (!ensureNick()) return;
+        var pick = prompt(
+          "📺 Скинуть видео в канал:\n" +
+          "1 — ASMR (баттер, слоники)\n" +
+          "2 — Кадр · анимации\n" +
+          "3 — Желейная хата\n" +
+          "4 — Школьная вечеринка\n" +
+          "5 — Своя ссылка (вставь URL)\n\n" +
+          "Напиши цифру или ссылку:",
+          "1"
+        );
+        if (!pick || !pick.trim()) return;
+        pick = pick.trim();
+        var catalog = {
+          "1": { title: "🧈 ASMR · баттер и лёд", url: "relax-zone/asmr-watch.html", emoji: "🧈" },
+          "2": { title: "🎬 Кадр · анимации", url: "anim-master.html", emoji: "🎬" },
+          "3": { title: "🏠 Желейная хата", url: "jelly-lab/", emoji: "🏠" },
+          "4": { title: "🏫 Школьная вечеринка", url: "school-party/?from=friends", emoji: "🏫" },
+        };
+        if (catalog[pick]) {
+          var c = catalog[pick];
+          AmalMemeNet.sendVideo(c.title, c.url, c.emoji);
+          return;
+        }
+        if (/^https?:\/\//i.test(pick)) {
+          AmalMemeNet.sendVideo("📺 Видео от " + myNick, pick, "📺");
+          return;
+        }
+        AmalMemeNet.sendVideo("📺 " + pick.slice(0, 80), pick, "📺");
       };
 
       AmalMemeNet.init();

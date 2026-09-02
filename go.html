@@ -6,7 +6,7 @@
   <title>Игры Амаля — выбери версию</title>
   <meta name="theme-color" content="#0d6e5f" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=1" />
-  <script src="./shared/amal-device.js?v=1"></script>
+  <script src="./shared/amal-device.js?v=3"></script>
   <style>
     body { display: grid; place-items: center; padding: 20px; }
     .picker {
@@ -46,6 +46,9 @@
       var q = new URLSearchParams(location.search);
       var exclusive = q.get("exclusive") === "1" || q.get("friends") === "1";
       var code = q.get("code") || "";
+      if (exclusive && code === "amal-star-friends") {
+        try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
+      }
       var dev = AmalDevice.detect();
       document.getElementById("guess").textContent =
         "Подсказка: у тебя " + AmalDevice.label(dev) + " — но выбирай сам!";
