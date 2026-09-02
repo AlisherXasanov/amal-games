@@ -252,8 +252,28 @@
     $("diff-row").style.opacity = playMode === "ai" ? "1" : "0.45";
   }
 
+  function hideRematch() {
+    var b = $("rematch-banner");
+    if (b) b.hidden = true;
+  }
+
+  function showRematch(text) {
+    var b = $("rematch-banner");
+    var t = $("rematch-text");
+    if (t) t.textContent = text || "Бой окончен";
+    if (b) b.hidden = false;
+  }
+
+  function rematch() {
+    if (!currentGame) return;
+    hideRematch();
+    toast("🔄 Новый бой!");
+    openGame(currentGame);
+  }
+
   function openGame(name) {
     currentGame = name;
+    hideRematch();
     $("game-pick").hidden = true;
     $("game-stage").hidden = false;
     var titles = {
@@ -278,6 +298,11 @@
       onMove: function (payload) {
         if (playMode === "online" && window.AmalFriendsNet) AmalFriendsNet.sendBoard(payload);
       },
+      onEnd: function (result) {
+        // result: "win" | "lose" | "draw"
+        var msg = result === "win" ? "🎉 Ты победил!" : result === "lose" ? "😢 Поражение" : "🤝 Ничья";
+        showRematch(msg + " · можно заново");
+      },
     });
     ClubBoardGames.start(name);
     renderOwnerPowers();
@@ -292,17 +317,15 @@
       return;
     }
     box.hidden = false;
+    // Простые и понятные силы — смысл сразу виден
     var powers = [
-      { id: "teleport", label: "🌀 Астральный телепорт" },
-      { id: "disintegrate", label: "☢️ Распыление" },
-      { id: "freeze", label: "🧊 Заморозка бота" },
-      { id: "foresight", label: "🔮 Предвидение" },
-      { id: "chaos", label: "🌊 Волна хаоса" },
-      { id: "throne", label: "👑 Трон хозяина" },
-      { id: "rift", label: "⚡ Разлом реальности", mega: true },
+      { id: "freeze", label: "🧊 Сон бота", tip: "бот пропускает ходы" },
+      { id: "chaos", label: "🌊 Удар по врагу", tip: "ломает фигуры бота" },
+      { id: "rift", label: "⚡ Я победил!", tip: "сразу конец боя · твоя победа", mega: true },
     ];
     grid.innerHTML = powers.map(function (p) {
-      return '<button type="button" data-pow="' + p.id + '" class="' + (p.mega ? "mega" : "") + '">' + p.label + "</button>";
+      return '<button type="button" data-pow="' + p.id + '" class="' + (p.mega ? "mega" : "") + '" title="' + p.tip + '">' +
+        p.label + '<small style="display:block;font-weight:700;opacity:.85">' + p.tip + "</small></button>";
     }).join("");
     grid.onclick = function (e) {
       var b = e.target.closest("[data-pow]");
@@ -412,9 +435,16 @@
       ClubBoardGames.clear();
       $("game-stage").hidden = true;
       $("game-pick").hidden = false;
+      hideRematch();
       var op = $("owner-powers");
       if (op) op.hidden = true;
     };
+    function bindRematch(id) {
+      var el = $(id);
+      if (el) el.onclick = rematch;
+    }
+    bindRematch("btn-rematch");
+    bindRematch("btn-rematch-big");
     $("btn-invite").onclick = function () {
       if (!window.AmalFriendsNet) return;
       if (AmalFriendsNet.friendCount && AmalFriendsNet.friendCount() < 1) {

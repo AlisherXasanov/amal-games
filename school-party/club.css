@@ -116,10 +116,20 @@ main { padding: 0 14px 28px; max-width: 540px; margin: 0 auto; }
   background: linear-gradient(135deg, #fbbf24, #f472b6);
 }
 .op-grid button:active { transform: scale(.96); }
-.op-grid button.mega {
-  grid-column: 1 / -1;
-  background: linear-gradient(135deg, #ef4444, #a855f7, #fbbf24);
-  color: #fff; font-size: 13px;
+.op-hint {
+  font: 600 11px/1.4 inherit; color: #e9d5ff; text-align: center; margin: 0 0 8px;
+}
+.rematch-banner {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
+  margin: 8px 0; padding: 12px; border-radius: 14px;
+  background: rgba(34,197,94,.2); border: 2px solid rgba(34,197,94,.45);
+  font: 800 13px inherit;
+}
+.rematch-banner[hidden] { display: none !important; }
+.rematch-banner button {
+  border: 0; border-radius: 999px; padding: 10px 16px;
+  font: 900 14px inherit; cursor: pointer;
+  background: linear-gradient(135deg, #fde047, #22c55e); color: #052e16;
 }
 .play-modes .pm, .diff-row .df {
   border: 1px solid rgba(255,255,255,.18); border-radius: 999px;

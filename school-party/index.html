@@ -12,7 +12,7 @@
     window.__SCHOOL_PARTY_OK__ = true;
     if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) AmalOwnerSession.admitLikeQrScanned();
   </script>
-  <link rel="stylesheet" href="./club.css?v=3" />
+  <link rel="stylesheet" href="./club.css?v=4" />
 </head>
 <body>
   <div id="app">
@@ -100,12 +100,17 @@
           <div class="game-bar">
             <button type="button" class="ghost" id="btn-game-back">← Настолки</button>
             <strong id="game-title">Игра</strong>
-            <button type="button" id="btn-invite">📣 Звать друга</button>
+            <button type="button" id="btn-rematch">🔄 Заново</button>
           </div>
           <p class="game-status" id="game-status">—</p>
           <div id="owner-powers" class="owner-powers" hidden>
-            <div class="op-title">👑 Силы Амаля · сильнее любого бота</div>
+            <div class="op-title">👑 Твои силы · смысл: быстро переломить бой</div>
+            <p class="op-hint">Выиграл или проиграл — жми <strong>🔄 Заново</strong>. Силы помогают, если бот жмёт.</p>
             <div class="op-grid" id="op-grid"></div>
+          </div>
+          <div class="rematch-banner" id="rematch-banner" hidden>
+            <span id="rematch-text">Бой окончен</span>
+            <button type="button" id="btn-rematch-big">🔄 Сыграть ещё раз</button>
           </div>
           <div id="board-host"></div>
         </div>
@@ -144,7 +149,7 @@
   <script src="../shared/amal-device.js?v=8"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
   <script src="../shared/amal-friends-net.js?v=6"></script>
-  <script src="./board-games.js?v=3"></script>
-  <script src="./club.js?v=4"></script>
+  <script src="./board-games.js?v=4"></script>
+  <script src="./club.js?v=5"></script>
 </body>
 </html>

@@ -6,11 +6,14 @@
   "use strict";
 
   var host, statusEl, vsAi = true, playMode = "ai", difficulty = 2;
-  var current = null, onToast = function () {}, onMove = null, applyFn = null;
+  var current = null, onToast = function () {}, onMove = null, onEnd = null, applyFn = null;
   var powerApi = null;
   var botFrozen = 0;
 
   function setStatus(t) { if (statusEl) statusEl.textContent = t; }
+  function endGame(result) {
+    if (typeof onEnd === "function") onEnd(result);
+  }
   function clear() {
     if (host) host.innerHTML = "";
     current = null; applyFn = null; powerApi = null; botFrozen = 0;
@@ -83,6 +86,7 @@
       if (w) {
         over = true;
         setStatus(w === 3 ? "Ничья!" : (w === 1 ? "❌ победил!" : "⭕ победил!"));
+        endGame(w === 3 ? "draw" : (w === 1 ? "win" : "lose"));
         render();
         return true;
       }
@@ -176,12 +180,14 @@
         board = [1,1,1,0,1,0,0,0,0];
         setStatus("👑 Трон хозяина — ❌ победил!");
         toast("👑 Победа силой трона!");
+        endGame("win");
         render();
       },
       rift: function () {
         over = true;
-        setStatus("⚡ Разлом реальности — ты сильнее всех!");
-        toast("⚡ Разлом! Бот стёрт из партии");
+        setStatus("⚡ Ты победил! Можно сыграть заново");
+        toast("⚡ Победа!");
+        endGame("win");
         render();
       },
     };
@@ -416,15 +422,18 @@
           if (board[y][x] === 1) board[y][x] = 3;
           if (board[y][x] === 2 || board[y][x] === 4) board[y][x] = 0;
         }
-        toast("👑 Все твои — дамки, враг стёрт!");
+        toast("👑 Победа на троне!");
+        setStatus("👑 ⚪ победили!");
+        endGame("win");
         render();
       },
       rift: function () {
-        setStatus("⚡ Разлом — ⚪ победили!");
-        toast("⚡ Реальность переписана под тебя");
+        setStatus("⚡ Ты победил! Жми Заново");
+        toast("⚡ Победа!");
         for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
           if (board[y][x] === 2 || board[y][x] === 4) board[y][x] = 0;
         }
+        endGame("win");
         render();
       },
     };
@@ -635,16 +644,18 @@
           if (board[y][x] === "wP") board[y][x] = "wQ";
         }
         board[0][4] = null;
-        toast("👑 Все пешки — ферзи, король врага пал!");
-        setStatus("👑 Трон хозяина — белые победили!");
+        toast("👑 Победа!");
+        setStatus("👑 Ты победил! Жми Заново");
+        endGame("win");
         render();
       },
       rift: function () {
         for (var y = 0; y < 8; y++) for (var x = 0; x < 8; x++) {
           if (board[y][x] && board[y][x][0] === "b") board[y][x] = null;
         }
-        setStatus("⚡ Разлом реальности — победа Амаля!");
-        toast("⚡ Сильнее экстрима и всех ботов вместе!");
+        setStatus("⚡ Ты победил! Жми Заново");
+        toast("⚡ Победа!");
+        endGame("win");
         render();
       },
     };
@@ -726,7 +737,7 @@
             if (enemy[cy][cx] === 1) {
               enemy[cy][cx] = 3; fog[cy][cx] = 3; toast("💥 Попадание!");
             } else { fog[cy][cx] = 2; }
-            if (!alive(enemy)) { over = true; setStatus("Победа! Флот врага потоплен 🚢🎉"); render(); return; }
+            if (!alive(enemy)) { over = true; setStatus("Победа! Флот врага потоплен 🚢🎉"); endGame("win"); render(); return; }
             myTurn = false; setStatus("Ход компьютера…");
             render();
             setTimeout(aiShoot, 400);
