@@ -6,21 +6,37 @@
   <title>🏫 Школьная вечеринка · только друзья</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#4f46e5" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("from") === "friends" || q.get("code") === "amal-star-friends" ||
+            q.get("owner") === "AmalOwner2026" || q.get("friends") === "1") {
+          localStorage.setItem("amal-friends-access-v1", "1");
+        }
+        if (q.get("owner") === "AmalOwner2026") {
+          localStorage.setItem("amal-owner-v1", "1");
+        }
+        if (localStorage.getItem("amal-owner-v1") === "1" ||
+            localStorage.getItem("amal-friends-access-v1") === "1") {
+          window.__SCHOOL_PARTY_OK__ = true;
+        }
+      } catch (_) {}
+    })();
+  </script>
   <style>
     :root {
-      --bg: #1e1b4b;
       --card: rgba(255,255,255,.07);
       --ink: #f8fafc;
       --mute: #a5b4fc;
       --accent: #fbbf24;
       --go: #22c55e;
-      --bad: #f87171;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; min-height: 100%; }
     body {
-      font-family: "Segoe UI", system-ui, sans-serif;
-      color: var(--ink);
+      font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink);
       background:
         radial-gradient(800px 400px at 10% 0%, #4338ca 0%, transparent 55%),
         radial-gradient(600px 350px at 90% 10%, #7c3aed 0%, transparent 50%),
@@ -37,14 +53,14 @@
     h1 { margin: 0; font-size: 1.15rem; font-weight: 900; }
     .badge {
       font-size: 10px; font-weight: 800; background: linear-gradient(90deg,#fbbf24,#f472b6);
-      color: #111; padding: 4px 8px; border-radius: 999px;
+      color: #111; padding: 4px 8px; border-radius: 999px; cursor: pointer;
     }
     main { padding: 0 14px 24px; max-width: 520px; margin: 0 auto; }
     .tip {
       font-size: 13px; color: var(--mute); line-height: 1.45;
       background: var(--card); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;
     }
-    .modes { display: grid; gap: 10px; margin-bottom: 16px; }
+    .modes { display: grid; gap: 10px; margin-bottom: 12px; }
     .mode-btn {
       border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px 16px;
       background: var(--card); color: inherit; text-align: left; cursor: pointer;
@@ -52,9 +68,9 @@
     .mode-btn strong { display: block; font-size: 15px; margin-bottom: 4px; }
     .mode-btn span { font-size: 12px; color: var(--mute); }
     .mode-btn.on { border-color: #7dd3fc; background: rgba(56,189,248,.12); }
-    .challenge-bar {
-      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px;
-    }
+    .mode-btn.secret { border-color: #fde047; background: rgba(253,224,71,.1); display: none; }
+    .mode-btn.secret.show { display: block; }
+    .challenge-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
     .challenge-bar button {
       border: 0; border-radius: 999px; padding: 10px 14px; font: 800 13px inherit;
       cursor: pointer; color: #111; background: var(--accent);
@@ -78,22 +94,36 @@
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px 4px; font-weight: 800; font-size: 14px;
     }
-    .scores { display: flex; gap: 12px; flex-wrap: wrap; }
+    .scores { display: flex; gap: 8px; flex-wrap: wrap; }
     .score-pill {
       background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: 13px;
     }
     .score-pill.me { border: 1px solid #7dd3fc; }
+    .powers {
+      display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
+    }
+    .powers button {
+      border: 0; border-radius: 12px; padding: 8px 10px; font: 800 11px inherit;
+      cursor: pointer; color: #fff; background: rgba(99,102,241,.55);
+      flex: 1 1 calc(33% - 6px); min-width: 90px;
+    }
+    .powers button.owner { background: linear-gradient(135deg,#fbbf24,#f472b6); color: #111; }
+    .powers button:disabled { opacity: 0.35; cursor: not-allowed; }
+    .ach-box {
+      background: var(--card); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px;
+      font-size: 12px; color: var(--mute);
+    }
+    .ach-box h3 { margin: 0 0 6px; font-size: 13px; color: #fde68a; }
+    .ach-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ach { background: rgba(255,255,255,.08); border-radius: 999px; padding: 4px 8px; font-weight: 700; }
+    .ach.on { background: rgba(34,197,94,.25); color: #86efac; }
     .big-play {
       width: 100%; border: 0; border-radius: 16px; padding: 16px;
       font: 900 16px inherit; cursor: pointer; color: #111;
       background: linear-gradient(145deg, #fde047, #fbbf24); margin-top: 8px;
     }
-    .lock {
-      min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 24px;
-    }
+    .lock { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 24px; }
     .lock a { color: #a5b4fc; }
-    .laugh { font-size: 28px; animation: bounce .5s ease infinite alternate; }
-    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-8px); } }
     .toast {
       position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
       background: rgba(15,23,42,.95); border: 1px solid rgba(255,255,255,.15);
@@ -118,14 +148,19 @@
     <header>
       <a class="back" href="../friends.html">← Друзья</a>
       <h1>🏫 Школьная вечеринка</h1>
-      <span class="badge">⭐ ЭКСКЛЮЗИВ</span>
+      <span class="badge" id="badge-star" title="Секреты">⭐ ЭКСКЛЮЗИВ</span>
     </header>
 
     <main>
       <p class="tip">
-        💜 Не викторина! Тут <strong>смеёмся и соревнуемся</strong>: кто быстрее хлопнет,
-        кто дальше пробежит с рюкзаком, кто нарисует смешнее. Вызови друга — играете вместе!
+        💜 Смеёмся и соревнуемся! У <strong>всех</strong> есть способности — не только у Амаля.
+        В режиме «Погоня» — клон отвлекает врага, телепорт, левитация!
       </p>
+
+      <div class="ach-box">
+        <h3>🏆 Достижения</h3>
+        <div class="ach-list" id="ach-list">—</div>
+      </div>
 
       <div class="challenge-bar">
         <button type="button" id="btn-challenge">📣 Вызвать друзей!</button>
@@ -136,15 +171,23 @@
       <div class="modes" id="modes">
         <button type="button" class="mode-btn on" data-mode="tap">
           <strong>👏 Хлоп-хлоп</strong>
-          <span>10 сек — кто больше нажмёт? С другом в реальном времени!</span>
+          <span>10 сек — кто больше нажмёт?</span>
         </button>
         <button type="button" class="mode-btn" data-mode="run">
           <strong>🎒 Бег с рюкзаком</strong>
-          <span>Уворачивайся от учебников — кто дальше пробежит?</span>
+          <span>Учебники · способности помогают!</span>
+        </button>
+        <button type="button" class="mode-btn" data-mode="chase">
+          <strong>👹 Погоня!</strong>
+          <span>Враг догоняет — клон, телепорт, убегай!</span>
         </button>
         <button type="button" class="mode-btn" data-mode="doodle">
           <strong>😂 Смешной урок</strong>
-          <span>Рисуй смешняшку на доске — баллы за кreativity!</span>
+          <span>Рисуй на доске</span>
+        </button>
+        <button type="button" class="mode-btn secret" data-mode="secret" id="mode-secret">
+          <strong>✨ Секретный коридор</strong>
+          <span>Золотой уровень · только для команды!</span>
         </button>
       </div>
 
@@ -153,6 +196,8 @@
         <span id="timer">—</span>
       </div>
 
+      <div class="powers" id="powers"></div>
+
       <div id="arena"><canvas id="c" width="480" height="360"></canvas></div>
       <button type="button" class="big-play" id="btn-go">▶ Играть!</button>
     </main>
@@ -160,9 +205,9 @@
 
   <div class="toast" id="toast"></div>
 
-  <script src="../shared/amal-device.js?v=3"></script>
+  <script src="../shared/amal-device.js?v=4"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
   <script src="../shared/amal-friends-net.js?v=2"></script>
-  <script src="./game.js?v=2"></script>
+  <script src="./game.js?v=4"></script>
 </body>
 </html>
