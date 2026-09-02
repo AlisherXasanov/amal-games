@@ -213,6 +213,18 @@
 
   function showWelcome(onDone) {
     try {
+      if (global.AmalDevice && AmalDevice.isSiteOwner && AmalDevice.isSiteOwner()) {
+        localStorage.setItem(STORE_WELCOME, "1");
+        if (onDone) onDone();
+        return;
+      }
+    } catch (_) {}
+    if (isOwner) {
+      try { localStorage.setItem(STORE_WELCOME, "1"); } catch (_) {}
+      if (onDone) onDone();
+      return;
+    }
+    try {
       if (localStorage.getItem(STORE_WELCOME) === "1") {
         if (onDone) onDone();
         return;

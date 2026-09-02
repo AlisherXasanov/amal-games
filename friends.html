@@ -6,9 +6,21 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=2" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=3" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
-  <script src="./shared/amal-device.js?v=3"></script>
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get("code") === "amal-star-friends" || q.get("from") === "friends" ||
+            q.get("owner") === "AmalOwner2026" || q.get("friends") === "1") {
+          localStorage.setItem("amal-friends-access-v1", "1");
+        }
+        if (q.get("owner") === "AmalOwner2026") localStorage.setItem("amal-owner-v1", "1");
+      } catch (_) {}
+    })();
+  </script>
+  <script src="./shared/amal-device.js?v=4"></script>
 </head>
 <body>
   <div id="locked" class="lock-screen" hidden>
@@ -39,8 +51,8 @@
 
     <nav class="tabs" id="tabs">
       <button type="button" class="tab on" data-tab="home">🏠</button>
+      <button type="button" class="tab" data-tab="mila">🐣</button>
       <button type="button" class="tab" data-tab="exclusive">⭐</button>
-      <button type="button" class="tab" data-tab="soon">📦</button>
       <button type="button" class="tab" data-tab="games">🎮</button>
       <button type="button" class="tab" data-tab="memes">😂</button>
       <button type="button" class="tab" data-tab="chat">💬</button>
@@ -49,6 +61,7 @@
     <section class="panel on" id="panel-home">
       <p class="tip">💜 Закрытая команда · только друзья с секретным QR</p>
       <div class="cat-grid">
+        <a class="cat-btn" href="milashki/?v=7&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки — играть!</a>
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзивные игры</button>
         <a class="cat-btn" href="school-party/?from=friends&code=amal-star-friends&stay=1" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#4f46e5,#7c3aed)"><span>🏫</span>Школьная вечеринка</a>
         <a class="cat-btn" href="meme-channel.html?v=11&from=friends&stay=1" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#229ed9,#17212b)"><span>😂</span>Мемы · видео</a>
@@ -118,12 +131,14 @@
   </div>
 
   <script src="./shared/amal-hub-back.js?v=1"></script>
-  <script src="./shared/amal-hub-data.js?v=2"></script>
-  <script src="./shared/amal-device-switcher.js?v=2"></script>
-  <script src="./shared/amal-friends-net.js?v=2"></script>
+  <script src="./shared/amal-hub-data.js?v=3"></script>
+  <script src="./shared/amal-device-switcher.js?v=3"></script>
+  <script src="./shared/amal-friends-net.js?v=3"></script>
   <script>
     (function () {
-      if (!AmalDevice.friendsAllowed()) {
+      var ok = AmalDevice.friendsAllowed() ||
+        (AmalDevice.isSiteOwner && AmalDevice.isSiteOwner());
+      if (!ok) {
         document.getElementById("locked").hidden = false;
         return;
       }
@@ -142,25 +157,6 @@
           var name = a.querySelector(".name");
           AmalFriendsNet.trackGame(name ? name.textContent : "игра");
         }
-      });
-
-      var tabs = document.getElementById("tabs");
-      tabs.addEventListener("click", function (e) {
-        var b = e.target.closest(".tab");
-        if (!b) return;
-        var id = b.getAttribute("data-tab");
-        document.querySelectorAll(".panel").forEach(function (p) { p.classList.remove("on"); });
-        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("on"); });
-        var p = document.getElementById("panel-" + id);
-        if (p) p.classList.add("on");
-        b.classList.add("on");
-      });
-      document.querySelectorAll(".cat-btn[data-go]").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var id = btn.getAttribute("data-go");
-          var tab = document.querySelector('.tab[data-tab="' + id + '"]');
-          if (tab) tab.click();
-        });
       });
     })();
   </script>

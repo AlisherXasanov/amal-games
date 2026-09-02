@@ -1267,6 +1267,17 @@
     <span class="dot" aria-hidden="true"></span>
   </div>
   <div id="device-switcher-slot"></div>
+  <div id="friends-mode-strip" hidden style="max-width:min(720px,94vw);margin:.45rem auto 0;padding:.55rem .85rem;border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(236,72,153,.12));border:2px solid rgba(124,58,237,.35);font:800 13px/1.4 Nunito,system-ui,sans-serif;text-align:center;color:#5b21b6">
+    ⭐ Режим друзей · <a href="friends.html?v=3&stay=1&code=amal-star-friends" style="color:#7c3aed">← вернуться к друзьям</a>
+  </div>
+  <script>
+    try {
+      if (/[?&]hub=friends/.test(location.search) || localStorage.getItem("amal-friends-access-v1") === "1") {
+        var fs = document.getElementById("friends-mode-strip");
+        if (fs) fs.hidden = false;
+      }
+    } catch (_) {}
+  </script>
   <p class="cube-legend">🎲 Легенда куба: в играх — маленькая кнопка <strong>⚡ Силы</strong>, не мешает играть</p>
 
   <header>
@@ -1289,6 +1300,7 @@
     <div class="hub-quick" aria-label="Быстрый вход для всех игроков">
       <div class="hub-quick-title">⚡ Быстрый вход · для всех игроков</div>
       <div class="hub-quick-links" id="hubQuickLinks">
+        <a href="milashki/?v=7">🐣 Милашки</a>
         <a href="we-two/">✦ Мы с тобой</a>
         <a href="youtube-free/">📺 Смотри</a>
         <a href="jelly-lab/">🏠 Желейная хата</a>
