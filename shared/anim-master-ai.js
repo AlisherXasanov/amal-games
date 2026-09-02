@@ -1,6 +1,6 @@
 /**
- * Кадр — мастер анимаций v2.
- * Плавные мульты по тексту: кот, эльф, школа, дракон…
+ * Кадр — мастер анимаций v4.
+ * Мемы, YouTube, сериалы, игры + клубничный слон.
  */
 (function (global) {
   "use strict";
@@ -39,10 +39,33 @@
   }
 
   var extra = { text: "" };
+  var extraRules = [];
+  var extraScenes = {};
+  var catalog = [
+    { cat: "⭐ Топ", prompt: "клубничный слон", label: "🍓🐘 Клубничный слон" },
+    { cat: "⭐ Топ", prompt: "кот мяу", label: "🐱 Кот мяу" },
+    { cat: "⭐ Топ", prompt: "эльф с трубой brainrot", label: "🧝 Brainrot" },
+    { cat: "🎉", prompt: "школьный праздник", label: "🎒 Школа" },
+    { cat: "🎉", prompt: "день рождения 8 лет", label: "🎂 ДР" },
+    { cat: "🎉", prompt: "дракон", label: "🔥 Дракон" },
+    { cat: "🎉", prompt: "супергерой", label: "🦸 Герой" },
+  ];
+
+  function matchExtraRules(t) {
+    for (var i = 0; i < extraRules.length; i++) {
+      var r = extraRules[i];
+      if (r.re.test(t)) {
+        return { id: r.id, title: r.title, fps: r.fps || 12, understood: r.understood || r.title };
+      }
+    }
+    return null;
+  }
 
   function parsePrompt(raw) {
     var t = String(raw || "").toLowerCase();
     var orig = String(raw || "").trim();
+    var hit = matchExtraRules(t);
+    if (hit) return hit;
     if (/клубнич|strawberry|земляник/.test(t) && /слон|elephant|слоник/.test(t)) {
       return { id: "strawberry_elephant", title: "Клубничный слон 🍓🐘", fps: 12, understood: "клубничный слон" };
     }
@@ -600,7 +623,7 @@
     c.width = W;
     c.height = H;
     var ctx = c.getContext("2d");
-    (SCENES[sceneId] || drawCustom)(ctx, i, count);
+    (SCENES[sceneId] || extraScenes[sceneId] || drawCustom)(ctx, i, count);
     polish(ctx, i);
     return c;
   }
@@ -612,8 +635,8 @@
     var frames = [];
     for (var i = 0; i < count; i++) frames.push(renderFrame(plan.id, i, count));
     var reply = plan.id === "custom"
-      ? "Кадр пока не знает «" + extra.text + "». Попробуй «клубничный слон» или «кот мяу»!"
-      : "Понял: «" + (plan.understood || plan.title) + "» — " + count + " кадров, смотри!";
+      ? "Кадр не знает «" + extra.text + "» — нажми пример из списка (мемы, YouTube, игры)!"
+      : "Понял: «" + (plan.understood || plan.title) + "» — смотри! (как в мемах / YouTube)";
     return {
       frames: frames,
       name: plan.title,
@@ -625,7 +648,26 @@
   }
 
   function hints() {
-    return ["клубничный слон", "кот мяу", "эльф с трубой brainrot", "школьный праздник", "дракон", "день рождения 8 лет"];
+    return catalog.map(function (c) { return c.prompt; });
+  }
+
+  function catalogGrouped() {
+    var groups = {};
+    catalog.forEach(function (c) {
+      if (!groups[c.cat]) groups[c.cat] = [];
+      groups[c.cat].push(c);
+    });
+    return groups;
+  }
+
+  function _register(pack) {
+    if (pack.rules) extraRules = extraRules.concat(pack.rules);
+    if (pack.catalog) catalog = catalog.concat(pack.catalog);
+    if (pack.scenes) {
+      Object.keys(pack.scenes).forEach(function (k) {
+        extraScenes[k] = pack.scenes[k];
+      });
+    }
   }
 
   var loops = new WeakMap();
@@ -660,10 +702,13 @@
 
   global.AnimMaster = {
     NAME: "Кадр",
-    VERSION: "v3",
+    VERSION: "v4",
     generate: generate,
     parsePrompt: parsePrompt,
     hints: hints,
+    catalog: catalogGrouped,
+    catalogCount: function () { return catalog.length; },
+    _register: _register,
     playPreview: play,
     PAGE: "anim-master.html",
     W: W,
