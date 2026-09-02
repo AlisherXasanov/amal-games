@@ -26,6 +26,7 @@
   var challenges = [];
   var challengeListeners = [];
   var raceListeners = [];
+  var chatListeners = [];
   var isOwner = false;
   var netReady = false;
 
@@ -121,6 +122,7 @@
     messages.push(m);
     if (messages.length > 80) messages = messages.slice(-80);
     renderMessages();
+    chatListeners.forEach(function (fn) { try { fn(m); } catch (_) {} });
   }
 
   function startNetwork() {
@@ -313,10 +315,39 @@
     send: function (text) {
       text = String(text || "").trim();
       if (!text) return;
-      if (!nick()) { alert("Сначала напиши своё имя!"); return; }
+      if (!nick()) {
+        try {
+          var n = prompt("Как тебя зовут?", "") || "";
+          if (n.trim()) setNick(n.trim());
+        } catch (_) {}
+      }
+      if (!nick()) return;
       var msg = { name: nick(), text: text, t: Date.now() };
       addMessage(msg);
       if (sendChat) sendChat(msg);
+      chatListeners.forEach(function (fn) { try { fn(msg); } catch (_) {} });
+    },
+
+    sendText: function (text) { AmalFriendsNet.send(text); },
+
+    getMessages: function () { return messages.slice(); },
+
+    onChat: function (fn) {
+      if (typeof fn === "function") chatListeners.push(fn);
+    },
+
+    renderOnlineInto: function (box) {
+      if (!box) return;
+      var names = Object.keys(peers);
+      var me = nick();
+      var html = "";
+      if (me) html += "🟢 " + me + " (ты) ";
+      names.forEach(function (p) {
+        if (peers[p].name && peers[p].name !== me) {
+          html += (peers[p].alive ? "🟢 " : "🟡 ") + peers[p].name + " ";
+        }
+      });
+      box.textContent = html || "🟡 Пока только ты — жди друзей";
     },
 
     trackGame: function (gameName) {

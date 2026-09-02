@@ -52,7 +52,7 @@
     { ico: "🧠", name: "Steal Brainrot+", path: "steal-brainrot/", note: "ранний доступ" },
     { ico: "🌱", name: "Grow Garden+", path: "grow-garden/", note: "эксклюзив сад" },
     { ico: "🎁", name: "Joy Surprise", path: "joy-surprise/", note: "сюрприз" },
-    { ico: "🏫", name: "Школьная вечеринка", path: "school-party/", note: "соревнования · только друзья" },
+    { ico: "🏫", name: "Клуб друзей", path: "school-party/?v=9", note: "чат · настолки · смешное" },
   ];
 
   global.AmalHubData = {

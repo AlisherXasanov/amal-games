@@ -3,183 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>🏫 Школьная вечеринка · только друзья</title>
+  <title>🏫 Клуб друзей · школьная вечеринка</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#4f46e5" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <script src="../shared/amal-owner-session.js?v=2"></script>
   <script>
     window.__SCHOOL_PARTY_OK__ = true;
-    if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) {
-      AmalOwnerSession.admitLikeQrScanned();
-    }
+    if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) AmalOwnerSession.admitLikeQrScanned();
   </script>
-  <style>
-    :root {
-      --card: rgba(255,255,255,.07);
-      --ink: #f8fafc;
-      --mute: #a5b4fc;
-      --accent: #fbbf24;
-      --go: #22c55e;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
-    body {
-      font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink);
-      background:
-        radial-gradient(800px 400px at 10% 0%, #4338ca 0%, transparent 55%),
-        radial-gradient(600px 350px at 90% 10%, #7c3aed 0%, transparent 50%),
-        linear-gradient(165deg, #0f172a, #1e1b4b 45%, #312e81);
-    }
-    header {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      padding: 14px 16px 8px;
-    }
-    a.back {
-      color: var(--mute); text-decoration: none; font-weight: 700; font-size: 13px;
-      border: 1px solid rgba(255,255,255,.15); padding: 8px 12px; border-radius: 999px;
-    }
-    h1 { margin: 0; font-size: 1.15rem; font-weight: 900; }
-    .badge {
-      font-size: 10px; font-weight: 800; background: linear-gradient(90deg,#fbbf24,#f472b6);
-      color: #111; padding: 4px 8px; border-radius: 999px; cursor: pointer;
-    }
-    main { padding: 0 14px 24px; max-width: 520px; margin: 0 auto; }
-    .tip {
-      font-size: 13px; color: var(--mute); line-height: 1.45;
-      background: var(--card); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;
-    }
-    .modes { display: grid; gap: 10px; margin-bottom: 12px; }
-    .mode-btn {
-      border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 14px 16px;
-      background: var(--card); color: inherit; text-align: left; cursor: pointer;
-    }
-    .mode-btn strong { display: block; font-size: 15px; margin-bottom: 4px; }
-    .mode-btn span { font-size: 12px; color: var(--mute); }
-    .mode-btn.on { border-color: #7dd3fc; background: rgba(56,189,248,.12); }
-    .mode-btn.secret { border-color: #fde047; background: rgba(253,224,71,.1); display: none; }
-    .mode-btn.secret.show { display: block; }
-    .challenge-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .challenge-bar button {
-      border: 0; border-radius: 999px; padding: 10px 14px; font: 800 13px inherit;
-      cursor: pointer; color: #111; background: var(--accent);
-    }
-    .challenge-bar button.ghost { background: rgba(255,255,255,.12); color: #fff; }
-    #challenge-inbox { margin-bottom: 12px; }
-    .ch-card {
-      background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.35);
-      border-radius: 14px; padding: 12px; margin-bottom: 8px; font-size: 13px;
-    }
-    .ch-card button { margin-top: 8px; margin-right: 6px; border: 0; border-radius: 999px;
-      padding: 8px 12px; font-weight: 800; cursor: pointer; }
-    .ch-card .yes { background: var(--go); color: #052e16; }
-    .ch-card .no { background: rgba(255,255,255,.15); color: #fff; }
-    #arena {
-      background: #000; border-radius: 18px; border: 2px solid rgba(125,211,252,.2);
-      overflow: hidden; touch-action: manipulation;
-    }
-    canvas { display: block; width: 100%; aspect-ratio: 4/3; }
-    .hud {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 4px; font-weight: 800; font-size: 14px;
-    }
-    .scores { display: flex; gap: 8px; flex-wrap: wrap; }
-    .score-pill {
-      background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: 13px;
-    }
-    .score-pill.me { border: 1px solid #7dd3fc; }
-    .powers {
-      display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0;
-    }
-    .powers button {
-      border: 0; border-radius: 12px; padding: 8px 10px; font: 800 11px inherit;
-      cursor: pointer; color: #fff; background: rgba(99,102,241,.55);
-      flex: 1 1 calc(33% - 6px); min-width: 90px;
-    }
-    .powers button.owner { background: linear-gradient(135deg,#fbbf24,#f472b6); color: #111; }
-    .powers button:disabled { opacity: 0.35; cursor: not-allowed; }
-    .ach-box {
-      background: var(--card); border-radius: 14px; padding: 10px 12px; margin-bottom: 12px;
-      font-size: 12px; color: var(--mute);
-    }
-    .ach-box h3 { margin: 0 0 6px; font-size: 13px; color: #fde68a; }
-    .ach-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .ach { background: rgba(255,255,255,.08); border-radius: 999px; padding: 4px 8px; font-weight: 700; }
-    .ach.on { background: rgba(34,197,94,.25); color: #86efac; }
-    .big-play {
-      width: 100%; border: 0; border-radius: 16px; padding: 16px;
-      font: 900 16px inherit; cursor: pointer; color: #111;
-      background: linear-gradient(145deg, #fde047, #fbbf24); margin-top: 8px;
-    }
-    .lock { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 24px; }
-    .lock a { color: #a5b4fc; }
-    .toast {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: rgba(15,23,42,.95); border: 1px solid rgba(255,255,255,.15);
-      padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 700;
-      opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 99;
-    }
-    .toast.show { opacity: 1; }
-  </style>
+  <link rel="stylesheet" href="./club.css?v=1" />
 </head>
 <body>
   <div id="app">
     <header>
       <a class="back" href="../friends.html?v=5&stay=1">← Друзья</a>
-      <h1>🏫 Школьная вечеринка</h1>
-      <span class="badge" id="badge-star" title="Секреты">⭐ ЭКСКЛЮЗИВ</span>
+      <h1>🏫 Клуб друзей</h1>
+      <button type="button" class="badge" id="btn-surprise" title="Сюрприз">🎁</button>
     </header>
 
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab on" data-panel="home">🏠</button>
+      <button type="button" class="tab" data-panel="chat">💬</button>
+      <button type="button" class="tab" data-panel="share">😂</button>
+      <button type="button" class="tab" data-panel="games">🎮</button>
+      <button type="button" class="tab" data-panel="rest">🌿</button>
+    </nav>
+
     <main>
-      <p class="tip">
-        💜 Смеёмся и соревнуемся! У <strong>всех</strong> есть способности — не только у Амаля.
-        В режиме «Погоня» — клон отвлекает врага, телепорт, левитация!
-      </p>
+      <section class="panel on" id="panel-home">
+        <p class="tip">💜 Здесь можно <strong>поболтать</strong>, скинуть смешное, сыграть в настолки и отдохнуть. Без странных погонь — просто друзья.</p>
+        <div class="nick-row">
+          <input id="nick-input" maxlength="16" placeholder="Твоё имя" />
+          <button type="button" id="btn-nick-save">Сохранить</button>
+        </div>
+        <div class="online" id="online-box">🟡 Напиши имя — увидишь друзей</div>
+        <div class="home-grid">
+          <button type="button" class="home-card" data-go="chat"><span>💬</span>Пообщаться</button>
+          <button type="button" class="home-card" data-go="share"><span>😂</span>Смешное</button>
+          <button type="button" class="home-card" data-go="games"><span>♟️</span>Настолки</button>
+          <button type="button" class="home-card" data-go="rest"><span>🌿</span>Отдых</button>
+          <button type="button" class="home-card gold" id="home-surprise"><span>🎁</span>Сюрприз</button>
+        </div>
+      </section>
 
-      <div class="ach-box">
-        <h3>🏆 Достижения</h3>
-        <div class="ach-list" id="ach-list">—</div>
-      </div>
+      <section class="panel" id="panel-chat">
+        <p class="tip">💬 Пишите друг другу — как в чате класса.</p>
+        <div id="chat-log" class="chat-log"></div>
+        <div class="chat-compose">
+          <div class="emoji-row" id="emoji-row"></div>
+          <div class="compose-row">
+            <input id="chat-input" maxlength="200" placeholder="Напиши сообщение…" />
+            <button type="button" id="btn-send">➤</button>
+          </div>
+        </div>
+      </section>
 
-      <div class="challenge-bar">
-        <button type="button" id="btn-challenge">📣 Вызвать друзей!</button>
-        <button type="button" class="ghost" id="btn-nick">👤 Имя</button>
-      </div>
-      <div id="challenge-inbox"></div>
+      <section class="panel" id="panel-share">
+        <p class="tip">😂 Кидайте смешные <strong>ссылки</strong> и <strong>картинки</strong> (ссылка на картинку).</p>
+        <div class="share-form">
+          <input id="share-title" maxlength="40" placeholder="Название (необязательно)" />
+          <input id="share-url" maxlength="400" placeholder="https://… ссылка или картинка" />
+          <div class="share-actions">
+            <button type="button" id="btn-share-link">🔗 Ссылка</button>
+            <button type="button" id="btn-share-pic">🖼 Картинка</button>
+            <button type="button" class="ghost" id="btn-share-joke">🎲 Шутка</button>
+          </div>
+        </div>
+        <div id="share-feed" class="share-feed"></div>
+      </section>
 
-      <div class="modes" id="modes">
-        <button type="button" class="mode-btn on" data-mode="tap">
-          <strong>👏 Хлоп-хлоп</strong>
-          <span>10 сек — кто больше нажмёт?</span>
-        </button>
-        <button type="button" class="mode-btn" data-mode="run">
-          <strong>🎒 Бег с рюкзаком</strong>
-          <span>Учебники · способности помогают!</span>
-        </button>
-        <button type="button" class="mode-btn" data-mode="chase">
-          <strong>👹 Погоня!</strong>
-          <span>Враг догоняет — клон, телепорт, убегай!</span>
-        </button>
-        <button type="button" class="mode-btn" data-mode="doodle">
-          <strong>😂 Смешной урок</strong>
-          <span>Рисуй на доске</span>
-        </button>
-        <button type="button" class="mode-btn secret" data-mode="secret" id="mode-secret">
-          <strong>✨ Секретный коридор</strong>
-          <span>Золотой уровень · только для команды!</span>
-        </button>
-      </div>
+      <section class="panel" id="panel-games">
+        <p class="tip">🎮 Выбери игру. Можно играть вдвоём на одном экране или против компьютера.</p>
+        <div class="game-pick" id="game-pick">
+          <button type="button" class="mode-btn" data-game="chess"><strong>♟️ Шахматы</strong><span>классика · vs ПК или вдвоём</span></button>
+          <button type="button" class="mode-btn" data-game="checkers"><strong>🔴 Шашки</strong><span>русские шашки · вдвоём / vs ПК</span></button>
+          <button type="button" class="mode-btn" data-game="sea"><strong>🚢 Морской бой</strong><span>найди корабли друга</span></button>
+          <button type="button" class="mode-btn" data-game="xo"><strong>❌⭕ Крестики-нолики</strong><span>быстрая дуэль</span></button>
+          <button type="button" class="mode-btn" data-game="memory"><strong>🃏 Память</strong><span>найди пары</span></button>
+          <button type="button" class="mode-btn" data-game="tap"><strong>👏 Хлоп-хлоп</strong><span>кто быстрее нажмёт</span></button>
+        </div>
+        <div id="game-stage" class="game-stage" hidden>
+          <div class="game-bar">
+            <button type="button" class="ghost" id="btn-game-back">← Настолки</button>
+            <strong id="game-title">Игра</strong>
+            <button type="button" id="btn-vs">👤 vs 🤖</button>
+          </div>
+          <p class="game-status" id="game-status">—</p>
+          <div id="board-host"></div>
+        </div>
+      </section>
 
-      <div class="hud">
-        <div class="scores" id="scores"></div>
-        <span id="timer">—</span>
-      </div>
-
-      <div class="powers" id="powers"></div>
-
-      <div id="arena"><canvas id="c" width="480" height="360"></canvas></div>
-      <button type="button" class="big-play" id="btn-go">▶ Играть!</button>
+      <section class="panel" id="panel-rest">
+        <p class="tip">🌿 Тихо и спокойно. Дыши, слушай мягкий звук, смотри на звёзды.</p>
+        <div class="rest-box">
+          <div class="breath" id="breath">Вдох…</div>
+          <canvas id="rest-stars" width="360" height="220"></canvas>
+          <div class="rest-actions">
+            <button type="button" id="btn-breathe">🌬️ Дыхание</button>
+            <button type="button" id="btn-soft">🔔 Мягкий звук</button>
+            <button type="button" id="btn-kind">💛 Доброе слово</button>
+          </div>
+          <p class="kind" id="kind-text">Ты классный друг. Этого достаточно.</p>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <div id="surprise-modal" class="modal" hidden>
+    <div class="modal-box">
+      <div class="surprise-art">🌙✨🎁</div>
+      <h2>Золотой вечер клуба</h2>
+      <p>Сюрприз только для тебя и друзей: тихая золотая ночь в клубе.</p>
+      <p>Открываются золотые краски, <strong>+67 звёзд дружбы</strong> и тёплое настроение вечера.</p>
+      <p class="sign">— сюрприз для Амаля ♥</p>
+      <button type="button" id="btn-surprise-ok">Ура! Забрать ✨</button>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -187,7 +126,8 @@
   <script src="../owner-cheats.js"></script>
   <script src="../shared/amal-device.js?v=8"></script>
   <script src="../shared/amal-hub-back.js?v=1"></script>
-  <script src="../shared/amal-friends-net.js?v=3"></script>
-  <script src="./game.js?v=8"></script>
+  <script src="../shared/amal-friends-net.js?v=4"></script>
+  <script src="./board-games.js?v=1"></script>
+  <script src="./club.js?v=1"></script>
 </body>
 </html>
