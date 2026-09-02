@@ -517,13 +517,18 @@
       pill = document.createElement("button");
       pill.type = "button";
       pill.id = "amal-world-showpill";
-      pill.title = "Показать героя Амаля";
+      pill.title = "Фигура по желанию — нажми, чтобы показать или спрятать";
       pill.textContent = "🦸";
       pill.onclick = function () {
-        state.hidePref = "show";
+        if (heroHidden()) {
+          state.hidePref = "show";
+          toast("🦸 Фигура по желанию — играй! Нажми 🦸 снова, чтобы убрать");
+        } else {
+          state.hidePref = "auto";
+          toast("🙈 Фигура спрятана — не мешает игре");
+        }
         save();
         applyHidden();
-        toast("🦸 Герой Амаль снова тут");
       };
       document.body.appendChild(pill);
     }

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>📅 Добрый календарь · 3 года</title>
+  <meta name="theme-color" content="#7c3aed" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh; font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(165deg, #1e1b4b, #312e81 40%, #0f172a);
+      color: #f8fafc; padding: 12px; padding-top: max(12px, env(safe-area-inset-top));
+      max-width: 520px; margin: 0 auto;
+    }
+    a.back { color: #c4b5fd; text-decoration: none; font: 700 14px inherit; display: inline-block; margin-bottom: 10px; }
+    h1 { font-size: 1.35rem; font-weight: 900; margin-bottom: 4px; }
+    .sub { font-size: 13px; color: #a5b4fc; font-weight: 600; margin-bottom: 14px; line-height: 1.4; }
+    .today {
+      background: linear-gradient(135deg, #5b21b6, #7c3aed);
+      border-radius: 20px; padding: 20px 18px; margin-bottom: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,.35);
+    }
+    .today .date { font-size: 12px; color: #ddd6fe; font-weight: 700; margin-bottom: 8px; }
+    .today .word { font-size: clamp(1.1rem, 4.5vw, 1.45rem); font-weight: 800; line-height: 1.45; }
+    .today .emoji { font-size: 42px; margin-bottom: 8px; }
+    .progress {
+      background: rgba(255,255,255,.08); border-radius: 999px; height: 8px; margin: 12px 0 6px; overflow: hidden;
+    }
+    .progress i { display: block; height: 100%; background: linear-gradient(90deg, #fbbf24, #f472b6); border-radius: 999px; }
+    .progress-label { font-size: 11px; color: #c4b5fd; font-weight: 700; }
+    .note {
+      background: rgba(255,255,255,.06); border-radius: 14px; padding: 12px 14px;
+      font-size: 13px; line-height: 1.45; color: #e2e8f0; font-weight: 600; margin-bottom: 14px;
+    }
+    .month-nav { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .month-nav button {
+      border: 0; border-radius: 12px; padding: 10px 14px; background: #4338ca; color: #fff;
+      font: 800 14px inherit; cursor: pointer;
+    }
+    .month-nav span { flex: 1; text-align: center; font-weight: 800; font-size: 15px; }
+    .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .grid .dow { text-align: center; font-size: 10px; color: #a5b4fc; font-weight: 800; padding: 4px 0; }
+    .day {
+      aspect-ratio: 1; border: 0; border-radius: 10px; background: rgba(255,255,255,.06);
+      color: #e2e8f0; font: 700 12px inherit; cursor: pointer;
+    }
+    .day.other { opacity: .35; }
+    .day.today { background: #fbbf24; color: #1e1b4b; }
+    .day.picked { outline: 2px solid #f472b6; }
+    .picked-word {
+      margin-top: 12px; padding: 14px; border-radius: 14px; background: rgba(0,0,0,.25);
+      font-size: 14px; line-height: 1.45; font-weight: 700; min-height: 48px;
+    }
+  </style>
+</head>
+<body>
+  <a class="back" href="meme-channel.html?v=8&stay=1">← Мемы</a>
+  <h1>📅 Добрый календарь</h1>
+  <p class="sub">3 года · с 2 сентября 2026 · приятное слово на каждый день — даже когда скучно</p>
+
+  <div class="today" id="today-card">
+    <div class="emoji" id="today-emoji">✨</div>
+    <div class="date" id="today-date">…</div>
+    <div class="word" id="today-word">…</div>
+    <div class="progress"><i id="progress-bar"></i></div>
+    <p class="progress-label" id="progress-label">…</p>
+  </div>
+
+  <p class="note">💬 Когда закончишь школу — этот канал и мемы останутся. Можно писать друзьям, встречаться в жизни и делиться новостями здесь.</p>
+
+  <div class="month-nav">
+    <button type="button" id="prev-m">←</button>
+    <span id="month-label">…</span>
+    <button type="button" id="next-m">→</button>
+  </div>
+  <div class="grid" id="cal-grid"></div>
+  <div class="picked-word" id="picked-word">Нажми на день — увидишь слово</div>
+
+  <script>
+    (function () {
+      var START = new Date(2026, 8, 2);
+      var END = new Date(2029, 8, 1);
+      var TOTAL = Math.round((END - START) / 86400000) + 1;
+
+      var WORDS = [
+        "Ты молодец — даже если день тихий.", "Сегодня можно ошибиться — это нормально.",
+        "Ты важный человек для своих друзей.", "Улыбка — маленький супергерой.",
+        "Скучный день тоже часть большой истории.", "Ты растёшь — и это круто.",
+        "Сегодня хороший день, чтобы сказать «привет».", "Ты справишься — шаг за шагом.",
+        "Иногда отдых — тоже дело.", "Твоя идея может стать чем-то классным.",
+        "Друзья помнят добрые слова.", "Ты не один — мы на связи.",
+        "Маленький поступок = большая радость.", "Сегодня можно просто быть собой.",
+        "Ты уже сделал больше, чем думаешь.", "Новый день — новый шанс поиграть и посмеяться.",
+        "Школа закончится — дружба может остаться.", "Ты умеешь радовать других.",
+        "Сегодня достаточно стараться чуть-чуть.", "Ты заслуживаешь хорошего настроения.",
+        "Даже дождь приносит радугу.", "Ты смелый — раз открыл этот календарь.",
+        "Иногда лучший план — отдохнуть.", "Ты особенный — не как все, а как ты.",
+        "Сегодня можно помочь кому-то одним словом.", "Ты учишься — и это уже победа.",
+        "Будущее начинается с сегодняшнего утра.", "Ты можешь мечтать по-крупному.",
+        "Скучно? Значит, скоро будет интересно.", "Ты создаёшь свой мир — и это здорово.",
+        "Друзья из школы могут стать друзьями навсегда.", "Сегодня — хороший день для мема.",
+        "Ты старше на один день мудрости.", "Никто не идеален — и это ок.",
+        "Твоё «спасибо» кому-то важно.", "Ты можешь начать заново в любой момент.",
+        "Сегодня можно быть добрым к себе.", "Ты уже герой своей истории.",
+        "Иногда нужно просто подождать.", "Ты умеешь делать людей счастливее.",
+        "Каждый день — кирпичик в твоём будущем.", "Ты не обязан быть лучшим — будь собой.",
+        "Сегодня можно научиться чему-то маленькому.", "Ты заслуживаешь поддержки.",
+        "Даже тихий день — полезный день.", "Ты можешь попросить помощи — это сила.",
+        "Смех лечит скучные минуты.", "Ты важен семье.", "Сегодня можно сказать «люблю вас».",
+        "Ты растёшь вместе с друзьями.", "Завтра может быть ещё лучше.",
+        "Ты уже прошёл много — молодец.", "Сегодня хватит одного хорошего дела.",
+        "Ты уникален — так и задумано.", "Иногда лучший друг — это ты сам.",
+        "Ты можешь изменить настроение комнаты.", "Школа — не навсегда, а ты — навсегда ценный.",
+        "Сегодня можно помечтать о встрече с друзьями.", "Ты умеешь прощать — это редкость.",
+        "Маленькая радость тоже радость.", "Ты не один в этом чате и в жизни.",
+        "Сегодня можно нарисовать что-то смешное.", "Ты становишься сильнее каждый день.",
+        "Друзья — это те, с кем хочется делиться.", "Ты заслуживаешь отдыха после школы.",
+        "Сегодня можно сказать комплимент.", "Ты уже сделал мир чуть лучше.",
+        "Иногда нужно просто послушать.", "Ты можешь быть лидером без крика.",
+        "Скучный урок пройдёт — ты останешься.", "Ты умеешь смеяться — держись этого.",
+        "Сегодня — день для маленького сюрприза.", "Ты важен — даже если молчишь.",
+        "Будущие встречи с друзьями уже ждут.", "Ты можешь начать новую традицию.",
+        "Сегодня хорошо просто дышать.", "Ты не обязан нравиться всем.",
+        "Доброе слово возвращается.", "Ты создаёшь воспоминания — крутые.",
+        "Сегодня можно поиграть без вины.", "Ты учишься дружить — и это навык на всю жизнь.",
+        "Иногда лучший ответ — обнять.", "Ты можешь быть разным — и всё равно ок.",
+        "Сегодня — ещё один день твоей легенды.", "Ты заслуживаешь веры в себя.",
+        "Друзья из QR-чата — настоящие, если вы общаетесь.", "Ты можешь ждать лета — и это нормально.",
+        "Сегодня можно записать смешную мысль.", "Ты уже ближе к мечте, чем вчера.",
+        "Иногда домашка — просто домашка.", "Ты умеешь поддерживать.",
+        "Сегодня хватит быть хорошим другом.", "Ты не одинок в своих мыслях.",
+        "Мир большой — ты в нём на своём месте.", "Сегодня можно сказать «скучаю» — это честно.",
+        "Ты растёшь — и друзья тоже.", "Иногда лучший план — мем.",
+        "Ты можешь встретиться с другом вне школы — когда-нибудь.", "Сегодня — подарок, даже если серый.",
+        "Ты умеешь радоваться мелочам.", "Школа учит — жизнь дружит.",
+        "Сегодня можно помолчать и отдохнуть.", "Ты важнее оценки в дневнике.",
+        "Друзья помнят, как с ними хорошо.", "Ты можешь быть собой в этом чате.",
+        "Сегодня — хороший день сказать «я здесь».", "Ты уже сделал кого-то счастливее.",
+        "Иногда нужно просто переждать.", "Ты умеешь мечтать о настоящих встречах.",
+        "Сегодня можно поблагодарить маму или папу.", "Ты не обязан торопиться — ты восьмилетний герой.",
+        "Календарь на 3 года — мы рядом долго.", "Ты можешь — и я в тебя верю."
+      ];
+
+      var EMOJIS = ["✨", "🌟", "💛", "🌈", "🎈", "🦋", "🌸", "⭐", "💫", "🎁", "🤗", "😊", "🌻", "🍀", "🎉"];
+
+      function dayIndex(d) {
+        var t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        var i = Math.round((t - START) / 86400000);
+        if (i < 0) return 0;
+        if (i >= TOTAL) return TOTAL - 1;
+        return i;
+      }
+
+      function wordFor(d) {
+        return WORDS[dayIndex(d) % WORDS.length];
+      }
+
+      function emojiFor(d) {
+        return EMOJIS[dayIndex(d) % EMOJIS.length];
+      }
+
+      function fmtDate(d) {
+        return d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      }
+
+      function fmtMonth(d) {
+        return d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
+      }
+
+      var view = new Date();
+      var now = new Date();
+
+      function renderToday() {
+        var i = dayIndex(now);
+        document.getElementById("today-date").textContent = fmtDate(now);
+        document.getElementById("today-word").textContent = wordFor(now);
+        document.getElementById("today-emoji").textContent = emojiFor(now);
+        document.getElementById("progress-bar").style.width = Math.min(100, ((i + 1) / TOTAL) * 100) + "%";
+        document.getElementById("progress-label").textContent =
+          "День " + (i + 1) + " из " + TOTAL + " · до 1 сентября 2029";
+      }
+
+      function renderMonth() {
+        document.getElementById("month-label").textContent = fmtMonth(view);
+        var g = document.getElementById("cal-grid");
+        g.innerHTML = "";
+        ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].forEach(function (w) {
+          var el = document.createElement("div");
+          el.className = "dow";
+          el.textContent = w;
+          g.appendChild(el);
+        });
+        var y = view.getFullYear(), m = view.getMonth();
+        var first = new Date(y, m, 1);
+        var start = (first.getDay() + 6) % 7;
+        var days = new Date(y, m + 1, 0).getDate();
+        for (var i = 0; i < start; i++) {
+          var e = document.createElement("div");
+          e.className = "day other";
+          g.appendChild(e);
+        }
+        for (var d = 1; d <= days; d++) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "day";
+          btn.textContent = d;
+          var dt = new Date(y, m, d);
+          if (dt < START || dt > END) btn.classList.add("other");
+          if (dt.toDateString() === now.toDateString()) btn.classList.add("today");
+          btn.onclick = (function (date) {
+            return function () {
+              document.querySelectorAll(".day.picked").forEach(function (x) { x.classList.remove("picked"); });
+              btn.classList.add("picked");
+              document.getElementById("picked-word").textContent =
+                fmtDate(date) + " — " + wordFor(date);
+            };
+          })(dt);
+          g.appendChild(btn);
+        }
+      }
+
+      document.getElementById("prev-m").onclick = function () {
+        view.setMonth(view.getMonth() - 1);
+        renderMonth();
+      };
+      document.getElementById("next-m").onclick = function () {
+        view.setMonth(view.getMonth() + 1);
+        renderMonth();
+      };
+
+      if (location.search.indexOf("lock=1") >= 0) {
+        var b = document.querySelector(".back");
+        if (b) b.style.display = "none";
+      }
+
+      renderToday();
+      renderMonth();
+    })();
+  </script>
+</body>
+</html>

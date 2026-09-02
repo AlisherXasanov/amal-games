@@ -14,10 +14,14 @@
       var fromSite = /[?&]from=(phone|tablet|friends|desktop)/.test(q);
       if (/[?&]lock=1/.test(q) && !fromSite) {
         document.documentElement.classList.add("qr-lock");
-        document.body.classList.add("qr-lock");
       } else {
         try { sessionStorage.removeItem("amal-meme-qr-lock"); } catch (_) {}
       }
+      document.addEventListener("DOMContentLoaded", function () {
+        if (document.documentElement.classList.contains("qr-lock")) {
+          document.body.classList.add("qr-lock");
+        }
+      });
     })();
   </script>
   <style>
@@ -25,6 +29,7 @@
     body {
       min-height: 100dvh; font-family: "Segoe UI", system-ui, sans-serif;
       background: #0e1621; color: #fff; display: flex; flex-direction: column;
+      max-width: 520px; margin: 0 auto; width: 100%;
     }
     .tg-top {
       display: flex; align-items: center; gap: 10px;
@@ -107,10 +112,9 @@
     }
     .empty-feed span { font-size: 48px; display: block; margin-bottom: 12px; }
     html.qr-lock .back-link,
-    html.qr-lock .qr-link,
-    html.qr-lock .explain-exit,
+    html.qr-lock .print-qr-link,
     body.qr-lock .back-link,
-    body.qr-lock .qr-link,
+    body.qr-lock .print-qr-link,
     body.qr-lock .explain-exit { display: none !important; }
     html.qr-lock .explain-qr,
     body.qr-lock .explain-qr { display: block !important; }
@@ -124,6 +128,8 @@
       background: linear-gradient(135deg, #0d6e5f, #047857); color: #fff;
       font: 800 15px inherit; text-decoration: none; box-shadow: 0 4px 16px rgba(0,0,0,.35);
     }
+    html.qr-lock .exit-games,
+    body.qr-lock .exit-games { display: none !important; }
     html:not(.qr-lock) .exit-games,
     body:not(.qr-lock) .exit-games { display: block; }
   </style>
@@ -136,8 +142,9 @@
       <h1>Мемы и новости</h1>
       <p>дома · с семьёй и друзьями</p>
     </div>
-    <span class="ver">v8</span>
-    <a class="qr-link" href="qr-memes.html?print=1">🖨️ QR</a>
+    <span class="ver">v9</span>
+    <a class="qr-link cal-link" href="kind-calendar.html">📅</a>
+    <a class="qr-link print-qr-link" href="qr-memes.html?print=1">🖨️</a>
   </header>
 
   <p class="explain explain-exit">💬 <strong>Только мемы</strong> — кидай смешняшки и новости. «Назад» — в Игры Амаля.</p>
