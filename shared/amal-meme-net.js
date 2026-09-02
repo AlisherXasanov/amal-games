@@ -139,6 +139,14 @@
     sendMeme: function (emoji, cap, bg) {
       return send("meme", { emoji: emoji || "😂", cap: String(cap || "").slice(0, 120), bg: bg || "linear-gradient(135deg,#334155,#1e293b)" });
     },
+    sendAnim: function (animId, title, cap) {
+      return send("anim", {
+        animId: String(animId || "hair-wave-v1"),
+        title: String(title || "Анимация").slice(0, 80),
+        cap: String(cap || "").slice(0, 120),
+        href: "amal-hair-wave.html",
+      });
+    },
     channels: { home: { title: "Мемы", sub: "дома", hint: "", icon: "😂" } },
   };
 })(window);

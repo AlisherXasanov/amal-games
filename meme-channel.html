@@ -80,6 +80,16 @@
     }
     .meme-card .pic { min-height: 100px; display: grid; place-items: center; font-size: 48px; padding: 16px; }
     .meme-card .cap { padding: 8px 10px 10px; font: 800 13px/1.35 inherit; color: #e8edf2; white-space: pre-wrap; }
+    .anim-card {
+      background: #1e2c3a; border-radius: 12px; overflow: hidden;
+      max-width: 280px; border: 1px solid rgba(255,255,255,.08);
+    }
+    .anim-card canvas { display: block; width: 100%; aspect-ratio: 4/3; background: #bae6fd; }
+    .anim-card .cap { padding: 8px 10px 4px; font: 800 13px/1.35 inherit; color: #e8edf2; }
+    .anim-card a.watch {
+      display: block; text-align: center; padding: 8px; margin: 0 8px 8px;
+      border-radius: 10px; background: #2b5278; color: #fff; font: 800 12px inherit; text-decoration: none;
+    }
     .meta { font-size: 10px; color: #6d7f92; margin-top: 3px; clear: both; padding: 0 4px 4px; }
     .composer {
       position: fixed; left: 0; right: 0; bottom: 0;
@@ -144,6 +154,7 @@
     </div>
     <span class="ver">v9</span>
     <a class="qr-link cal-link" href="kind-calendar.html">📅</a>
+    <a class="qr-link" href="amal-hair-wave.html" title="Анимация">🎬</a>
     <a class="qr-link print-qr-link" href="qr-memes.html?print=1">🖨️</a>
   </header>
 
@@ -168,6 +179,7 @@
       <button type="button" id="btn-stickers">😄 Стикер</button>
       <button type="button" id="btn-news" class="news-btn">📰 Новость</button>
       <button type="button" id="btn-meme">🖼 Мем</button>
+      <button type="button" id="btn-anim">🎬 Аним</button>
     </div>
     <div class="composer-row">
       <input type="text" id="msg-input" placeholder="Написать…" maxlength="200" />
@@ -178,7 +190,8 @@
   <script src="./shared/amal-device.js?v=2"></script>
   <script src="./shared/amal-meme-back.js?v=3"></script>
   <script src="./shared/amal-chat-config.js?v=1"></script>
-  <script src="./shared/amal-meme-net.js?v=5"></script>
+  <script src="./shared/amal-hair-wave.js?v=1"></script>
+  <script src="./shared/amal-meme-net.js?v=6"></script>
   <script>
     (function () {
       var feed = document.getElementById("feed");
@@ -226,6 +239,34 @@
           card.className = "meme-card";
           card.innerHTML = '<div class="pic" style="background:' + (p.bg || "#334155") + '">' + (p.emoji || "😂") + '</div><div class="cap">' + AmalMemeNet.esc(p.cap || "") + "</div>";
           bubble.appendChild(card);
+        } else if (p.type === "anim") {
+          var ac = document.createElement("div");
+          ac.className = "anim-card";
+          var mini = document.createElement("canvas");
+          mini.width = 240;
+          mini.height = 180;
+          ac.appendChild(mini);
+          var capEl = document.createElement("div");
+          capEl.className = "cap";
+          capEl.textContent = p.title || "🎬 Анимация";
+          ac.appendChild(capEl);
+          if (p.cap) {
+            var sub = document.createElement("div");
+            sub.className = "cap";
+            sub.style.fontWeight = "600";
+            sub.style.opacity = "0.85";
+            sub.textContent = p.cap;
+            ac.appendChild(sub);
+          }
+          var watch = document.createElement("a");
+          watch.className = "watch";
+          watch.href = p.href || "amal-hair-wave.html";
+          watch.textContent = "▶ Смотреть";
+          ac.appendChild(watch);
+          bubble.appendChild(ac);
+          setTimeout(function () {
+            if (window.AmalHairWave) AmalHairWave.play(mini, { mini: true });
+          }, 30);
         } else if (p.type === "news") {
           bubble.className += " news";
           bubble.innerHTML = '<div class="news-tag">📰 Новость</div>' + AmalMemeNet.esc(p.text);
@@ -270,6 +311,12 @@
         if (!cap || !cap.trim()) return;
         var em = ["🐱", "🎮", "🌊", "🐣", "🍕", "🤣", "💀"];
         AmalMemeNet.sendMeme(em[Math.floor(Math.random() * em.length)], cap.trim());
+      };
+      document.getElementById("btn-anim").onclick = function () {
+        if (!ensureNick()) return;
+        if (AmalMemeNet.sendAnim("hair-wave-v1", "Волосы волной 🌬️", "Смотри — волосы развеваются!")) {
+          alert("🎬 Анимация в ленте! Нажми «Смотреть» на карточке.");
+        }
       };
 
       AmalMemeNet.init();
