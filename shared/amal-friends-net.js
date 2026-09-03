@@ -10,7 +10,11 @@
   var STORE_NICK = "amal-friends-nick-v1";
   var STORE_WELCOME = "amal-friends-welcomed-v1";
   var STORE_OWNER = "amal-friends-owner-v1";
+  var STORE_MOD = "amal-friends-mod-v1";
   var OWNER_NICKS = ["амаль", "amal", "хозяин", "амаля"];
+  /** Договорённость: одноклассник Азам → ник «Азам» = админ (предупреждения + бан) */
+  var ADMIN_NICKS = ["азам", "azam"];
+  var BAN_MS = 3 * 24 * 60 * 60 * 1000; // 3 дня
   var emojis = ["😀", "😂", "❤️", "👍", "🎮", "🐣", "⭐", "🔥", "🥳", "👋", "💜", "✨", "🕵️", "🌊"];
 
   var room = null;
@@ -22,7 +26,14 @@
   var sendResult = null;
   var sendHello = null;
   var sendBoard = null;
+  var sendDm = null;
+  var sendTask = null;
+  var sendMod = null;
   var boardListeners = [];
+  var dmListeners = [];
+  var taskListeners = [];
+  var dmLog = []; // for owner watch + local
+  var taskList = [];
   var messages = [];
   var peers = {};
   var activities = [];
@@ -33,9 +44,59 @@
   var joinListeners = [];
   var leaveListeners = [];
   var isOwner = false;
+  var isAdmin = false;
   var netReady = false;
   var myPlace = "";
   var announcedNames = {};
+  var modState = loadModState();
+
+  function loadModState() {
+    try {
+      var raw = localStorage.getItem(STORE_MOD);
+      if (raw) {
+        var o = JSON.parse(raw);
+        if (o && typeof o === "object") {
+          return { warns: o.warns || {}, bans: o.bans || {} };
+        }
+      }
+    } catch (_) {}
+    return { warns: {}, bans: {} };
+  }
+
+  function saveModState() {
+    try { localStorage.setItem(STORE_MOD, JSON.stringify(modState)); } catch (_) {}
+  }
+
+  function nickKey(n) {
+    return String(n || "").trim().toLowerCase();
+  }
+
+  function isOwnerNick(n) {
+    return OWNER_NICKS.indexOf(nickKey(n)) >= 0;
+  }
+
+  function isAdminNick(n) {
+    return ADMIN_NICKS.indexOf(nickKey(n)) >= 0;
+  }
+
+  function banUntil(name) {
+    var b = modState.bans[nickKey(name)];
+    if (!b || !b.until) return 0;
+    if (Date.now() >= b.until) {
+      delete modState.bans[nickKey(name)];
+      saveModState();
+      return 0;
+    }
+    return b.until;
+  }
+
+  function warnCount(name) {
+    return modState.warns[nickKey(name)] || 0;
+  }
+
+  function daysLeft(until) {
+    return Math.max(1, Math.ceil((until - Date.now()) / (24 * 60 * 60 * 1000)));
+  }
 
   function $(id) { return document.getElementById(id); }
 
@@ -50,6 +111,8 @@
   function setNick(n) {
     try { localStorage.setItem(STORE_NICK, String(n).slice(0, 16)); } catch (_) {}
     checkOwner();
+    checkAdmin();
+    renderModPanel();
   }
 
   function checkOwner() {
@@ -59,6 +122,162 @@
     } catch (_) {}
     isOwner = isOwner || OWNER_NICKS.indexOf(n) >= 0;
     return isOwner;
+  }
+
+  function checkAdmin() {
+    checkOwner();
+    isAdmin = isOwner || isAdminNick(nick());
+    return isAdmin;
+  }
+
+  function applyModEvent(ev, fromNet) {
+    if (!ev || !ev.type) return;
+    if (ev.type === "state" && ev.state) {
+      modState = { warns: ev.state.warns || {}, bans: ev.state.bans || {} };
+      saveModState();
+      renderModPanel();
+      return;
+    }
+    if (ev.type === "warn" && ev.target) {
+      var wk = nickKey(ev.target);
+      modState.warns[wk] = Math.min(3, (modState.warns[wk] || 0) + 1);
+      if (modState.warns[wk] >= 3) {
+        modState.bans[wk] = {
+          until: Date.now() + BAN_MS,
+          by: ev.by || "админ",
+          reason: "3 предупреждения",
+        };
+        modState.warns[wk] = 0;
+        addMessage({
+          name: "⛔",
+          text: "«" + ev.target + "» получил 3-е предупреждение → бан на 3 дня (от " + (ev.by || "?") + ")",
+          t: Date.now(),
+        });
+      } else {
+        addMessage({
+          name: "⚠️",
+          text: "Предупреждение " + modState.warns[wk] + "/3 для «" + ev.target + "» (от " + (ev.by || "?") + ")",
+          t: Date.now(),
+        });
+      }
+      saveModState();
+      renderModPanel();
+      return;
+    }
+    if (ev.type === "ban" && ev.target) {
+      var tk = nickKey(ev.target);
+      // Бан Амаля → отражается на того, кто банил
+      if (isOwnerNick(ev.target)) {
+        var adminName = ev.by || "админ";
+        var ak = nickKey(adminName);
+        if (ak && !isOwnerNick(adminName)) {
+          modState.bans[ak] = {
+            until: Date.now() + BAN_MS,
+            by: "🛡️ защита Амаля",
+            reason: "забанил хозяина",
+          };
+          delete modState.bans[tk];
+          addMessage({
+            name: "🛡️",
+            text: "Нельзя банить Амаля! Бан на 3 дня получил «" + adminName + "».",
+            t: Date.now(),
+          });
+        } else {
+          addMessage({ name: "🛡️", text: "Амаля банить нельзя.", t: Date.now() });
+        }
+        saveModState();
+        renderModPanel();
+        return;
+      }
+      modState.bans[tk] = {
+        until: ev.until || (Date.now() + BAN_MS),
+        by: ev.by || "админ",
+        reason: ev.reason || "бан админа",
+      };
+      modState.warns[tk] = 0;
+      addMessage({
+        name: "⛔",
+        text: "«" + ev.target + "» в бане на " + daysLeft(modState.bans[tk].until) + " дн. (от " + (ev.by || "?") + ")",
+        t: Date.now(),
+      });
+      saveModState();
+      renderModPanel();
+      return;
+    }
+    if (ev.type === "unban" && ev.target) {
+      delete modState.bans[nickKey(ev.target)];
+      addMessage({
+        name: "✅",
+        text: "Бан снят с «" + ev.target + "»" + (fromNet ? "" : ""),
+        t: Date.now(),
+      });
+      saveModState();
+      renderModPanel();
+    }
+  }
+
+  function broadcastMod(ev) {
+    applyModEvent(ev, false);
+    if (sendMod) sendMod(ev);
+  }
+
+  function peerNamesList() {
+    var me = nick();
+    var out = [];
+    if (me) out.push(me);
+    Object.keys(peers).forEach(function (id) {
+      var p = peers[id];
+      if (p && p.name && p.name !== "?" && out.indexOf(p.name) < 0) out.push(p.name);
+    });
+    return out;
+  }
+
+  function renderModPanel() {
+    var panel = $("friends-mod-panel");
+    if (!panel) return;
+    if (!checkAdmin()) { panel.hidden = true; return; }
+    panel.hidden = false;
+    var role = checkOwner() ? "👑 Хозяин" : "🛡️ Админ Азам";
+    var names = peerNamesList();
+    var opts = names.map(function (n) {
+      var w = warnCount(n);
+      var until = banUntil(n);
+      var tag = until ? " [БАН " + daysLeft(until) + "д]" : (w ? " [⚠" + w + "/3]" : "");
+      return '<option value="' + esc(n) + '">' + esc(n) + tag + "</option>";
+    }).join("");
+    panel.innerHTML =
+      "<h3>" + role + " · команды</h3>" +
+      '<p class="mod-hint">Ник <b>Азам</b> = админ. 3 предупреждения → бан 3 дня. Банить Амаля нельзя — бан вернётся админу.</p>' +
+      '<label>Кто: <select id="friends-mod-who">' + opts + "</select></label>" +
+      '<div class="mod-btns">' +
+      '<button type="button" id="friends-mod-warn">⚠️ Предупреждение</button>' +
+      '<button type="button" id="friends-mod-ban">⛔ Бан 3 дня</button>' +
+      '<button type="button" id="friends-mod-unban">✅ Снять бан</button>' +
+      "</div>";
+    var who = $("friends-mod-who");
+    $("friends-mod-warn").onclick = function () {
+      var t = who && who.value;
+      if (!t) return;
+      broadcastMod({ type: "warn", target: t, by: nick(), t: Date.now() });
+    };
+    $("friends-mod-ban").onclick = function () {
+      var t = who && who.value;
+      if (!t) return;
+      broadcastMod({
+        type: "ban",
+        target: t,
+        by: nick(),
+        until: Date.now() + BAN_MS,
+        reason: "бан админа",
+        t: Date.now(),
+      });
+    };
+    $("friends-mod-unban").onclick = function () {
+      var t = who && who.value;
+      if (!t) return;
+      if (!checkOwner() && isOwnerNick(t)) return;
+      broadcastMod({ type: "unban", target: t, by: nick(), t: Date.now() });
+    };
   }
 
   function esc(s) {
@@ -247,6 +466,40 @@
         boardListeners.forEach(function (fn) { try { fn(data); } catch (_) {} });
       });
 
+      var modAct = room.makeAction("mod");
+      sendMod = modAct[0];
+      modAct[1](function (data) {
+        if (!data || data.by === nick()) return;
+        applyModEvent(data, true);
+      });
+
+      var dmAct = room.makeAction("dm");
+      sendDm = dmAct[0];
+      dmAct[1](function (data) {
+        if (!data || !data.from) return;
+        dmLog.push(data);
+        if (dmLog.length > 200) dmLog = dmLog.slice(-200);
+        dmListeners.forEach(function (fn) { try { fn(data); } catch (_) {} });
+      });
+
+      var taskAct = room.makeAction("task");
+      sendTask = taskAct[0];
+      taskAct[1](function (data) {
+        if (!data) return;
+        if (data.type === "list" && Array.isArray(data.items)) {
+          taskList = data.items.slice(0, 40);
+        } else if (data.type === "add" && data.task) {
+          taskList.unshift(data.task);
+          if (taskList.length > 40) taskList.length = 40;
+        } else if (data.type === "propose" && data.task) {
+          taskList.unshift(data.task);
+          if (taskList.length > 40) taskList.length = 40;
+        } else if (data.type === "done" && data.id) {
+          taskList.forEach(function (t) { if (t.id === data.id) t.done = true; });
+        }
+        taskListeners.forEach(function (fn) { try { fn(data, taskList.slice()); } catch (_) {} });
+      });
+
       netReady = true;
       room.onPeerJoin(function (peerId) {
         peers[peerId] = { name: "?", alive: true, t: Date.now(), place: "" };
@@ -331,6 +584,7 @@
       });
       logActivity("открыл страницу друзей");
       renderOwner();
+      renderModPanel();
     },
 
     mountChat: function (rootId) {
@@ -347,6 +601,7 @@
         '<input id="friends-chat-input" maxlength="120" placeholder="Только друзья увидят…" />' +
         '<button type="submit">➤</button></form>' +
         '<p class="chat-note" id="friends-chat-note"></p>' +
+        '<div id="friends-mod-panel" class="owner-panel mod-panel" hidden></div>' +
         '<div id="friends-owner-panel" class="owner-panel" hidden>' +
         "<h3>👑 Панель Амаля — кто играет</h3>" +
         '<ul id="friends-activity"></ul></div>';
@@ -356,10 +611,14 @@
       nickIn.addEventListener("change", function () {
         setNick(nickIn.value);
         renderOnline();
+        renderOwner();
+        renderModPanel();
       });
       nickIn.addEventListener("blur", function () {
         setNick(nickIn.value);
         renderOnline();
+        renderOwner();
+        renderModPanel();
       });
 
       $("friends-emojis").innerHTML = emojis.map(function (e) {
@@ -381,6 +640,7 @@
       renderMessages();
       renderOnline();
       renderOwner();
+      renderModPanel();
     },
 
     send: function (text) {
@@ -393,6 +653,15 @@
         } catch (_) {}
       }
       if (!nick()) return;
+      var until = banUntil(nick());
+      if (until) {
+        addMessage({
+          name: "⛔",
+          text: "Ты в бане ещё " + daysLeft(until) + " дн. Писать нельзя.",
+          t: Date.now(),
+        });
+        return;
+      }
       var msg = { name: nick(), text: text, t: Date.now() };
       addMessage(msg);
       if (sendChat) sendChat(msg);
@@ -499,6 +768,55 @@
       AmalFriendsNet.sendBoard({ type: "invite", game: game, label: label || game });
     },
 
+    /** Личное сообщение: to = имя друга; type: invite|accept|msg|leave */
+    sendDm: function (payload) {
+      if (!sendDm || !nick()) return false;
+      payload = payload || {};
+      payload.from = nick();
+      payload.t = Date.now();
+      dmLog.push(payload);
+      if (dmLog.length > 200) dmLog = dmLog.slice(-200);
+      sendDm(payload);
+      dmListeners.forEach(function (fn) { try { fn(payload); } catch (_) {} });
+      return true;
+    },
+
+    onDm: function (fn) {
+      if (typeof fn === "function") dmListeners.push(fn);
+    },
+
+    getDmLog: function () { return dmLog.slice(); },
+
+    /** Задания клуба */
+    sendTask: function (payload) {
+      if (!sendTask || !nick()) return false;
+      payload = payload || {};
+      payload.from = nick();
+      payload.t = Date.now();
+      if (payload.type === "add" || payload.type === "propose") {
+        if (payload.task) {
+          taskList.unshift(payload.task);
+          if (taskList.length > 40) taskList.length = 40;
+        }
+      }
+      if (payload.type === "done" && payload.id) {
+        taskList.forEach(function (t) { if (t.id === payload.id) t.done = true; });
+      }
+      sendTask(payload);
+      taskListeners.forEach(function (fn) { try { fn(payload, taskList.slice()); } catch (_) {} });
+      return true;
+    },
+
+    onTask: function (fn) {
+      if (typeof fn === "function") taskListeners.push(fn);
+    },
+
+    getTasks: function () { return taskList.slice(); },
+
+    setTasksLocal: function (list) {
+      taskList = (list || []).slice(0, 40);
+    },
+
     nick: nick,
     setNick: setNick,
 
@@ -552,6 +870,9 @@
     },
 
     isOwner: checkOwner,
+    isAdmin: checkAdmin,
+    warnCount: warnCount,
+    banUntil: banUntil,
   };
 
   function notifyChallenges() {

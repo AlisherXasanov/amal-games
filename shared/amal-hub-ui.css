@@ -180,6 +180,31 @@ body {
 .owner-panel h3 { font-size: 13px; color: #92400e; margin-bottom: 8px; }
 .owner-panel ul { list-style: none; padding: 0; max-height: 140px; overflow-y: auto; }
 .owner-panel li { padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-weight: 600; }
+.mod-panel { background: #e0e7ff; border-color: #6366f1; }
+.mod-panel h3 { color: #312e81; }
+.mod-hint { font-size: 11px; font-weight: 600; color: #4338ca; margin: 0 0 8px; line-height: 1.35; }
+.mod-panel label { display: block; font-weight: 800; font-size: 12px; margin-bottom: 8px; }
+.mod-panel select {
+  width: 100%; margin-top: 4px; border: 2px solid #a5b4fc; border-radius: 10px;
+  padding: 8px; font: 700 13px inherit; background: #fff;
+}
+.mod-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.mod-btns button {
+  border: 0; border-radius: 10px; padding: 8px 10px; font: 800 12px inherit;
+  cursor: pointer; background: #4f46e5; color: #fff;
+}
+.mod-btns #friends-mod-ban { background: #dc2626; }
+.mod-btns #friends-mod-unban { background: #059669; }
+.find-circles {
+  position: relative; height: 160px; margin: 10px 0; border-radius: 16px;
+  background: linear-gradient(160deg, #1e3a8a, #312e81); overflow: hidden;
+}
+.find-circles .circ {
+  position: absolute; width: 36px; height: 36px; border-radius: 50%;
+  border: 0; background: #60a5fa; cursor: pointer; box-shadow: 0 0 0 3px rgba(147,197,253,.35);
+}
+.find-circles .circ.got { background: #fbbf24; transform: scale(1.15); }
+.find-circles .hint { position: absolute; left: 10px; top: 8px; color: #bfdbfe; font: 800 12px inherit; }
 
 /* Чат */
 .chat-setup label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 8px; }
