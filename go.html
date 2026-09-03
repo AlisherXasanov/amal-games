@@ -53,17 +53,19 @@
       document.getElementById("guess").textContent =
         "Подсказка: у тебя " + AmalDevice.label(dev) + " — но выбирай сам!";
 
+      // Всегда показывать эксклюзив, даже из обычного QR / телефона
+      var friendsHref = "./friends.html?v=7&stay=1&code=amal-star-friends";
       var items = [
-        { id: "phone", ico: "📱", name: "Телефон", sub: "большие кнопки · вертикально", href: "./phone.html?v=2&stay=1" },
+        { id: "friends", ico: "⭐", name: "⭐ Эксклюзив", sub: "Смотри · чат · игры · админ Азам", href: friendsHref },
+        { id: "phone", ico: "📱", name: "Телефон (обычная)", sub: "большие кнопки · вертикально", href: "./phone.html?v=2&stay=1" },
         { id: "tablet", ico: "📟", name: "Планшет / iPad", sub: "средний экран · можно 3D", href: "./tablet.html?v=1&stay=1" },
         { id: "desktop", ico: "💻", name: "Компьютер", sub: "все игры · Bed Wars · 3D", href: "./?stay=1" },
       ];
+      // Автоперенаправление на эксклюзив для телефонов
+      if (dev === "phone" || dev === "tablet") {
+        dev = "friends";
+      }
       if (exclusive) {
-        items.unshift({
-          id: "friends", ico: "⭐", name: "⭐ Эксклюзив друзья",
-          sub: "новые игры · только по секрету",
-          href: "./friends.html?v=1&stay=1" + (code ? "&code=" + encodeURIComponent(code) : ""),
-        });
         dev = "friends";
       }
 
