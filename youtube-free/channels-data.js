@@ -4,6 +4,58 @@
  */
 window.YT_CHANNELS = [
   {
+    "id": "toy-story",
+    "name": "История игрушек",
+    "emoji": "🤠",
+    "color": "#f59e0b",
+    "desc": "История игрушек · 5 и другие части — смотри здесь.",
+    "subs": "мульты",
+    "icon": "https://i.ytimg.com/vi/wBhRUDxA2Y0/hqdefault.jpg",
+    "videos": [
+      {
+        "id": "wBhRUDxA2Y0",
+        "title": "История игрушек 4 · официальный трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wBhRUDxA2Y0/hqdefault.jpg",
+        "part": 4
+      },
+      {
+        "id": "LDBo1ayV_AQ",
+        "title": "История игрушек · трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LDBo1ayV_AQ/hqdefault.jpg",
+        "part": 1
+      },
+      {
+        "id": "Lu0sotERXhY",
+        "title": "История игрушек 2 · трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/Lu0sotERXhY/hqdefault.jpg",
+        "part": 2
+      },
+      {
+        "id": "JcpWXaJU4q8",
+        "title": "История игрушек 3 · трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/JcpWXaJU4q8/hqdefault.jpg",
+        "part": 3
+      },
+      {
+        "id": "tN1A2mVnrVU",
+        "title": "История игрушек 5 · всё что известно / анонс",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/tN1A2mVnrVU/hqdefault.jpg",
+        "part": 5
+      },
+      {
+        "id": "8BxTLfO5I6k",
+        "title": "История игрушек · сборник моментов",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/8BxTLfO5I6k/hqdefault.jpg"
+      }
+    ]
+  },
+  {
     "id": "tri-beach",
     "name": "Три кота · Пляж",
     "emoji": "🏖️",

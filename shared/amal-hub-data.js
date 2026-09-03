@@ -11,23 +11,17 @@
     { ico: "🐾", name: "Animal Hospital", path: "animal-hospital/", note: "больница" },
     { ico: "🌿", name: "Relax Zone", path: "relax-zone/?v=4", note: "антистресс" },
     { ico: "🥊", name: "Kick Buddy", path: "kick-buddy/", note: "кукла" },
-    { ico: "🏠", name: "Желейная хата", path: "jelly-lab/", note: "Валера" },
     { ico: "🧟", name: "Зомби vs растения", path: "zombie-vs-plants/", note: "полная" },
-    { ico: "🕯️", name: "Свеча в шахте", path: "candle-mine/", note: "кликер" },
-    { ico: "🍲", name: "Котёл и молот", path: "pot-hammer/", note: "варка" },
     { ico: "🧗", name: "Obby", path: "obby/", note: "полоса" },
   ];
 
   var GAMES_3D = [
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
     { ico: "⛏️", name: "CraftWorld", path: "minecraft/", note: "майнкрафт" },
-    { ico: "🧊", name: "3D Lab", path: "create-lab/lab3d.html", note: "лаборатория" },
-    { ico: "🎬", name: "Studio 3D", path: "create-lab/studio3d.html", note: "студия" },
     { ico: "🌀", name: "Portal 3D", path: "portal-3d/", note: "порталы" },
     { ico: "🌍", name: "Globe Battle", path: "globe-battle/", note: "глобус" },
     { ico: "⭐", name: "Bravol Stars", path: "bravol-stars/", note: "3D бой" },
     { ico: "🧱", name: "Blockbust", path: "blockbust/", note: "блоки" },
-    { ico: "🌌", name: "Шторм Разломов", path: "rift-storm/", note: "космос" },
   ];
 
   var MILA = [
@@ -37,12 +31,9 @@
   var EXCLUSIVE = [
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
-    { ico: "🕯️", name: "Свеча в шахте", path: "candle-mine/", note: "кликер" },
-    { ico: "🍲", name: "Котёл и молот", path: "pot-hammer/", note: "варка" },
     { ico: "🧗", name: "Obby", path: "obby/", note: "полоса" },
     { ico: "🐣", name: "Милашки v7", path: "milashki/?v=7", note: "6 миров · 42 вида" },
-    { ico: "🎨", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
-    { ico: "▶", name: "Смотрим вместе", path: "friends-watch/?v=1", note: "кинотеатр друзей" },
+    { ico: "▶", name: "Смотри · Ютуб", path: "youtube-free/?v=46&from=friends", note: "нормальный просмотр" },
   ];
 
   global.AmalHubData = {
