@@ -8,50 +8,72 @@ window.YT_CHANNELS = [
     "name": "История игрушек",
     "emoji": "🤠",
     "color": "#f59e0b",
-    "desc": "История игрушек · 5 и другие части — смотри здесь.",
+    "desc": "История игрушек 1–5 · рабочие трейлеры и анонсы.",
     "subs": "мульты",
-    "icon": "https://i.ytimg.com/vi/wBhRUDxA2Y0/hqdefault.jpg",
+    "icon": "https://i.ytimg.com/vi/wmiIUN-7qhE/hqdefault.jpg",
     "videos": [
       {
-        "id": "wBhRUDxA2Y0",
-        "title": "История игрушек 4 · официальный трейлер",
+        "id": "1ZeGhgVnY4M",
+        "title": "История игрушек 5 · трейлер / анонс",
         "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/wBhRUDxA2Y0/hqdefault.jpg",
-        "part": 4
-      },
-      {
-        "id": "LDBo1ayV_AQ",
-        "title": "История игрушек · трейлер",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/LDBo1ayV_AQ/hqdefault.jpg",
-        "part": 1
-      },
-      {
-        "id": "Lu0sotERXhY",
-        "title": "История игрушек 2 · трейлер",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/Lu0sotERXhY/hqdefault.jpg",
-        "part": 2
-      },
-      {
-        "id": "JcpWXaJU4q8",
-        "title": "История игрушек 3 · трейлер",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/JcpWXaJU4q8/hqdefault.jpg",
-        "part": 3
-      },
-      {
-        "id": "tN1A2mVnrVU",
-        "title": "История игрушек 5 · всё что известно / анонс",
-        "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/tN1A2mVnrVU/hqdefault.jpg",
+        "thumb": "https://i.ytimg.com/vi/1ZeGhgVnY4M/hqdefault.jpg",
         "part": 5
       },
       {
-        "id": "8BxTLfO5I6k",
-        "title": "История игрушек · сборник моментов",
+        "id": "e8OftjW8RXI",
+        "title": "История игрушек 5 · всё что известно",
         "likes": "—",
-        "thumb": "https://i.ytimg.com/vi/8BxTLfO5I6k/hqdefault.jpg"
+        "thumb": "https://i.ytimg.com/vi/e8OftjW8RXI/hqdefault.jpg",
+        "part": 5
+      },
+      {
+        "id": "szIZ29mLP_8",
+        "title": "История игрушек · перед 5-й частью",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/szIZ29mLP_8/hqdefault.jpg",
+        "part": 5
+      },
+      {
+        "id": "wmiIUN-7qhE",
+        "title": "История игрушек 4 · официальный трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/wmiIUN-7qhE/hqdefault.jpg",
+        "part": 4
+      },
+      {
+        "id": "LDXYRzerjzU",
+        "title": "История игрушек 4 · тизер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/LDXYRzerjzU/hqdefault.jpg",
+        "part": 4
+      },
+      {
+        "id": "2BlMNH1QTeE",
+        "title": "История игрушек 3 · официальный трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/2BlMNH1QTeE/hqdefault.jpg",
+        "part": 3
+      },
+      {
+        "id": "0gDFIGAXZa4",
+        "title": "История игрушек 2 · официальный трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/0gDFIGAXZa4/hqdefault.jpg",
+        "part": 2
+      },
+      {
+        "id": "CxwTLktovTU",
+        "title": "История игрушек 1 · трейлер",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/CxwTLktovTU/hqdefault.jpg",
+        "part": 1
+      },
+      {
+        "id": "guuITAMh2eo",
+        "title": "История игрушек 1 · трейлер 1995",
+        "likes": "—",
+        "thumb": "https://i.ytimg.com/vi/guuITAMh2eo/hqdefault.jpg",
+        "part": 1
       }
     ]
   },
