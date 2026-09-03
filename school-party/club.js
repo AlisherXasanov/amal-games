@@ -317,14 +317,36 @@
       return;
     }
     box.hidden = false;
-    // Простые и понятные силы — смысл сразу виден
-    var powers = [
-      { id: "freeze", label: "🧊 Сон бота", tip: "бот пропускает ходы" },
-      { id: "chaos", label: "🌊 Удар по врагу", tip: "ломает фигуры бота" },
-      { id: "rift", label: "⚡ Я победил!", tip: "сразу конец боя · твоя победа", mega: true },
-    ];
+    var withFriend = playMode === "online" || playMode === "hotseat";
+    var title = box.querySelector(".op-title");
+    var hint = box.querySelector(".op-hint");
+    if (title) {
+      title.textContent = withFriend
+        ? "🤡 Тролль-силы · шутки наедине с другом"
+        : "👑 Силы · помочь в бою с ботом";
+    }
+    if (hint) {
+      hint.innerHTML = withFriend
+        ? "Только смех и испуг-шутка. Без страшного. Выиграл/проиграл — <strong>🔄 Заново</strong>."
+        : "Потоплен один кораблик — бой <strong>идёт дальше</strong>. Волны мини-корабликов.";
+    }
+    var powers = withFriend
+      ? [
+          { id: "skip", label: "🚫 Запрет хода", tip: "другу нельзя ходить (шутка)" },
+          { id: "boo", label: "👻 Бууу!", tip: "лёгкий испуг · не страшно" },
+          { id: "giggle", label: "😂 Смех", tip: "потроллить по-доброму" },
+          { id: "freeze", label: "🧊 Сон хода", tip: "пропуск хода" },
+          { id: "chaos", label: "🤡 Дырки в тумане", tip: "чуть подсмотреть" },
+          { id: "minispawn", label: "🚤 Ещё мини", tip: "бой длится дольше" },
+        ]
+      : [
+          { id: "freeze", label: "🧊 Сон бота", tip: "бот пропускает" },
+          { id: "chaos", label: "🌊 Чуть открыть", tip: "дырки в тумане" },
+          { id: "minispawn", label: "🚤 Мини врагу", tip: "дольше играть" },
+          { id: "boo", label: "👻 Бу!", tip: "просто шутка" },
+        ];
     grid.innerHTML = powers.map(function (p) {
-      return '<button type="button" data-pow="' + p.id + '" class="' + (p.mega ? "mega" : "") + '" title="' + p.tip + '">' +
+      return '<button type="button" data-pow="' + p.id + '" title="' + p.tip + '">' +
         p.label + '<small style="display:block;font-weight:700;opacity:.85">' + p.tip + "</small></button>";
     }).join("");
     grid.onclick = function (e) {

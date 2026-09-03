@@ -664,20 +664,28 @@
     current = "chess";
   }
 
-  /* ——— Морской бой vs AI ——— */
+  /* ——— Морской бой: мини-кораблики, волны, бой идёт дальше ——— */
   function startSea() {
     clear();
     var N = 8;
+    var wave = 1;
+    var maxWaves = 3;
+    var sunkCount = 0;
+    var friendTroll = playMode === "online" || playMode === "hotseat";
+
     function empty() {
       var g = [];
       for (var y = 0; y < N; y++) { g[y] = []; for (var x = 0; x < N; x++) g[y][x] = 0; }
       return g;
     }
+    // cell: 0 empty, >0 shipId, -1 miss, -2 hit on ship
     function placeFleet(g) {
-      var ships = [4, 3, 3, 2, 2];
+      // много одиночных мини + чуть двойных
+      var ships = [1, 1, 1, 1, 1, 1, 2, 2, 1];
+      var nextId = 1;
       ships.forEach(function (len) {
         var ok = false, tries = 0;
-        while (!ok && tries++ < 200) {
+        while (!ok && tries++ < 250) {
           var horiz = Math.random() < 0.5;
           var x = Math.floor(Math.random() * N);
           var y = Math.floor(Math.random() * N);
@@ -688,17 +696,49 @@
             if (cx >= N || cy >= N || g[cy][cx]) { ok = false; break; }
             cells.push([cx, cy]);
           }
-          if (ok) cells.forEach(function (c) { g[c[1]][c[0]] = 1; });
+          if (ok) {
+            var id = nextId++;
+            cells.forEach(function (c) { g[c[1]][c[0]] = id; });
+          }
         }
       });
     }
-    var my = empty(), enemy = empty(), fog = empty();
+    function shipCellsLeft(g, id) {
+      var n = 0;
+      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) if (g[y][x] === id) n++;
+      return n;
+    }
+    function aliveCount(g) {
+      var seen = {};
+      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+        if (g[y][x] > 0) seen[g[y][x]] = true;
+      }
+      return Object.keys(seen).length;
+    }
+    function spawnMini(g) {
+      var tries = 0;
+      while (tries++ < 80) {
+        var x = Math.floor(Math.random() * N);
+        var y = Math.floor(Math.random() * N);
+        if (g[y][x] === 0) {
+          var maxId = 0;
+          for (var yy = 0; yy < N; yy++) for (var xx = 0; xx < N; xx++) {
+            if (g[yy][xx] > maxId) maxId = g[yy][xx];
+          }
+          g[y][x] = maxId + 1;
+          return true;
+        }
+      }
+      return false;
+    }
+
+    var my = empty(), enemy = empty(), fog = empty(); // fog: 0 unknown, 1 miss, 2 hit
     placeFleet(my); placeFleet(enemy);
     var myTurn = true, over = false;
     var wrap = document.createElement("div");
     var title = document.createElement("p");
     title.style.cssText = "font:800 12px inherit;color:#a5b4fc;text-align:center";
-    title.textContent = "Стреляй по верхней карте (враг). Внизу — твои корабли.";
+    title.textContent = "Мини-кораблики · волна " + wave + "/" + maxWaves + " · потопил один — бой идёт дальше!";
     var enemyBoard = document.createElement("div");
     enemyBoard.className = "board";
     enemyBoard.style.gridTemplateColumns = "repeat(8,1fr)";
@@ -707,21 +747,94 @@
     myBoard.className = "board";
     myBoard.style.gridTemplateColumns = "repeat(8,1fr)";
 
-    function alive(g) {
-      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) if (g[y][x] === 1) return true;
-      return false;
-    }
-    function aiShoot() {
-      var opts = [];
-      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) if (my[y][x] < 2) opts.push([x, y]);
-      if (!opts.length) return;
-      var p = opts[Math.floor(Math.random() * opts.length)];
-      if (my[p[1]][p[0]] === 1) { my[p[1]][p[0]] = 3; toast("💥 В тебя попали!"); }
-      else my[p[1]][p[0]] = 2;
-      if (!alive(my)) { over = true; setStatus("Корабли потоплены… 😢"); }
-      else { myTurn = true; setStatus("Твой выстрел!"); }
+    function startNextWave() {
+      if (wave >= maxWaves) {
+        over = true;
+        setStatus("🎉 Все волны пройдены! Жми Заново");
+        endGame("win");
+        return;
+      }
+      wave++;
+      enemy = empty();
+      fog = empty();
+      placeFleet(enemy);
+      // подбросить пару мини
+      spawnMini(enemy); spawnMini(enemy);
+      title.textContent = "Мини-кораблики · волна " + wave + "/" + maxWaves + " · дальше!";
+      toast("🌊 Новая волна мини-корабликов!");
+      myTurn = true;
+      setStatus("Волна " + wave + " · твой выстрел!");
       render();
     }
+
+    function onEnemyHit(cx, cy) {
+      var id = enemy[cy][cx];
+      enemy[cy][cx] = 0;
+      fog[cy][cx] = 2;
+      if (id > 0 && shipCellsLeft(enemy, id) === 0) {
+        sunkCount++;
+        toast("🚢 Мини-кораблик потоплен! Бой идёт дальше · потоплено: " + sunkCount);
+        // иногда появляется ещё один мини — чтобы не «всё кончилось»
+        if (aliveCount(enemy) <= 2 && wave < maxWaves) {
+          spawnMini(enemy);
+          toast("✨ Выплыл ещё один мини-кораблик!");
+        }
+      } else {
+        toast("💥 Попадание!");
+      }
+      if (aliveCount(enemy) === 0) {
+        toast("🌊 Флот волны потоплен — дальше!");
+        setTimeout(startNextWave, 700);
+        return true;
+      }
+      return false;
+    }
+
+    function aiShoot() {
+      if (over) return;
+      var opts = [];
+      for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+        if (my[y][x] >= 0 && my[y][x] !== -1 && my[y][x] !== -2) {
+          // still need track shots on my board - use parallel shot map
+        }
+      }
+      // myShot: separate - simplify: cells with value -1 miss -2 hit, >0 ship
+      opts = [];
+      for (var y2 = 0; y2 < N; y2++) for (var x2 = 0; x2 < N; x2++) {
+        if (my[y2][x2] !== -1 && my[y2][x2] !== -2) opts.push([x2, y2]);
+      }
+      if (!opts.length) {
+        over = true;
+        setStatus("😢 Все твои кораблики… Жми Заново");
+        endGame("lose");
+        render();
+        return;
+      }
+      var p = opts[Math.floor(Math.random() * opts.length)];
+      var v = my[p[1]][p[0]];
+      if (v > 0) {
+        var sid = v;
+        my[p[1]][p[0]] = -2;
+        toast("💥 В тебя попали!");
+        if (shipCellsLeft(my, sid) === 0) {
+          toast("🚢 Твой мини-кораблик потоплен — продолжаем!");
+          if (aliveCount(my) === 0) {
+            // дать ещё мини, если не последняя волна поражения
+            if (spawnMini(my)) toast("✨ Тебе выплыл запасной мини!");
+            else {
+              over = true;
+              setStatus("😢 Флот кончился · Заново?");
+              endGame("lose");
+            }
+          }
+        }
+      } else {
+        my[p[1]][p[0]] = -1;
+      }
+      if (!over) { myTurn = true; setStatus("Твой выстрел!"); }
+      render();
+    }
+
     function render() {
       enemyBoard.innerHTML = "";
       myBoard.innerHTML = "";
@@ -729,95 +842,114 @@
         var ec = document.createElement("button");
         ec.type = "button";
         ec.className = "cell sea";
-        if (fog[y][x] === 2) { ec.className += " miss"; ec.textContent = "·"; }
-        if (fog[y][x] === 3) { ec.className += " hit"; ec.textContent = "💥"; }
+        if (fog[y][x] === 1) { ec.className += " miss"; ec.textContent = "·"; }
+        if (fog[y][x] === 2) { ec.className += " hit"; ec.textContent = "💥"; }
         (function (cx, cy) {
           ec.onclick = function () {
             if (over || !myTurn || fog[cy][cx]) return;
-            if (enemy[cy][cx] === 1) {
-              enemy[cy][cx] = 3; fog[cy][cx] = 3; toast("💥 Попадание!");
-            } else { fog[cy][cx] = 2; }
-            if (!alive(enemy)) { over = true; setStatus("Победа! Флот врага потоплен 🚢🎉"); endGame("win"); render(); return; }
-            myTurn = false; setStatus("Ход компьютера…");
+            if (enemy[cy][cx] > 0) {
+              var waveDone = onEnemyHit(cx, cy);
+              emit({ game: "sea", type: "shot", x: cx, y: cy, hit: true });
+              if (waveDone) { render(); return; }
+            } else {
+              fog[cy][cx] = 1;
+              toast("🌊 Мимо");
+              emit({ game: "sea", type: "shot", x: cx, y: cy, hit: false });
+            }
+            myTurn = false;
+            setStatus(useAi() ? "Ход бота…" : "Ход друга / следующий…");
             render();
-            setTimeout(aiShoot, 400);
-          };
+            if (useAi()) setTimeout(aiShoot, 380);
+            else {
+              // вдвоём на экране — сразу можно снова (один экран)
+              myTurn = true;
+              setStatus("Следующий выстрел!");
+            }
         })(x, y);
         enemyBoard.appendChild(ec);
 
         var mc = document.createElement("button");
         mc.type = "button";
         mc.className = "cell sea";
-        if (my[y][x] === 1) { mc.className += " ship"; mc.textContent = "🚢"; }
-        if (my[y][x] === 2) { mc.className += " miss"; mc.textContent = "·"; }
-        if (my[y][x] === 3) { mc.className += " hit"; mc.textContent = "💥"; }
+        if (my[y][x] > 0) { mc.className += " ship"; mc.textContent = "🚤"; }
+        if (my[y][x] === -1) { mc.className += " miss"; mc.textContent = "·"; }
+        if (my[y][x] === -2) { mc.className += " hit"; mc.textContent = "💥"; }
         myBoard.appendChild(mc);
       }
     }
+
     wrap.appendChild(title);
     wrap.appendChild(enemyBoard);
     wrap.appendChild(myBoard);
     host.appendChild(wrap);
+
     powerApi = {
       game: "sea",
-      teleport: function () { toast("🌀 Флот прыгнул — твой ход снова!"); myTurn = true; setStatus("Твой выстрел!"); },
-      disintegrate: function () {
-        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
-          if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
-        }
-        over = true;
-        setStatus("☢️ Флот врага распылён!");
-        toast("☢️ Распыление!");
-        render();
-      },
-      freeze: function () { botFrozen = 5; toast("🧊 Бот не стреляет ×5"); },
-      foresight: function () {
-        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
-          if (enemy[y][x] === 1 && fog[y][x] !== 3) {
-            fog[y][x] = 3; enemy[y][x] = 3;
-            toast("🔮 Предвидение нашло корабль!");
-            if (!alive(enemy)) { over = true; setStatus("Победа!"); }
-            render();
-            return;
-          }
-        }
+      freeze: function () {
+        botFrozen = friendTroll ? 2 : 4;
+        toast(friendTroll ? "🧊 Другу запрещён ход (шутка)!" : "🧊 Бот спит");
+        if (friendTroll) emit({ game: "sea", type: "troll", kind: "freeze" });
       },
       chaos: function () {
-        var shots = 0;
-        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
-          if (!fog[y][x] && Math.random() < 0.35) {
-            if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
-            else fog[y][x] = 2;
-            shots++;
+        // мягкий тролль: открыть 2 случайные пустые / или сдвинуть туман
+        var opened = 0;
+        for (var y = 0; y < N && opened < 3; y++) for (var x = 0; x < N && opened < 3; x++) {
+          if (!fog[y][x] && enemy[y][x] <= 0 && Math.random() < 0.4) {
+            fog[y][x] = 1; opened++;
           }
         }
-        toast("🌊 Хаос: " + shots + " выстрелов!");
-        if (!alive(enemy)) { over = true; setStatus("Победа!"); }
+        toast(friendTroll ? "🤡 Троллёк: в тумане дырки!" : "🌊 Чуть приоткрыло море");
+        if (friendTroll) emit({ game: "sea", type: "troll", kind: "chaos" });
         render();
       },
-      throne: function () {
-        for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
-          if (enemy[y][x] === 1) { enemy[y][x] = 3; fog[y][x] = 3; }
-        }
-        over = true;
-        setStatus("👑 Трон — море твоё!");
-        toast("👑");
+      boo: function () {
+        toast("👻 Бууу! (просто шутка, не страшно)");
+        setStatus("👻 Испуг! …а теперь снова играем");
+        if (friendTroll) emit({ game: "sea", type: "troll", kind: "boo", text: "👻 Бууу от Амаля! Не бойся, шутка 😄" });
+      },
+      giggle: function () {
+        toast("😂 Ха-ха, я тебя троллю по-доброму!");
+        if (friendTroll) emit({ game: "sea", type: "troll", kind: "giggle", text: "😂 Амаль над тобой смеётся (по-дружески)" });
+      },
+      skip: function () {
+        myTurn = true;
+        botFrozen = Math.max(botFrozen, 1);
+        toast("🚫 Ход врага отменён (тролль)");
+        setStatus("Твой выстрел снова!");
+        if (friendTroll) emit({ game: "sea", type: "troll", kind: "skip" });
+      },
+      minispawn: function () {
+        spawnMini(enemy);
+        toast("🚤 Добавил мини-кораблик врагу — бой длиннее!");
         render();
       },
+      // старые кнопки из UI
       rift: function () {
-        over = true;
-        setStatus("⚡ Разлом — вражеский флот стёрт!");
-        toast("⚡");
+        toast("⚡ Не бахаем всех сразу — лучше волны. Вот тебе мини!");
+        spawnMini(my);
+        myTurn = true;
         render();
       },
     };
-    // wrap aiShoot with freeze
+
     var _aiShoot = aiShoot;
     aiShoot = function () {
       if (!botMayMove()) { myTurn = true; setStatus("Твой выстрел!"); render(); return; }
       _aiShoot();
     };
-    setStatus("Твой выстрел по верхней карте!");
+
+    applyFn = function (data) {
+      if (!data || data.game !== "sea") return;
+      if (data.type === "troll") {
+        if (data.kind === "boo" || data.kind === "giggle") toast(data.text || "🤡 Троллёк!");
+        if (data.kind === "freeze" || data.kind === "skip") {
+          botFrozen = 2;
+          toast("🧊 Тебе шуточно запретили ход");
+        }
+      }
+    };
+
+    setStatus("Волна 1 · стреляй по мини-корабликам сверху!");
     render();
     current = "sea";
   }
@@ -837,6 +969,7 @@
       statusEl = opts.status;
       onToast = opts.toast || function () {};
       onMove = opts.onMove || null;
+      onEnd = opts.onEnd || null;
       if (opts.mode) playMode = opts.mode;
       if (opts.difficulty) difficulty = opts.difficulty;
       vsAi = playMode === "ai";
