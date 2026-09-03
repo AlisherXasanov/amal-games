@@ -34,8 +34,38 @@
   var taskListeners = [];
   var dmLog = []; // for owner watch + local
   var taskList = [];
-  var messages = [];
+  var STORE_MSGS = "amal-friends-msgs-v1";
+  var STORE_VISITS = "amal-friends-visits-v1";
+  var messages = loadMessages();
   var peers = {};
+
+  function loadMessages() {
+    try {
+      var raw = localStorage.getItem(STORE_MSGS);
+      if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr)) return arr.slice(-80); }
+    } catch (_) {}
+    return [];
+  }
+  function saveMessages() {
+    try { localStorage.setItem(STORE_MSGS, JSON.stringify(messages.slice(-80))); } catch (_) {}
+  }
+  function logVisit(name) {
+    try {
+      var raw = localStorage.getItem(STORE_VISITS);
+      var visits = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(visits)) visits = [];
+      visits.push({ name: name || "?", t: Date.now() });
+      if (visits.length > 200) visits = visits.slice(-200);
+      localStorage.setItem(STORE_VISITS, JSON.stringify(visits));
+    } catch (_) {}
+  }
+  function getVisits() {
+    try {
+      var raw = localStorage.getItem(STORE_VISITS);
+      if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+    } catch (_) {}
+    return [];
+  }
   var activities = [];
   var challenges = [];
   var challengeListeners = [];
@@ -347,6 +377,7 @@
   function addMessage(m) {
     messages.push(m);
     if (messages.length > 80) messages = messages.slice(-80);
+    saveMessages();
     renderMessages();
     chatListeners.forEach(function (fn) { try { fn(m); } catch (_) {} });
   }
@@ -356,6 +387,7 @@
     var key = name + "|" + (peerId || "");
     if (announcedNames[key] && Date.now() - announcedNames[key] < 8000) return;
     announcedNames[key] = Date.now();
+    logVisit(name);
     var info = { name: name, place: place || "", peerId: peerId || "", t: Date.now() };
     joinListeners.forEach(function (fn) { try { fn(info); } catch (_) {} });
     addMessage({
@@ -369,6 +401,11 @@
     if (!name || name === "?" || name === nick()) return;
     leaveListeners.forEach(function (fn) {
       try { fn({ name: name, t: Date.now() }); } catch (_) {}
+    });
+    addMessage({
+      name: "👋",
+      text: "друг «" + name + "» вышел",
+      t: Date.now(),
     });
   }
 
@@ -873,6 +910,8 @@
     isAdmin: checkAdmin,
     warnCount: warnCount,
     banUntil: banUntil,
+    getVisits: getVisits,
+    getMessages: function () { return messages.slice(); },
   };
 
   function notifyChallenges() {
