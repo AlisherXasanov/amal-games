@@ -44,7 +44,7 @@
 
   function friendsHref() {
 
-    var h = "./friends.html?v=3&stay=1";
+    var h = "./friends.html?v=6&stay=1";
 
     if (hasFriendsAccess()) h += "&code=" + encodeURIComponent(FRIEND_CODE);
 

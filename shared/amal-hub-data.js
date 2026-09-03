@@ -5,7 +5,6 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "🐣", name: "Милашки v7", path: "milashki/?v=7", note: "6 миров · 42 вида" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🐍", name: "Snake", path: "snake-game/", note: "змейка" },
@@ -17,14 +16,6 @@
     { ico: "🕯️", name: "Свеча в шахте", path: "candle-mine/", note: "кликер" },
     { ico: "🍲", name: "Котёл и молот", path: "pot-hammer/", note: "варка" },
     { ico: "🧗", name: "Obby", path: "obby/", note: "полоса" },
-    { ico: "🌱", name: "Grow Garden", path: "grow-garden/", note: "сад" },
-    { ico: "🐕", name: "Pet Simulator", path: "pet-simulator/", note: "питомцы" },
-    { ico: "🏰", name: "Tower Defense", path: "tower-defense/", note: "башни" },
-    { ico: "🏭", name: "Tycoon", path: "tycoon/", note: "фабрика" },
-    { ico: "🥚", name: "Steal Egg", path: "steal-egg/", note: "яйца" },
-    { ico: "🧠", name: "Steal Brainrot", path: "steal-brainrot/", note: "мемы" },
-    { ico: "🕵️", name: "Невидимый шпион", path: "invisible-spy/", note: "плащ · фабрика конфет" },
-    { ico: "🏃", name: "Speed Escape", path: "speed-escape/", note: "побег" },
   ];
 
   var GAMES_3D = [
@@ -44,15 +35,9 @@
   ];
 
   var EXCLUSIVE = [
-    { ico: "✦", name: "Мы с тобой", path: "we-two/", note: "⭐ секрет · только друзья" },
-    { ico: "🎬", name: "Мульт-эфир", path: "efir/", note: "эфир" },
-    { ico: "🎨", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
-    { ico: "✨", name: "Создать игру", path: "create-lab/game.html", note: "новая · раньше всех" },
-    { ico: "🌙", name: "Secret Dream", path: "secret-dream/", note: "тайна" },
-    { ico: "🧠", name: "Steal Brainrot+", path: "steal-brainrot/", note: "ранний доступ" },
-    { ico: "🌱", name: "Grow Garden+", path: "grow-garden/", note: "эксклюзив сад" },
-    { ico: "🎁", name: "Joy Surprise", path: "joy-surprise/", note: "сюрприз" },
     { ico: "🏫", name: "Клуб друзей", path: "school-party/?v=9", note: "чат · настолки · смешное" },
+    { ico: "🎨", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
+    { ico: "😂", name: "Мемы · видео", path: "meme-channel.html?v=11", note: "канал друзей" },
   ];
 
   global.AmalHubData = {
