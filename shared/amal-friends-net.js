@@ -372,6 +372,21 @@
         (a.game ? " <small>(" + esc(a.game) + ")</small>" : "") +
         " <small>" + fmtTime(a.t) + "</small></li>";
     }).join("") || "<li>Пока тихо — друзья ещё не зашли</li>";
+
+    if (!$("friends-clear-chat-btn")) {
+      var div = document.createElement("div");
+      div.style.cssText = "margin-top:10px;display:flex;gap:8px;flex-wrap:wrap";
+      div.innerHTML =
+        '<button id="friends-clear-chat-btn" style="background:#dc2626;color:#fff;border:0;border-radius:10px;padding:8px 14px;font:800 12px inherit;cursor:pointer">🧹 Очистить чат</button>' +
+        '<button id="friends-clear-visits-btn" style="background:#7c3aed;color:#fff;border:0;border-radius:10px;padding:8px 14px;font:800 12px inherit;cursor:pointer">🗑️ Очистить визиты</button>';
+      panel.appendChild(div);
+      $("friends-clear-chat-btn").onclick = function () {
+        if (confirm("Удалить всю переписку?")) AmalFriendsNet.clearChat();
+      };
+      $("friends-clear-visits-btn").onclick = function () {
+        if (confirm("Очистить журнал визитов?")) { AmalFriendsNet.clearVisits(); alert("Готово!"); }
+      };
+    }
   }
 
   function addMessage(m) {
@@ -418,7 +433,9 @@
       var chatAct = room.makeAction("chat");
       sendChat = chatAct[0];
       chatAct[1](function (data) {
-        if (data && data.text) addMessage(data);
+        if (!data) return;
+        if (data.clear) { messages = []; saveMessages(); renderMessages(); }
+        if (data.text) addMessage(data);
       });
 
       var pingAct = room.makeAction("ping");
@@ -912,6 +929,21 @@
     banUntil: banUntil,
     getVisits: getVisits,
     getMessages: function () { return messages.slice(); },
+
+    /** Хозяин: обнулить всю переписку */
+    clearChat: function () {
+      if (!checkOwner()) return;
+      messages = [];
+      saveMessages();
+      renderMessages();
+      if (sendChat) sendChat({ name: "🧹", text: "Амаль очистил чат", t: Date.now(), clear: true });
+    },
+
+    /** Хозяин: обнулить журнал визитов */
+    clearVisits: function () {
+      if (!checkOwner()) return;
+      try { localStorage.removeItem(STORE_VISITS); } catch (_) {}
+    },
   };
 
   function notifyChallenges() {
