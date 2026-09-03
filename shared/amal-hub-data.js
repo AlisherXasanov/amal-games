@@ -35,9 +35,14 @@
   ];
 
   var EXCLUSIVE = [
-    { ico: "🏫", name: "Клуб друзей", path: "school-party/?v=9", note: "чат · настолки · смешное" },
+    { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
+    { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
+    { ico: "🕯️", name: "Свеча в шахте", path: "candle-mine/", note: "кликер" },
+    { ico: "🍲", name: "Котёл и молот", path: "pot-hammer/", note: "варка" },
+    { ico: "🧗", name: "Obby", path: "obby/", note: "полоса" },
+    { ico: "🐣", name: "Милашки v7", path: "milashki/?v=7", note: "6 миров · 42 вида" },
     { ico: "🎨", name: "Полка Валеры", path: "mult-studio/", note: "свои мульты" },
-    { ico: "😂", name: "Мемы · видео", path: "meme-channel.html?v=11", note: "канал друзей" },
+    { ico: "▶", name: "Смотрим вместе", path: "friends-watch/?v=1", note: "кинотеатр друзей" },
   ];
 
   global.AmalHubData = {
@@ -96,7 +101,17 @@
           (from === "tablet" ? "планшета" : from === "friends" ? "друзей" : "телефона");
       }
 
-      fillGrid("list-games", AmalHubData.GAMES_2D, { from: from });
+      var gamesList = AmalHubData.GAMES_2D;
+      if (from === "friends") {
+        var xPaths = {};
+        AmalHubData.EXCLUSIVE.forEach(function (g) {
+          xPaths[g.path.split("?")[0]] = true;
+        });
+        gamesList = AmalHubData.GAMES_2D.filter(function (g) {
+          return !xPaths[g.path.split("?")[0]];
+        });
+      }
+      fillGrid("list-games", gamesList, { from: from });
       fillGrid("list-mila", AmalHubData.MILA, { from: from });
       fillGrid("list-d3", AmalHubData.GAMES_3D, { from: from, locked: !d3Playable && from === "phone" });
       fillGrid("list-exclusive", AmalHubData.EXCLUSIVE, { from: from, exclusive: true });
@@ -105,7 +120,7 @@
       if (search) {
         search.addEventListener("input", function (e) {
           var q = e.target.value.toLowerCase();
-          fillGrid("list-games", AmalHubData.GAMES_2D.filter(function (g) {
+          fillGrid("list-games", gamesList.filter(function (g) {
             return !q || g.name.toLowerCase().indexOf(q) >= 0;
           }), { from: from });
         });
