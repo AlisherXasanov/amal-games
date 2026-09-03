@@ -195,16 +195,6 @@ body {
 }
 .mod-btns #friends-mod-ban { background: #dc2626; }
 .mod-btns #friends-mod-unban { background: #059669; }
-.find-circles {
-  position: relative; height: 160px; margin: 10px 0; border-radius: 16px;
-  background: linear-gradient(160deg, #1e3a8a, #312e81); overflow: hidden;
-}
-.find-circles .circ {
-  position: absolute; width: 36px; height: 36px; border-radius: 50%;
-  border: 0; background: #60a5fa; cursor: pointer; box-shadow: 0 0 0 3px rgba(147,197,253,.35);
-}
-.find-circles .circ.got { background: #fbbf24; transform: scale(1.15); }
-.find-circles .hint { position: absolute; left: 10px; top: 8px; color: #bfdbfe; font: 800 12px inherit; }
 
 /* Чат */
 .chat-setup label { display: block; font-weight: 800; font-size: 13px; margin-bottom: 8px; }

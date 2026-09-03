@@ -6,10 +6,10 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=4" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=5" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
-  <script src="./shared/amal-owner-session.js?v=2"></script>
-  <script src="./owner-cheats.js"></script>
+  <script src="./shared/amal-owner-session.js?v=3"></script>
+  <script src="./owner-cheats.js?v=2"></script>
   <script src="./shared/amal-device.js?v=8"></script>
 </head>
 <body>
@@ -45,9 +45,6 @@
 
     <section class="panel on" id="panel-home">
       <p class="tip">💜 Закрытая команда · ссылка от Амаля (QR — только чтобы распечатать друзьям)</p>
-      <div class="find-circles" id="find-circles" aria-label="Найди маленький предмет">
-        <span class="hint" id="find-hint">🔵 Жми синие круги — найди маленький ⭐</span>
-      </div>
       <div class="cat-grid">
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзив</button>
         <a class="cat-btn" href="friends-watch/?v=1&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотрим вместе</a>
@@ -77,7 +74,7 @@
     </section>
 
     <section class="panel" id="panel-chat">
-      <p class="tip">💬 Напиши имя → пиши друзьям. Амаль видит, кто зашёл.</p>
+      <p class="tip">💬 Напиши имя → пиши друзьям. Амаль видит, кто зашёл. Ник <b>Азам</b> = админ.</p>
       <div id="friends-chat-root"></div>
     </section>
 
@@ -94,13 +91,22 @@
   <script src="./shared/amal-friends-net.js?v=7"></script>
   <script>
     (function () {
-      if (window.AmalOwnerSession && AmalOwnerSession.admitLikeQrScanned) {
+      if (window.AmalOwnerSession) {
         AmalOwnerSession.admitLikeQrScanned();
+        AmalOwnerSession.syncOwnerCheats();
       }
       function startFriendsHub() {
         var tag = document.getElementById("friends-tag");
-        if (tag && AmalOwnerSession.isOwner()) {
-          tag.textContent = "👑 Амаль — твоя зона · доступ уже есть";
+        if (AmalOwnerSession.isOwner()) {
+          AmalOwnerSession.markOwner();
+          if (window.AmalFriendsNet) {
+            try {
+              if (!AmalFriendsNet.nick || !AmalFriendsNet.nick()) {
+                AmalFriendsNet.setNick("Амаль");
+              }
+            } catch (_) {}
+          }
+          if (tag) tag.textContent = "👑 Амаль — админ на этом Chrome · без QR";
         }
         AmalDevice.setHub("friends");
         AmalDevice.remember(AmalDevice.detect(), "friends");
@@ -115,33 +121,6 @@
             AmalFriendsNet.trackGame(name ? name.textContent : "игра");
           }
         });
-        // Синие круги — найди маленький предмет
-        var box = document.getElementById("find-circles");
-        var hint = document.getElementById("find-hint");
-        if (box) {
-          var n = 8;
-          var prize = Math.floor(Math.random() * n);
-          for (var i = 0; i < n; i++) {
-            var b = document.createElement("button");
-            b.type = "button";
-            b.className = "circ";
-            b.style.left = (8 + Math.random() * 78) + "%";
-            b.style.top = (22 + Math.random() * 55) + "%";
-            b.setAttribute("data-i", String(i));
-            box.appendChild(b);
-          }
-          box.addEventListener("click", function (e) {
-            var c = e.target.closest(".circ");
-            if (!c || c.classList.contains("got")) return;
-            if (Number(c.getAttribute("data-i")) === prize) {
-              c.classList.add("got");
-              c.textContent = "⭐";
-              if (hint) hint.textContent = "✨ Нашёл! Маленькая звезда твоя";
-            } else if (hint) {
-              hint.textContent = "Пусто… ищи дальше 🔵";
-            }
-          });
-        }
       }
       startFriendsHub();
     })();

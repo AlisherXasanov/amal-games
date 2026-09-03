@@ -83,6 +83,19 @@
 
   tryUrlUnlock();
 
+  // Если на этом Chrome уже был хозяин — снова включить без скана
+  try {
+    if (global.AmalOwnerSession && AmalOwnerSession.syncOwnerCheats) {
+      AmalOwnerSession.syncOwnerCheats();
+    } else if (
+      localStorage.getItem(STORAGE_KEY) === "1" ||
+      localStorage.getItem("amal-home-pc-v1") === "1" ||
+      localStorage.getItem("amal-owner-v1") === "1"
+    ) {
+      unlock("amal");
+    }
+  } catch (_) {}
+
   global.AmalOwner = {
     isOwner,
     unlock,
