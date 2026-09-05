@@ -182,7 +182,16 @@ body {
 .owner-panel li { padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-weight: 600; }
 .mod-panel { background: #e0e7ff; border-color: #6366f1; }
 .mod-panel h3 { color: #312e81; }
+.power-panel { background: #fff7ed; border-color: #f59e0b; }
+.power-panel h3 { color: #9a3412; }
+.book-panel { background: #ecfdf5; border-color: #10b981; }
+.book-panel h3 { color: #065f46; margin-bottom: 6px; }
+.book-panel ul { list-style: none; padding: 0; margin: 0; max-height: 140px; overflow-y: auto; }
+.book-panel li { padding: 4px 0; border-bottom: 1px solid rgba(0,0,0,.06); font-weight: 700; font-size: 12px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.book-del { border: 0; background: #fee2e2; color: #b91c1c; border-radius: 8px; padding: 2px 8px; font: 800 11px inherit; cursor: pointer; }
+.collect-btn { border: 0; background: #dbeafe; color: #1d4ed8; border-radius: 8px; padding: 0 6px; font: 800 12px inherit; cursor: pointer; margin-left: 4px; }
 .mod-hint { font-size: 11px; font-weight: 600; color: #4338ca; margin: 0 0 8px; line-height: 1.35; }
+.power-panel .mod-hint { color: #9a3412; }
 .mod-panel label { display: block; font-weight: 800; font-size: 12px; margin-bottom: 8px; }
 .mod-panel select {
   width: 100%; margin-top: 4px; border: 2px solid #a5b4fc; border-radius: 10px;

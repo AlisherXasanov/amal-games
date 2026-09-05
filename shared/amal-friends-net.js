@@ -11,10 +11,19 @@
   var STORE_WELCOME = "amal-friends-welcomed-v1";
   var STORE_OWNER = "amal-friends-owner-v1";
   var STORE_MOD = "amal-friends-mod-v1";
+  var STORE_POWER = "amal-friends-power-v1";
+  var STORE_BOOK = "amal-friends-book-v1";
   var OWNER_NICKS = ["амаль", "amal", "хозяин", "амаля"];
   /** Договорённость: одноклассник Азам → ник «Азам» = админ (предупреждения + бан) */
   var ADMIN_NICKS = ["азам", "azam"];
   var BAN_MS = 3 * 24 * 60 * 60 * 1000; // 3 дня
+  var POWER_LEVELS = [
+    { v: 1, label: "🌱 Новичок" },
+    { v: 2, label: "⚡ Средний" },
+    { v: 3, label: "💪 Сильный" },
+    { v: 4, label: "🔥 Очень сильный" },
+    { v: 5, label: "👑 Легенда" },
+  ];
   var emojis = ["😀", "😂", "❤️", "👍", "🎮", "🐣", "⭐", "🔥", "🥳", "👋", "💜", "✨", "🕵️", "🌊"];
 
   var room = null;
@@ -65,6 +74,145 @@
       if (raw) { var arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
     } catch (_) {}
     return [];
+  }
+
+  function powerLabel(v) {
+    v = Number(v) || 0;
+    for (var i = 0; i < POWER_LEVELS.length; i++) {
+      if (POWER_LEVELS[i].v === v) return POWER_LEVELS[i].label;
+    }
+    return "❓ неизвестно";
+  }
+
+  function myPower() {
+    try {
+      var n = Number(localStorage.getItem(STORE_POWER) || "0");
+      if (n >= 1 && n <= 5) return n;
+    } catch (_) {}
+    return 0;
+  }
+
+  function setMyPower(v) {
+    v = Math.max(0, Math.min(5, Number(v) || 0));
+    try { localStorage.setItem(STORE_POWER, String(v)); } catch (_) {}
+    if (sendPing && nick()) {
+      sendPing({ name: nick(), place: myPlace, power: v, t: Date.now() });
+    }
+    if (v && nick()) {
+      addMessage({
+        name: "⚔️",
+        text: nick() + " говорит: я " + powerLabel(v) + "!",
+        t: Date.now(),
+      });
+      if (sendChat) {
+        sendChat({ name: "⚔️", text: nick() + " говорит: я " + powerLabel(v) + "!", t: Date.now() });
+      }
+    }
+    renderPowerPanel();
+    renderOnline();
+    renderBook();
+  }
+
+  function loadBook() {
+    try {
+      var raw = localStorage.getItem(STORE_BOOK);
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return arr;
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  function saveBook(book) {
+    try { localStorage.setItem(STORE_BOOK, JSON.stringify(book.slice(0, 80))); } catch (_) {}
+  }
+
+  function collectFriend(name, power, opts) {
+    opts = opts || {};
+    name = String(name || "").trim() || "незнакомец";
+    var unknown = !!opts.unknown || name === "?" || /^незнак/i.test(name);
+    var book = loadBook();
+    var key = nickKey(name);
+    var found = -1;
+    for (var i = 0; i < book.length; i++) {
+      if (nickKey(book[i].name) === key) { found = i; break; }
+    }
+    var entry = {
+      name: name,
+      power: Number(power) || 0,
+      unknown: unknown,
+      t: Date.now(),
+    };
+    if (found >= 0) book[found] = entry;
+    else book.unshift(entry);
+    saveBook(book);
+    renderBook();
+    return entry;
+  }
+
+  function removeFromBook(name) {
+    var book = loadBook().filter(function (e) { return nickKey(e.name) !== nickKey(name); });
+    saveBook(book);
+    renderBook();
+  }
+
+  function renderPowerPanel() {
+    var panel = $("friends-power-panel");
+    if (!panel) return;
+    var cur = myPower();
+    var opts = POWER_LEVELS.map(function (p) {
+      return '<option value="' + p.v + '"' + (cur === p.v ? " selected" : "") + ">" + p.label + "</option>";
+    }).join("");
+    panel.innerHTML =
+      "<h3>⚔️ Моя сила (сам говоришь)</h3>" +
+      '<p class="mod-hint">Друзья увидят, насколько ты сильный. Даже если ник чужой — сила всё равно видна.</p>' +
+      '<label>Я: <select id="friends-power-sel"><option value="0">не выбрано</option>' + opts + "</select></label>" +
+      '<div class="mod-btns" style="margin-top:8px">' +
+      '<button type="button" id="friends-power-say">📢 Сказать всем</button>' +
+      '<button type="button" id="friends-collect-all">📥 Собрать всех онлайн</button>' +
+      "</div>";
+    $("friends-power-sel").onchange = function () {
+      setMyPower(this.value);
+    };
+    $("friends-power-say").onclick = function () {
+      var v = Number($("friends-power-sel").value) || myPower();
+      if (!v) { alert("Сначала выбери силу!"); return; }
+      setMyPower(v);
+    };
+    $("friends-collect-all").onclick = function () {
+      var me = nick();
+      Object.keys(peers).forEach(function (id) {
+        var p = peers[id];
+        if (!p || !p.name || p.name === me) return;
+        collectFriend(p.name, p.power || 0, { unknown: p.name === "?" });
+      });
+      addMessage({ name: "📥", text: "Собрал друзей онлайн в свою коллекцию", t: Date.now() });
+    };
+  }
+
+  function renderBook() {
+    var box = $("friends-book");
+    if (!box) return;
+    var book = loadBook();
+    if (!book.length) {
+      box.innerHTML = "<p class=\"mod-hint\">Пока пусто — собери друзей кнопкой ➕ или «Собрать всех»</p>";
+      return;
+    }
+    box.innerHTML =
+      "<h3>📒 Моя коллекция друзей</h3>" +
+      "<ul>" +
+      book.map(function (e) {
+        var who = e.unknown ? "❓ незнакомец «" + esc(e.name) + "»" : esc(e.name);
+        return (
+          "<li><b>" + who + "</b> · " + esc(powerLabel(e.power)) +
+          ' <button type="button" class="book-del" data-n="' + esc(e.name) + '">✕</button></li>'
+        );
+      }).join("") +
+      "</ul>";
+    box.querySelectorAll(".book-del").forEach(function (btn) {
+      btn.onclick = function () { removeFromBook(btn.getAttribute("data-n")); };
+    });
   }
   var activities = [];
   var challenges = [];
@@ -351,13 +499,34 @@
       return;
     }
     var html = "";
-    if (me) html += '<span class="on-user">🟢 ' + esc(me) + " (ты)</span> ";
+    if (me) {
+      html += '<span class="on-user">🟢 ' + esc(me) + " (ты)" +
+        (myPower() ? " · " + esc(powerLabel(myPower())) : "") + "</span> ";
+    }
     names.forEach(function (p) {
       if (peers[p].name && peers[p].name !== me) {
-        html += '<span class="on-user">' + (peers[p].alive ? "🟢" : "🟡") + " " + esc(peers[p].name) + "</span> ";
+        var nm = peers[p].name === "?" ? "❓ незнакомец" : peers[p].name;
+        var pw = peers[p].power ? " · " + powerLabel(peers[p].power) : "";
+        html +=
+          '<span class="on-user">' + (peers[p].alive ? "🟢" : "🟡") + " " + esc(nm) + esc(pw) +
+          ' <button type="button" class="collect-btn" data-n="' + esc(peers[p].name) +
+          '" data-p="' + (peers[p].power || 0) + '" title="Собрать к себе">➕</button></span> ';
       }
     });
     box.innerHTML = html || "🟡 Пока только ты — жди друзей";
+    box.querySelectorAll(".collect-btn").forEach(function (btn) {
+      btn.onclick = function () {
+        collectFriend(btn.getAttribute("data-n"), btn.getAttribute("data-p"), {
+          unknown: btn.getAttribute("data-n") === "?",
+        });
+        addMessage({
+          name: "📥",
+          text: "Добавил «" + btn.getAttribute("data-n") + "» в коллекцию (" +
+            powerLabel(btn.getAttribute("data-p")) + ")",
+          t: Date.now(),
+        });
+      };
+    });
   }
 
   function renderOwner() {
@@ -450,10 +619,15 @@
           alive: true,
           t: Date.now(),
           place: data.place || (prev && prev.place) || "",
+          power: data.power != null ? Number(data.power) : ((prev && prev.power) || 0),
         };
         renderOnline();
         if (data.name && (wasUnknown || nameChanged || data.hello)) {
           notifyJoin(data.name, data.place || myPlace, peerId);
+        }
+        if (data.power && data.name && data.name !== nick()) {
+          // тихий апдейт силы без спама
+          renderBook();
         }
       });
 
@@ -466,6 +640,7 @@
           alive: true,
           t: Date.now(),
           place: data.place || "",
+          power: data.power != null ? Number(data.power) : 0,
         };
         renderOnline();
         notifyJoin(data.name, data.place || "", peerId);
@@ -558,10 +733,10 @@
       room.onPeerJoin(function (peerId) {
         peers[peerId] = { name: "?", alive: true, t: Date.now(), place: "" };
         if (sendPing && nick()) {
-          sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
+          sendPing({ name: nick(), place: myPlace, power: myPower(), hello: true, t: Date.now() });
         }
         if (sendHello && nick()) {
-          sendHello({ name: nick(), place: myPlace || "клуб", t: Date.now() });
+          sendHello({ name: nick(), place: myPlace || "клуб", power: myPower(), t: Date.now() });
         }
         renderOnline();
       });
@@ -574,7 +749,7 @@
       });
 
       setInterval(function () {
-        if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, t: Date.now() });
+        if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, power: myPower(), t: Date.now() });
         Object.keys(peers).forEach(function (id) {
           if (Date.now() - (peers[id].t || 0) > 25000) peers[id].alive = false;
         });
@@ -582,7 +757,7 @@
       }, 8000);
 
       // сразу сказать «я здесь»
-      if (nick() && sendPing) sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
+      if (nick() && sendPing) sendPing({ name: nick(), place: myPlace, power: myPower(), hello: true, t: Date.now() });
 
       return true;
     }).catch(function (err) {
@@ -649,6 +824,8 @@
         '<div class="chat-setup"><label>Твоё имя ' +
         '<input id="friends-nick" maxlength="16" placeholder="Напиши как тебя зовут" /></label></div>' +
         '<div class="chat-online" id="friends-online">Подключение…</div>' +
+        '<div id="friends-power-panel" class="owner-panel power-panel"></div>' +
+        '<div id="friends-book" class="owner-panel book-panel"></div>' +
         '<div class="chat-log" id="friends-chat-log"></div>' +
         '<div class="chat-emojis" id="friends-emojis"></div>' +
         '<form class="chat-form" id="friends-chat-form">' +
@@ -667,12 +844,14 @@
         renderOnline();
         renderOwner();
         renderModPanel();
+        renderPowerPanel();
       });
       nickIn.addEventListener("blur", function () {
         setNick(nickIn.value);
         renderOnline();
         renderOwner();
         renderModPanel();
+        renderPowerPanel();
       });
 
       $("friends-emojis").innerHTML = emojis.map(function (e) {
@@ -695,6 +874,8 @@
       renderOnline();
       renderOwner();
       renderModPanel();
+      renderPowerPanel();
+      renderBook();
     },
 
     send: function (text) {
@@ -761,8 +942,8 @@
       } catch (_) {}
       startNetwork().then(function (ok) {
         if (ok && nick()) {
-          if (sendPing) sendPing({ name: nick(), place: myPlace, hello: true, t: Date.now() });
-          if (sendHello) sendHello({ name: nick(), place: myPlace || "клуб", t: Date.now() });
+          if (sendPing) sendPing({ name: nick(), place: myPlace, power: myPower(), hello: true, t: Date.now() });
+          if (sendHello) sendHello({ name: nick(), place: myPlace || "клуб", power: myPower(), t: Date.now() });
           logActivity("зашёл", myPlace || "клуб");
         }
         if (onDone) onDone(ok);
@@ -771,8 +952,8 @@
 
     setPlace: function (place) {
       myPlace = String(place || "").slice(0, 40);
-      if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, t: Date.now() });
-      if (sendHello && nick()) sendHello({ name: nick(), place: myPlace, t: Date.now() });
+      if (sendPing && nick()) sendPing({ name: nick(), place: myPlace, power: myPower(), t: Date.now() });
+      if (sendHello && nick()) sendHello({ name: nick(), place: myPlace, power: myPower(), t: Date.now() });
     },
 
     onFriendJoin: function (fn) {
@@ -929,6 +1110,10 @@
     banUntil: banUntil,
     getVisits: getVisits,
     getMessages: function () { return messages.slice(); },
+    myPower: myPower,
+    setMyPower: setMyPower,
+    collectFriend: collectFriend,
+    getBook: loadBook,
 
     /** Хозяин: обнулить всю переписку */
     clearChat: function () {
