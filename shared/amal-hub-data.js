@@ -16,6 +16,7 @@
   ];
 
   var GAMES_3D = [
+    { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
     { ico: "⛏️", name: "CraftWorld", path: "minecraft/", note: "майнкрафт" },
     { ico: "🌀", name: "Portal 3D", path: "portal-3d/", note: "порталы" },
@@ -29,6 +30,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🔥", name: "Хиты · папка", path: "hits/", note: "хиты + умный" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
