@@ -29,6 +29,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "🔥", name: "Хиты · папка", path: "hits/", note: "хиты + умный" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
     { ico: "🧗", name: "Obby", path: "obby/", note: "полоса" },

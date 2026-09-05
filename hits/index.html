@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🔥 Хиты · папка Амаля</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#b45309" />
+  <style>
+    :root {
+      --bg: #fff7ed;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --card: #ffffff;
+      --line: #fdba74;
+      --hot: #ea580c;
+      --ok: #059669;
+      --smart: #4f46e5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 10% -5%, #fdba7488, transparent),
+        radial-gradient(700px 380px at 100% 0%, #fbbf2488, transparent),
+        var(--bg);
+      padding: 18px 14px 40px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 1.55rem; }
+    .sub { margin: 0 0 16px; color: var(--muted); font-weight: 700; font-size: 13px; line-height: 1.4; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .tabs button {
+      border: 2px solid var(--line); background: #fff; border-radius: 999px;
+      padding: 8px 14px; font: 800 13px inherit; cursor: pointer; color: var(--ink);
+    }
+    .tabs button.on { background: var(--hot); border-color: var(--hot); color: #fff; }
+    .panel { display: none; }
+    .panel.on { display: block; }
+    .folder {
+      background: var(--card); border: 2px solid var(--line); border-radius: 18px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .folder h2 { margin: 0 0 8px; font-size: 1.05rem; }
+    .folder .hint { margin: 0 0 10px; font-size: 12px; font-weight: 700; color: var(--muted); }
+    .hit {
+      display: flex; gap: 10px; align-items: flex-start; text-decoration: none; color: inherit;
+      padding: 10px; border-radius: 14px; border: 1px solid #fed7aa; background: #fffbeb;
+      margin-bottom: 8px;
+    }
+    .hit:hover { border-color: var(--hot); }
+    .hit .ico { font-size: 28px; line-height: 1; }
+    .hit .name { font-weight: 800; font-size: 14px; }
+    .hit .note { font-size: 12px; font-weight: 650; color: var(--muted); margin-top: 2px; }
+    .stars { color: #d97706; font-weight: 900; letter-spacing: 1px; margin-top: 4px; font-size: 13px; }
+    .pct {
+      margin-left: auto; align-self: center; font-weight: 900; font-size: 13px;
+      background: #ffedd5; color: #c2410c; padding: 6px 8px; border-radius: 10px; white-space: nowrap;
+    }
+    .smart-box {
+      background: #eef2ff; border: 2px solid #a5b4fc; border-radius: 18px; padding: 14px;
+    }
+    .smart-box h2 { margin: 0 0 6px; color: #312e81; font-size: 1.05rem; }
+    .smart-box p { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: #4338ca; line-height: 1.4; }
+    .smart-box textarea, .smart-box input[type="text"] {
+      width: 100%; border: 2px solid #c7d2fe; border-radius: 12px; padding: 10px;
+      font: 700 14px inherit; min-height: 44px; margin-bottom: 8px;
+    }
+    .smart-box textarea { min-height: 72px; resize: vertical; }
+    .smart-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .smart-actions button, .quick a {
+      border: 0; border-radius: 12px; padding: 10px 12px; font: 800 13px inherit;
+      cursor: pointer; background: var(--smart); color: #fff; text-decoration: none; display: inline-block;
+    }
+    .answer {
+      background: #fff; border-radius: 14px; padding: 12px; border: 2px solid #c7d2fe;
+      font-weight: 700; font-size: 14px; line-height: 1.45; white-space: pre-wrap; min-height: 80px;
+    }
+    .quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .quick a { background: #0f766e; }
+    .back { margin-top: 16px; }
+    .back a { color: #c2410c; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔥 Хиты · новая папка</h1>
+    <p class="sub">Какие игры хиты, насколько сильно, и умный помощник — объясняет ссылки простыми словами.</p>
+
+    <div class="tabs" id="tabs">
+      <button type="button" class="on" data-tab="folders">📁 Папки хитов</button>
+      <button type="button" data-tab="smart">🧠 Умный</button>
+    </div>
+
+    <section class="panel on" id="panel-folders"></section>
+
+    <section class="panel" id="panel-smart">
+      <div class="smart-box">
+        <h2>🧠 Умный помощник</h2>
+        <p>Вставь ссылку или название — он нормально объяснит, что это и куда ведёт. Не код, а обычными словами.</p>
+        <input id="smart-q" type="text" placeholder="Например: friends.html или Смотри или my-links" />
+        <textarea id="smart-more" placeholder="Или напиши вопрос: «что такое эксклюзив?»"></textarea>
+        <div class="smart-actions">
+          <button type="button" id="smart-go">Объясни</button>
+          <button type="button" id="smart-clear" style="background:#64748b">Очистить</button>
+        </div>
+        <div class="answer" id="smart-answer">Жду ссылку или вопрос…</div>
+      </div>
+    </section>
+
+    <div class="quick">
+      <a href="../friends.html?v=8&stay=1&code=amal-star-friends&owner=amal">⭐ Эксклюзив</a>
+      <a href="../my-links.html">🔗 Мои ссылки</a>
+      <a href="../youtube-free/?v=50&from=friends">▶ Смотри</a>
+      <a href="../">🏠 Сайт</a>
+    </div>
+    <p class="back"><a href="../friends.html?v=8&stay=1&code=amal-star-friends&owner=amal">← назад к друзьям</a></p>
+  </div>
+
+  <script>
+    (function () {
+      var FOLDERS = [
+        {
+          title: "🔥 Супер-хиты",
+          hint: "Самые любимые · почти все заходят сюда",
+          items: [
+            { ico: "🐣", name: "Милашки", path: "../milashki/?v=7&from=friends", note: "милашки, миры, коллекция", hit: 98 },
+            { ico: "▶", name: "Смотри · Ютуб", path: "../youtube-free/?v=50&from=friends", note: "смотреть ролики вместе", hit: 95 },
+            { ico: "⭐", name: "Эксклюзив друзей", path: "../friends.html?v=8&stay=1&code=amal-star-friends", note: "чат, сила, секреты", hit: 97 },
+            { ico: "🌊", name: "Escape Tsunami", path: "../escape-tsunami/?v=4&from=friends", note: "бег от волны", hit: 90 },
+          ],
+        },
+        {
+          title: "🎮 Хиты 2D",
+          hint: "Простые игры · хорошо на телефоне и ПК",
+          items: [
+            { ico: "🍕", name: "Пиццерия", path: "../work-pizza/?v=3&from=friends", note: "готовить пиццу", hit: 88 },
+            { ico: "🧗", name: "Obby", path: "../obby/?from=friends", note: "полоса препятствий", hit: 86 },
+            { ico: "🐍", name: "Snake", path: "../snake-game/?from=friends", note: "змейка", hit: 80 },
+            { ico: "🐾", name: "Animal Hospital", path: "../animal-hospital/?from=friends", note: "больница животных", hit: 84 },
+            { ico: "🥊", name: "Kick Buddy", path: "../kick-buddy/?from=friends", note: "бить грушу", hit: 78 },
+            { ico: "🧟", name: "Зомби vs растения", path: "../zombie-vs-plants/?from=friends", note: "защита огорода", hit: 82 },
+          ],
+        },
+        {
+          title: "🧊 Хиты 3D",
+          hint: "Лучше на компьютере · мощнее графика",
+          items: [
+            { ico: "🛏️", name: "Bed Wars", path: "../bed-wars/?from=friends", note: "командный бой 3D", hit: 85 },
+            { ico: "⛏️", name: "CraftWorld", path: "../minecraft/?from=friends", note: "как майнкрафт", hit: 83 },
+            { ico: "🌀", name: "Portal 3D", path: "../portal-3d/?from=friends", note: "порталы", hit: 75 },
+          ],
+        },
+        {
+          title: "💜 Для команды",
+          hint: "Чат, ссылки, секреты · не для всего класса",
+          items: [
+            { ico: "🔗", name: "Мои ссылки", path: "../my-links.html", note: "все доступы Амаля", hit: 92 },
+            { ico: "🏫", name: "Клуб друзей", path: "../school-party/?v=9&stay=1", note: "вечеринка / клуб", hit: 80 },
+            { ico: "😂", name: "Мемы", path: "../meme-channel.html?v=11&from=friends&stay=1", note: "канал мемов", hit: 77 },
+            { ico: "💬", name: "Чат (в эксклюзиве)", path: "../friends.html?v=8&stay=1&code=amal-star-friends#chat", note: "писать друзьям", hit: 94 },
+          ],
+        },
+      ];
+
+      var GUIDE = [
+        { keys: ["friends", "эксклюзив", "друг"], title: "⭐ Эксклюзив друзей",
+          text: "Это закрытая зона только для твоей команды.\nТам чат, сила друзей, коллекция, Милашки, Смотри.\nСсылка: friends.html — заходи с кодом amal-star-friends." },
+        { keys: ["my-links", "мои ссылки", "ссылк"], title: "🔗 Мои ссылки",
+          text: "Страница только для тебя на этом компьютере.\nТам все важные ссылки с админкой (owner=amal).\nМожно копировать и открывать быстро." },
+        { keys: ["youtube-free", "смотри", "ютуб", "youtube"], title: "▶ Смотри",
+          text: "Твой просмотр роликов на сайте (не чужой Premium).\nМожно открывать трейлеры и каналы из списка.\nС друзьями — через эксклюзив." },
+        { keys: ["milashki", "милаш"], title: "🐣 Милашки",
+          text: "Большая игра про милых существ.\nМного миров и видов. Это супер-хит.\nОткрывай из эксклюзива или с главной." },
+        { keys: ["tsunami", "цунами"], title: "🌊 Escape Tsunami",
+          text: "Беги от огромной волны.\nХит для быстрой игры. Есть в эксклюзиве." },
+        { keys: ["pizza", "пицц"], title: "🍕 Пиццерия",
+          text: "Готовь и раздавай пиццу — как Pizza Place.\nЭксклюзивная игра для друзей." },
+        { keys: ["obby"], title: "🧗 Obby",
+          text: "Полоса препятствий: прыгай и не падай.\nПростая и весёлая." },
+        { keys: ["777", "фраз"], title: "💬 Готовые фразы",
+          text: "В чате эксклюзива набери на клавиатуре 777 (не в поле ввода).\nОткроется сотни готовых фраз — одной кнопкой отправить другу." },
+        { keys: ["сила", "power", "коллекц"], title: "⚔️ Сила и коллекция",
+          text: "В чате каждый сам говорит, насколько он сильный.\nКнопкой ➕ можно собрать друга к себе — даже незнакомца." },
+        { keys: ["qr", "телефон", "phone"], title: "📱 QR и телефон",
+          text: "QR ведёт в эксклюзив для друзей.\nКнопка 📱 на твоём ПК тоже ведёт в эксклюзив, не в пустую страницу." },
+        { keys: ["hits", "хит"], title: "🔥 Эта папка · Хиты",
+          text: "Ты как раз здесь.\nПапки: супер-хиты, 2D, 3D, для команды.\nЦифра % — насколько игра хит. Умный слева объясняет ссылки." },
+        { keys: ["owner", "админ", "хозяин", "амаль"], title: "👑 Админка Амаля",
+          text: "На твоём Chrome способности хозяина включаются сами.\nЕсли пропали — открой ссылку с owner=amal из «Мои ссылки»." },
+        { keys: ["азам", "azam"], title: "🛡️ Азам = админ",
+          text: "Если друг введёт ник Азам — получит админ-команды.\nПредупреждения и бан. Банить Амаля нельзя — бан вернётся." },
+      ];
+
+      function stars(hit) {
+        var n = hit >= 95 ? 5 : hit >= 88 ? 4 : hit >= 80 ? 3 : hit >= 70 ? 2 : 1;
+        return "★".repeat(n) + "☆".repeat(5 - n);
+      }
+
+      function renderFolders() {
+        var root = document.getElementById("panel-folders");
+        root.innerHTML = FOLDERS.map(function (f) {
+          return (
+            '<div class="folder"><h2>' + f.title + "</h2>" +
+            '<p class="hint">' + f.hint + "</p>" +
+            f.items.map(function (it) {
+              return (
+                '<a class="hit" href="' + it.path + '">' +
+                '<span class="ico">' + it.ico + "</span>" +
+                "<div><div class=\"name\">" + it.name + "</div>" +
+                '<div class="note">' + it.note + "</div>" +
+                '<div class="stars">' + stars(it.hit) + "</div></div>" +
+                '<span class="pct">хит ' + it.hit + "%</span></a>"
+              );
+            }).join("") +
+            "</div>"
+          );
+        }).join("");
+      }
+
+      function explain(raw) {
+        var q = String(raw || "").trim().toLowerCase();
+        if (!q) return "Напиши ссылку или вопрос — например: friends.html или «что такое Смотри?»";
+        for (var i = 0; i < GUIDE.length; i++) {
+          var g = GUIDE[i];
+          for (var j = 0; j < g.keys.length; j++) {
+            if (q.indexOf(g.keys[j]) >= 0) {
+              return g.title + "\n\n" + g.text;
+            }
+          }
+        }
+        if (/https?:\/\//.test(q) || /\.html|\?\w+=/.test(q)) {
+          return "Это ссылка на твой сайт Игры Амаля.\n" +
+            "Открой её в Chrome. Если в ссылке есть friends или exclusive — это зона друзей.\n" +
+            "Если есть owner=amal — включается твоя админка.\n\n" +
+            "Не понял точнее? Напиши название игры или слова: эксклюзив, смотри, милашки, сила.";
+        }
+        return "Пока не понял «" + raw + "».\n" +
+          "Попробуй слова: эксклюзив, смотри, милашки, мои ссылки, сила, 777, азам, хиты.";
+      }
+
+      document.getElementById("tabs").addEventListener("click", function (e) {
+        var b = e.target.closest("button[data-tab]");
+        if (!b) return;
+        document.querySelectorAll(".tabs button").forEach(function (x) { x.classList.remove("on"); });
+        document.querySelectorAll(".panel").forEach(function (x) { x.classList.remove("on"); });
+        b.classList.add("on");
+        document.getElementById("panel-" + b.getAttribute("data-tab")).classList.add("on");
+      });
+
+      document.getElementById("smart-go").onclick = function () {
+        var a = document.getElementById("smart-q").value;
+        var b = document.getElementById("smart-more").value;
+        document.getElementById("smart-answer").textContent = explain(a || b);
+      };
+      document.getElementById("smart-clear").onclick = function () {
+        document.getElementById("smart-q").value = "";
+        document.getElementById("smart-more").value = "";
+        document.getElementById("smart-answer").textContent = "Жду ссылку или вопрос…";
+      };
+      document.getElementById("smart-q").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") document.getElementById("smart-go").click();
+      });
+
+      renderFolders();
+    })();
+  </script>
+</body>
+</html>
