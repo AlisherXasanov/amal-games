@@ -675,11 +675,37 @@
     ],
   };
 
+  GAME_PACKS.friends = {
+    title: "Командир · Эксклюзив",
+    subtitle: "Настоящие способности · не готовые фразы",
+    quick: [
+      { id: "fr-unban-me", label: "🛡️ Снять бан", toast: "Бан снят" },
+      { id: "fr-clear", label: "🧹 Чат", toast: "Чат очищен" },
+      { id: "owner-legend", label: "👑 Легенда", toast: "Легенда ВКЛ" },
+    ],
+    buttons: [
+      { id: "fr-unban-me", label: "🛡️ Снять бан с Амаля", cls: "primary" },
+      { id: "fr-clear", label: "🧹 Очистить чат" },
+      { id: "fr-clear-visits", label: "🗑️ Очистить визиты" },
+      { id: "god", label: "🛡️ God mode" },
+      { id: "owner-legend", label: "👑 Режим легенды", cls: "max" },
+      { id: "fr-hits", label: "🔥 Папка хитов" },
+      { id: "fr-links", label: "🔗 Мои ссылки" },
+      { id: "fr-watch", label: "▶ Смотри" },
+      { id: "fr-mila", label: "🐣 Милашки" },
+      { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+    ],
+  };
+
   function gameId() {
     try {
       if (global.AmalHub && typeof AmalHub.gameId === "function") return AmalHub.gameId();
     } catch (_) {}
-    const parts = location.pathname.replace(/\\/g, "/").split("/").filter(Boolean);
+    const path = location.pathname.replace(/\\/g, "/");
+    if (/friends\.html/i.test(path)) return "friends";
+    if (/\/hits\/?/i.test(path)) return "friends";
+    if (/my-links\.html/i.test(path)) return "friends";
+    const parts = path.split("/").filter(Boolean);
     const cleaned = parts.filter((p) => !/\.(html?|js|css)$/i.test(p));
     const idx = cleaned.indexOf("amal-games");
     if (idx >= 0) return cleaned[idx + 1] || "portal";
@@ -1012,6 +1038,46 @@
         }
         fire("surprise-gift");
       },
+      "fr-unban-me"() {
+        try {
+          if (global.AmalFriendsNet && AmalFriendsNet.clearOwnerBan) AmalFriendsNet.clearOwnerBan();
+          else if (global.AmalFriendsNet && AmalFriendsNet.clearChat) {
+            /* fallback: force unban via mod broadcast */
+            const nick = AmalFriendsNet.nick && AmalFriendsNet.nick();
+            if (nick && AmalFriendsNet.isOwner && AmalFriendsNet.isOwner()) {
+              localStorage.setItem("amal-friends-mod-v1", JSON.stringify({ warns: {}, bans: {} }));
+            }
+          }
+        } catch (_) {}
+        fire("fr-unban-me");
+        toast("🛡️ Бан с Амаля снят");
+      },
+      "fr-clear"() {
+        try {
+          if (global.AmalFriendsNet && AmalFriendsNet.clearChat) AmalFriendsNet.clearChat();
+        } catch (_) {}
+        fire("fr-clear");
+        toast("🧹 Чат очищен");
+      },
+      "fr-clear-visits"() {
+        try {
+          if (global.AmalFriendsNet && AmalFriendsNet.clearVisits) AmalFriendsNet.clearVisits();
+        } catch (_) {}
+        fire("fr-clear-visits");
+        toast("🗑️ Визиты очищены");
+      },
+      "fr-hits"() {
+        location.href = "./hits/?v=1&from=friends&owner=amal";
+      },
+      "fr-links"() {
+        location.href = "./my-links.html";
+      },
+      "fr-watch"() {
+        location.href = "./youtube-free/?v=50&from=friends&owner=amal";
+      },
+      "fr-mila"() {
+        location.href = "./milashki/?v=7&from=friends&owner=amal";
+      },
       "owner-wave"() {
         if (global.AmalSurprises && AmalSurprises.giveOwnerWave) {
           const res = AmalSurprises.giveOwnerWave({ to: "хозяин", force: true });
@@ -1223,12 +1289,13 @@ body.amal-lite-ui #amal-powers-panel.open{display:block!important}
 
   function sharedScriptSrc(file) {
     const id = gameId();
-    let usePortal = id === "portal";
+    let usePortal = id === "portal" || id === "friends";
     if (!usePortal) {
       try {
         const path = location.pathname.replace(/\\/g, "/");
         if (/\/amal-games\/?$/i.test(path) || /\/amal-games\/index\.html?$/i.test(path)) usePortal = true;
         else if (/\/games\/?$/i.test(path) || /\/games\/index\.html?$/i.test(path)) usePortal = true;
+        else if (/friends\.html|my-links\.html/i.test(path)) usePortal = true;
       } catch (_) {}
     }
     return (usePortal ? "./shared/" : "../shared/") + file;
@@ -1317,5 +1384,6 @@ body.amal-lite-ui #amal-powers-panel.open{display:block!important}
     /** Обычный max куба/панели НЕ включает Трон — только AmalThrone. */
     throneActive: () => !!(global.__AMAL_THRONE__ || (global.AmalThrone && AmalThrone.active && AmalThrone.active())),
   };
+  global.AmalOwnerPowers = global.AmalPowers;
   boot();
 })(typeof window !== "undefined" ? window : globalThis);

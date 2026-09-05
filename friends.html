@@ -10,7 +10,27 @@
   <script src="./shared/amal-lite-ui.js?v=1"></script>
   <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./owner-cheats.js?v=2"></script>
+  <script src="./shared/amal-owner-powers.js?v=24"></script>
   <script src="./shared/amal-device.js?v=8"></script>
+  <style>
+    /* Способности командира — сверху, крупно */
+    #commander-powers {
+      margin: 0 0 14px; padding: 14px; border-radius: 18px;
+      background: linear-gradient(145deg, #111827, #1f2937);
+      border: 2px solid #fbbf24; color: #fff7ed;
+    }
+    #commander-powers h2 { margin: 0 0 4px; font-size: 1.05rem; color: #fbbf24; }
+    #commander-powers .cp-sub { margin: 0 0 10px; font-size: 12px; font-weight: 700; opacity: .85; }
+    #commander-powers .cp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #commander-powers button {
+      border: 0; border-radius: 12px; padding: 12px 10px; font: 800 13px inherit;
+      cursor: pointer; background: rgba(255,255,255,.12); color: #fff; text-align: left;
+    }
+    #commander-powers button.primary { background: linear-gradient(135deg,#34d399,#059669); color:#052e1c; grid-column: 1/-1; text-align:center; }
+    #commander-powers button.max { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#111; grid-column: 1/-1; text-align:center; }
+    #amal-powers-fab { top: 12px !important; bottom: auto !important; right: 12px !important; }
+    #amal-powers-panel { top: 58px !important; bottom: auto !important; right: 12px !important; max-height: min(68vh, 520px); }
+  </style>
 </head>
 <body>
   <!-- Замок убран: зашёл = как будто QR уже отсканирован -->
@@ -44,6 +64,11 @@
     </nav>
 
     <section class="panel on" id="panel-home">
+      <div id="commander-powers" hidden>
+        <h2>⚡ Способности командира</h2>
+        <p class="cp-sub">Это не готовые фразы. Жми кнопки — настоящие силы хозяина. Панель ⚡ тоже справа сверху.</p>
+        <div class="cp-grid" id="commander-powers-grid"></div>
+      </div>
       <p class="tip">💜 Закрытая команда · ссылка от Амаля (QR — только чтобы распечатать друзьям)</p>
       <div id="owner-links-box" class="owner-links-box" hidden>
         <p class="tip" style="margin-bottom:8px">👑 Только на <b>этом</b> компьютере — твои ссылки и способности. На чужих телефонах этого блока нет.</p>
@@ -98,9 +123,9 @@
   </div>
 
   <script src="./shared/amal-hub-back.js?v=1"></script>
-  <script src="./shared/amal-hub-data.js?v=7"></script>
+  <script src="./shared/amal-hub-data.js?v=8"></script>
   <script src="./shared/amal-device-switcher.js?v=4"></script>
-  <script src="./shared/amal-friends-net.js?v=10"></script>
+  <script src="./shared/amal-friends-net.js?v=11"></script>
   <script src="./shared/amal-chat-phrases.js?v=1"></script>
   <script>
     (function () {
@@ -122,6 +147,31 @@
           if (tag) tag.textContent = "👑 Амаль — админ на этом Chrome · без QR";
           var box = document.getElementById("owner-links-box");
           if (box) box.hidden = false;
+          var cp = document.getElementById("commander-powers");
+          var grid = document.getElementById("commander-powers-grid");
+          if (cp && grid && window.AmalOwnerPowers) {
+            cp.hidden = false;
+            var pack = AmalOwnerPowers.packFor
+              ? AmalOwnerPowers.packFor("friends")
+              : null;
+            var buttons = (pack && pack.buttons) || [
+              { id: "fr-unban-me", label: "🛡️ Снять бан с Амаля", cls: "primary" },
+              { id: "fr-clear", label: "🧹 Очистить чат" },
+              { id: "owner-legend", label: "👑 Режим легенды", cls: "max" },
+              { id: "fr-hits", label: "🔥 Папка хитов" },
+              { id: "fr-links", label: "🔗 Мои ссылки" },
+              { id: "max", label: "⚡ ВСЁ НА МАКС", cls: "max" },
+            ];
+            grid.innerHTML = buttons.map(function (b) {
+              return '<button type="button" class="' + (b.cls || "") + '" data-cmd="' + b.id + '">' + b.label + "</button>";
+            }).join("");
+            grid.onclick = function (e) {
+              var btn = e.target.closest("button[data-cmd]");
+              if (!btn) return;
+              if (AmalOwnerPowers.runAbility) AmalOwnerPowers.runAbility(btn.getAttribute("data-cmd"));
+            };
+            if (AmalFriendsNet.clearOwnerBan) AmalFriendsNet.clearOwnerBan();
+          }
         }
         AmalDevice.setHub("friends");
         AmalDevice.remember(AmalDevice.detect(), "friends");

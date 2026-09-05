@@ -258,6 +258,13 @@
   }
 
   function banUntil(name) {
+    if (isOwnerNick(name)) {
+      if (modState.bans[nickKey(name)]) {
+        delete modState.bans[nickKey(name)];
+        saveModState();
+      }
+      return 0;
+    }
     var b = modState.bans[nickKey(name)];
     if (!b || !b.until) return 0;
     if (Date.now() >= b.until) {
@@ -266,6 +273,17 @@
       return 0;
     }
     return b.until;
+  }
+
+  function clearOwnerBans() {
+    var changed = false;
+    Object.keys(modState.bans || {}).forEach(function (k) {
+      if (isOwnerNick(k)) {
+        delete modState.bans[k];
+        changed = true;
+      }
+    });
+    if (changed) saveModState();
   }
 
   function warnCount(name) {
@@ -299,6 +317,10 @@
       if (localStorage.getItem(STORE_OWNER) === "1") isOwner = true;
     } catch (_) {}
     isOwner = isOwner || OWNER_NICKS.indexOf(n) >= 0;
+    try {
+      if (global.AmalOwnerSession && AmalOwnerSession.isOwner && AmalOwnerSession.isOwner()) isOwner = true;
+    } catch (_) {}
+    if (isOwner) clearOwnerBans();
     return isOwner;
   }
 
@@ -1114,6 +1136,16 @@
     setMyPower: setMyPower,
     collectFriend: collectFriend,
     getBook: loadBook,
+    clearOwnerBan: function () {
+      clearOwnerBans();
+      OWNER_NICKS.forEach(function (n) {
+        delete modState.bans[nickKey(n)];
+        delete modState.warns[nickKey(n)];
+      });
+      saveModState();
+      if (sendMod) sendMod({ type: "unban", target: nick() || "Амаль", by: nick() || "Амаль", t: Date.now() });
+      renderModPanel();
+    },
 
     /** Хозяин: обнулить всю переписку */
     clearChat: function () {
