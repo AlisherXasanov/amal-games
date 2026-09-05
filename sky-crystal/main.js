@@ -207,6 +207,26 @@ const player = makePlayer();
 const vel = new THREE.Vector3();
 let onGround = false;
 let walkPhase = 0;
+let coyote = 0;
+let jumpBuf = 0;
+
+// Трейл за игроком
+const trail = [];
+const TRAIL_N = 18;
+for (let i = 0; i < TRAIL_N; i++) {
+  const p = new THREE.Mesh(
+    new THREE.SphereGeometry(0.12, 8, 6),
+    new THREE.MeshBasicMaterial({
+      color: 0x67e8f9,
+      transparent: true,
+      opacity: 0.35 * (1 - i / TRAIL_N),
+    })
+  );
+  p.visible = false;
+  scene.add(p);
+  trail.push({ mesh: p, life: 0 });
+}
+let trailTimer = 0;
 
 const platforms = [];
 const crystals = [];
@@ -365,45 +385,46 @@ function addFinish(x, y, z) {
   return { portal, swirl, x, y: y + 1.8, z };
 }
 
-// —— Уровень: стартовый большой остров ——
-addIsland({ x: 0, y: 0, z: 0, w: 10, h: 0.6, d: 10, color: 0x4ade80, rock: 0x57534e, shape: "round", trees: 4 });
+// —— Уровень: короткие прыжки, широкие острова (проходимо) ——
+// Шаг по Z ≈ 6–7 при платформе 4–5 → щель ~2 м, прыжок лёгкий
+addIsland({ x: 0, y: 0, z: 0, w: 11, h: 0.6, d: 11, color: 0x4ade80, rock: 0x57534e, shape: "round", trees: 3 });
 addCheckpoint(0, 0, 0, 0);
 
-addIsland({ x: 0, y: 0.8, z: 11, w: 3.6, h: 0.45, d: 3.6, color: 0x86efac, shape: "round" });
-addIsland({ x: 4.2, y: 1.8, z: 18, w: 3.4, h: 0.45, d: 3.4, color: 0x4ade80, shape: "hex" });
-addIsland({ x: -3.2, y: 2.8, z: 25, w: 4, h: 0.5, d: 4, color: 0x22c55e, shape: "round", trees: 1 });
-addCrystal(4.2, 2.7, 18);
-addCrystal(-3.2, 3.8, 25);
+addIsland({ x: 0, y: 0.4, z: 9, w: 5.5, h: 0.5, d: 5.5, color: 0x86efac, shape: "round" });
+addCrystal(0, 1.5, 9);
 
-addIsland({ x: 1.5, y: 3.8, z: 34, w: 7, h: 0.55, d: 5.5, color: 0x4ade80, rock: 0x78716c, trees: 2 });
-addCheckpoint(1.5, 3.8, 34, 1);
-addCrystal(-0.5, 4.9, 33);
-addCrystal(3.5, 4.9, 35);
+addIsland({ x: 1.2, y: 0.9, z: 17, w: 5.2, h: 0.5, d: 5.2, color: 0x4ade80, shape: "hex" });
+addCrystal(1.2, 2.0, 17);
 
-addIsland({ x: 8, y: 5, z: 41, w: 3, h: 0.4, d: 3, color: 0x86efac, shape: "hex" });
-addIsland({ x: 13, y: 6.2, z: 48, w: 3.2, h: 0.4, d: 3.2, color: 0x4ade80, shape: "round" });
-addIsland({ x: 10, y: 7.6, z: 56, w: 5.5, h: 0.5, d: 5.5, color: 0x22c55e, shape: "hex", trees: 2 });
-addCrystal(8, 5.9, 41);
-addCrystal(13, 7.2, 48);
-addCrystal(10, 8.7, 56);
+addIsland({ x: -1, y: 1.4, z: 25, w: 5.5, h: 0.5, d: 5.5, color: 0x22c55e, shape: "round", trees: 1 });
+addCheckpoint(-1, 1.4, 25, 1);
+addCrystal(-1, 2.5, 25);
 
-addIsland({ x: 5, y: 8.6, z: 64, w: 3.2, h: 0.4, d: 3.2, color: 0x86efac });
-addIsland({ x: 0, y: 9.8, z: 72, w: 3.5, h: 0.45, d: 3.5, color: 0x4ade80, shape: "round" });
-addIsland({ x: -5.5, y: 11.2, z: 81, w: 7, h: 0.55, d: 7, color: 0x16a34a, rock: 0x44403c, shape: "round", trees: 3 });
-addCheckpoint(-5.5, 11.2, 81, 2);
-addCrystal(5, 9.6, 64);
-addCrystal(0, 10.9, 72);
-addCrystal(-7.5, 12.4, 80);
-addCrystal(-3.5, 12.4, 82.5);
+addIsland({ x: 0.5, y: 1.9, z: 33, w: 5, h: 0.5, d: 5, color: 0x86efac, shape: "round" });
+addCrystal(0.5, 3.0, 33);
 
-addIsland({ x: -10, y: 12.4, z: 90, w: 3, h: 0.4, d: 3, color: 0x86efac, shape: "hex" });
-addIsland({ x: -5.5, y: 13.8, z: 98, w: 3.4, h: 0.4, d: 3.4, color: 0x4ade80, shape: "round" });
-addIsland({ x: -1, y: 15.2, z: 106, w: 3.6, h: 0.45, d: 3.6, color: 0x22c55e, shape: "hex" });
-addCrystal(-10, 13.4, 90);
-addCrystal(-1, 16.2, 106);
+addIsland({ x: 2, y: 2.4, z: 41, w: 5.2, h: 0.5, d: 5.2, color: 0x4ade80, shape: "hex" });
+addCrystal(2, 3.5, 41);
 
-const finish = addFinish(3, 16.6, 116);
-addCrystal(3, 18, 116);
+addIsland({ x: 0, y: 2.9, z: 49, w: 6.5, h: 0.55, d: 6.5, color: 0x22c55e, shape: "round", trees: 2 });
+addCheckpoint(0, 2.9, 49, 2);
+addCrystal(-1.5, 4.1, 48);
+addCrystal(1.5, 4.1, 50);
+
+addIsland({ x: -1.5, y: 3.4, z: 57, w: 5, h: 0.5, d: 5, color: 0x86efac, shape: "round" });
+addCrystal(-1.5, 4.5, 57);
+
+addIsland({ x: 0.8, y: 3.9, z: 65, w: 5.2, h: 0.5, d: 5.2, color: 0x4ade80, shape: "hex" });
+addCrystal(0.8, 5.0, 65);
+
+addIsland({ x: 0, y: 4.5, z: 73, w: 6, h: 0.55, d: 6, color: 0x16a34a, shape: "round", trees: 2 });
+addCrystal(0, 5.7, 73);
+
+addIsland({ x: 1, y: 5.0, z: 81, w: 5.5, h: 0.5, d: 5.5, color: 0x86efac, shape: "round" });
+addCrystal(1, 6.1, 81);
+
+const finish = addFinish(0, 5.6, 90);
+addCrystal(0, 7.0, 90);
 
 document.getElementById("crystals-max").textContent = String(crystals.length);
 
