@@ -157,6 +157,14 @@
   if (ownerFromUrl() || thisPcLooksLikeOwner()) markOwner();
   isOwner();
 
+  // На домашнем ПК способности держатся крепче (каждый заход заново закрепляет)
+  try {
+    if (thisPcLooksLikeOwner()) {
+      markOwner();
+      markFriendsAccess();
+    }
+  } catch (_) {}
+
   global.AmalOwnerSession = {
     isOwner: isOwner,
     markOwner: markOwner,

@@ -6,9 +6,9 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=6" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=7" />
   <script src="./shared/amal-lite-ui.js?v=1"></script>
-  <script src="./shared/amal-owner-session.js?v=3"></script>
+  <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./owner-cheats.js?v=2"></script>
   <script src="./shared/amal-device.js?v=8"></script>
 </head>
@@ -45,6 +45,15 @@
 
     <section class="panel on" id="panel-home">
       <p class="tip">💜 Закрытая команда · ссылка от Амаля (QR — только чтобы распечатать друзьям)</p>
+      <div id="owner-links-box" class="owner-links-box" hidden>
+        <p class="tip" style="margin-bottom:8px">👑 Только на <b>этом</b> компьютере — твои ссылки и способности. На чужих телефонах этого блока нет.</p>
+        <div class="cat-grid">
+          <a class="cat-btn" href="my-links.html" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#db2777)"><span>🔗</span>Мои ссылки · доступ</a>
+          <a class="cat-btn" href="friends.html?v=8&stay=1&code=amal-star-friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#059669,#0d9488)"><span>👑</span>Включить админку</a>
+          <a class="cat-btn" href="youtube-free/?v=50&from=friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотри (с админкой)</a>
+          <a class="cat-btn" href="go.html?v=2&exclusive=1&code=amal-star-friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#4f46e5,#6366f1)"><span>📱</span>Вход с телефона</a>
+        </div>
+      </div>
       <div class="cat-grid">
         <a class="cat-btn" href="milashki/?v=7&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки — играть!</a>
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзив</button>
@@ -80,6 +89,7 @@
     </section>
 
     <div class="bottom-links">
+      <a href="my-links.html">🔗 Мои ссылки</a>
       <a href="meme-channel.html?v=11&from=friends&stay=1">😂 Мемы</a>
       <a href="school-party/?v=9&stay=1">🏫 Клуб</a>
       <a href="milashki/?v=7&from=friends">🐣 Милашки</a>
@@ -109,6 +119,8 @@
             } catch (_) {}
           }
           if (tag) tag.textContent = "👑 Амаль — админ на этом Chrome · без QR";
+          var box = document.getElementById("owner-links-box");
+          if (box) box.hidden = false;
         }
         AmalDevice.setHub("friends");
         AmalDevice.remember(AmalDevice.detect(), "friends");
@@ -117,6 +129,10 @@
         AmalFriendsNet.init();
         AmalFriendsNet.mountChat("friends-chat-root");
         if (window.AmalChatPhrases) AmalChatPhrases.init("friends-chat-root");
+        if (location.hash === "#chat") {
+          var chatTab = document.querySelector('.tab[data-tab="chat"]');
+          if (chatTab) chatTab.click();
+        }
         document.getElementById("hub-root").addEventListener("click", function (e) {
           var a = e.target.closest("a.game-card");
           if (a && window.AmalFriendsNet) {

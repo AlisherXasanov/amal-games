@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🔗 Мои ссылки · Амаль</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#7c3aed" />
+  <script src="./shared/amal-owner-session.js?v=4"></script>
+  <script src="./owner-cheats.js?v=2"></script>
+  <style>
+    :root {
+      --bg: #1a1030;
+      --card: #2a1848;
+      --line: #7c3aed;
+      --text: #f5e9ff;
+      --muted: #c4b5fd;
+      --ok: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #4c1d95, transparent),
+        radial-gradient(900px 500px at 100% 10%, #9d174d55, transparent), var(--bg);
+      color: var(--text); padding: 20px 16px 40px;
+    }
+    .wrap { max-width: 560px; margin: 0 auto; }
+    h1 { font-size: 1.45rem; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-weight: 700; font-size: 13px; margin: 0 0 16px; line-height: 1.4; }
+    .badge {
+      display: inline-block; background: #065f46; color: #ecfdf5; font-weight: 800;
+      font-size: 12px; padding: 6px 10px; border-radius: 999px; margin-bottom: 14px;
+    }
+    .badge.off { background: #7f1d1d; color: #fee2e2; }
+    .list { display: grid; gap: 10px; }
+    a.card {
+      display: block; text-decoration: none; color: inherit; background: var(--card);
+      border: 2px solid #5b21b6; border-radius: 16px; padding: 14px 16px;
+    }
+    a.card:hover { border-color: #c084fc; }
+    a.card .t { font-weight: 800; font-size: 15px; }
+    a.card .u { display: block; margin-top: 4px; font-size: 11px; color: var(--muted); word-break: break-all; }
+    .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    button.copy {
+      border: 0; border-radius: 10px; padding: 7px 10px; font: 800 12px inherit;
+      cursor: pointer; background: #7c3aed; color: #fff;
+    }
+    .note {
+      margin-top: 18px; background: #312e81; border-radius: 14px; padding: 12px 14px;
+      font-size: 13px; font-weight: 700; line-height: 1.45; color: #e0e7ff;
+    }
+    .back { margin-top: 16px; }
+    .back a { color: #f0abfc; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔗 Мои ссылки</h1>
+    <p class="sub">Только на этом компьютере · быстрый доступ к сайту с админкой</p>
+    <div id="owner-badge" class="badge off">⏳ Проверяю…</div>
+    <div class="list" id="links"></div>
+    <div class="note">
+      Способности (админка, панель, фразы) видны <b>только у тебя</b> на этом Chrome.
+      На чужих телефонах их нет — так и должно быть. Если пропали — открой любую ссылку ниже с <b>owner=amal</b>.
+    </div>
+    <p class="back"><a href="friends.html?v=8&stay=1&code=amal-star-friends&owner=amal">← Эксклюзив</a></p>
+  </div>
+  <script>
+    (function () {
+      if (window.AmalOwnerSession) {
+        AmalOwnerSession.admitLikeQrScanned();
+        AmalOwnerSession.syncOwnerCheats();
+        AmalOwnerSession.markOwner();
+      }
+      var ok = window.AmalOwnerSession && AmalOwnerSession.isOwner();
+      var badge = document.getElementById("owner-badge");
+      badge.className = "badge" + (ok ? "" : " off");
+      badge.textContent = ok
+        ? "👑 Способности включены на этом ПК"
+        : "⚠️ Нажми любую ссылку с owner=amal";
+
+      var base = location.origin + location.pathname.replace(/[^/]+$/, "");
+      var items = [
+        { t: "⭐ Эксклюзив (главный)", path: "friends.html?v=8&stay=1&code=amal-star-friends&owner=amal" },
+        { t: "💬 Чат друзей", path: "friends.html?v=8&stay=1&code=amal-star-friends&owner=amal#chat" },
+        { t: "▶ Смотри · Ютуб", path: "youtube-free/?v=50&from=friends&owner=amal" },
+        { t: "🐣 Милашки", path: "milashki/?v=7&from=friends&owner=amal" },
+        { t: "🏫 Клуб друзей", path: "school-party/?v=9&stay=1&owner=amal" },
+        { t: "😂 Мемы", path: "meme-channel.html?v=11&from=friends&stay=1&owner=amal" },
+        { t: "🏠 Обычный сайт (ПК)", path: "?stay=1&owner=amal" },
+        { t: "📱 Выбор версии / QR вход", path: "go.html?v=2&exclusive=1&code=amal-star-friends&owner=amal" },
+        { t: "🖨️ QR для друзей", path: "qr-friends.html" },
+        { t: "🖨️ QR класс", path: "qr-school.html" },
+      ];
+
+      var list = document.getElementById("links");
+      items.forEach(function (it) {
+        var full = base + it.path;
+        var a = document.createElement("a");
+        a.className = "card";
+        a.href = it.path;
+        a.innerHTML = '<span class="t">' + it.t + '</span><span class="u">' + full + "</span>";
+        var row = document.createElement("div");
+        row.className = "row";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "copy";
+        btn.textContent = "📋 Копировать";
+        btn.onclick = function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            navigator.clipboard.writeText(full).then(function () {
+              btn.textContent = "✅ Скопировано";
+              setTimeout(function () { btn.textContent = "📋 Копировать"; }, 1200);
+            });
+          } catch (_) {
+            prompt("Скопируй ссылку:", full);
+          }
+        };
+        row.appendChild(btn);
+        a.appendChild(row);
+        // prevent card navigation when clicking copy - copy is inside a, so we use stopPropagation
+        list.appendChild(a);
+        // restructure: put copy outside? Actually stopPropagation on button click should work if we don't use preventDefault on navigation... 
+        // Better: make card a div with link + button
+      });
+
+      // Rebuild cleaner without nested button-in-anchor issues
+      list.innerHTML = "";
+      items.forEach(function (it) {
+        var full = base + it.path;
+        var card = document.createElement("div");
+        card.className = "card";
+        card.style.cursor = "default";
+        card.innerHTML =
+          '<a class="t" href="' + it.path + '" style="color:inherit;text-decoration:none;display:block">' + it.t + "</a>" +
+          '<span class="u">' + full + "</span>";
+        var row = document.createElement("div");
+        row.className = "row";
+        var open = document.createElement("a");
+        open.href = it.path;
+        open.className = "copy";
+        open.style.textDecoration = "none";
+        open.textContent = "Открыть";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "copy";
+        btn.style.background = "#db2777";
+        btn.textContent = "📋 Копировать";
+        btn.onclick = function () {
+          try {
+            navigator.clipboard.writeText(full).then(function () {
+              btn.textContent = "✅ Скопировано";
+              setTimeout(function () { btn.textContent = "📋 Копировать"; }, 1200);
+            });
+          } catch (_) {
+            prompt("Скопируй ссылку:", full);
+          }
+        };
+        row.appendChild(open);
+        row.appendChild(btn);
+        card.appendChild(row);
+        list.appendChild(card);
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -251,6 +251,12 @@ body {
 }
 .phrase-btn:active { background: #f5d0fe; }
 
+.owner-links-box {
+  margin-bottom: 12px; padding: 12px; border-radius: 16px;
+  background: linear-gradient(145deg, #ede9fe, #fce7f3);
+  border: 2px solid #a78bfa;
+}
+
 @media (min-width: 700px) {
   .game-grid { grid-template-columns: repeat(3, 1fr); }
   .cat-grid-4 { grid-template-columns: repeat(4, 1fr); }
