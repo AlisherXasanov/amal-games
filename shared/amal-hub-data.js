@@ -30,6 +30,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "🧠", name: "Steal a Brainrot", path: "steal-brainrot/", note: "воруй брейнротов · 3D" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🔥", name: "Хиты · папка", path: "hits/", note: "хиты + умный" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
