@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Робот Эмо · друг | Игры Амаля</title>
+  <meta name="description" content="Разговаривай с роботом Эмо, играй с ним. Скажи «Стевич Ира» — станет твоим помощником." />
+  <meta name="theme-color" content="#0b1220" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Назад</a>
+
+  <div class="desk">
+    <header class="top">
+      <div>
+        <h1>Робот Эмо</h1>
+        <p class="sub" id="modeLabel">друг · скажи «Стевич Ира» → помощник</p>
+      </div>
+      <div class="mood-pill" id="moodPill">😊 спокойный</div>
+    </header>
+
+    <div class="stage">
+      <div class="robot" id="robot">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="head">
+          <div class="face-screen" id="face">
+            <canvas id="eyes" width="280" height="160" aria-label="Личико Эмо"></canvas>
+          </div>
+        </div>
+        <div class="body">
+          <div class="chest-light" id="chest"></div>
+        </div>
+        <div class="leg left"></div>
+        <div class="leg right"></div>
+        <div class="shadow"></div>
+      </div>
+
+      <div class="bubble" id="bubble">Привет! Я Эмо. Погладь меня, сыграй или поговори.</div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="act" data-act="pet">🫶 Погладить</button>
+      <button type="button" class="act" data-act="dance">💃 Танец</button>
+      <button type="button" class="act" data-act="game">🎮 Игра</button>
+      <button type="button" class="act" data-act="sleep">😴 Спать</button>
+      <button type="button" class="act mic" id="btnMic">🎤 Говорить</button>
+    </div>
+
+    <div class="mini" id="miniGame" hidden>
+      <p class="mini-title" id="miniTitle">Поймай сердечки!</p>
+      <div class="mini-field" id="miniField"></div>
+      <p class="mini-score">Очки: <b id="miniScore">0</b> · <button type="button" id="miniClose">Закрыть</button></p>
+    </div>
+
+    <div class="chat">
+      <div class="log" id="log" aria-live="polite"></div>
+      <form id="form" class="composer">
+        <input id="input" type="text" autocomplete="off" placeholder="Напиши или скажи… (Стевич Ира = помощник)" maxlength="200" />
+        <button type="submit">➤</button>
+      </form>
+      <p class="hint">Голос работает в Chrome / Edge. Можно и текстом.</p>
+    </div>
+  </div>
+
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
