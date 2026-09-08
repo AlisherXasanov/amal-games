@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Робот Эмо · друг | Игры Амаля</title>
-  <meta name="description" content="Разговаривай с роботом Эмо, играй с ним. Скажи «Стевич Ира» — станет твоим помощником." />
+  <meta name="description" content="Говори с Эмо, микрофон, игры прямо здесь — змейка и 3D. Без ухода по ссылкам." />
   <meta name="theme-color" content="#0b1220" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=3" />
 </head>
 <body>
   <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Назад</a>
@@ -19,7 +19,7 @@
     <header class="top">
       <div>
         <h1>Робот Эмо</h1>
-        <p class="sub" id="modeLabel">друг · «Стевич Ира» → помощник · «сделай змейку»</p>
+        <p class="sub" id="modeLabel">друг · болтай · «сделай змейку» / «сделай 3D» здесь</p>
       </div>
       <div class="mood-pill" id="moodPill">😊 спокойный</div>
     </header>
@@ -40,8 +40,7 @@
         <div class="leg right"></div>
         <div class="shadow"></div>
       </div>
-
-      <div class="bubble" id="bubble">Привет! Я Эмо. Погладь меня, сыграй или поговори.</div>
+      <div class="bubble" id="bubble">Привет! Я Эмо. Погладь, поговори или скажи «сделай змейку».</div>
     </div>
 
     <div class="actions">
@@ -53,31 +52,37 @@
       <button type="button" class="act mic" id="btnMic">Микрофон</button>
     </div>
 
-    <div class="mini" id="miniGame" hidden>
-      <p class="mini-title" id="miniTitle">Поймай сердечки!</p>
-      <div class="mini-field" id="miniField"></div>
-      <p class="mini-score">Очки: <b id="miniScore">0</b> · <button type="button" id="miniClose">Закрыть</button></p>
+    <div class="play" id="playPanel" hidden>
+      <div class="play-bar">
+        <p class="mini-title" id="playTitle">Игра</p>
+        <div class="play-bar-right">
+          <span>Очки: <b id="playScore">0</b></span>
+          <button type="button" id="playClose">Закрыть</button>
+        </div>
+      </div>
+      <canvas id="playCanvas" width="480" height="320"></canvas>
+      <div class="play-hint" id="playHint">Стрелки / WASD · микрофон работает</div>
+      <div class="touch-pad" id="touchPad" hidden>
+        <span></span><button type="button" data-k="up">▲</button><span></span>
+        <button type="button" data-k="left">◀</button>
+        <button type="button" data-k="down">▼</button>
+        <button type="button" data-k="right">▶</button>
+      </div>
     </div>
 
     <div class="chat">
       <div class="log" id="log" aria-live="polite"></div>
       <form id="form" class="composer">
-        <input id="input" type="text" autocomplete="off" placeholder="Скажи: сделай змейку · Стевич Ира" maxlength="200" />
+        <input id="input" type="text" autocomplete="off" placeholder="Микрофон или текст: сделай змейку / 3D" maxlength="200" />
         <button type="submit">➤</button>
       </form>
-      <p class="hint">Микрофон: Chrome / Edge. Можно писать. Create Lab: змейка, гонка, анимация…</p>
-      <p class="links">
-        <a href="../create-lab/game.html?v=4">Create Lab · игры</a>
-        ·
-        <a href="../create-lab/animate.html?v=4">анимации</a>
-        ·
-        <a href="../create-lab/studio3d.html?v=4">студия 3D</a>
-      </p>
+      <p class="hint">Всё здесь: болтай, проверяй микрофон, играй. Ссылок никуда не кидаю.</p>
     </div>
   </div>
 
-  <script src="../create-lab/catalog.js"></script>
-  <script src="../create-lab/storage.js"></script>
-  <script src="./game.js?v=2"></script>
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./game.js?v=3"></script>
 </body>
 </html>
