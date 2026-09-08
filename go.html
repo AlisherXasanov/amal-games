@@ -6,7 +6,7 @@
   <title>Игры Амаля — выбери версию</title>
   <meta name="theme-color" content="#0d6e5f" />
   <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=1" />
-  <script src="./shared/amal-device.js?v=3"></script>
+  <script src="./shared/amal-device.js?v=9"></script>
   <style>
     body { display: grid; place-items: center; padding: 20px; }
     .picker {
@@ -46,17 +46,35 @@
       var q = new URLSearchParams(location.search);
       var exclusive = q.get("exclusive") === "1" || q.get("friends") === "1";
       var code = q.get("code") || "";
-      if (exclusive && code === "amal-star-friends") {
+      if (window.AmalDevice && AmalDevice.admitFriendsCode) {
+        AmalDevice.admitFriendsCode(code);
+      } else if (exclusive && (code === "amal-star-friends" || /^amal-star-admin-[1-5]$/.test(code))) {
         try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
+        if (/^amal-star-admin-[1-5]$/.test(code)) {
+          try {
+            localStorage.setItem("amal-friends-star-admin-v1", "1");
+            localStorage.setItem("amal-friends-star-admin-id", code.replace("amal-star-admin-", ""));
+            localStorage.setItem("amal-friends-power-v1", "5");
+          } catch (_) {}
+        }
+      }
+      var isStarAdmin = false;
+      try { isStarAdmin = localStorage.getItem("amal-friends-star-admin-v1") === "1"; } catch (_) {}
+      var friendsHref = "./friends.html?v=9&stay=1&code=" + encodeURIComponent(code || "amal-star-friends");
+      if (isStarAdmin || /^amal-star-admin-/.test(code)) {
+        friendsHref += "&admin=1";
       }
       var dev = AmalDevice.detect();
       document.getElementById("guess").textContent =
         "Подсказка: у тебя " + AmalDevice.label(dev) + " — но выбирай сам!";
-
-      // Всегда показывать эксклюзив, даже из обычного QR / телефона
-      var friendsHref = "./friends.html?v=7&stay=1&code=amal-star-friends";
       var items = [
-        { id: "friends", ico: "⭐", name: "⭐ Эксклюзив", sub: "Смотри · чат · игры · админ Азам", href: friendsHref },
+        {
+          id: "friends",
+          ico: isStarAdmin ? "👑" : "⭐",
+          name: isStarAdmin ? "👑 Эксклюзив · АДМИ" : "⭐ Эксклюзив",
+          sub: isStarAdmin ? "для вас · адми · особые силы" : "Смотри · чат · игры · друзья",
+          href: friendsHref,
+        },
         { id: "phone", ico: "📱", name: "Телефон (обычная)", sub: "большие кнопки · вертикально", href: "./phone.html?v=2&stay=1" },
         { id: "tablet", ico: "📟", name: "Планшет / iPad", sub: "средний экран · можно 3D", href: "./tablet.html?v=1&stay=1" },
         { id: "desktop", ico: "💻", name: "Компьютер", sub: "все игры · Bed Wars · 3D", href: "./?stay=1" },

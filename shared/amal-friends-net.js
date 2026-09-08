@@ -326,8 +326,35 @@
 
   function checkAdmin() {
     checkOwner();
-    isAdmin = isOwner || isAdminNick(nick());
+    var star = false;
+    try {
+      star = localStorage.getItem("amal-friends-star-admin-v1") === "1";
+    } catch (_) {}
+    try {
+      if (!star && global.AmalDevice && AmalDevice.isStarAdmin && AmalDevice.isStarAdmin()) star = true;
+    } catch (_) {}
+    try {
+      var q = new URLSearchParams(location.search);
+      var c = q.get("code") || "";
+      if (/^amal-star-admin-[1-5]$/.test(c)) {
+        star = true;
+        localStorage.setItem("amal-friends-star-admin-v1", "1");
+        localStorage.setItem("amal-friends-star-admin-id", c.replace("amal-star-admin-", ""));
+        localStorage.setItem("amal-friends-access-v1", "1");
+        if (!myPower()) setMyPower(5);
+      }
+      if (q.get("admin") === "1") star = true;
+    } catch (_) {}
+    isAdmin = isOwner || isAdminNick(nick()) || star;
     return isAdmin;
+  }
+
+  function isStarAdminUser() {
+    try {
+      return localStorage.getItem("amal-friends-star-admin-v1") === "1";
+    } catch (_) {
+      return false;
+    }
   }
 
   function applyModEvent(ev, fromNet) {
@@ -447,7 +474,7 @@
     }).join("");
     panel.innerHTML =
       "<h3>" + role + " · команды</h3>" +
-      '<p class="mod-hint">Ник <b>Азам</b> = админ. 3 предупреждения → бан 3 дня. Банить Амаля нельзя — бан вернётся админу.</p>' +
+      '<p class="mod-hint">Ник <b>Азам</b> = обычный админ. <b>Особый QR «для вас · адми»</b> = сильнее: бан/варн + легенда + чистка чата. 3 варна → бан 3 дня. Банить Амаля нельзя.</p>' +
       '<label>Кто: <select id="friends-mod-who">' + opts + "</select></label>" +
       '<div class="mod-btns">' +
       '<button type="button" id="friends-mod-warn">⚠️ Предупреждение</button>' +
@@ -1128,6 +1155,7 @@
 
     isOwner: checkOwner,
     isAdmin: checkAdmin,
+    isStarAdmin: isStarAdminUser,
     warnCount: warnCount,
     banUntil: banUntil,
     getVisits: getVisits,
@@ -1147,9 +1175,9 @@
       renderModPanel();
     },
 
-    /** Хозяин: обнулить всю переписку */
+    /** Хозяин или особый QR-адми: обнулить переписку */
     clearChat: function () {
-      if (!checkOwner()) return;
+      if (!checkOwner() && !isStarAdminUser()) return;
       messages = [];
       saveMessages();
       renderMessages();

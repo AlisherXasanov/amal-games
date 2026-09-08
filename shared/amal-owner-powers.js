@@ -735,9 +735,18 @@
       buttons = buttons.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
       quick = quick.filter((b) => !blocked.test(String(b.id || "") + " " + String(b.label || "")));
     }
-    if (isFriend()) {
+    if (isFriend() && !isStarAdmin()) {
       buttons = buttons.filter((b) => !FRIEND_BLOCKED.has(b.id));
       quick = quick.filter((b) => !FRIEND_BLOCKED.has(b.id));
+    }
+    if (isStarAdmin() && !isOwner()) {
+      // Особый QR-адми: сильнее обычного друга, но без волн/сюрпризов хозяина
+      const starOk = new Set([
+        "fr-unban-me", "fr-clear", "fr-clear-visits", "owner-legend",
+        "fr-hits", "fr-links", "fr-watch", "fr-mila", "god", "max",
+      ]);
+      buttons = buttons.filter((b) => starOk.has(b.id));
+      quick = quick.filter((b) => starOk.has(b.id) || b.id === "fr-unban-me" || b.id === "owner-legend");
     }
     return { ...base, buttons, quick };
   }
@@ -785,6 +794,19 @@
     "owner-wave", "owner-secret", "owner-legend", "__hub",
     "surprise-gift", "owner-abuse",
   ]);
+
+  function isStarAdmin() {
+    try {
+      if (localStorage.getItem("amal-friends-star-admin-v1") === "1") return true;
+    } catch (_) {}
+    try {
+      if (global.AmalDevice && AmalDevice.isStarAdmin && AmalDevice.isStarAdmin()) return true;
+    } catch (_) {}
+    try {
+      if (global.AmalFriendsNet && AmalFriendsNet.isStarAdmin && AmalFriendsNet.isStarAdmin()) return true;
+    } catch (_) {}
+    return false;
+  }
 
   function isFriend() {
     if (isGuestMode() || isOwner()) return false;
@@ -1370,6 +1392,7 @@ body.amal-lite-ui #amal-powers-panel.open{display:block!important}
   global.AmalPowers = {
     isOwner,
     isFriend,
+    isStarAdmin,
     isLuckyAdmin,
     canUsePowers,
     canGiveToPlayers,

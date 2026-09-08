@@ -9,6 +9,34 @@
   var STORE_DEV = "amal-device-last-v1";
   var STORE_FRIENDS = "amal-friends-access-v1";
   var FRIENDS_CODE = "amal-star-friends";
+  var STAR_ADMIN_KEY = "amal-friends-star-admin-v1";
+  var STAR_ADMIN_ID = "amal-friends-star-admin-id";
+
+  function isStarAdminCode(code) {
+    return /^amal-star-admin-[1-5]$/.test(String(code || ""));
+  }
+
+  function admitFriendsCode(code) {
+    code = String(code || "");
+    try {
+      if (code === FRIENDS_CODE || isStarAdminCode(code)) {
+        localStorage.setItem(STORE_FRIENDS, "1");
+      }
+      if (isStarAdminCode(code)) {
+        localStorage.setItem(STAR_ADMIN_KEY, "1");
+        localStorage.setItem(STAR_ADMIN_ID, code.replace("amal-star-admin-", ""));
+        localStorage.setItem("amal-friends-power-v1", "5");
+      }
+    } catch (_) {}
+  }
+
+  function isStarAdmin() {
+    try {
+      return localStorage.getItem(STAR_ADMIN_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
 
   function detect() {
     var ua = navigator.userAgent || "";
@@ -172,8 +200,9 @@
       return true;
     }
     var q = query();
-    if (q.get("code") === FRIENDS_CODE) {
-      try { localStorage.setItem(STORE_FRIENDS, "1"); } catch (_) {}
+    var code = q.get("code") || "";
+    if (code === FRIENDS_CODE || isStarAdminCode(code)) {
+      admitFriendsCode(code);
       return true;
     }
     if (q.get("from") === "friends" || q.get("friends") === "1" || q.get("hub") === "friends") {
@@ -196,7 +225,11 @@
     wrongDeviceBanner: wrongDeviceBanner,
     friendsAllowed: friendsAllowed,
     isSiteOwner: isSiteOwner,
+    isStarAdmin: isStarAdmin,
+    admitFriendsCode: admitFriendsCode,
+    isStarAdminCode: isStarAdminCode,
     FRIENDS_CODE: FRIENDS_CODE,
+    STAR_ADMIN_KEY: STAR_ADMIN_KEY,
     STORE_HUB: STORE_HUB,
   };
 })(window);
