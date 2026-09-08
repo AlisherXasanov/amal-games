@@ -72,7 +72,8 @@
     { bg: "radial-gradient(ellipse at top,#0e7490 0%,#083344 50%,#020617 100%)", accent: "#67e8f9", glowL: "#06b6d4", glowR: "#a5f3fc", name: "Лёд" },
   ];
 
-  const DIFF_IDS = ["hard", "extra", "xhard", "mega"];
+  const DIFF_IDS = ["hard"];
+  const DIFF_ALIASES = { hard: "hard", extra: "hard", xhard: "hard", mega: "hard", сложно: "hard" };
 
   // Фон стола (вторично)
   const BG_SKINS = [
@@ -349,10 +350,7 @@
 
   const MINI_GAMES = [
     { id: "classic", name: "Классика", icon: "🧩", desc: "Обычная игра без таймера" },
-    { id: "hard", name: "Hard", icon: "🔥", desc: "Сложнее фигуры + анимации" },
-    { id: "extra", name: "Extra", icon: "💥", desc: "Особые большие фигуры" },
-    { id: "xhard", name: "Extra Hard", icon: "☠️", desc: "Редко мелкие · много монстров" },
-    { id: "mega", name: "Super Mega Hard", icon: "🌋", desc: "Адские фигуры · тема при очистке" },
+    { id: "hard", name: "Сложный", icon: "🔥", desc: "Большие особые фигуры · анимации · смена темы" },
     { id: "blitz", name: "Блиц 60с", icon: "⏱️", desc: "Успей набрать очки за минуту" },
     { id: "zen", name: "Дзен", icon: "🧘", desc: "Без проигрыша — только счёт" },
     { id: "color", name: "Цветолов", icon: "🎯", desc: "Очищай линии с целевым цветом" },
@@ -674,16 +672,14 @@
 
   function diffTier() {
     if (typeof state === "undefined" || !state) return EASY ? -1 : 0;
-    if (state.mode === "mega") return 4;
-    if (state.mode === "xhard") return 3;
-    if (state.mode === "extra") return 2;
-    if (state.mode === "hard") return 1;
+    if (state.mode === "hard" || DIFF_ALIASES[state.mode] === "hard") return 4;
     if (EASY) return -1;
     return 0;
   }
 
   function isDiffMode(mode) {
-    return DIFF_IDS.includes(mode != null ? mode : state?.mode);
+    const m = mode != null ? mode : state?.mode;
+    return m === "hard" || DIFF_ALIASES[m] === "hard";
   }
 
   function activeThemeSkin() {
@@ -978,6 +974,7 @@
   }
 
   function startMini(id) {
+    if (DIFF_ALIASES[id]) id = DIFF_ALIASES[id];
     if (id === "speed3" && !hasOwnedSpeed()) {
       toast("Скорость III — только для гостей «Третьего часа»");
       return;
@@ -1658,11 +1655,11 @@
                   }>Слот ${i + 1}</button>`,
               )
               .join("")}</div>
-            <div class="piece-catalog">${PIECES.map((p) => {
+            <div class="piece-catalog">${[...PIECES, ...HARD_PIECES].map((p) => {
               const sample = { ...p, uid: "preview" };
-              return `<button type="button" class="card piece-card" data-piece-id="${p.id}" title="${p.id}">
+              return `<button type="button" class="card piece-card" data-piece-id="${p.id}" title="${p.id}${p.hard ? " · сложная" : ""}">
                 <div class="piece-card-preview">${pieceHtml(sample, 14)}</div>
-                <div class="piece-card-name">${p.id}</div>
+                <div class="piece-card-name">${p.hard ? "🔥 " : ""}${p.id}</div>
               </button>`;
             }).join("")}</div>
           </div></div>`
@@ -1921,7 +1918,7 @@
         e.stopPropagation();
         if (!isOwner()) return;
         const id = btn.getAttribute("data-piece-id");
-        const def = PIECES.find((p) => p.id === id);
+        const def = [...PIECES, ...HARD_PIECES].find((p) => p.id === id);
         if (!def) return;
         const slot = Math.max(0, Math.min(2, state.pickSlot || 0));
         if (!Array.isArray(state.hand)) state.hand = [null, null, null];
@@ -2046,8 +2043,9 @@
     try {
       const q = new URLSearchParams(location.search);
       const d = q.get("diff") || q.get("mode");
-      if (DIFF_IDS.includes(d)) {
-        startMini(d);
+      const mapped = DIFF_ALIASES[d] || (DIFF_IDS.includes(d) ? d : null);
+      if (mapped) {
+        startMini(mapped);
         return;
       }
     } catch (_) {}

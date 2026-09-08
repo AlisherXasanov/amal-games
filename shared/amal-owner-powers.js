@@ -1263,6 +1263,9 @@ body.amal-lite-ui #amal-powers-panel.open{display:block!important}
     panel.innerHTML =
       `<h3>⚡ ${pack.title} <span class="amal-powers-tag">${isFriend() ? "друг ⭐" : "эта игра"}</span></h3>` +
       `<div class="sub">${pack.subtitle}</div>` +
+      (isOwner()
+        ? `<div class="sub" style="margin:0 0 10px;padding:8px 10px;border-radius:12px;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);color:#e0f2fe">🤖 Искра · в чате друзей пиши <b>/искра</b> · патруль <b>/патруль</b> · проверка <b>/проверка</b></div>`
+        : "") +
       `<div id="amal-powers-grid">` +
       giveBlock +
       (pack.buttons || [])

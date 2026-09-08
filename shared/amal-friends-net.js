@@ -47,9 +47,21 @@
   var STORE_MSGS = "amal-friends-msgs-v1";
   var STORE_VISITS = "amal-friends-visits-v1";
   var STORE_ALERT_PERM = "amal-friends-alert-asked-v1";
+  var STORE_VIOLATIONS = "amal-friends-violations-v1";
+  var STORE_RULES = "amal-friends-rules-v1";
+  var STORE_PATROL = "amal-friends-patrol-v1";
   var messages = loadMessages();
   var peers = {};
   var alertDock = null;
+  var patrolTimer = null;
+  var lastOwnerActive = Date.now();
+  var IDLE_MS = 3 * 60 * 1000; // 3 мин без хозяина → Искра проверяет
+  var DEFAULT_RULES = [
+    "Не банить Амаля",
+    "Не грубить в чате",
+    "Писать своё настоящее имя",
+    "Не спамить",
+  ];
 
   function loadMessages() {
     try {
@@ -248,6 +260,186 @@
     try { localStorage.setItem(STORE_MOD, JSON.stringify(modState)); } catch (_) {}
   }
 
+  function loadRules() {
+    try {
+      var raw = localStorage.getItem(STORE_RULES);
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (Array.isArray(arr) && arr.length) return arr;
+      }
+    } catch (_) {}
+    return DEFAULT_RULES.slice();
+  }
+
+  function saveRules(arr) {
+    try { localStorage.setItem(STORE_RULES, JSON.stringify(arr)); } catch (_) {}
+  }
+
+  function loadViolations() {
+    try {
+      var raw = localStorage.getItem(STORE_VIOLATIONS);
+      if (raw) {
+        var arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return arr.slice(-40);
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  function saveViolations(arr) {
+    try { localStorage.setItem(STORE_VIOLATIONS, JSON.stringify(arr.slice(-40))); } catch (_) {}
+  }
+
+  function logViolation(who, what, by) {
+    var list = loadViolations();
+    list.push({ who: who || "?", what: what || "нарушение", by: by || "?", t: Date.now() });
+    saveViolations(list);
+  }
+
+  /** Сообщение только хозяину в чате (не в сеть) */
+  function sparkSay(text) {
+    addMessage({ name: "🤖 Искра", text: String(text || ""), t: Date.now(), private: true });
+  }
+
+  function patrolOn() {
+    try {
+      return localStorage.getItem(STORE_PATROL) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setPatrol(on) {
+    try {
+      localStorage.setItem(STORE_PATROL, on ? "1" : "0");
+    } catch (_) {}
+  }
+
+  function runSparkCheck(reason) {
+    if (!checkOwner() && !isStarAdminUser()) return;
+    var rules = loadRules();
+    var viol = loadViolations();
+    var recent = viol.filter(function (v) {
+      return Date.now() - (v.t || 0) < 24 * 60 * 60 * 1000;
+    });
+    var bans = Object.keys(modState.bans || {}).filter(function (k) {
+      return modState.bans[k] && modState.bans[k].until > Date.now();
+    });
+    var warns = Object.keys(modState.warns || {}).filter(function (k) {
+      return (modState.warns[k] || 0) > 0;
+    });
+    var lines = [];
+    lines.push(reason === "idle" ? "Ты отошёл — я сама проверила порядок." : "Проверка по твоей команде.");
+    lines.push("Правил: " + rules.length + " · активных банов: " + bans.length + " · варнов: " + warns.length);
+    if (recent.length) {
+      lines.push("За сутки нарушали:");
+      recent.slice(-6).forEach(function (v) {
+        var when = new Date(v.t);
+        var hh = when.getHours() + ":" + (when.getMinutes() < 10 ? "0" : "") + when.getMinutes();
+        lines.push("· " + hh + " «" + v.who + "» — " + v.what + (v.by ? " (от " + v.by + ")" : ""));
+      });
+    } else {
+      lines.push("За сутки нарушений не нашла — порядок ок.");
+    }
+    if (bans.length) {
+      lines.push("Сейчас в бане: " + bans.map(function (k) {
+        return "«" + (modState.bans[k].nick || k) + "»";
+      }).join(", "));
+    }
+    sparkSay(lines.join("\n"));
+  }
+
+  function startPatrolLoop() {
+    if (patrolTimer) clearInterval(patrolTimer);
+    patrolTimer = setInterval(function () {
+      if (!patrolOn()) return;
+      if (!checkOwner() && !isStarAdminUser()) return;
+      if (Date.now() - lastOwnerActive < IDLE_MS) return;
+      // не чаще раза в IDLE_MS
+      if (startPatrolLoop._last && Date.now() - startPatrolLoop._last < IDLE_MS) return;
+      startPatrolLoop._last = Date.now();
+      runSparkCheck("idle");
+    }, 30000);
+  }
+
+  function handleOwnerCommand(text) {
+    if (!checkOwner() && !isStarAdminUser()) return false;
+    var t = String(text || "").trim();
+    var low = t.toLowerCase();
+    if (!/^\/|^искра\b|^проверка\b|^история\b|^правила\b|^патруль\b|^смотреть\b|^стоп\b/.test(low)) {
+      // также /команды
+      if (!/^\/(искра|проверка|история|правила|патруль|смотреть|стоп|команды|help)/i.test(t)) return false;
+    }
+    lastOwnerActive = Date.now();
+    if (/^\/?(искра|команды|help)\b/i.test(low) || low === "искра") {
+      sparkSay(
+        "Команды Искры (пиши в чат):\n" +
+          "/проверка — проверить порядок сейчас\n" +
+          "/история — кто нарушал\n" +
+          "/правила — список правил\n" +
+          "/правило текст — добавить правило\n" +
+          "/патруль — включить авто-проверку, когда ты отошёл\n" +
+          "/стоп — выключить патруль"
+      );
+      return true;
+    }
+    if (/^\/?проверка\b/i.test(low)) {
+      runSparkCheck("cmd");
+      return true;
+    }
+    if (/^\/?история\b/i.test(low)) {
+      var list = loadViolations();
+      if (!list.length) {
+        sparkSay("История пуста — нарушений ещё не записывала.");
+        return true;
+      }
+      sparkSay(
+        "История нарушений:\n" +
+          list
+            .slice(-12)
+            .map(function (v) {
+              var d = new Date(v.t);
+              return (
+                "· " +
+                d.getDate() +
+                "." +
+                (d.getMonth() + 1) +
+                " «" +
+                v.who +
+                "» — " +
+                v.what
+              );
+            })
+            .join("\n")
+      );
+      return true;
+    }
+    if (/^\/?правила\b/i.test(low) && !/^\/?правило\b/i.test(low)) {
+      sparkSay("Правила:\n" + loadRules().map(function (r, i) { return i + 1 + ". " + r; }).join("\n"));
+      return true;
+    }
+    var addRule = t.match(/^\/?правило\s+(.+)/i);
+    if (addRule) {
+      var rules = loadRules();
+      rules.push(String(addRule[1]).slice(0, 80));
+      saveRules(rules);
+      sparkSay("Добавила правило: «" + addRule[1].slice(0, 80) + "»");
+      return true;
+    }
+    if (/^\/?(патруль|смотреть)\b/i.test(low)) {
+      setPatrol(true);
+      startPatrolLoop();
+      sparkSay("Патруль ВКЛ. Если ты не пишешь ~3 минуты — сама проверю порядок и напишу тебе сюда.");
+      return true;
+    }
+    if (/^\/?стоп\b/i.test(low)) {
+      setPatrol(false);
+      sparkSay("Патруль выключен. Можешь снова /проверка когда захочешь.");
+      return true;
+    }
+    return false;
+  }
+
   function nickKey(n) {
     return String(n || "").trim().toLowerCase();
   }
@@ -378,28 +570,29 @@
           reason: "3 предупреждения",
         };
         modState.warns[wk] = 0;
+        logViolation(ev.target, "3 предупреждения → бан 3 дня", ev.by);
         addMessage({
-          name: "💀",
-          text: "ПОЗОР! «" + ev.target + "» — 3 предупреждения → бан на 3 дня (от " + (ev.by || "?") + ")",
+          name: "⛔",
+          text: "«" + ev.target + "» — 3 предупреждения → бан на 3 дня (от " + (ev.by || "?") + ")",
           t: Date.now(),
         });
-        friendsAlert(
-          "💀 ПОЗОР · бан",
-          "«" + ev.target + "» · 3 предупреждения",
-          { kind: "shame", tag: "amal-friends-ban", forceOs: true }
-        );
-        showShameBanner("«" + ev.target + "» получил ПОЗОР-бан на 3 дня (3 предупреждения).");
+        friendsAlert("Бан 3 дня", "«" + ev.target + "» · 3 предупреждения", {
+          kind: "info",
+          tag: "amal-friends-ban",
+          forceOs: true,
+        });
       } else {
         addMessage({
           name: "⚠️",
-          text: "Предупреждение " + modState.warns[wk] + "/3 для «" + ev.target + "» (от " + (ev.by || "?") + ") — ещё шаг до ПОЗОРА",
+          text: "Предупреждение " + modState.warns[wk] + "/3 для «" + ev.target + "» (от " + (ev.by || "?") + ")",
           t: Date.now(),
         });
-        friendsAlert(
-          "⚠️ Предупреждение",
-          "«" + ev.target + "» · " + modState.warns[wk] + "/3",
-          { kind: "info", tag: "amal-friends-warn", forceOs: true }
-        );
+        logViolation(ev.target, "предупреждение " + modState.warns[wk] + "/3", ev.by);
+        friendsAlert("Предупреждение", "«" + ev.target + "» · " + modState.warns[wk] + "/3", {
+          kind: "info",
+          tag: "amal-friends-warn",
+          forceOs: true,
+        });
       }
       saveModState();
       renderModPanel();
@@ -408,7 +601,7 @@
     }
     if (ev.type === "ban" && ev.target) {
       var tk = nickKey(ev.target);
-      // Бан Амаля → отражается на того, кто банил
+      // Бан Амаля → позор только тому админу, кто пытался забанить хозяина
       if (isOwnerNick(ev.target)) {
         var adminName = ev.by || "админ";
         var ak = nickKey(adminName);
@@ -416,20 +609,21 @@
           modState.bans[ak] = {
             until: Date.now() + BAN_MS,
             by: "🛡️ защита Амаля",
-            reason: "забанил хозяина",
+            reason: "пытался забанить хозяина",
           };
           delete modState.bans[tk];
-          addMessage({
-            name: "🛡️",
-            text: "ПОЗОР нападающему! Нельзя банить Амаля — бан на 3 дня получил «" + adminName + "».",
-            t: Date.now(),
+          var shameText =
+            "Позор, «" +
+            adminName +
+            "»! Зачем банишь меня? Я дал тебе админ-команды — и я злюсь. Бан на 3 дня тебе.";
+          addMessage({ name: "💀", text: shameText, t: Date.now() });
+          friendsAlert("💀 Позор админу", "«" + adminName + "» пытался забанить Амаля", {
+            kind: "shame",
+            tag: "amal-friends-shame",
+            forceOs: true,
           });
-          friendsAlert(
-            "🛡️ Защита Амаля",
-            "Бан отскочил на «" + adminName + "»",
-            { kind: "shame", tag: "amal-friends-ban", forceOs: true }
-          );
-          showShameBanner("Нельзя банить Амаля! ПОЗОР и бан → «" + adminName + "».");
+          showShameBanner(shameText);
+          logViolation(adminName, "пытался забанить Амаля → позор", "защита");
         } else {
           addMessage({ name: "🛡️", text: "Амаля банить нельзя.", t: Date.now() });
         }
@@ -439,22 +633,22 @@
         return;
       }
       modState.bans[tk] = {
-        until: ev.until || (Date.now() + BAN_MS),
+        until: ev.until || Date.now() + BAN_MS,
         by: ev.by || "админ",
         reason: ev.reason || "бан админа",
       };
       modState.warns[tk] = 0;
+      logViolation(ev.target, "бан " + daysLeft(modState.bans[tk].until) + " дн.", ev.by);
       addMessage({
-        name: "💀",
-        text: "ПОЗОР! «" + ev.target + "» в бане на " + daysLeft(modState.bans[tk].until) + " дн. (от " + (ev.by || "?") + ")",
+        name: "⛔",
+        text: "«" + ev.target + "» в бане на " + daysLeft(modState.bans[tk].until) + " дн. (от " + (ev.by || "?") + ")",
         t: Date.now(),
       });
-      friendsAlert(
-        "💀 ПОЗОР · бан",
-        "«" + ev.target + "» · " + daysLeft(modState.bans[tk].until) + " дн.",
-        { kind: "shame", tag: "amal-friends-ban", forceOs: true }
-      );
-      showShameBanner("ПОЗОР: «" + ev.target + "» забанен на " + daysLeft(modState.bans[tk].until) + " дн.");
+      friendsAlert("Бан", "«" + ev.target + "» · " + daysLeft(modState.bans[tk].until) + " дн.", {
+        kind: "info",
+        tag: "amal-friends-ban",
+        forceOs: true,
+      });
       saveModState();
       renderModPanel();
       refreshSelfBanUi();
@@ -464,10 +658,10 @@
       delete modState.bans[nickKey(ev.target)];
       addMessage({
         name: "✅",
-        text: "Позор снят с «" + ev.target + "» — бан отменён",
+        text: "Бан снят с «" + ev.target + "»",
         t: Date.now(),
       });
-      friendsAlert("✅ Бан снят", "«" + ev.target + "» снова может писать", {
+      friendsAlert("Бан снят", "«" + ev.target + "» снова может писать", {
         kind: "info",
         tag: "amal-friends-unban",
       });
@@ -508,11 +702,11 @@
     }).join("");
     panel.innerHTML =
       "<h3>" + role + " · команды сбоку</h3>" +
-      '<p class="mod-hint">Выбери ник → предупреждение или <b>ПОЗОР-бан</b>. 3 варна = бан 3 дня. Банить Амаля нельзя — отскочит. Оповещения придут даже на «Смотри»/другой вкладке (разреши уведомления).</p>' +
+      '<p class="mod-hint">Выбери ник → варн или бан 3 дня. Если кто-то банит <b>Амаля</b> — ему «Позор» и бан отскакивает. Оповещения работают и на «Смотри».</p>' +
       '<label>Кто: <select id="friends-mod-who">' + opts + "</select></label>" +
       '<div class="mod-btns">' +
       '<button type="button" id="friends-mod-warn">⚠️ Варн</button>' +
-      '<button type="button" id="friends-mod-ban">💀 ПОЗОР-бан</button>' +
+      '<button type="button" id="friends-mod-ban">⛔ Бан 3 дня</button>' +
       '<button type="button" id="friends-mod-unban">✅ Снять</button>' +
       '<button type="button" id="friends-mod-alerts">🔔 Оповещения</button>' +
       "</div>";
@@ -530,7 +724,7 @@
         target: t,
         by: nick(),
         until: Date.now() + BAN_MS,
-        reason: "ПОЗОР-бан",
+        reason: "бан админа",
         t: Date.now(),
       });
     };
@@ -594,7 +788,7 @@
         opts +
         "</select>" +
         '<button type="button" data-s="warn" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#f59e0b;cursor:pointer">⚠️ Варн</button>' +
-        '<button type="button" data-s="ban" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#dc2626;color:#fff;cursor:pointer">💀 ПОЗОР</button>' +
+        '<button type="button" data-s="ban" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#dc2626;color:#fff;cursor:pointer">⛔ Бан</button>' +
         '<button type="button" data-s="unban" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#059669;color:#fff;cursor:pointer">✅ Снять</button>';
       side.onclick = function (e) {
         var b = e.target.closest("button[data-s]");
@@ -610,7 +804,7 @@
             target: t,
             by: nick(),
             until: Date.now() + BAN_MS,
-            reason: "ПОЗОР-бан",
+            reason: "бан админа",
             t: Date.now(),
           });
         if (act === "unban") {
@@ -866,7 +1060,7 @@
         '<div style="max-width:420px;width:100%;background:linear-gradient(160deg,#7f1d1d,#1c1917);' +
         "border:3px solid #fbbf24;border-radius:22px;padding:22px 18px;text-align:center;color:#fff;" +
         'box-shadow:0 20px 60px #000a">' +
-        '<div style="font-size:2rem;margin-bottom:8px">💀 ПОЗОР</div>' +
+        '<div style="font-size:2rem;margin-bottom:8px">💀 Позор</div>' +
         '<div style="font-weight:900;font-size:16px;line-height:1.4">' +
         String(text || "") +
         "</div>" +
@@ -902,7 +1096,7 @@
         document.body.appendChild(bar);
       }
       bar.textContent =
-        "💀 Ты в ПОЗОРЕ · бан ещё " + daysLeft(until) + " дн. · чат закрыт";
+        "⛔ Ты в бане ещё " + daysLeft(until) + " дн. · чат закрыт";
     } catch (_) {}
   }
 
@@ -1153,17 +1347,22 @@
           var note = $("friends-chat-note");
           if (note) {
             note.textContent = ok
-              ? "💜 Чат только для друзей · бан = ПОЗОР · оповещения даже на другой вкладке"
+              ? "💜 Чат друзей · оповещения даже на другой вкладке (разреши уведомления)"
               : "📱 Нет сети Trystero — попробуй обновить страницу";
           }
           refreshSelfBanUi();
           mountSideAdmin();
+          if (patrolOn()) startPatrolLoop();
+          if (checkOwner() || isStarAdminUser()) {
+            sparkSay("Я Искра. Напиши /искра — команды. /патруль — сама проверю порядок, когда ты отойдёшь.");
+          }
         });
       });
       logActivity("открыл страницу друзей");
       renderOwner();
       renderModPanel();
       refreshSelfBanUi();
+      startPatrolLoop();
     },
 
     mountChat: function (rootId) {
@@ -1171,8 +1370,8 @@
       if (!root) return;
 
       root.innerHTML =
-        '<div class="chat-setup"><label>Твоё имя ' +
-        '<input id="friends-nick" maxlength="16" placeholder="Напиши как тебя зовут" /></label></div>' +
+        '<div class="chat-setup"><label>Твоё имя (чтобы Амаль не путал одноклассников) ' +
+        '<input id="friends-nick" maxlength="16" placeholder="Напиши своё имя, пожалуйста" /></label></div>' +
         '<div class="chat-online" id="friends-online">Подключение…</div>' +
         '<div id="friends-power-panel" class="owner-panel power-panel"></div>' +
         '<div id="friends-book" class="owner-panel book-panel"></div>' +
@@ -1233,16 +1432,22 @@
       if (!text) return;
       if (!nick()) {
         try {
-          var n = prompt("Как тебя зовут?", "") || "";
+          var n =
+            prompt(
+              "Можешь, пожалуйста, ввести своё имя — чтобы я знал, кто ты, и не путал одноклассников?",
+              ""
+            ) || "";
           if (n.trim()) setNick(n.trim());
         } catch (_) {}
       }
       if (!nick()) return;
+      lastOwnerActive = Date.now();
+      if (handleOwnerCommand(text)) return;
       var until = banUntil(nick());
       if (until) {
         addMessage({
-          name: "💀",
-          text: "Ты в ПОЗОРЕ ещё " + daysLeft(until) + " дн. Писать нельзя.",
+          name: "⛔",
+          text: "Ты в бане ещё " + daysLeft(until) + " дн. Писать нельзя.",
           t: Date.now(),
         });
         return;
