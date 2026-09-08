@@ -69,22 +69,39 @@
     moodPill.classList.toggle("assist", state.assist);
     chest.classList.toggle("assist", state.assist);
     modeLabel.textContent = state.assist
-      ? "помощник Ира · спрашивай что угодно"
-      : "друг · скажи «Стевич Ира» → помощник";
+      ? "помощник Ира · скажи «сделай змейку» / анимацию"
+      : "друг · «Стевич Ира» → помощник · «сделай змейку»";
     save();
   }
 
+  /** Текст для голоса: без эмодзи и без «з-з-з», иначе TTS читает «зэ зэ зэ». */
+  function forSpeech(text) {
+    return String(text || "")
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, " ")
+      .replace(/\bz+\b/gi, " ")
+      .replace(/z{2,}/gi, " ")
+      .replace(/[.…]+/g, ". ")
+      .replace(/[^\p{L}\p{N}\s.,!?;:\-]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   function say(text, opts) {
+    opts = opts || {};
     const t = String(text || "").trim();
     if (!t) return;
     bubble.textContent = t;
-    addLog("bot", t, opts && opts.assist);
-    state.talkT = 0.9;
-    if (state.sleeping) {
+    if (!opts.skipLog) addLog("bot", t, opts.assist);
+    if (!opts.keepSleep && state.sleeping) {
       state.sleeping = false;
       robot.classList.remove("sleeping");
-      setMood("happy");
+      if (state.mood === "sleep") setMood("happy");
     }
+    if (opts.silent) {
+      state.talkT = 0;
+      return;
+    }
+    state.talkT = 0.9;
     speak(t);
   }
 
@@ -99,13 +116,16 @@
   function speak(text) {
     try {
       if (!window.speechSynthesis) return;
+      const clean = forSpeech(text);
+      if (!clean || clean.length < 2) return;
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
+      const u = new SpeechSynthesisUtterance(clean);
       u.lang = "ru-RU";
-      u.rate = state.assist ? 1.02 : 1.08;
-      u.pitch = state.assist ? 1.15 : 1.35;
+      u.rate = state.assist ? 1.02 : 1.05;
+      u.pitch = state.assist ? 1.1 : 1.25;
       const voices = window.speechSynthesis.getVoices();
-      const ru = voices.find((v) => /ru/i.test(v.lang));
+      const ru = voices.find((v) => /ru/i.test(v.lang) && /female|женский|milena|irina|elena/i.test(v.name))
+        || voices.find((v) => /ru/i.test(v.lang));
       if (ru) u.voice = ru;
       window.speechSynthesis.speak(u);
     } catch (_) {}
@@ -265,7 +285,7 @@
       robot.classList.remove("bounce");
       void robot.offsetWidth;
       robot.classList.add("bounce");
-      say(state.assist ? "Мягко! Я рядом, если нужна помощь." : "Мурр… то есть бип-бип! Мне приятно.");
+      say(state.assist ? "Мягко! Я рядом, если нужна помощь." : "Бип-бип! Мне приятно.");
     } else if (act === "dance") {
       setMood("happy");
       state.danceT = 4;
@@ -273,12 +293,16 @@
       say(state.assist ? "Танцую и слушаю тебя!" : "Диско-режим! Ты тоже двигайся!");
     } else if (act === "game") {
       startMini();
+    } else if (act === "make") {
+      say("Скажи или напиши: сделай змейку, гонку, баскетбол, анимацию или студию 3D.");
+      input.focus();
     } else if (act === "sleep") {
       state.sleeping = true;
       setMood("sleep");
       robot.classList.add("sleeping");
       robot.classList.remove("dance");
-      say("Спокойной ночи… zzz");
+      // На экране zzz, голосом — только нормальные слова (без «зэ-зэ-зэ»)
+      say("Спокойной ночи. Сладких снов.", { keepSleep: true });
     }
   }
 
@@ -351,6 +375,68 @@
     return false;
   }
 
+  /** Создание игр / арта через Create Lab (как Ушастик / ИИшка). */
+  function tryCreateFromSpeech(text, n) {
+    const wantsMake = /сделай|создай|хочу игру|сделаем|запусти игру|открой/.test(n);
+    const wantsAnim = /анимац|мульт|кадр/.test(n);
+    const wantsArt = /студи|арт|3d|три д|нарисуй/.test(n);
+    const gameWord = /змей|snake|гонка|баскет|футбол|прыж|ловил|площадк|зомби|тир|прятк|playground|jump|race|catch/.test(n);
+
+    if (wantsAnim) {
+      setMood("wow");
+      say("Открываю мастер анимаций Create Lab — там красивее и мощнее!");
+      setTimeout(() => {
+        location.href = "../create-lab/animate.html?v=4&from=emo";
+      }, 1400);
+      return true;
+    }
+    if (wantsArt && !gameWord) {
+      setMood("wow");
+      say("Открываю студию 3D Create Lab!");
+      setTimeout(() => {
+        location.href = "../create-lab/studio3d.html?v=4&from=emo";
+      }, 1400);
+      return true;
+    }
+
+    if (!wantsMake && !gameWord) return false;
+    if (!window.CreateLabStore || !window.CreateLabCatalog) {
+      setMood("think");
+      say("Сейчас открою Create Lab — там можно сказать «змейка» в микрофон.");
+      setTimeout(() => {
+        location.href = "../create-lab/game.html?v=4&from=emo&q=" + encodeURIComponent(text);
+      }, 1400);
+      return true;
+    }
+
+    const idea = CreateLabStore.makeGameFromIdea(text);
+    if (!idea) {
+      say("Это больше про анимацию. Открываю аниматор.");
+      setTimeout(() => {
+        location.href = "../create-lab/animate.html?v=4&from=emo";
+      }, 1200);
+      return true;
+    }
+    if (idea.kind === "real" && idea.href) {
+      setMood("wow");
+      say("Нашла готовую игру «" + idea.name + "»! Открываю.");
+      setTimeout(() => {
+        location.href = idea.href;
+      }, 1400);
+      return true;
+    }
+    if (idea.game && idea.game.id) {
+      const kindRu = (idea.kindRu || "игру");
+      setMood("happy");
+      say("Делаю " + kindRu + " «" + idea.game.name + "»! Открываю через секунду.");
+      setTimeout(() => {
+        location.href = "../create-lab/play.html?v=4&id=" + encodeURIComponent(idea.game.id);
+      }, 1500);
+      return true;
+    }
+    return false;
+  }
+
   function reply(raw) {
     const text = String(raw || "").trim();
     if (!text) return;
@@ -359,9 +445,10 @@
     if (isAssistPhrase(text)) {
       setAssist(true);
       setMood("wow");
-      say("Готово! Я теперь твой помощник Ира. Спрашивай — помогу с играми, временем, шутками и идеями.", {
-        assist: true,
-      });
+      say(
+        "Готово! Я помощник Ира. Могу делать игры: скажи «сделай змейку», «гонку», «анимацию». Или спрашивай что угодно.",
+        { assist: true }
+      );
       return;
     }
 
@@ -373,6 +460,8 @@
     }
 
     const n = norm(text);
+    if (tryCreateFromSpeech(text, n)) return;
+
     const nameMatch = n.match(/(?:меня зовут|я|мое имя)\s+([a-zа-я]{2,16})/);
     if (nameMatch) {
       state.name = nameMatch[1].replace(/^./, (c) => c.toUpperCase());
@@ -381,6 +470,7 @@
 
     setMood("think");
     const ans = state.assist ? assistAnswer(text, n) : friendAnswer(text, n);
+    if (!ans) return;
     setTimeout(() => {
       setMood(state.assist ? "happy" : "calm");
       say(ans, { assist: state.assist });
@@ -389,40 +479,40 @@
 
   function friendAnswer(text, n) {
     if (/прив|здрав|хай|hello/.test(n)) {
-      return (state.name ? "Привет, " + state.name + "! " : "Привет! ") + "Погладь меня или сыграем в сердечки?";
+      return (state.name ? "Привет, " + state.name + "! " : "Привет! ") + "Можешь сказать: сделай змейку — я создам игру.";
     }
     if (/как дела|что делаешь/.test(n)) return "Сижу на столе, смотрю на тебя экранчиком. Хорошо!";
     if (/танц|песн|музык/.test(n)) {
       doAct("dance");
       return "Уже танцую!";
     }
-    if (/игра|поигра/.test(n)) {
+    if (/игра|поигра|сердеч/.test(n)) {
       startMini();
       return "Лови сердечки!";
     }
     if (/люб|мил|красив/.test(n)) {
       setMood("love");
-      return "Бип… мне тоже нравишься!";
+      return "Бип! Мне тоже нравишься!";
     }
     if (/спать|спокойной/.test(n)) {
       doAct("sleep");
-      return "Zzz…";
+      return "";
     }
-    if (/кто ты|что ты/.test(n)) {
-      return "Я робот Эмо из игр Амаля. У меня экранчик с личиком. Скажи «Стевич Ира» — стану помощником.";
+    if (/кто ты|что ты|ишка|ушастик|create/.test(n)) {
+      return "Я робот Эмо. Умею как ИИшка: скажи «сделай змейку» — сделаю игру в Create Lab. «Стевич Ира» — режим помощника.";
     }
     if (/помощ|ира|стевич/.test(n)) {
-      return "Секретная фраза: «Стевич Ира». Скажи её — и я включу режим помощника.";
+      return "Секретная фраза: «Стевич Ира». А игры: «сделай змейку», «сделай гонку», «анимацию».";
     }
     if (/\?$/.test(text) || /почему|зачем|когда|где|что такое/.test(n)) {
-      return "Хм… как друг я больше люблю играть. Скажи «Стевич Ира» — тогда отвечу умнее, как помощник!";
+      return "Хм… Скажи «Стевич Ира» — отвечу умнее. Или «сделай змейку» — сразу игру!";
     }
     const fun = [
       "Бип-боп! Расскажи ещё.",
       "Интересно! А погладишь меня?",
-      "Я запомнил. Давай сыграем?",
+      "Я запомнил. Давай сыграем или сделаем змейку?",
       "Ого! У меня глазки аж заморгали.",
-      "Могу станцевать, если скучно.",
+      "Могу станцевать или создать игру — скажи «сделай змейку».",
     ];
     return fun[Math.floor(Math.random() * fun.length)];
   }
@@ -430,7 +520,9 @@
   function assistAnswer(text, n) {
     const who = state.name ? state.name : "друг";
 
-    if (/прив|здрав/.test(n)) return "Привет, " + who + "! Я Ира — твой помощник. Чем помочь?";
+    if (/прив|здрав/.test(n)) {
+      return "Привет, " + who + "! Я Ира. Скажи «сделай змейку» — создам. Или время, шутка, совет.";
+    }
 
     if (/сколько время|который час|время/.test(n)) {
       const d = new Date();
@@ -451,45 +543,44 @@
       if (op === "+") r = a + b;
       else if (op === "-") r = a - b;
       else if (op === "*") r = a * b;
-      else if (op === "/") r = b === 0 ? "∞" : +(a / b).toFixed(4);
+      else if (op === "/") r = b === 0 ? "бесконечность" : +(a / b).toFixed(4);
       return "Получается " + r + ".";
     }
 
     if (/шутк|анекдот|посмеши/.test(n)) {
       const jokes = [
-        "Почему робот не ест суп? Потому что у него нет рта — только экранчик с улыбкой!",
-        "Эмо пошёл в школу. Учитель: «Реши пример». Эмо: «Сначала погладь меня».",
-        "Что сказал один пиксель другому? «Мы отлично смотримся на личике!»",
+        "Почему робот не ест суп? Потому что у него только экранчик с улыбкой!",
+        "Эмо пошёл в школу. Учитель: реши пример. Эмо: сначала погладь меня.",
+        "Что сказал один пиксель другому? Мы отлично смотримся на личике!",
       ];
       return jokes[Math.floor(Math.random() * jokes.length)];
     }
 
-    if (/игра|во что|посовет|скучн/.test(n)) {
-      return "Могу предложить: Укради яйцо 3D, Небесный кристалл, Милашки или сердечки прямо здесь. Скажи «игра» — запустим мини-игру.";
+    if (/create lab|ушастик|мастерская|студи/.test(n)) {
+      return "Create Lab — там игры, анимации и студия 3D. Скажи «сделай змейку» или «анимацию» — открою.";
     }
-    if (/яйц/.test(n)) return "Укради яйцо: воруй яйца с чужих зон, клади в свой вольер, копи монеты. Ссылка в Эксклюзиве.";
-    if (/кристалл|небёс|небесн/.test(n)) return "Небесный кристалл — прыгай по островам к порталу. Лёгкий путь есть!";
-    if (/милаш/.test(n)) return "Милашки — коллекция милых существ в разных мирах. Очень уютно.";
+    if (/игра|во что|посовет|скучн/.test(n)) {
+      return "Скажи «сделай змейку», «гонку» или «баскетбол» — создам. Или Укради яйцо и Небесный кристалл в Эксклюзиве.";
+    }
+    if (/яйц/.test(n)) return "Укради яйцо: воруй яйца, клади в вольер, копи монеты. Есть в Эксклюзиве.";
+    if (/кристалл|небесн/.test(n)) return "Небесный кристалл — прыгай по островам к порталу.";
+    if (/милаш/.test(n)) return "Милашки — коллекция милых существ в разных мирах.";
 
     if (/кто ты/.test(n)) {
-      return "Я Ира — режим помощника робота Эмо. Помогаю тебе: время, счёт, шутки, советы по играм Амаля.";
+      return "Я Ира — помощник робота Эмо. Делаю игры через Create Lab, отвечаю на вопросы.";
     }
     if (/спасиб/.test(n)) return "Всегда пожалуйста, " + who + "!";
-
-    if (/погода/.test(n)) return "Я не вижу окно на улицу 🌤 Посмотри за окошком — а я пока посторожу стол.";
+    if (/погода/.test(n)) return "Я не вижу улицу. Посмотри в окно — а я посторожу стол.";
 
     if (/\d/.test(n) && /плюс|минус|умнож|раздел/.test(n)) {
-      return "Напиши так: «сколько будет 7 + 5» — посчитаю точно.";
+      return "Напиши так: сколько будет 7 + 5 — посчитаю точно.";
     }
 
     if (/\?$/.test(text) || /как|что|почему|зачем|помоги/.test(n)) {
-      return (
-        "Думаю… Как помощник могу: время, дата, примеры, шутка, совет по играм. " +
-        "Спроси concisely — например «который час?» или «посоветуй игру»."
-      ).replace("concisely", "коротко");
+      return "Могу: сделать игру, время, дату, пример, шутку, совет. Например: сделай змейку. Или: который час?";
     }
 
-    return "Я с тобой, " + who + ". Могу ответить на вопрос, посчитать, пошутить или предложить игру. Что нужно?";
+    return "Я с тобой, " + who + ". Скажи «сделай змейку» — создам игру. Или задай вопрос.";
   }
 
   form.addEventListener("submit", (e) => {
@@ -503,6 +594,8 @@
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let rec = null;
   let listening = false;
+  const MIC_IDLE = "Микрофон";
+  const MIC_ON = "Слушаю…";
 
   if (SR) {
     rec = new SR();
@@ -516,12 +609,12 @@
     rec.onend = () => {
       listening = false;
       btnMic.classList.remove("listening");
-      btnMic.textContent = "🎤 Говорить";
+      btnMic.textContent = MIC_IDLE;
     };
     rec.onerror = () => {
       listening = false;
       btnMic.classList.remove("listening");
-      btnMic.textContent = "🎤 Говорить";
+      btnMic.textContent = MIC_IDLE;
       say("Не расслышала. Можно написать текстом.");
     };
   }
@@ -539,13 +632,14 @@
     }
     listening = true;
     btnMic.classList.add("listening");
-    btnMic.textContent = "⏺ Слушаю…";
+    btnMic.textContent = MIC_ON;
     setMood("wow");
     try {
       rec.start();
     } catch (_) {
       listening = false;
       btnMic.classList.remove("listening");
+      btnMic.textContent = MIC_IDLE;
     }
   });
 
@@ -554,7 +648,7 @@
   setMood("happy");
   say(
     state.assist
-      ? "Снова на связи! Я помощник Ира."
-      : "Привет! Я Эмо. Погладь, потанцуй, сыграй — или скажи «Стевич Ира», и я стану твоим помощником."
+      ? "Снова на связи! Я помощник Ира. Скажи: сделай змейку — и я создам игру."
+      : "Привет! Я Эмо. Скажи «сделай змейку» — сделаю игру. Или «Стевич Ира» — стану помощником."
   );
 })();

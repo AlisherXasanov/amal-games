@@ -391,6 +391,19 @@ body {
   text-align: center;
 }
 
+.links {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+  color: var(--muted);
+}
+.links a {
+  color: var(--sky);
+  text-decoration: none;
+}
+.links a:hover { text-decoration: underline; }
+
 @media (max-width: 420px) {
   .actions { grid-template-columns: repeat(2, 1fr); }
   .act.mic { grid-column: span 2; }

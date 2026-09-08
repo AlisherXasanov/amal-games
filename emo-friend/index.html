@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
   <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Назад</a>
@@ -19,7 +19,7 @@
     <header class="top">
       <div>
         <h1>Робот Эмо</h1>
-        <p class="sub" id="modeLabel">друг · скажи «Стевич Ира» → помощник</p>
+        <p class="sub" id="modeLabel">друг · «Стевич Ира» → помощник · «сделай змейку»</p>
       </div>
       <div class="mood-pill" id="moodPill">😊 спокойный</div>
     </header>
@@ -45,11 +45,12 @@
     </div>
 
     <div class="actions">
-      <button type="button" class="act" data-act="pet">🫶 Погладить</button>
-      <button type="button" class="act" data-act="dance">💃 Танец</button>
-      <button type="button" class="act" data-act="game">🎮 Игра</button>
-      <button type="button" class="act" data-act="sleep">😴 Спать</button>
-      <button type="button" class="act mic" id="btnMic">🎤 Говорить</button>
+      <button type="button" class="act" data-act="pet">Погладить</button>
+      <button type="button" class="act" data-act="dance">Танец</button>
+      <button type="button" class="act" data-act="game">Сердечки</button>
+      <button type="button" class="act" data-act="make">Сделай игру</button>
+      <button type="button" class="act" data-act="sleep">Спать</button>
+      <button type="button" class="act mic" id="btnMic">Микрофон</button>
     </div>
 
     <div class="mini" id="miniGame" hidden>
@@ -61,13 +62,22 @@
     <div class="chat">
       <div class="log" id="log" aria-live="polite"></div>
       <form id="form" class="composer">
-        <input id="input" type="text" autocomplete="off" placeholder="Напиши или скажи… (Стевич Ира = помощник)" maxlength="200" />
+        <input id="input" type="text" autocomplete="off" placeholder="Скажи: сделай змейку · Стевич Ира" maxlength="200" />
         <button type="submit">➤</button>
       </form>
-      <p class="hint">Голос работает в Chrome / Edge. Можно и текстом.</p>
+      <p class="hint">Микрофон: Chrome / Edge. Можно писать. Create Lab: змейка, гонка, анимация…</p>
+      <p class="links">
+        <a href="../create-lab/game.html?v=4">Create Lab · игры</a>
+        ·
+        <a href="../create-lab/animate.html?v=4">анимации</a>
+        ·
+        <a href="../create-lab/studio3d.html?v=4">студия 3D</a>
+      </p>
     </div>
   </div>
 
-  <script src="./game.js?v=1"></script>
+  <script src="../create-lab/catalog.js"></script>
+  <script src="../create-lab/storage.js"></script>
+  <script src="./game.js?v=2"></script>
 </body>
 </html>
