@@ -14,24 +14,24 @@
       font-family: "Segoe UI", system-ui, sans-serif;
       background: #1e1030;
       color: #fff;
-      padding: 14px;
+      padding: 10px;
     }
     .no-print {
       max-width: 640px;
-      margin: 0 auto 14px;
+      margin: 0 auto 10px;
       text-align: center;
-      line-height: 1.45;
+      line-height: 1.35;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
     }
-    .no-print p { margin-bottom: 10px; }
+    .no-print p { margin-bottom: 8px; }
     .no-print button, .no-print a {
       display: inline-block;
       border: 0;
       border-radius: 999px;
-      padding: 12px 18px;
-      margin: 4px;
-      font: 800 14px inherit;
+      padding: 10px 16px;
+      margin: 3px;
+      font: 800 13px inherit;
       cursor: pointer;
       text-decoration: none;
     }
@@ -42,59 +42,60 @@
       border: 2px solid rgba(255,255,255,.25);
     }
 
+    /* Весь лист целиком влезает в A4 и на экран */
     .sheet {
-      max-width: 210mm;
+      width: 190mm;
+      max-width: 100%;
       margin: 0 auto;
       background: #fff;
       color: #111;
-      border-radius: 10px;
-      padding: 6mm 7mm 5mm;
-      border: 3px solid #7c3aed;
+      border-radius: 8px;
+      padding: 3.5mm 4mm 3mm;
+      border: 2px solid #7c3aed;
     }
     .sheet h1 {
       text-align: center;
-      font-size: 14pt;
+      font-size: 11pt;
       color: #5b21b6;
-      margin-bottom: 1mm;
+      line-height: 1.2;
     }
     .sheet .lead {
       text-align: center;
-      font-size: 8.5pt;
+      font-size: 7.5pt;
       font-weight: 700;
       color: #64748b;
-      margin-bottom: 3mm;
+      margin: 0.5mm 0 1.5mm;
     }
     .section {
-      font-size: 9pt;
+      font-size: 7.5pt;
       font-weight: 900;
-      margin: 2mm 0 2mm;
-      padding: 1.5mm 2mm;
-      border-radius: 6px;
+      margin: 1mm 0 1mm;
+      padding: 0.8mm 1.5mm;
+      border-radius: 4px;
       text-align: center;
     }
     .section.admin {
       color: #9d174d;
       background: #fdf2f8;
-      border: 1.5px dashed #db2777;
+      border: 1px dashed #db2777;
     }
     .section.friend {
       color: #5b21b6;
       background: #f5f3ff;
-      border: 1.5px dashed #7c3aed;
-      margin-top: 3mm;
+      border: 1px dashed #7c3aed;
+      margin-top: 1.5mm;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 3mm;
+      gap: 1.8mm;
     }
     .card {
-      border: 2px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 2mm 1.5mm 1.5mm;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 1mm;
       text-align: center;
-      page-break-inside: avoid;
     }
     .card.admin {
       border-color: #db2777;
@@ -106,35 +107,40 @@
     }
     .badge {
       display: block;
-      font-size: 7pt;
+      font-size: 6pt;
       font-weight: 900;
-      line-height: 1.2;
-      margin-bottom: 1.2mm;
-      min-height: 16pt;
+      line-height: 1.1;
+      margin-bottom: 0.6mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .card.admin .badge { color: #be185d; }
     .card.friend .badge { color: #6d28d9; }
     .card img {
-      width: 34mm;
-      height: 34mm;
+      width: 28mm;
+      height: 28mm;
       max-width: 100%;
       background: #fff;
       border: 1px solid #e2e8f0;
-      border-radius: 4px;
+      border-radius: 3px;
+      display: block;
+      margin: 0 auto;
     }
     .num {
-      margin-top: 1mm;
-      font-size: 9pt;
+      margin-top: 0.5mm;
+      font-size: 8pt;
       font-weight: 900;
       color: #0f172a;
+      line-height: 1;
     }
     .foot {
-      margin-top: 3mm;
-      font-size: 7.5pt;
+      margin-top: 1.5mm;
+      font-size: 6.5pt;
       font-weight: 700;
       color: #64748b;
       text-align: center;
-      line-height: 1.35;
+      line-height: 1.25;
     }
 
     @media print {
@@ -143,39 +149,34 @@
       .sheet {
         border: 0;
         border-radius: 0;
-        max-width: none;
         width: 100%;
-        padding: 5mm 6mm;
+        max-width: none;
+        padding: 0;
       }
-      .card img { width: 34mm; height: 34mm; }
+      .card img { width: 28mm; height: 28mm; }
     }
-    @page { size: A4 portrait; margin: 7mm; }
+    @page { size: A4 portrait; margin: 8mm; }
   </style>
 </head>
 <body>
   <div class="no-print">
-    <p>📄 <strong>Один листок · 20 QR среднего размера</strong><br>
-      сверху <b>4 адми</b> (розовые) · ниже <b>16 обычных</b> для друзей (фиолетовые).<br>
-      Не слишком мелкие и не огромные — все на одной странице.</p>
+    <p>📄 <strong>Один лист A4 · всё сразу</strong> — 4 адми + 16 друзей, уплотнено чтобы влезало целиком.</p>
     <button type="button" onclick="window.print()">🖨️ Печать</button>
     <a href="qr-friends.html">Один большой QR</a>
     <a href="friends.html?v=9&stay=1&code=amal-star-friends">← Эксклюзив</a>
   </div>
 
   <div class="sheet">
-    <h1>🎮 Игры Амаля · QR для класса</h1>
-    <p class="lead">4 адми · 16 обычных · один лист · средний размер</p>
+    <h1>🎮 Игры Амаля · QR</h1>
+    <p class="lead">4 адми + 16 обычных · один лист</p>
 
-    <div class="section admin">👑 АДМИ · ДЛЯ ВАС · особые силы (4 шт.)</div>
+    <div class="section admin">👑 АДМИ · ДЛЯ ВАС (4)</div>
     <div class="grid" id="grid-admin"></div>
 
-    <div class="section friend">⭐ ОБЫЧНЫЕ · эксклюзив для друзей (16 шт.)</div>
+    <div class="section friend">⭐ ОБЫЧНЫЕ · друзья (16)</div>
     <div class="grid" id="grid-friend"></div>
 
-    <p class="foot">
-      Розовые А1–А4 — адми. Фиолетовые Д1–Д16 — обычный вход.<br>
-      Потеряли — распечатай лист снова. Амаль ♥
-    </p>
+    <p class="foot">А1–А4 адми · Д1–Д16 друзья · потеряли — печатай снова · Амаль ♥</p>
   </div>
 
   <script>
@@ -183,7 +184,7 @@
       var BASE = "https://alisherxasanov.github.io/amal-games/";
 
       function qr(u) {
-        return "https://api.qrserver.com/v1/create-qr-code/?size=360x360&margin=10&data=" + encodeURIComponent(u);
+        return "https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=" + encodeURIComponent(u);
       }
 
       function addCard(grid, opts) {
@@ -191,10 +192,10 @@
         card.className = "card " + opts.kind;
         var badge = document.createElement("span");
         badge.className = "badge";
-        badge.innerHTML = opts.label;
+        badge.textContent = opts.label;
         var img = document.createElement("img");
-        img.width = 360;
-        img.height = 360;
+        img.width = 280;
+        img.height = 280;
         img.alt = opts.alt;
         img.src = qr(opts.url);
         var num = document.createElement("div");
