@@ -1,5 +1,17 @@
 (() => {
   const SIZE = 8;
+  function isEasy() {
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.get("easy") === "1" || q.get("mode") === "easy") {
+        localStorage.setItem("amal-blockbust-easy-v1", "1");
+        return true;
+      }
+      if (localStorage.getItem("amal-blockbust-easy-v1") === "1") return true;
+    } catch (_) {}
+    return false;
+  }
+  const EASY = isEasy();
   const COLORS = {
     cyan: "#22d3ee",
     blue: "#3b82f6",
@@ -588,11 +600,21 @@
   }
 
   function pickPiece() {
-    const total = PIECES.reduce((s, p) => s + p.w, 0);
+    const weighted = PIECES.map((p) => {
+      let w = p.w;
+      if (EASY) {
+        const cells = countCells(p.cells);
+        if (cells <= 2) w *= 2.4;
+        else if (cells <= 3) w *= 1.6;
+        else if (cells >= 5) w *= 0.45;
+      }
+      return { p, w };
+    });
+    const total = weighted.reduce((s, x) => s + x.w, 0);
     let r = Math.random() * total;
-    for (const p of PIECES) {
-      r -= p.w;
-      if (r <= 0) return { ...p, uid: nextUid() };
+    for (const x of weighted) {
+      r -= x.w;
+      if (r <= 0) return { ...x.p, uid: nextUid() };
     }
     return { ...PIECES[0], uid: nextUid() };
   }
@@ -739,6 +761,12 @@
   }
   state.best = loadBest();
   state.coins = loadCoins();
+  if (EASY && !isOwner() && state.coins < 40) {
+    state.coins = 40;
+    try {
+      store.set(KEYS.coins, 40);
+    } catch (_) {}
+  }
   if (isOwner()) applyOwnerRewards();
 
   const app = document.getElementById("app");
@@ -1848,6 +1876,7 @@
 
   measure();
   startClassic();
+  if (EASY && !isOwner()) toast("Лёгкий режим · проще фигуры");
 
   window.addEventListener("amal-owner-changed", (e) => {
     if (e.detail) {
