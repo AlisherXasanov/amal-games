@@ -45,6 +45,35 @@
     { id: "diag", cells: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], color: "green", w: 2 },
   ];
 
+  /** Особые «монстр»-фигуры для Hard+ режимов */
+  const HARD_PIECES = [
+    { id: "sq3", cells: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], color: "red", w: 4, hard: true },
+    { id: "line5", cells: [[1, 1, 1, 1, 1]], color: "yellow", w: 3, hard: true },
+    { id: "vline5", cells: [[1], [1], [1], [1], [1]], color: "yellow", w: 3, hard: true },
+    { id: "bigT", cells: [[1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], color: "purple", w: 3, hard: true },
+    { id: "stairs", cells: [[1, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1]], color: "orange", w: 3, hard: true },
+    { id: "ring", cells: [[1, 1, 1], [1, 0, 1], [1, 1, 1]], color: "cyan", w: 3, hard: true },
+    { id: "bigX", cells: [[1, 0, 1], [0, 1, 0], [1, 0, 1]], color: "pink", w: 3, hard: true },
+    { id: "H", cells: [[1, 0, 1], [1, 1, 1], [1, 0, 1]], color: "blue", w: 3, hard: true },
+    { id: "wideL", cells: [[1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0], [1, 1, 1, 1]], color: "pink", w: 3, hard: true },
+    { id: "hook", cells: [[1, 1, 1, 1], [1, 0, 0, 0], [1, 0, 0, 0]], color: "green", w: 3, hard: true },
+    { id: "zig4", cells: [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 1]], color: "orange", w: 3, hard: true },
+    { id: "megaPlus", cells: [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], color: "red", w: 2, hard: true },
+    { id: "cornerBig", cells: [[1, 1, 1, 1], [1, 0, 0, 0], [1, 0, 0, 0], [1, 0, 0, 0]], color: "purple", w: 3, hard: true },
+    { id: "slab", cells: [[1, 1, 1, 1], [1, 1, 1, 1]], color: "blue", w: 3, hard: true },
+  ];
+
+  const HARD_THEMES = [
+    { bg: "radial-gradient(ellipse at top,#7f1d1d 0%,#1c0a0a 50%,#050202 100%)", accent: "#f87171", glowL: "#ef4444", glowR: "#fbbf24", name: "Лава" },
+    { bg: "radial-gradient(ellipse at top,#312e81 0%,#0f172a 48%,#020617 100%)", accent: "#a78bfa", glowL: "#6366f1", glowR: "#22d3ee", name: "Неон" },
+    { bg: "radial-gradient(ellipse at top,#14532d 0%,#052e16 50%,#020617 100%)", accent: "#4ade80", glowL: "#22c55e", glowR: "#facc15", name: "Яд" },
+    { bg: "radial-gradient(ellipse at top,#9a3412 0%,#431407 45%,#0c0a09 100%)", accent: "#fb923c", glowL: "#ea580c", glowR: "#fde047", name: "Огонь" },
+    { bg: "radial-gradient(ellipse at top,#701a75 0%,#3b0764 48%,#0a0612 100%)", accent: "#f0abfc", glowL: "#d946ef", glowR: "#38bdf8", name: "Плазма" },
+    { bg: "radial-gradient(ellipse at top,#0e7490 0%,#083344 50%,#020617 100%)", accent: "#67e8f9", glowL: "#06b6d4", glowR: "#a5f3fc", name: "Лёд" },
+  ];
+
+  const DIFF_IDS = ["hard", "extra", "xhard", "mega"];
+
   // Фон стола (вторично)
   const BG_SKINS = [
     {
@@ -320,6 +349,10 @@
 
   const MINI_GAMES = [
     { id: "classic", name: "Классика", icon: "🧩", desc: "Обычная игра без таймера" },
+    { id: "hard", name: "Hard", icon: "🔥", desc: "Сложнее фигуры + анимации" },
+    { id: "extra", name: "Extra", icon: "💥", desc: "Особые большие фигуры" },
+    { id: "xhard", name: "Extra Hard", icon: "☠️", desc: "Редко мелкие · много монстров" },
+    { id: "mega", name: "Super Mega Hard", icon: "🌋", desc: "Адские фигуры · тема при очистке" },
     { id: "blitz", name: "Блиц 60с", icon: "⏱️", desc: "Успей набрать очки за минуту" },
     { id: "zen", name: "Дзен", icon: "🧘", desc: "Без проигрыша — только счёт" },
     { id: "color", name: "Цветолов", icon: "🎯", desc: "Очищай линии с целевым цветом" },
@@ -600,23 +633,81 @@
   }
 
   function pickPiece() {
-    const weighted = PIECES.map((p) => {
+    const tier = diffTier();
+    const pool = [];
+    for (const p of PIECES) {
       let w = p.w;
-      if (EASY) {
-        const cells = countCells(p.cells);
+      const cells = countCells(p.cells);
+      if (tier < 0) {
         if (cells <= 2) w *= 2.4;
         else if (cells <= 3) w *= 1.6;
         else if (cells >= 5) w *= 0.45;
+      } else if (tier === 1) {
+        if (cells <= 2) w *= 0.55;
+        if (cells >= 4) w *= 1.7;
+      } else if (tier === 2) {
+        if (cells <= 2) w *= 0.35;
+        if (cells >= 4) w *= 2.1;
+      } else if (tier === 3) {
+        if (cells <= 3) w *= 0.22;
+        if (cells >= 4) w *= 2.4;
+      } else if (tier >= 4) {
+        if (cells <= 3) w *= 0.08;
+        if (cells >= 5) w *= 2.8;
       }
-      return { p, w };
-    });
-    const total = weighted.reduce((s, x) => s + x.w, 0);
+      pool.push({ p, w });
+    }
+    if (tier >= 1) {
+      const hardMul = tier === 1 ? 1.2 : tier === 2 ? 2.4 : tier === 3 ? 4.2 : 7;
+      for (const p of HARD_PIECES) {
+        pool.push({ p, w: Math.max(1, (p.w || 2) * hardMul) });
+      }
+    }
+    const total = pool.reduce((s, x) => s + x.w, 0);
     let r = Math.random() * total;
-    for (const x of weighted) {
+    for (const x of pool) {
       r -= x.w;
       if (r <= 0) return { ...x.p, uid: nextUid() };
     }
     return { ...PIECES[0], uid: nextUid() };
+  }
+
+  function diffTier() {
+    if (typeof state === "undefined" || !state) return EASY ? -1 : 0;
+    if (state.mode === "mega") return 4;
+    if (state.mode === "xhard") return 3;
+    if (state.mode === "extra") return 2;
+    if (state.mode === "hard") return 1;
+    if (EASY) return -1;
+    return 0;
+  }
+
+  function isDiffMode(mode) {
+    return DIFF_IDS.includes(mode != null ? mode : state?.mode);
+  }
+
+  function activeThemeSkin() {
+    if (state.fxTheme) return state.fxTheme;
+    return bgSkin();
+  }
+
+  function pulseHardTheme(force) {
+    if (!isDiffMode() && !force) return;
+    state.themeIdx = ((state.themeIdx || 0) + 1) % HARD_THEMES.length;
+    state.fxTheme = HARD_THEMES[state.themeIdx];
+    document.body.dataset.diffTheme = String(state.themeIdx);
+  }
+
+  let fxTimer = 0;
+  function triggerFx(payload) {
+    state.fx = payload;
+    clearTimeout(fxTimer);
+    fxTimer = setTimeout(() => {
+      if (state.fx === payload) {
+        state.fx = null;
+        render();
+      }
+    }, payload.ms || 700);
   }
 
   function canPlace(board, cells, row, col) {
@@ -698,6 +789,11 @@
         state.stats.colorHits = (state.stats.colorHits || 0) + colorHits;
       }
       if (state.mode === "speed3") points = Math.round(points * 1.35);
+      const tier = diffTier();
+      if (tier === 1) points = Math.round(points * 1.2);
+      else if (tier === 2) points = Math.round(points * 1.4);
+      else if (tier === 3) points = Math.round(points * 1.65);
+      else if (tier >= 4) points = Math.round(points * 2);
     } else combo = 0;
     return { points, combo, colorHits };
   }
@@ -745,6 +841,9 @@
     drag: null,
     aim: null,
     cell: 40,
+    fx: null,
+    fxTheme: null,
+    themeIdx: 0,
   };
 
   state.ownedCubes = migrateKeptRewards();
@@ -871,6 +970,8 @@
   function startClassic() {
     clearTimer();
     state.mode = "classic";
+    state.fxTheme = null;
+    document.body.dataset.diffTheme = "";
     resetRoundFields();
     state.modal = null;
     render();
@@ -883,6 +984,14 @@
     }
     clearTimer();
     state.mode = id;
+    if (isDiffMode(id)) {
+      state.themeIdx = Math.floor(Math.random() * HARD_THEMES.length);
+      state.fxTheme = HARD_THEMES[state.themeIdx];
+      document.body.dataset.diffTheme = String(state.themeIdx);
+    } else {
+      state.fxTheme = null;
+      document.body.dataset.diffTheme = "";
+    }
     resetRoundFields();
     state.modal = null;
     if (id === "color") {
@@ -893,6 +1002,10 @@
     if (id === "speed3") startTimer(45);
     measure();
     render();
+    if (isDiffMode(id)) {
+      const g = MINI_GAMES.find((m) => m.id === id);
+      toast(`${g?.icon || "🔥"} ${g?.name || id}`);
+    }
   }
 
   function startLevel(level) {
@@ -911,17 +1024,33 @@
 
     const boardBefore = state.board.map((r) => [...r]);
     const board = state.board.map((r) => [...r]);
+    const placedCells = [];
     for (let r = 0; r < piece.cells.length; r++) {
       for (let c = 0; c < piece.cells[r].length; c++) {
-        if (piece.cells[r][c]) board[row + r][col + c] = piece.color;
+        if (piece.cells[r][c]) {
+          board[row + r][col + c] = piece.color;
+          placedCells.push([row + r, col + c]);
+        }
       }
     }
     const clear = findClears(board);
+    const clearCells = [];
+    if (clear.lines) {
+      const rs = new Set(clear.rows);
+      const cs = new Set(clear.cols);
+      const n = board.length;
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          if ((rs.has(r) || cs.has(c)) && board[r][c]) clearCells.push([r, c, board[r][c]]);
+        }
+      }
+    }
     const nextBoard = applyClears(board, clear);
     const { points, combo } = scoreMove(countCells(piece.cells), clear, state.combo, boardBefore);
 
     let hand = state.hand.map((p, i) => (i === handIndex ? null : p));
-    if (hand.every((p) => !p)) hand = makeHand(nextBoard);
+    const handWasEmpty = hand.every((p) => !p);
+    if (handWasEmpty) hand = makeHand(nextBoard);
 
     state.board = nextBoard;
     state.hand = hand;
@@ -934,6 +1063,28 @@
     state.selected = null;
     state.aim = null;
 
+    if (clear.lines > 0 && isDiffMode()) {
+      pulseHardTheme(true);
+      toast(
+        clear.lines >= 3
+          ? `🔥×${clear.lines} МЕГА-ЧИСТКА!`
+          : `✨ Чистка ×${clear.lines} · ${state.fxTheme?.name || "тема"}`,
+      );
+    } else if (handWasEmpty && isDiffMode()) {
+      pulseHardTheme(true);
+      toast("Новые фигуры · тема сменилась");
+    } else if (clear.lines >= 2) {
+      toast(`Комбо-чистка ×${clear.lines}!`);
+    }
+
+    triggerFx({
+      place: placedCells,
+      clear: clearCells,
+      handFresh: handWasEmpty,
+      lines: clear.lines,
+      ms: clear.lines ? 780 : 420,
+    });
+
     if (state.mode !== "adventure") {
       if (isOwner()) {
         state.best = INF;
@@ -941,8 +1092,9 @@
       } else {
         if (state.mode === "classic") state.best = Math.max(state.best, state.score);
         if (clear.lines > 0) {
-          const mul = state.mode === "speed3" ? 2 : 1;
-          state.coins += (clear.lines * 2 + (combo > 1 ? combo : 0)) * mul;
+          const mul =
+            state.mode === "speed3" ? 2 : isDiffMode() ? 1 + diffTier() * 0.25 : 1;
+          state.coins += Math.round((clear.lines * 2 + (combo > 1 ? combo : 0)) * mul);
         }
       }
       store.set(KEYS.best, state.best);
@@ -1001,14 +1153,21 @@
   function boardHtml(preview) {
     const n = boardSize();
     const s = state.cell;
-    let html = `<div class="board" id="board" style="grid-template-columns:repeat(${n},${s}px)">`;
+    const placeSet = new Set((state.fx?.place || []).map((p) => `${p[0]},${p[1]}`));
+    const clearMap = new Map((state.fx?.clear || []).map((p) => [`${p[0]},${p[1]}`, p[2]]));
+    const shake = state.fx?.lines > 0 ? " clear-shake" : "";
+    let html = `<div class="board${shake}" id="board" style="grid-template-columns:repeat(${n},${s}px)">`;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
-        const color = state.board[r][c];
+        const key = `${r},${c}`;
+        const clearing = clearMap.get(key);
+        const color = clearing || state.board[r][c];
         let cls = "cell";
         let style = `width:${s}px;height:${s}px;background:rgba(255,255,255,0.06)`;
         if (color) {
           cls += " filled cube";
+          if (clearing) cls += " clearing";
+          else if (placeSet.has(key)) cls += " pop";
           const paint = cubePaint(color);
           style = `width:${s}px;height:${s}px;background-color:${paint.backgroundColor};background:${paint.background};box-shadow:${paint.boxShadow}`;
         }
@@ -1018,6 +1177,11 @@
       }
     }
     html += "</div>";
+    if (state.fx?.lines > 0) {
+      html += `<div class="fx-burst" aria-hidden="true"><span>${
+        state.fx.lines >= 3 ? "💥 МЕГА!" : "✨"
+      }</span></div>`;
+    }
     return html;
   }
 
@@ -1309,11 +1473,12 @@
 
   function render() {
     clearDragGhost();
-    const sk = bgSkin();
+    const sk = activeThemeSkin();
     const cube = cubeSkin();
     document.body.style.background = sk.bg;
     document.body.dataset.cube = cube.id;
     document.body.dataset.speed = state.mode === "speed3" ? "1" : "0";
+    document.body.dataset.diff = isDiffMode() ? String(diffTier()) : "0";
     const goal = state.activeLevel ? goalProgress(state.activeLevel, state, state.stats) : 0;
     const target = state.activeLevel?.target || 1;
     const preview = previewMask();
@@ -1325,7 +1490,9 @@
       <header class="hud">
         <div class="brand">
           <h1 style="text-shadow:0 2px 12px ${sk.accent}">Blockbust</h1>
-          <p class="mode-line">${modeTitle()}</p>
+          <p class="mode-line">${modeTitle()}${
+            isDiffMode() && state.fxTheme ? ` · ${state.fxTheme.name}` : ""
+          }</p>
         </div>
         <div class="actions">
           ${
@@ -1377,7 +1544,7 @@
       ${""}
       ${state.toast ? `<div class="toast">${state.toast}</div>` : ""}
       <div class="board-wrap">${boardHtml(preview)}</div>
-      <div class="hand">
+      <div class="hand${state.fx?.handFresh ? " hand-fresh" : ""}">
         <div class="hint">${
           isCoarsePointer()
             ? "Зажми и веди фигуру выше пальца на поле"
@@ -1875,8 +2042,18 @@
   });
 
   measure();
-  startClassic();
-  if (EASY && !isOwner()) toast("Лёгкий режим · проще фигуры");
+  (function bootMode() {
+    try {
+      const q = new URLSearchParams(location.search);
+      const d = q.get("diff") || q.get("mode");
+      if (DIFF_IDS.includes(d)) {
+        startMini(d);
+        return;
+      }
+    } catch (_) {}
+    startClassic();
+  })();
+  if (EASY && !isOwner() && !isDiffMode()) toast("Лёгкий режим · проще фигуры");
 
   window.addEventListener("amal-owner-changed", (e) => {
     if (e.detail) {

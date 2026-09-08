@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>🧩 Blockbust · для друзей</title>
+  <title>🧩 Blockbust · режимы</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0d6e5f" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -12,10 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --mint: #14b8a6;
       --deep: #0f766e;
       --ink: #042f2e;
-      --gold: #f0b429;
     }
     * { box-sizing: border-box; }
     body {
@@ -29,52 +27,61 @@
       padding: 20px 16px;
     }
     .card {
-      width: min(440px, 100%);
+      width: min(460px, 100%);
       background: rgba(255, 255, 255, 0.95);
       border: 3px solid #fff;
       border-radius: 28px;
-      padding: 28px 22px 24px;
+      padding: 26px 20px 22px;
       box-shadow: 0 18px 50px #042f2e55;
       text-align: center;
     }
-    .ico { font-size: 3rem; line-height: 1; margin-bottom: 8px; }
+    .ico { font-size: 2.6rem; line-height: 1; margin-bottom: 6px; }
     h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.9rem, 7vw, 2.6rem);
+      margin: 0 0 6px;
+      font-size: clamp(1.8rem, 7vw, 2.4rem);
       font-weight: 900;
       color: var(--deep);
     }
-    .tag {
-      display: inline-block;
-      background: #ecfdf5;
-      color: #065f46;
-      font-weight: 900;
-      font-size: 12px;
-      padding: 6px 12px;
-      border-radius: 999px;
+    .sub {
+      margin: 0 0 16px;
+      font-weight: 800;
+      font-size: 14px;
+      line-height: 1.4;
+      color: #475569;
+    }
+    .modes {
+      display: grid;
+      gap: 10px;
       margin-bottom: 12px;
     }
-    p {
-      margin: 0 0 18px;
-      font-weight: 800;
-      font-size: 15px;
-      line-height: 1.45;
-      color: #334155;
-    }
-    .play {
+    a.mode {
       display: block;
-      width: 100%;
       text-decoration: none;
-      background: linear-gradient(180deg, #fbbf24, #f59e0b);
-      color: #422006;
-      font: 900 18px Nunito, sans-serif;
-      padding: 16px 18px;
-      border-radius: 18px;
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 14px 12px;
       border: 3px solid #fff;
-      box-shadow: 0 8px 0 #b45309;
-      margin-bottom: 10px;
+      box-shadow: 0 6px 0 #0004;
+      text-align: left;
     }
-    .play:active { transform: translateY(3px); box-shadow: 0 5px 0 #b45309; }
+    a.mode:active { transform: translateY(2px); box-shadow: 0 3px 0 #0004; }
+    a.mode .t { font-weight: 900; font-size: 16px; }
+    a.mode .d { margin-top: 4px; font-size: 12px; font-weight: 800; opacity: 0.92; line-height: 1.35; }
+    .hard { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .extra { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .xhard { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
+    .mega { background: linear-gradient(135deg, #e11d48, #7f1d1d 55%, #0f172a); }
+    .easy {
+      display: block;
+      margin-top: 4px;
+      text-decoration: none;
+      background: #ecfdf5;
+      color: #065f46;
+      font: 900 14px Nunito, sans-serif;
+      padding: 12px;
+      border-radius: 14px;
+      border: 2px solid #a7f3d0;
+    }
     .hint {
       margin: 14px 0 0;
       font-size: 12px;
@@ -86,20 +93,28 @@
 <body>
   <div class="card">
     <div class="ico">🧩</div>
-    <div class="tag">только Blockbust · лёгкий режим</div>
     <h1>Blockbust</h1>
-    <p>Одна игра для друга: ставь блоки, чисти линии. Проще фигуры и немного монет на старт. Без остальных игр.</p>
-    <a class="play" id="go" href="./blockbust/?v=23&amp;easy=1">Играть сейчас</a>
-    <p class="hint">Ссылку можно скопировать из браузера и отправить.</p>
+    <p class="sub">Выбери режим: сложные фигуры, анимации чистки и смена темы.</p>
+    <div class="modes">
+      <a class="mode hard" href="./blockbust/?v=24&amp;diff=hard">
+        <div class="t">🔥 Hard</div>
+        <div class="d">Сложнее фигуры · анимация постановки и чистки</div>
+      </a>
+      <a class="mode extra" href="./blockbust/?v=24&amp;diff=extra">
+        <div class="t">💥 Extra</div>
+        <div class="d">Особые большие фигуры чаще попадаются</div>
+      </a>
+      <a class="mode xhard" href="./blockbust/?v=24&amp;diff=xhard">
+        <div class="t">☠️ Extra Hard</div>
+        <div class="d">Редко мелкие · много «монстр»-фигур</div>
+      </a>
+      <a class="mode mega" href="./blockbust/?v=24&amp;diff=mega">
+        <div class="t">🌋 Super Mega Hard</div>
+        <div class="d">Адские фигуры · при чистке меняется вся тема</div>
+      </a>
+    </div>
+    <a class="easy" href="./blockbust/?v=24&amp;easy=1">🙂 Лёгкий режим · для подруги</a>
+    <p class="hint">В игре режимы также в кнопке 🎮</p>
   </div>
-  <script>
-    (function () {
-      try {
-        localStorage.setItem("amal-blockbust-easy-v1", "1");
-      } catch (_) {}
-      var a = document.getElementById("go");
-      if (a) a.href = "./blockbust/?v=23&easy=1&from=share";
-    })();
-  </script>
 </body>
 </html>
