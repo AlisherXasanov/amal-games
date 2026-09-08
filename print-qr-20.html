@@ -6,32 +6,28 @@
   <title>20 QR · 4 адми + 16 друзей</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
       font-family: "Segoe UI", system-ui, sans-serif;
       background: #1e1030;
       color: #fff;
-      padding: 8px;
+      padding: 4px 6px;
+      overflow-x: hidden;
     }
     .no-print {
-      max-width: 640px;
-      margin: 0 auto 8px;
       text-align: center;
-      line-height: 1.35;
-      font-weight: 700;
-      font-size: 13px;
+      font: 700 11px/1.3 system-ui;
+      margin-bottom: 4px;
     }
-    .no-print p { margin-bottom: 6px; }
     .no-print button, .no-print a {
       display: inline-block;
       border: 0;
       border-radius: 999px;
-      padding: 10px 14px;
-      margin: 3px;
-      font: 800 13px inherit;
+      padding: 6px 12px;
+      margin: 2px;
+      font: 800 12px inherit;
       cursor: pointer;
       text-decoration: none;
     }
@@ -39,39 +35,46 @@
     .no-print a {
       background: rgba(255,255,255,.15);
       color: #fff;
-      border: 2px solid rgba(255,255,255,.25);
+      border: 1px solid rgba(255,255,255,.25);
     }
 
+    /* Весь лист в один экран + один A4 */
     .sheet {
-      width: 190mm;
-      max-width: 100%;
+      width: min(190mm, 100%);
+      max-height: calc(100vh - 48px);
       margin: 0 auto;
       background: #fff;
       color: #111;
-      border-radius: 8px;
-      padding: 2.5mm 3mm 2mm;
+      border-radius: 6px;
+      padding: 2mm 2.5mm 1.5mm;
       border: 2px solid #7c3aed;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
     .sheet h1 {
       text-align: center;
-      font-size: 10pt;
+      font-size: 9pt;
       color: #5b21b6;
-      line-height: 1.15;
+      line-height: 1.1;
+      flex: 0 0 auto;
     }
-    .sheet .lead {
+    .lead {
       text-align: center;
-      font-size: 7pt;
+      font-size: 6.5pt;
       font-weight: 700;
       color: #64748b;
-      margin: 0.3mm 0 1mm;
+      margin: 0.2mm 0 0.6mm;
+      flex: 0 0 auto;
     }
     .section {
-      font-size: 7pt;
+      font-size: 6.5pt;
       font-weight: 900;
-      margin: 0.8mm 0 0.8mm;
-      padding: 0.6mm 1mm;
-      border-radius: 4px;
+      margin: 0.5mm 0;
+      padding: 0.4mm 1mm;
+      border-radius: 3px;
       text-align: center;
+      flex: 0 0 auto;
     }
     .section.admin {
       color: #9d174d;
@@ -82,97 +85,105 @@
       color: #5b21b6;
       background: #f5f3ff;
       border: 1px dashed #7c3aed;
-      margin-top: 1.2mm;
     }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1.4mm;
+      gap: 1mm;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .grid.friends {
+      grid-template-rows: repeat(4, 1fr);
     }
     .card {
-      border: 1.5px solid #cbd5e1;
-      border-radius: 4px;
-      padding: 0.7mm;
+      border: 1px solid #cbd5e1;
+      border-radius: 3px;
+      padding: 0.4mm;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
     }
-    .card.admin {
-      border-color: #db2777;
-      background: #fff7fb;
-    }
-    .card.friend {
-      border-color: #7c3aed;
-      background: #faf8ff;
-    }
+    .card.admin { border-color: #db2777; background: #fff7fb; }
+    .card.friend { border-color: #7c3aed; background: #faf8ff; }
     .badge {
-      display: block;
-      font-size: 5.5pt;
+      font-size: 5pt;
       font-weight: 900;
-      line-height: 1.05;
-      margin-bottom: 0.4mm;
+      line-height: 1;
+      margin-bottom: 0.3mm;
       white-space: nowrap;
     }
     .card.admin .badge { color: #be185d; }
     .card.friend .badge { color: #6d28d9; }
     .card img {
-      width: 26mm;
-      height: 26mm;
+      width: auto;
+      height: auto;
       max-width: 100%;
+      max-height: calc(100% - 12px);
+      aspect-ratio: 1;
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 2px;
       display: block;
-      margin: 0 auto;
     }
     .num {
-      margin-top: 0.4mm;
-      font-size: 7.5pt;
+      margin-top: 0.2mm;
+      font-size: 6.5pt;
       font-weight: 900;
-      color: #0f172a;
       line-height: 1;
+      color: #0f172a;
     }
     .foot {
-      margin-top: 1mm;
-      font-size: 6pt;
+      margin-top: 0.5mm;
+      font-size: 5.5pt;
       font-weight: 700;
       color: #64748b;
       text-align: center;
-      line-height: 1.2;
+      flex: 0 0 auto;
     }
 
     @media print {
+      html, body { height: auto; overflow: visible; }
       body { background: #fff; padding: 0; }
       .no-print { display: none !important; }
       .sheet {
+        max-height: none;
+        height: auto;
         border: 0;
         border-radius: 0;
         width: 100%;
-        max-width: none;
+        overflow: visible;
         padding: 0;
       }
-      .card img { width: 26mm; height: 26mm; }
+      .grid { flex: none; }
+      .card img {
+        width: 24mm;
+        height: 24mm;
+        max-height: none;
+      }
     }
-    @page { size: A4 portrait; margin: 7mm; }
+    @page { size: A4 portrait; margin: 6mm; }
   </style>
 </head>
 <body>
   <div class="no-print">
-    <p><strong>20 QR на одном листе</strong><br>
-      4 адми (розовые) + 16 друзей (фиолетовые).<br>
-      Уплотнено: всё видно примерно за 1–2 скрина.</p>
+    <div>20 QR · 4 адми + 16 друзей · всё на одном экране</div>
     <button type="button" onclick="window.print()">🖨️ Печать</button>
     <a href="friends.html?v=9&stay=1&code=amal-star-friends">← Эксклюзив</a>
   </div>
 
   <div class="sheet">
     <h1>🎮 Игры Амаля · 20 QR</h1>
-    <p class="lead">4 адми + 16 друзей · один лист</p>
+    <p class="lead">4 адми + 16 друзей</p>
 
-    <div class="section admin">👑 АДМИ · ДЛЯ ВАС — 4 шт.</div>
+    <div class="section admin">👑 АДМИ · ДЛЯ ВАС — 4</div>
     <div class="grid" id="grid-admin"></div>
 
-    <div class="section friend">⭐ ДРУЗЬЯ — 16 шт.</div>
-    <div class="grid" id="grid-friend"></div>
+    <div class="section friend">⭐ ДРУЗЬЯ — 16</div>
+    <div class="grid friends" id="grid-friend"></div>
 
     <p class="foot">Всего 20 · А1–А4 адми · Д1–Д16 друзья · Амаль ♥</p>
   </div>
@@ -182,7 +193,7 @@
       var BASE = "https://alisherxasanov.github.io/amal-games/";
 
       function qr(u) {
-        return "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=6&data=" + encodeURIComponent(u);
+        return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=" + encodeURIComponent(u);
       }
 
       function addCard(grid, opts) {
@@ -192,8 +203,8 @@
         badge.className = "badge";
         badge.textContent = opts.label;
         var img = document.createElement("img");
-        img.width = 260;
-        img.height = 260;
+        img.width = 220;
+        img.height = 220;
         img.alt = opts.alt;
         img.src = qr(opts.url);
         var num = document.createElement("div");
@@ -209,7 +220,7 @@
       for (var a = 1; a <= 4; a++) {
         addCard(adminGrid, {
           kind: "admin",
-          label: "👑 ДЛЯ ВАС · АДМИ",
+          label: "👑 АДМИ",
           alt: "Admin " + a,
           num: "А" + a,
           url: BASE + "go.html?v=3&exclusive=1&code=amal-star-admin-" + a + "&admin=1",
