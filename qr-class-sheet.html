@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>20 QR · 4 адми + 16 друзей</title>
+  <title>22 QR · 4 адми + 18 друзей</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <style>
@@ -38,7 +38,6 @@
       border: 1px solid rgba(255,255,255,.25);
     }
 
-    /* Весь лист в один экран + один A4 */
     .sheet {
       width: min(190mm, 100%);
       max-height: calc(100vh - 48px);
@@ -70,8 +69,8 @@
     .section {
       font-size: 6.5pt;
       font-weight: 900;
-      margin: 0.5mm 0;
-      padding: 0.4mm 1mm;
+      margin: 0.4mm 0;
+      padding: 0.35mm 1mm;
       border-radius: 3px;
       text-align: center;
       flex: 0 0 auto;
@@ -88,18 +87,20 @@
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1mm;
-      flex: 1 1 auto;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.9mm;
+      flex: 0 0 auto;
       min-height: 0;
     }
     .grid.friends {
-      grid-template-rows: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      flex: 1 1 auto;
     }
     .card {
       border: 1px solid #cbd5e1;
       border-radius: 3px;
-      padding: 0.4mm;
+      padding: 0.35mm;
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -110,10 +111,10 @@
     .card.admin { border-color: #db2777; background: #fff7fb; }
     .card.friend { border-color: #7c3aed; background: #faf8ff; }
     .badge {
-      font-size: 5pt;
+      font-size: 4.5pt;
       font-weight: 900;
       line-height: 1;
-      margin-bottom: 0.3mm;
+      margin-bottom: 0.2mm;
       white-space: nowrap;
     }
     .card.admin .badge { color: #be185d; }
@@ -122,7 +123,7 @@
       width: auto;
       height: auto;
       max-width: 100%;
-      max-height: calc(100% - 12px);
+      max-height: calc(100% - 11px);
       aspect-ratio: 1;
       background: #fff;
       border: 1px solid #e2e8f0;
@@ -130,14 +131,14 @@
       display: block;
     }
     .num {
-      margin-top: 0.2mm;
-      font-size: 6.5pt;
+      margin-top: 0.15mm;
+      font-size: 6pt;
       font-weight: 900;
       line-height: 1;
       color: #0f172a;
     }
     .foot {
-      margin-top: 0.5mm;
+      margin-top: 0.4mm;
       font-size: 5.5pt;
       font-weight: 700;
       color: #64748b;
@@ -159,9 +160,10 @@
         padding: 0;
       }
       .grid { flex: none; }
+      .grid.friends { grid-template-rows: none; }
       .card img {
-        width: 24mm;
-        height: 24mm;
+        width: 22mm;
+        height: 22mm;
         max-height: none;
       }
     }
@@ -170,22 +172,22 @@
 </head>
 <body>
   <div class="no-print">
-    <div>20 QR · 4 адми + 16 друзей · всё на одном экране</div>
+    <div>22 QR · 4 адми + 18 друзей · один экран</div>
     <button type="button" onclick="window.print()">🖨️ Печать</button>
     <a href="friends.html?v=9&stay=1&code=amal-star-friends">← Эксклюзив</a>
   </div>
 
   <div class="sheet">
-    <h1>🎮 Игры Амаля · 20 QR</h1>
-    <p class="lead">4 адми + 16 друзей</p>
+    <h1>🎮 Игры Амаля · 22 QR</h1>
+    <p class="lead">4 адми + 18 обычных</p>
 
     <div class="section admin">👑 АДМИ · ДЛЯ ВАС — 4</div>
     <div class="grid" id="grid-admin"></div>
 
-    <div class="section friend">⭐ ДРУЗЬЯ — 16</div>
+    <div class="section friend">⭐ ДРУЗЬЯ — 18</div>
     <div class="grid friends" id="grid-friend"></div>
 
-    <p class="foot">Всего 20 · А1–А4 адми · Д1–Д16 друзья · Амаль ♥</p>
+    <p class="foot">Всего 22 · А1–А4 адми · Д1–Д18 друзья · Амаль ♥</p>
   </div>
 
   <script>
@@ -193,7 +195,7 @@
       var BASE = "https://alisherxasanov.github.io/amal-games/";
 
       function qr(u) {
-        return "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=" + encodeURIComponent(u);
+        return "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=4&data=" + encodeURIComponent(u);
       }
 
       function addCard(grid, opts) {
@@ -203,8 +205,8 @@
         badge.className = "badge";
         badge.textContent = opts.label;
         var img = document.createElement("img");
-        img.width = 220;
-        img.height = 220;
+        img.width = 200;
+        img.height = 200;
         img.alt = opts.alt;
         img.src = qr(opts.url);
         var num = document.createElement("div");
@@ -228,7 +230,7 @@
       }
 
       var friendGrid = document.getElementById("grid-friend");
-      for (var f = 1; f <= 16; f++) {
+      for (var f = 1; f <= 18; f++) {
         addCard(friendGrid, {
           kind: "friend",
           label: "⭐ Друзья",
