@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR класс · 4 адми + 16 друзей · новый</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #1e1030;
+      color: #fff;
+      padding: 10px;
+    }
+    .no-print {
+      max-width: 640px;
+      margin: 0 auto 10px;
+      text-align: center;
+      line-height: 1.35;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .no-print p { margin-bottom: 8px; }
+    .no-print button, .no-print a {
+      display: inline-block;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      margin: 3px;
+      font: 800 13px inherit;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .no-print button { background: #fde047; color: #1a1400; }
+    .no-print a {
+      background: rgba(255,255,255,.15);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,.25);
+    }
+
+    .sheet {
+      width: 190mm;
+      max-width: 100%;
+      margin: 0 auto;
+      background: #fff;
+      color: #111;
+      border-radius: 8px;
+      padding: 3.5mm 4mm 3mm;
+      border: 2px solid #7c3aed;
+    }
+    .sheet h1 {
+      text-align: center;
+      font-size: 11pt;
+      color: #5b21b6;
+      line-height: 1.2;
+    }
+    .sheet .lead {
+      text-align: center;
+      font-size: 7.5pt;
+      font-weight: 700;
+      color: #64748b;
+      margin: 0.5mm 0 1.5mm;
+    }
+    .section {
+      font-size: 7.5pt;
+      font-weight: 900;
+      margin: 1mm 0 1mm;
+      padding: 0.8mm 1.5mm;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .section.admin {
+      color: #9d174d;
+      background: #fdf2f8;
+      border: 1px dashed #db2777;
+    }
+    .section.friend {
+      color: #5b21b6;
+      background: #f5f3ff;
+      border: 1px dashed #7c3aed;
+      margin-top: 1.5mm;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.8mm;
+    }
+    .card {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 5px;
+      padding: 1mm;
+      text-align: center;
+    }
+    .card.admin {
+      border-color: #db2777;
+      background: #fff7fb;
+    }
+    .card.friend {
+      border-color: #7c3aed;
+      background: #faf8ff;
+    }
+    .badge {
+      display: block;
+      font-size: 6pt;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 0.6mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card.admin .badge { color: #be185d; }
+    .card.friend .badge { color: #6d28d9; }
+    .card img {
+      width: 28mm;
+      height: 28mm;
+      max-width: 100%;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 3px;
+      display: block;
+      margin: 0 auto;
+    }
+    .num {
+      margin-top: 0.5mm;
+      font-size: 8pt;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1;
+    }
+    .foot {
+      margin-top: 1.5mm;
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .no-print { display: none !important; }
+      .sheet {
+        border: 0;
+        border-radius: 0;
+        width: 100%;
+        max-width: none;
+        padding: 0;
+      }
+      .card img { width: 28mm; height: 28mm; }
+    }
+    @page { size: A4 portrait; margin: 8mm; }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <p>📄 <strong>НОВЫЙ адрес · один лист A4</strong> — 4 адми + 16 друзей.</p>
+    <button type="button" onclick="window.print()">🖨️ Печать</button>
+    <a href="qr-friends.html">Один большой QR</a>
+    <a href="friends.html?v=9&stay=1&code=amal-star-friends">← Эксклюзив</a>
+  </div>
+
+  <div class="sheet">
+    <h1>🎮 Игры Амаля · QR</h1>
+    <p class="lead">4 адми + 16 обычных · один лист</p>
+
+    <div class="section admin">👑 АДМИ · ДЛЯ ВАС (4)</div>
+    <div class="grid" id="grid-admin"></div>
+
+    <div class="section friend">⭐ ОБЫЧНЫЕ · друзья (16)</div>
+    <div class="grid" id="grid-friend"></div>
+
+    <p class="foot">А1–А4 адми · Д1–Д16 друзья · потеряли — печатай снова · Амаль ♥</p>
+  </div>
+
+  <script>
+    (function () {
+      var BASE = "https://alisherxasanov.github.io/amal-games/";
+
+      function qr(u) {
+        return "https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=" + encodeURIComponent(u);
+      }
+
+      function addCard(grid, opts) {
+        var card = document.createElement("div");
+        card.className = "card " + opts.kind;
+        var badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = opts.label;
+        var img = document.createElement("img");
+        img.width = 280;
+        img.height = 280;
+        img.alt = opts.alt;
+        img.src = qr(opts.url);
+        var num = document.createElement("div");
+        num.className = "num";
+        num.textContent = opts.num;
+        card.appendChild(badge);
+        card.appendChild(img);
+        card.appendChild(num);
+        grid.appendChild(card);
+      }
+
+      var adminGrid = document.getElementById("grid-admin");
+      for (var a = 1; a <= 4; a++) {
+        addCard(adminGrid, {
+          kind: "admin",
+          label: "👑 ДЛЯ ВАС · АДМИ",
+          alt: "Admin " + a,
+          num: "А" + a,
+          url: BASE + "go.html?v=3&exclusive=1&code=amal-star-admin-" + a + "&admin=1",
+        });
+      }
+
+      var friendGrid = document.getElementById("grid-friend");
+      for (var f = 1; f <= 16; f++) {
+        addCard(friendGrid, {
+          kind: "friend",
+          label: "⭐ Друзья",
+          alt: "Friend " + f,
+          num: "Д" + f,
+          url: BASE + "go.html?v=3&exclusive=1&code=amal-star-friends",
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
