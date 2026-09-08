@@ -41,12 +41,15 @@
   var boardListeners = [];
   var dmListeners = [];
   var taskListeners = [];
+  var alertListeners = [];
   var dmLog = []; // for owner watch + local
   var taskList = [];
   var STORE_MSGS = "amal-friends-msgs-v1";
   var STORE_VISITS = "amal-friends-visits-v1";
+  var STORE_ALERT_PERM = "amal-friends-alert-asked-v1";
   var messages = loadMessages();
   var peers = {};
+  var alertDock = null;
 
   function loadMessages() {
     try {
@@ -376,19 +379,31 @@
         };
         modState.warns[wk] = 0;
         addMessage({
-          name: "⛔",
-          text: "«" + ev.target + "» получил 3-е предупреждение → бан на 3 дня (от " + (ev.by || "?") + ")",
+          name: "💀",
+          text: "ПОЗОР! «" + ev.target + "» — 3 предупреждения → бан на 3 дня (от " + (ev.by || "?") + ")",
           t: Date.now(),
         });
+        friendsAlert(
+          "💀 ПОЗОР · бан",
+          "«" + ev.target + "» · 3 предупреждения",
+          { kind: "shame", tag: "amal-friends-ban", forceOs: true }
+        );
+        showShameBanner("«" + ev.target + "» получил ПОЗОР-бан на 3 дня (3 предупреждения).");
       } else {
         addMessage({
           name: "⚠️",
-          text: "Предупреждение " + modState.warns[wk] + "/3 для «" + ev.target + "» (от " + (ev.by || "?") + ")",
+          text: "Предупреждение " + modState.warns[wk] + "/3 для «" + ev.target + "» (от " + (ev.by || "?") + ") — ещё шаг до ПОЗОРА",
           t: Date.now(),
         });
+        friendsAlert(
+          "⚠️ Предупреждение",
+          "«" + ev.target + "» · " + modState.warns[wk] + "/3",
+          { kind: "info", tag: "amal-friends-warn", forceOs: true }
+        );
       }
       saveModState();
       renderModPanel();
+      refreshSelfBanUi();
       return;
     }
     if (ev.type === "ban" && ev.target) {
@@ -406,14 +421,21 @@
           delete modState.bans[tk];
           addMessage({
             name: "🛡️",
-            text: "Нельзя банить Амаля! Бан на 3 дня получил «" + adminName + "».",
+            text: "ПОЗОР нападающему! Нельзя банить Амаля — бан на 3 дня получил «" + adminName + "».",
             t: Date.now(),
           });
+          friendsAlert(
+            "🛡️ Защита Амаля",
+            "Бан отскочил на «" + adminName + "»",
+            { kind: "shame", tag: "amal-friends-ban", forceOs: true }
+          );
+          showShameBanner("Нельзя банить Амаля! ПОЗОР и бан → «" + adminName + "».");
         } else {
           addMessage({ name: "🛡️", text: "Амаля банить нельзя.", t: Date.now() });
         }
         saveModState();
         renderModPanel();
+        refreshSelfBanUi();
         return;
       }
       modState.bans[tk] = {
@@ -423,23 +445,35 @@
       };
       modState.warns[tk] = 0;
       addMessage({
-        name: "⛔",
-        text: "«" + ev.target + "» в бане на " + daysLeft(modState.bans[tk].until) + " дн. (от " + (ev.by || "?") + ")",
+        name: "💀",
+        text: "ПОЗОР! «" + ev.target + "» в бане на " + daysLeft(modState.bans[tk].until) + " дн. (от " + (ev.by || "?") + ")",
         t: Date.now(),
       });
+      friendsAlert(
+        "💀 ПОЗОР · бан",
+        "«" + ev.target + "» · " + daysLeft(modState.bans[tk].until) + " дн.",
+        { kind: "shame", tag: "amal-friends-ban", forceOs: true }
+      );
+      showShameBanner("ПОЗОР: «" + ev.target + "» забанен на " + daysLeft(modState.bans[tk].until) + " дн.");
       saveModState();
       renderModPanel();
+      refreshSelfBanUi();
       return;
     }
     if (ev.type === "unban" && ev.target) {
       delete modState.bans[nickKey(ev.target)];
       addMessage({
         name: "✅",
-        text: "Бан снят с «" + ev.target + "»" + (fromNet ? "" : ""),
+        text: "Позор снят с «" + ev.target + "» — бан отменён",
         t: Date.now(),
+      });
+      friendsAlert("✅ Бан снят", "«" + ev.target + "» снова может писать", {
+        kind: "info",
+        tag: "amal-friends-unban",
       });
       saveModState();
       renderModPanel();
+      refreshSelfBanUi();
     }
   }
 
@@ -473,13 +507,14 @@
       return '<option value="' + esc(n) + '">' + esc(n) + tag + "</option>";
     }).join("");
     panel.innerHTML =
-      "<h3>" + role + " · команды</h3>" +
-      '<p class="mod-hint">Ник <b>Азам</b> = обычный админ. <b>Особый QR «для вас · адми»</b> = сильнее: бан/варн + легенда + чистка чата. 3 варна → бан 3 дня. Банить Амаля нельзя.</p>' +
+      "<h3>" + role + " · команды сбоку</h3>" +
+      '<p class="mod-hint">Выбери ник → предупреждение или <b>ПОЗОР-бан</b>. 3 варна = бан 3 дня. Банить Амаля нельзя — отскочит. Оповещения придут даже на «Смотри»/другой вкладке (разреши уведомления).</p>' +
       '<label>Кто: <select id="friends-mod-who">' + opts + "</select></label>" +
       '<div class="mod-btns">' +
-      '<button type="button" id="friends-mod-warn">⚠️ Предупреждение</button>' +
-      '<button type="button" id="friends-mod-ban">⛔ Бан 3 дня</button>' +
-      '<button type="button" id="friends-mod-unban">✅ Снять бан</button>' +
+      '<button type="button" id="friends-mod-warn">⚠️ Варн</button>' +
+      '<button type="button" id="friends-mod-ban">💀 ПОЗОР-бан</button>' +
+      '<button type="button" id="friends-mod-unban">✅ Снять</button>' +
+      '<button type="button" id="friends-mod-alerts">🔔 Оповещения</button>' +
       "</div>";
     var who = $("friends-mod-who");
     $("friends-mod-warn").onclick = function () {
@@ -495,7 +530,7 @@
         target: t,
         by: nick(),
         until: Date.now() + BAN_MS,
-        reason: "бан админа",
+        reason: "ПОЗОР-бан",
         t: Date.now(),
       });
     };
@@ -505,6 +540,85 @@
       if (!checkOwner() && isOwnerNick(t)) return;
       broadcastMod({ type: "unban", target: t, by: nick(), t: Date.now() });
     };
+    $("friends-mod-alerts").onclick = function () {
+      ensureAlertPerm();
+      try {
+        if ("Notification" in global && Notification.permission === "default") {
+          Notification.requestPermission().then(function (p) {
+            friendsAlert(
+              p === "granted" ? "Оповещения включены" : "Оповещения не разрешены",
+              p === "granted"
+                ? "Будут приходить даже на YouTube / другой вкладке"
+                : "Разреши уведомления в браузере",
+              { kind: "info", forceOs: p === "granted" }
+            );
+          });
+        } else {
+          friendsAlert(
+            Notification.permission === "granted" ? "Оповещения уже включены" : "Нужно разрешение",
+            "Бан/вход друзей — маленькое уведомление справа и в системе",
+            { kind: "info", forceOs: Notification.permission === "granted" }
+          );
+        }
+      } catch (_) {}
+    };
+    mountSideAdmin();
+  }
+
+  function mountSideAdmin() {
+    try {
+      if (!checkAdmin()) {
+        var old = document.getElementById("amal-friends-side-mod");
+        if (old) old.remove();
+        return;
+      }
+      var side = document.getElementById("amal-friends-side-mod");
+      if (!side) {
+        side = document.createElement("div");
+        side.id = "amal-friends-side-mod";
+        side.style.cssText =
+          "position:fixed;right:10px;top:50%;transform:translateY(-50%);z-index:99980;" +
+          "width:min(168px,42vw);background:rgba(17,24,39,.94);border:2px solid #fbbf24;border-radius:16px;" +
+          "padding:10px;color:#fff;font:800 11px/1.3 Nunito,Segoe UI,sans-serif;box-shadow:0 12px 32px #0008";
+        document.body.appendChild(side);
+      }
+      var names = peerNamesList();
+      var opts = names
+        .map(function (n) {
+          return '<option value="' + esc(n) + '">' + esc(n) + "</option>";
+        })
+        .join("");
+      side.innerHTML =
+        '<div style="font-weight:900;color:#fbbf24;margin-bottom:6px">🛡️ Команды</div>' +
+        '<select id="amal-side-who" style="width:100%;margin-bottom:6px;border-radius:8px;padding:4px;font:700 11px inherit">' +
+        opts +
+        "</select>" +
+        '<button type="button" data-s="warn" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#f59e0b;cursor:pointer">⚠️ Варн</button>' +
+        '<button type="button" data-s="ban" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#dc2626;color:#fff;cursor:pointer">💀 ПОЗОР</button>' +
+        '<button type="button" data-s="unban" style="width:100%;margin:3px 0;border:0;border-radius:8px;padding:7px;font:800 11px inherit;background:#059669;color:#fff;cursor:pointer">✅ Снять</button>';
+      side.onclick = function (e) {
+        var b = e.target.closest("button[data-s]");
+        if (!b) return;
+        var sel = document.getElementById("amal-side-who");
+        var t = sel && sel.value;
+        if (!t) return;
+        var act = b.getAttribute("data-s");
+        if (act === "warn") broadcastMod({ type: "warn", target: t, by: nick(), t: Date.now() });
+        if (act === "ban")
+          broadcastMod({
+            type: "ban",
+            target: t,
+            by: nick(),
+            until: Date.now() + BAN_MS,
+            reason: "ПОЗОР-бан",
+            t: Date.now(),
+          });
+        if (act === "unban") {
+          if (!checkOwner() && isOwnerNick(t)) return;
+          broadcastMod({ type: "unban", target: t, by: nick(), t: Date.now() });
+        }
+      };
+    } catch (_) {}
   }
 
   function esc(s) {
@@ -615,6 +729,183 @@
     chatListeners.forEach(function (fn) { try { fn(m); } catch (_) {} });
   }
 
+  function ensureAlertPerm() {
+    try {
+      if (!("Notification" in global)) return;
+      if (Notification.permission === "granted" || Notification.permission === "denied") return;
+      var asked = false;
+      try {
+        asked = localStorage.getItem(STORE_ALERT_PERM) === "1";
+      } catch (_) {}
+      function ask() {
+        try {
+          localStorage.setItem(STORE_ALERT_PERM, "1");
+        } catch (_) {}
+        Notification.requestPermission().catch(function () {});
+      }
+      if (!asked) {
+        global.addEventListener(
+          "click",
+          function once() {
+            ask();
+          },
+          { once: true, capture: true }
+        );
+      }
+    } catch (_) {}
+  }
+
+  function ensureAlertDock() {
+    if (!document.getElementById("amal-friends-toast-css")) {
+      try {
+        var st = document.createElement("style");
+        st.id = "amal-friends-toast-css";
+        st.textContent =
+          "@keyframes amalFriendsToastIn{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}";
+        document.head.appendChild(st);
+      } catch (_) {}
+    }
+    if (alertDock && document.body.contains(alertDock)) return alertDock;
+    alertDock = document.createElement("div");
+    alertDock.id = "amal-friends-alert-dock";
+    alertDock.setAttribute("aria-live", "polite");
+    alertDock.style.cssText =
+      "position:fixed;right:12px;bottom:12px;z-index:99999;display:flex;flex-direction:column;gap:8px;" +
+      "max-width:min(320px,calc(100vw - 24px));pointer-events:none;font-family:Nunito,Segoe UI,system-ui,sans-serif";
+    document.body.appendChild(alertDock);
+    return alertDock;
+  }
+
+  function showMiniToast(title, body, kind) {
+    try {
+      var dock = ensureAlertDock();
+      var el = document.createElement("div");
+      var bg =
+        kind === "shame"
+          ? "linear-gradient(135deg,#7f1d1d,#450a0a)"
+          : kind === "join"
+            ? "linear-gradient(135deg,#065f46,#064e3b)"
+            : "linear-gradient(135deg,#312e81,#1e1b4b)";
+      el.style.cssText =
+        "pointer-events:auto;background:" +
+        bg +
+        ";color:#fff;border:2px solid #fff3;border-radius:14px;padding:10px 12px;" +
+        "box-shadow:0 10px 28px #0008;animation:amalFriendsToastIn .28s ease-out";
+      el.innerHTML =
+        '<div style="font-weight:900;font-size:13px;line-height:1.2">' +
+        String(title || "") +
+        '</div><div style="font-weight:700;font-size:12px;opacity:.92;margin-top:4px;line-height:1.35">' +
+        String(body || "") +
+        "</div>";
+      dock.appendChild(el);
+      setTimeout(function () {
+        el.style.opacity = "0";
+        el.style.transition = "opacity .35s";
+        setTimeout(function () {
+          try {
+            el.remove();
+          } catch (_) {}
+        }, 400);
+      }, kind === "shame" ? 6500 : 4200);
+    } catch (_) {}
+  }
+
+  function pingOsAlert(title, body, tag) {
+    try {
+      if (!("Notification" in global)) return;
+      if (Notification.permission !== "granted") return;
+      var n = new Notification(String(title || "Друзья Амаля"), {
+        body: String(body || "").slice(0, 120),
+        tag: tag || "amal-friends",
+        silent: false,
+      });
+      setTimeout(function () {
+        try {
+          n.close();
+        } catch (_) {}
+      }, 8000);
+      n.onclick = function () {
+        try {
+          global.focus();
+          n.close();
+        } catch (_) {}
+      };
+    } catch (_) {}
+  }
+
+  /** Маленькое оповещение на странице + системное (если вкладка другая / YouTube) */
+  function friendsAlert(title, body, opts) {
+    opts = opts || {};
+    var kind = opts.kind || "info";
+    var tag = opts.tag || "amal-friends";
+    showMiniToast(title, body, kind);
+    var hidden = false;
+    try {
+      hidden = document.hidden || document.visibilityState === "hidden";
+    } catch (_) {}
+    if (opts.forceOs || hidden || kind === "shame") {
+      pingOsAlert(title, body, tag);
+    }
+    alertListeners.forEach(function (fn) {
+      try {
+        fn({ title: title, body: body, kind: kind, t: Date.now() });
+      } catch (_) {}
+    });
+  }
+
+  function showShameBanner(text) {
+    try {
+      var old = document.getElementById("amal-friends-shame");
+      if (old) old.remove();
+      var el = document.createElement("div");
+      el.id = "amal-friends-shame";
+      el.style.cssText =
+        "position:fixed;inset:0;z-index:100000;display:grid;place-items:center;" +
+        "background:rgba(20,0,0,.72);padding:20px;font-family:Nunito,Segoe UI,system-ui,sans-serif";
+      el.innerHTML =
+        '<div style="max-width:420px;width:100%;background:linear-gradient(160deg,#7f1d1d,#1c1917);' +
+        "border:3px solid #fbbf24;border-radius:22px;padding:22px 18px;text-align:center;color:#fff;" +
+        'box-shadow:0 20px 60px #000a">' +
+        '<div style="font-size:2rem;margin-bottom:8px">💀 ПОЗОР</div>' +
+        '<div style="font-weight:900;font-size:16px;line-height:1.4">' +
+        String(text || "") +
+        "</div>" +
+        '<button type="button" style="margin-top:16px;border:0;border-radius:12px;padding:10px 16px;' +
+        'font:900 14px inherit;background:#fbbf24;color:#111;cursor:pointer">Понятно</button></div>';
+      el.querySelector("button").onclick = function () {
+        el.remove();
+      };
+      document.body.appendChild(el);
+      setTimeout(function () {
+        try {
+          el.remove();
+        } catch (_) {}
+      }, 9000);
+    } catch (_) {}
+  }
+
+  function refreshSelfBanUi() {
+    try {
+      var until = banUntil(nick());
+      var bar = document.getElementById("amal-friends-ban-bar");
+      if (!until) {
+        if (bar) bar.remove();
+        return;
+      }
+      if (!bar) {
+        bar = document.createElement("div");
+        bar.id = "amal-friends-ban-bar";
+        bar.style.cssText =
+          "position:fixed;left:12px;right:12px;top:12px;z-index:99990;background:#7f1d1d;color:#fee2e2;" +
+          "border:2px solid #fbbf24;border-radius:14px;padding:10px 12px;font:800 13px/1.35 Nunito,Segoe UI,sans-serif;" +
+          "box-shadow:0 8px 24px #0007;text-align:center";
+        document.body.appendChild(bar);
+      }
+      bar.textContent =
+        "💀 Ты в ПОЗОРЕ · бан ещё " + daysLeft(until) + " дн. · чат закрыт";
+    } catch (_) {}
+  }
+
   function notifyJoin(name, place, peerId) {
     if (!name || name === "?" || name === nick()) return;
     var key = name + "|" + (peerId || "");
@@ -628,6 +919,11 @@
       text: "друг «" + name + "» зашёл" + (place ? " в «" + place + "»" : "") + "!",
       t: Date.now(),
     });
+    friendsAlert(
+      "Друг зашёл",
+      "«" + name + "»" + (place ? " · " + place : ""),
+      { kind: "join", tag: "amal-friends-join", forceOs: true }
+    );
   }
 
   function notifyLeave(name) {
@@ -640,6 +936,7 @@
       text: "друг «" + name + "» вышел",
       t: Date.now(),
     });
+    friendsAlert("Друг вышел", "«" + name + "»", { kind: "info", tag: "amal-friends-leave" });
   }
 
   function startNetwork() {
@@ -850,19 +1147,23 @@
 
     init: function () {
       checkOwner();
+      ensureAlertPerm();
       showWelcome(function () {
         startNetwork().then(function (ok) {
           var note = $("friends-chat-note");
           if (note) {
             note.textContent = ok
-              ? "💜 Чат только для друзей с секретным QR · нужен интернет"
+              ? "💜 Чат только для друзей · бан = ПОЗОР · оповещения даже на другой вкладке"
               : "📱 Нет сети Trystero — попробуй обновить страницу";
           }
+          refreshSelfBanUi();
+          mountSideAdmin();
         });
       });
       logActivity("открыл страницу друзей");
       renderOwner();
       renderModPanel();
+      refreshSelfBanUi();
     },
 
     mountChat: function (rootId) {
@@ -940,8 +1241,8 @@
       var until = banUntil(nick());
       if (until) {
         addMessage({
-          name: "⛔",
-          text: "Ты в бане ещё " + daysLeft(until) + " дн. Писать нельзя.",
+          name: "💀",
+          text: "Ты в ПОЗОРЕ ещё " + daysLeft(until) + " дн. Писать нельзя.",
           t: Date.now(),
         });
         return;
@@ -981,6 +1282,7 @@
     /** Лёгкий старт сети без полного чата (для игр) */
     initLite: function (onDone, place) {
       checkOwner();
+      ensureAlertPerm();
       if (place) myPlace = String(place).slice(0, 40);
       // если хозяин без имени — зовём Амаль, чтобы сеть сразу работала
       if (!nick() && checkOwner()) setNick("Амаль");
@@ -995,6 +1297,8 @@
           if (sendHello) sendHello({ name: nick(), place: myPlace || "клуб", power: myPower(), t: Date.now() });
           logActivity("зашёл", myPlace || "клуб");
         }
+        refreshSelfBanUi();
+        mountSideAdmin();
         if (onDone) onDone(ok);
       });
     },
@@ -1012,6 +1316,13 @@
     onFriendLeave: function (fn) {
       if (typeof fn === "function") leaveListeners.push(fn);
     },
+
+    onAlert: function (fn) {
+      if (typeof fn === "function") alertListeners.push(fn);
+    },
+
+    ensureAlerts: ensureAlertPerm,
+    alert: friendsAlert,
 
     isOnline: function () { return !!netReady; },
 

@@ -177,12 +177,23 @@
       location.replace("./index.html?v=48&fresh=" + Date.now());
     }
     var _v = new URLSearchParams(location.search).get("v");
-    if (!_v || parseInt(_v, 10) < 48) {
-      location.replace("./index.html?v=48&fresh=" + Date.now());
+    if (!_v || parseInt(_v, 10) < 49) {
+      location.replace("./index.html?v=49&fresh=" + Date.now());
     }
   </script>
   <script src="./channels-data.js?v=50"></script>
-  <script src="./main.js?v=48"></script>
+  <script src="./main.js?v=49"></script>
+  <script src="../shared/amal-owner-session.js?v=4"></script>
+  <script src="../shared/amal-friends-net.js?v=13"></script>
+  <script>
+    (function () {
+      if (!window.AmalFriendsNet) return;
+      try {
+        AmalFriendsNet.ensureAlerts && AmalFriendsNet.ensureAlerts();
+        AmalFriendsNet.initLite(function () {}, "Смотри");
+      } catch (_) {}
+    })();
+  </script>
   <script src="../shared/amal-pwa.js?v=2"></script>
 </body>
 </html>
