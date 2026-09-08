@@ -3,7 +3,7 @@
 (function () {
   "use strict";
 
-  var VERSION = "amal-offline-v127";
+  var VERSION = "amal-offline-v128";
   var CORE = VERSION + "-core";
   var RUNTIME = VERSION + "-runtime";
 
@@ -140,7 +140,7 @@
       return;
     }
 
-    if (/meme-channel|go-memes|qr-memes|qr-admin-sheet|qr-class-sheet|qr-friends|qr-school|amal-meme-net|school-party|friends\.html/.test(req.url)) {
+    if (/meme-channel|go-memes|qr-memes|qr-admin-sheet|qr-class-sheet|qr-friends|qr-school|amal-meme-net|school-party|friends\.html|bedwars\.html|print-qr/.test(req.url)) {
       event.respondWith(fetch(req, { cache: "no-store" }).catch(function () { return caches.match(req); }));
       return;
     }

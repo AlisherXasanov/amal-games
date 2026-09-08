@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🛏️ Bed Wars · для друзей</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --sky: #6ec8ef;
+      --deep: #1d4ed8;
+      --ink: #0f172a;
+      --soft: #e0f2fe;
+      --gold: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh; color: var(--ink);
+      font-family: Nunito, system-ui, sans-serif;
+      background:
+        radial-gradient(900px 480px at 15% -10%, #93c5fd, transparent),
+        radial-gradient(700px 420px at 100% 0%, #fde68a88, transparent),
+        linear-gradient(180deg, var(--sky), #2563eb 55%, #1e3a8a);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px 16px;
+    }
+    .card {
+      width: min(440px, 100%);
+      background: rgba(255, 255, 255, 0.94);
+      border: 3px solid #fff;
+      border-radius: 28px;
+      padding: 28px 22px 24px;
+      box-shadow: 0 18px 50px #0f172a55;
+      text-align: center;
+    }
+    .ico { font-size: 3rem; line-height: 1; margin-bottom: 8px; }
+    h1 {
+      margin: 0 0 8px;
+      font-family: Bangers, cursive;
+      font-size: clamp(2.2rem, 8vw, 3rem);
+      letter-spacing: 1px;
+      color: var(--deep);
+    }
+    .tag {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    p {
+      margin: 0 0 18px;
+      font-weight: 800;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #334155;
+    }
+    .play {
+      display: block;
+      width: 100%;
+      text-decoration: none;
+      background: linear-gradient(180deg, #fbbf24, #f59e0b);
+      color: #422006;
+      font: 900 18px Nunito, sans-serif;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 3px solid #fff;
+      box-shadow: 0 8px 0 #b45309;
+      margin-bottom: 10px;
+    }
+    .play:active { transform: translateY(3px); box-shadow: 0 5px 0 #b45309; }
+    .hint {
+      margin: 14px 0 0;
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748b;
+    }
+    .pc {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #9a3412;
+      background: #ffedd5;
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ico">🛏️</div>
+    <div class="tag">только Bed Wars · лёгкий режим</div>
+    <h1>Bed Wars</h1>
+    <p>Одна игра для друга: больше ресурсов, слабее боты, дольше спокойное начало. Без остальных игр — сразу сюда.</p>
+    <a class="play" id="go" href="./bed-wars/?v=17&amp;easy=1">Играть сейчас</a>
+    <p class="hint">Ссылка короткая — можно скопировать из браузера и отправить.</p>
+    <p class="pc">Лучше на компьютере (клавиатура WASD). На телефоне 3D может тормозить.</p>
+  </div>
+  <script>
+    (function () {
+      try {
+        localStorage.setItem("amal-bedwars-easy-v1", "1");
+      } catch (_) {}
+      var a = document.getElementById("go");
+      if (a) a.href = "./bed-wars/?v=17&easy=1&from=share";
+    })();
+  </script>
+</body>
+</html>

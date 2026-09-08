@@ -13,6 +13,21 @@ function isOwner() {
   return false;
 }
 
+/** Лёгкий режим для друзей: ?easy=1 */
+function isEasy() {
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("easy") === "1" || q.get("mode") === "easy") {
+      localStorage.setItem("amal-bedwars-easy-v1", "1");
+      return true;
+    }
+    if (localStorage.getItem("amal-bedwars-easy-v1") === "1") return true;
+  } catch (_) {}
+  return false;
+}
+const EASY = isEasy();
+const GRACE_SEC = EASY ? 75 : 45;
+
 const TEAMS = [
   { id: "yellow", name: "Жёлтые", hex: "#facc15", color: 0xfacc15, x: -36, z: -36 },
   { id: "blue", name: "Синие", hex: "#38bdf8", color: 0x38bdf8, x: 36, z: -36 },
@@ -145,7 +160,7 @@ app.innerHTML = `
   </div>
   <div class="overlay" id="start">
     <h1>Bed Wars</h1>
-    <p class="lead">Ты жёлтый. С тобой 2 союзника. Враги — синие, красные, зелёные.</p>
+    <p class="lead" id="startLead">Ты жёлтый. С тобой 2 союзника. Враги — синие, красные, зелёные.</p>
     <ol class="howto">
       <li><b>Ходи</b> клавишами W A S D</li>
       <li><b>Купи</b> стену в магазине (кнопка внизу)</li>
@@ -166,6 +181,14 @@ const toastEl = document.getElementById("toast");
 const shopEl = document.getElementById("shop");
 const shopGrid = document.getElementById("shopGrid");
 const abilEl = document.getElementById("abil");
+
+if (EASY) {
+  const lead = document.getElementById("startLead");
+  if (lead) {
+    lead.innerHTML =
+      "Лёгкий режим для друзей: больше ресурсов, слабее боты, дольше тишина в начале. Ты жёлтый.";
+  }
+}
 
 let toastT = 0;
 function toast(m) {
@@ -573,24 +596,26 @@ function reset() {
     const mesh = makeGuy(col, 0, nametag);
     mesh.position.copy(isl.spawn);
     mesh.position.x += offsetX;
+    const enemyEasy = EASY && teamId !== ME;
+    const hp = enemyEasy ? 70 : 100;
     bots.push({
       team: teamId,
       ally: teamId === ME,
       mesh,
-      hp: 100,
-      maxHp: 100,
+      hp,
+      maxHp: hp,
       alive: true,
       respawn: 0,
       atkCd: 0,
       ai: Math.random() * 4,
       helmet: 0,
       pickaxe: 1,
-      sword: 1,
+      sword: enemyEasy ? 0 : 1,
       magic: 0,
       skin: 0,
-      iron: 30,
-      gold: 8,
-      coins: 15,
+      iron: enemyEasy ? 12 : 30,
+      gold: enemyEasy ? 3 : 8,
+      coins: enemyEasy ? 6 : 15,
       diamonds: 0
     });
   }
@@ -606,16 +631,16 @@ function reset() {
   state = {
     running: true,
     t: 0,
-    iron: isOwner() ? 999999 : 45,
-    gold: isOwner() ? 999999 : 12,
-    coins: isOwner() ? 999999 : 28,
-    diamonds: isOwner() ? 99999 : 0,
-    helmet: 0,
+    iron: isOwner() ? 999999 : EASY ? 90 : 45,
+    gold: isOwner() ? 999999 : EASY ? 24 : 12,
+    coins: isOwner() ? 999999 : EASY ? 50 : 28,
+    diamonds: isOwner() ? 99999 : EASY ? 2 : 0,
+    helmet: EASY ? 1 : 0,
     pickaxe: 1,
-    sword: 1,
+    sword: EASY ? 1 : 1,
     magic: 0,
     skin: 0,
-    wallLv: 1,
+    wallLv: EASY ? 2 : 1,
     bowLv: 1,
     player: { mesh: playerMesh, hp: 100, maxHp: 100, alive: true, respawn: 0, atkCd: 0 },
     bots,
@@ -1043,7 +1068,7 @@ function botUpgrade(bot) {
 }
 
 function updateBots(dt) {
-  const grace = state.t < 45;
+  const grace = state.t < GRACE_SEC;
   for (const bot of state.bots) {
     if (!bot.alive) {
       if (bot.respawn > 0) {
@@ -1116,7 +1141,7 @@ function updateBots(dt) {
 
       if (p.alive && distToPlayer < 2.4 && bot.atkCd <= 0) {
         bot.atkCd = 0.85;
-        hurtPlayer(grace ? 6 : 9 + bot.sword * 2);
+        hurtPlayer(grace ? (EASY ? 3 : 6) : EASY ? 5 + bot.sword : 9 + bot.sword * 2);
       }
       if (!grace && bot.mesh.position.distanceTo(myIsl.bedWorld) < 5) {
         const open = damageWall(myIsl, 6 * dt);
@@ -1134,7 +1159,7 @@ function updateBots(dt) {
     const dx = tx - bot.mesh.position.x;
     const dz = tz - bot.mesh.position.z;
     const L = Math.hypot(dx, dz) || 1;
-    const spd = (grace ? 7.2 : 8.5) * dt;
+    const spd = (grace ? (EASY ? 5.5 : 7.2) : EASY ? 6.8 : 8.5) * dt;
     const next = tryMove(bot.mesh.position, (dx / L) * spd, (dz / L) * spd);
     bot.mesh.position.x = next.x;
     bot.mesh.position.z = next.z;
@@ -1154,7 +1179,7 @@ function updateBots(dt) {
 }
 
 function updateBows(dt) {
-  if (state.t < 45) return; // луки молчат в начале
+  if (state.t < GRACE_SEC) return; // луки молчат в начале
   for (const isl of islands) {
     if (!isl.bedAlive) continue;
     let home = false;
@@ -1180,7 +1205,8 @@ function updateBows(dt) {
       bow.cd = 1.8 - bow.lv * 0.15;
       const dir = target.pos.clone().sub(origin).setY(0).normalize();
       const bolt = box(0.18, 0.18, 0.65, new THREE.MeshLambertMaterial({ color: 0xfef3c7 }), origin.x, origin.y + 0.3, origin.z);
-      state.bullets.push({ mesh: bolt, vel: dir.multiplyScalar(20), life: 0.9, dmg: 3 + bow.lv * 2, target });
+      const arrowDmg = EASY ? 2 + bow.lv : 3 + bow.lv * 2;
+      state.bullets.push({ mesh: bolt, vel: dir.multiplyScalar(20), life: 0.9, dmg: arrowDmg, target });
     }
   }
 }
@@ -1257,6 +1283,7 @@ requestAnimationFrame(frame);
 document.getElementById("btnPlay").onclick = () => {
   document.getElementById("start").classList.add("hidden");
   reset();
+  if (EASY) toast("Лёгкий режим · больше ресурсов");
 };
 document.getElementById("btnAgain").onclick = () => {
   document.getElementById("end").classList.add("hidden");
