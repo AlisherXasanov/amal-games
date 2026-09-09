@@ -13,6 +13,7 @@
     "animal-hospital",
     "coconut",
     "vika-songs",
+    "relax-songs",
     "bed-wars",
     "blockbust",
     "blockbust-normal",
