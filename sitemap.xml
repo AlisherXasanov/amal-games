@@ -21,6 +21,11 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://alisherxasanov.github.io/amal-games/v2/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://alisherxasanov.github.io/amal-games/versions.html</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Игры Амаля · версия 2.0</title>
+  <meta name="description" content="Версия 2.0 Игр Амаля — обновления, подарки и твои цели, к которым стремишься." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/v2/" />
+  <meta name="theme-color" content="#1d4ed8" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh; font-family: Nunito, system-ui, sans-serif; color: #1e3a8a;
+      background:
+        radial-gradient(800px 420px at 15% -8%, #93c5fd, transparent),
+        radial-gradient(600px 360px at 100% 0%, #fde68a66, transparent),
+        linear-gradient(180deg, #eff6ff, #60a5fa 45%, #1d4ed8);
+      padding: 18px 14px 40px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .banner {
+      background: #1e3a8a; color: #dbeafe; border-radius: 16px; padding: 12px 14px;
+      font-weight: 900; font-size: 13px; margin-bottom: 14px; line-height: 1.4;
+    }
+    .banner a { color: #fde68a; }
+    .ver {
+      display: inline-block; background: #fbbf24; color: #111; font-weight: 900;
+      font-size: 12px; padding: 4px 10px; border-radius: 999px; margin-bottom: 8px;
+    }
+    h1 { margin: 0 0 6px; font-size: clamp(1.6rem, 6vw, 2.2rem); color: #fff; text-shadow: 0 2px 10px #1e3a8a88; }
+    .lead { margin: 0 0 14px; font-weight: 800; font-size: 14px; color: #eff6ff; line-height: 1.45; }
+    .panel {
+      background: rgba(255,255,255,.96); border-radius: 20px; padding: 14px;
+      border: 3px solid #fff; box-shadow: 0 12px 32px #1e3a8a44; margin-bottom: 12px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 1.05rem; color: #1d4ed8; }
+    .goal {
+      display: flex; gap: 8px; align-items: flex-start; padding: 10px;
+      background: #eff6ff; border-radius: 12px; margin-bottom: 6px; border: 1px solid #bfdbfe;
+    }
+    .goal.done { opacity: .55; text-decoration: line-through; }
+    .goal button {
+      border: 0; border-radius: 8px; padding: 6px 8px; font: 900 11px inherit;
+      cursor: pointer; background: #22c55e; color: #fff; flex-shrink: 0;
+    }
+    .goal .t { font-weight: 800; font-size: 14px; line-height: 1.35; flex: 1; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    input[type="text"] {
+      flex: 1; min-width: 140px; border: 2px solid #93c5fd; border-radius: 12px;
+      padding: 10px; font: 800 14px Nunito, sans-serif;
+    }
+    .row > button, .gift-btn {
+      border: 0; border-radius: 12px; padding: 10px 12px; font: 900 13px Nunito, sans-serif;
+      cursor: pointer; background: #2563eb; color: #fff;
+    }
+    .gift-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #422006; width: 100%; margin-bottom: 8px; }
+    .gift-btn.got { background: #d1fae5; color: #065f46; }
+    .upd {
+      font-weight: 800; font-size: 13px; line-height: 1.4; padding: 8px 10px;
+      background: #fef3c7; border-radius: 12px; margin-bottom: 6px; color: #92400e;
+    }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+    }
+    a.game {
+      display: block; text-decoration: none; color: #1e3a8a; background: #fff;
+      border: 2px solid #93c5fd; border-radius: 16px; padding: 12px; text-align: center;
+    }
+    a.game .ico { font-size: 1.7rem; display: block; }
+    a.game .name { font-weight: 900; font-size: 13px; }
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; justify-content: center; }
+    .nav a {
+      text-decoration: none; font-weight: 900; font-size: 13px; padding: 10px 14px;
+      border-radius: 12px; background: #1e3a8a; color: #fff;
+    }
+    .nav a.soft { background: #fff; color: #1e3a8a; border: 2px solid #93c5fd; }
+    .toast {
+      position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+      background: #065f46; color: #ecfdf5; font-weight: 900; padding: 12px 16px;
+      border-radius: 14px; display: none; z-index: 99; max-width: 90vw;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      Ты в <b>версии 2.0</b> — появились обновления, подарки и <b>твои цели</b>.
+      <a href="../versions.html">Все версии →</a>
+    </div>
+    <span class="ver">v2.0</span>
+    <h1>Игры Амаля</h1>
+    <p class="lead">Сюда заходи, когда хочешь цели и обновления. Без Искры — но уже не «самое начало».</p>
+
+    <div class="panel">
+      <h2>🎯 Мои цели</h2>
+      <p style="margin:0 0 8px;font-weight:800;font-size:13px;color:#64748b">Цели, к которым стремишься — отмечай, когда сделал.</p>
+      <div id="goals"></div>
+      <div class="row">
+        <input type="text" id="goalIn" maxlength="80" placeholder="Новая цель…" />
+        <button type="button" id="addGoal">Добавить</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>🎁 Обновления · могу дать</h2>
+      <button type="button" class="gift-btn" id="gift1">✦ Забрать сюрприз дня (+монеты-настроение)</button>
+      <button type="button" class="gift-btn" id="gift2">⭐ Открыть «режим легенды» на сегодня</button>
+      <div id="updates"></div>
+    </div>
+
+    <div class="panel">
+      <h2>🎮 Игры 2.0</h2>
+      <div class="grid">
+        <a class="game" href="../animal-hospital/"><span class="ico">🐾</span><span class="name">Animal Hospital</span></a>
+        <a class="game" href="../zombie-vs-plants/"><span class="ico">🧟</span><span class="name">Зомби vs растения</span></a>
+        <a class="game" href="../snake-game/"><span class="ico">🐍</span><span class="name">Snake</span></a>
+        <a class="game" href="../bed-wars/"><span class="ico">🛏️</span><span class="name">Bed Wars</span></a>
+        <a class="game" href="../blockbust-normal.html"><span class="ico">🧩</span><span class="name">Blockbust</span></a>
+        <a class="game" href="../create-lab/"><span class="ico">🧪</span><span class="name">Create Lab</span></a>
+        <a class="game" href="../milashki/?v=7"><span class="ico">🐣</span><span class="name">Милашки</span></a>
+        <a class="game" href="../school-party/?v=9&amp;stay=1"><span class="ico">🏫</span><span class="name">Клуб друзей</span></a>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a class="soft" href="../v1/">← 1.0 начало</a>
+      <a href="../versions.html">📦 Версии</a>
+      <a class="soft" href="../">Сейчас →</a>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    (function () {
+      try { localStorage.setItem("amal-site-version-v1", "v2"); } catch (_) {}
+
+      var GOALS_KEY = "amal-v2-goals-v1";
+      var GIFTS_KEY = "amal-v2-gifts-v1";
+      var DEFAULT_GOALS = [
+        { id: 1, text: "Сделать сайт, которым горжусь", done: false },
+        { id: 2, text: "Играть с друзьями в эксклюзиве", done: false },
+        { id: 3, text: "Добавлять новые игры и обновления", done: false },
+        { id: 4, text: "Помнить версию 1.0 и расти дальше", done: false },
+      ];
+
+      function toast(msg) {
+        var el = document.getElementById("toast");
+        el.textContent = msg;
+        el.style.display = "block";
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { el.style.display = "none"; }, 2200);
+      }
+
+      function loadGoals() {
+        try {
+          var a = JSON.parse(localStorage.getItem(GOALS_KEY) || "null");
+          if (Array.isArray(a) && a.length) return a;
+        } catch (_) {}
+        return DEFAULT_GOALS.map(function (g) { return Object.assign({}, g); });
+      }
+      function saveGoals(a) {
+        try { localStorage.setItem(GOALS_KEY, JSON.stringify(a)); } catch (_) {}
+      }
+      function loadGifts() {
+        try {
+          return JSON.parse(localStorage.getItem(GIFTS_KEY) || "{}") || {};
+        } catch (_) {
+          return {};
+        }
+      }
+      function saveGifts(o) {
+        try { localStorage.setItem(GIFTS_KEY, JSON.stringify(o)); } catch (_) {}
+      }
+
+      function renderGoals() {
+        var box = document.getElementById("goals");
+        var goals = loadGoals();
+        box.innerHTML = "";
+        goals.forEach(function (g) {
+          var row = document.createElement("div");
+          row.className = "goal" + (g.done ? " done" : "");
+          row.innerHTML = "<div class='t'></div>";
+          row.querySelector(".t").textContent = g.text;
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = g.done ? "↩" : "✓";
+          btn.onclick = function () {
+            g.done = !g.done;
+            saveGoals(goals);
+            renderGoals();
+            toast(g.done ? "Цель отмечена!" : "Снова в работе");
+          };
+          row.appendChild(btn);
+          box.appendChild(row);
+        });
+      }
+
+      document.getElementById("addGoal").onclick = function () {
+        var inp = document.getElementById("goalIn");
+        var text = (inp.value || "").trim();
+        if (!text) return;
+        var goals = loadGoals();
+        goals.push({ id: Date.now(), text: text.slice(0, 80), done: false });
+        saveGoals(goals);
+        inp.value = "";
+        renderGoals();
+        toast("Цель добавлена");
+      };
+
+      var UPDATES = [
+        "Обновление: появились цели, к которым стремишься",
+        "Обновление: можно забрать сюрприз дня",
+        "Обновление: Милашки и Клуб друзей в каталоге 2.0",
+        "Обновление: версия 1.0 сохранена рядом — можно вернуться",
+      ];
+      document.getElementById("updates").innerHTML = UPDATES.map(function (u) {
+        return '<div class="upd">' + u + "</div>";
+      }).join("");
+
+      function wireGift(id, key, msg) {
+        var btn = document.getElementById(id);
+        var gifts = loadGifts();
+        var today = new Date().toDateString();
+        if (gifts[key] === today) {
+          btn.classList.add("got");
+          btn.textContent = "✓ Уже забрано сегодня";
+        }
+        btn.onclick = function () {
+          var g = loadGifts();
+          if (g[key] === today) {
+            toast("Уже забирал сегодня");
+            return;
+          }
+          g[key] = today;
+          saveGifts(g);
+          btn.classList.add("got");
+          btn.textContent = "✓ Уже забрано сегодня";
+          toast(msg);
+        };
+      }
+      wireGift("gift1", "mood", "Сюрприз дня твой! +хорошее настроение ✨");
+      wireGift("gift2", "legend", "Режим легенды на сегодня включён ⭐");
+
+      renderGoals();
+    })();
+  </script>
+</body>
+</html>

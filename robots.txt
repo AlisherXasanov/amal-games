@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Allow: /v1/
+Allow: /v2/
 Allow: /versions.html
 Allow: /iskra.html
 Allow: /blockbust/
