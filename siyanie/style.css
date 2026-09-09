@@ -67,6 +67,15 @@ body {
   margin: 0 4px;
 }
 
+.combo {
+  margin-top: 4px;
+  font-weight: 900;
+  font-size: 13px;
+  color: #fde68a;
+  text-shadow: 0 0 12px #fbbf2488;
+  min-height: 1.1em;
+}
+
 .hint {
   position: fixed;
   left: 50%;

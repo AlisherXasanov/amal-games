@@ -3,41 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Сияние — Игры Амаля</title>
-  <meta name="description" content="Сияние: лети сквозь северное сияние, собирай искры. Красивая графика и плавная игра в браузере." />
+  <title>Сияние Pro — Игры Амаля</title>
+  <meta name="description" content="Сияние Pro: комбо, магнит, щит, северное сияние. Новая версия — не зомби." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/siyanie/" />
   <meta name="theme-color" content="#0b1026" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Orbitron:wght@700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
   <a class="back" href="../">← Игры</a>
   <canvas id="c"></canvas>
   <div class="hud">
-    <div class="brand">Сияние</div>
+    <div class="brand">Сияние Pro</div>
     <div class="stats">
       <span id="score">0</span>
       <span class="sep">·</span>
       <span id="best">рекорд 0</span>
     </div>
+    <div class="combo" id="combo"></div>
   </div>
-  <div class="hint" id="hint">Тяни пальцем / мышью · собирай искры · избегай тёмных осколков</div>
+  <div class="hint" id="hint">Тяни · искры · комбо · магнит и щит · тёмные осколки опасны</div>
   <div class="overlay" id="start">
     <div class="box">
-      <p class="tag">не зомби · своё</p>
-      <h1>Сияние</h1>
-      <p class="lead">Лети сквозь северное сияние. Искры — очки. Тёмные осколки — конец. Плавная графика, одна цель — дальше и красивее.</p>
+      <p class="tag">новая версия · не зомби</p>
+      <h1>Сияние Pro</h1>
+      <p class="lead">В сотни раз живее: комбо, золотые искры, магнит, щит, близость к осколкам даёт бонус. Проверь — если лучше, старые спрячем из списка.</p>
       <button type="button" id="play">Играть</button>
     </div>
   </div>
   <div class="overlay hidden" id="end">
     <div class="box">
-      <h1 id="endTitle">Красивый полёт</h1>
+      <h1 id="endTitle">Полёт окончен</h1>
       <p id="endText"></p>
       <button type="button" id="again">Ещё раз</button>
     </div>
   </div>
-  <script src="./game.js?v=1"></script>
+  <script src="./game.js?v=2"></script>
 </body>
 </html>

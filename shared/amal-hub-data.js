@@ -5,7 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "✨", name: "Сияние", path: "siyanie/", note: "не зомби · северное сияние" },
+    { ico: "✨", name: "Сияние Pro", path: "siyanie/?v=2", note: "новая · комбо · магнит · щит" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🐍", name: "Snake", path: "snake-game/", note: "змейка" },
@@ -31,7 +31,7 @@
   ];
 
   var EXCLUSIVE = [
-    { ico: "✨", name: "Сияние", path: "siyanie/", note: "не зомби · 100/100 полёт" },
+    { ico: "✨", name: "Сияние Pro", path: "siyanie/?v=2", note: "новая · комбо · магнит · щит" },
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
     { ico: "🥚", name: "Укради яйцо", path: "steal-egg/play3d.html?v=5", note: "3D прокачано" },
     { ico: "🧠", name: "Steal a Brainrot", path: "steal-brainrot/", note: "воруй брейнротов · 3D" },
@@ -101,19 +101,34 @@
       }
 
       var gamesList = AmalHubData.GAMES_2D;
+      if (global.AmalCatalog && AmalCatalog.filterList) {
+        gamesList = AmalCatalog.filterList(gamesList);
+      }
       if (from === "friends") {
         var xPaths = {};
-        AmalHubData.EXCLUSIVE.forEach(function (g) {
+        var exclusiveList = AmalHubData.EXCLUSIVE;
+        if (global.AmalCatalog && AmalCatalog.filterList) {
+          exclusiveList = AmalCatalog.filterList(exclusiveList);
+        }
+        exclusiveList.forEach(function (g) {
           xPaths[g.path.split("?")[0]] = true;
         });
-        gamesList = AmalHubData.GAMES_2D.filter(function (g) {
+        gamesList = gamesList.filter(function (g) {
           return !xPaths[g.path.split("?")[0]];
         });
       }
+      var milaList = AmalHubData.MILA;
+      var d3List = AmalHubData.GAMES_3D;
+      var exclList = AmalHubData.EXCLUSIVE;
+      if (global.AmalCatalog && AmalCatalog.filterList) {
+        milaList = AmalCatalog.filterList(milaList);
+        d3List = AmalCatalog.filterList(d3List);
+        exclList = AmalCatalog.filterList(exclList);
+      }
       fillGrid("list-games", gamesList, { from: from });
-      fillGrid("list-mila", AmalHubData.MILA, { from: from });
-      fillGrid("list-d3", AmalHubData.GAMES_3D, { from: from, locked: !d3Playable && from === "phone" });
-      fillGrid("list-exclusive", AmalHubData.EXCLUSIVE, { from: from, exclusive: true });
+      fillGrid("list-mila", milaList, { from: from });
+      fillGrid("list-d3", d3List, { from: from, locked: !d3Playable && from === "phone" });
+      fillGrid("list-exclusive", exclList, { from: from, exclusive: true });
 
       var search = $("search-games");
       if (search) {
