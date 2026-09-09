@@ -11,6 +11,7 @@
   /** Что видно в витрине (короткий список) */
   var SHOWCASE = [
     "animal-hospital",
+    "coconut",
     "bed-wars",
     "blockbust",
     "blockbust-normal",
