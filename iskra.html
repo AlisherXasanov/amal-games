@@ -2,89 +2,310 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Искра — ИИ-помощник Амаля | Игры Амаля</title>
-  <meta name="description" content="Искра — ИИ-помощник Амаля в Играх Амаля: проверяет порядок в чате друзей, историю нарушений, правила. Напиши «искра» или /искра, чтобы найти и открыть." />
-  <meta name="keywords" content="Искра, искра, ИИ Искра, помощник Амаля, Игры Амаля, Amaya Games, чат друзей, патруль, проверка правил" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>🤖 Искра — голосовой помощник Амаля</title>
+  <meta name="description" content="Искра — голосовой ИИ-помощник Амаля: микрофон, набор текста, буквы А–Я. Проверка порядка, баги, версии. Найди в Google: искра игры амаля." />
+  <meta name="keywords" content="Искра, искра, голосовой помощник, ИИ Искра, Игры Амаля, микрофон, Amaya Games" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/iskra.html" />
-  <meta property="og:title" content="Искра — ИИ-помощник Амаля" />
-  <meta property="og:description" content="Напиши «искра» в Google или открой эту страницу — Искра проверяет порядок в чате друзей." />
+  <meta property="og:title" content="Искра — голосовой помощник Амаля" />
+  <meta property="og:description" content="Говори или пиши Искре. Микрофон · буквы · команды." />
   <meta property="og:url" content="https://alisherxasanov.github.io/amal-games/iskra.html" />
-  <meta property="og:type" content="website" />
-  <meta property="og:locale" content="ru_RU" />
-  <meta name="twitter:card" content="summary" />
-  <meta name="theme-color" content="#0ea5e9" />
+  <meta name="theme-color" content="#0284c7" />
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Искра",
-    "alternateName": ["Искра Амаль", "ИИ Искра", "Iskra"],
-    "applicationCategory": "GameApplication",
-    "operatingSystem": "Web",
-    "url": "https://alisherxasanov.github.io/amal-games/iskra.html",
-    "description": "Искра — ИИ-помощник в Играх Амаля: проверка порядка, история нарушений, патруль в чате друзей.",
-    "author": { "@type": "Person", "name": "Амаль" },
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "inLanguage": "ru"
-  }
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Искра","alternateName":["Искра","Iskra","голосовой помощник Амаля"],"url":"https://alisherxasanov.github.io/amal-games/iskra.html","applicationCategory":"GameApplication","operatingSystem":"Web","inLanguage":"ru","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
   <style>
-    :root { --ink:#0c4a6e; --bg:#e0f2fe; }
+    :root { --ink:#0c4a6e; --panel:#fff; --mic:#dc2626; --ok:#059669; }
     * { box-sizing: border-box; }
     body {
       margin: 0; min-height: 100dvh; font-family: Nunito, system-ui, sans-serif; color: var(--ink);
       background:
-        radial-gradient(900px 480px at 10% -10%, #7dd3fc, transparent),
-        radial-gradient(700px 400px at 100% 0%, #fde68a88, transparent),
-        linear-gradient(180deg, #f0f9ff, #bae6fd 40%, #0ea5e9);
-      padding: 24px 16px 40px;
+        radial-gradient(900px 500px at 15% -10%, #7dd3fc, transparent),
+        radial-gradient(700px 420px at 100% 0%, #fde68a66, transparent),
+        linear-gradient(180deg, #e0f2fe, #38bdf8 45%, #0369a1);
+      padding: 16px 12px 28px;
     }
-    .wrap { max-width: 640px; margin: 0 auto; }
-    h1 { font-size: clamp(2rem, 8vw, 3rem); margin: 0 0 8px; }
-    .tag {
-      display: inline-block; background: #0369a1; color: #e0f2fe;
-      font-weight: 900; font-size: 12px; padding: 6px 12px; border-radius: 999px; margin-bottom: 12px;
+    .wrap { max-width: 560px; margin: 0 auto; }
+    .hero { text-align: center; margin-bottom: 12px; }
+    .hero h1 { margin: 0; font-size: clamp(2rem, 9vw, 2.8rem); }
+    .hero p { margin: 6px 0 0; font-weight: 800; font-size: 14px; opacity: .9; }
+    .panel {
+      background: rgba(255,255,255,.96);
+      border: 3px solid #fff;
+      border-radius: 28px;
+      padding: 16px 14px 14px;
+      box-shadow: 0 18px 48px #0c4a6e44;
     }
-    .card {
-      background: rgba(255,255,255,.94); border-radius: 24px; padding: 22px 20px;
-      border: 3px solid #fff; box-shadow: 0 16px 40px #0c4a6e33; margin-bottom: 14px;
+    .log {
+      min-height: 140px; max-height: 36vh; overflow: auto;
+      background: #0c4a6e; color: #e0f2fe;
+      border-radius: 18px; padding: 12px; font-weight: 800; font-size: 14px; line-height: 1.4;
+      white-space: pre-wrap; margin-bottom: 12px;
     }
-    p { font-weight: 800; line-height: 1.45; margin: 0 0 12px; }
-    ul { margin: 0; padding-left: 1.2em; font-weight: 800; line-height: 1.5; }
-    a.btn {
-      display: inline-block; margin: 6px 6px 0 0; text-decoration: none; font-weight: 900;
-      background: linear-gradient(135deg,#38bdf8,#0284c7); color: #fff;
-      padding: 12px 16px; border-radius: 14px; border: 2px solid #fff;
+    .line { margin: 0 0 8px; }
+    .line.me { color: #fde68a; }
+    .line.bot { color: #7dd3fc; }
+    .compose {
+      display: flex; gap: 8px; align-items: stretch; margin-bottom: 10px;
     }
-    a.ghost { background: #fff; color: #0369a1; border: 2px solid #7dd3fc; }
-    code { background: #e0f2fe; padding: 2px 6px; border-radius: 6px; }
+    #input {
+      flex: 1; border: 2px solid #7dd3fc; border-radius: 14px; padding: 12px;
+      font: 800 16px Nunito, sans-serif; color: #0c4a6e;
+    }
+    #btnMic {
+      width: 56px; border: 0; border-radius: 16px; background: var(--mic); color: #fff;
+      font-size: 1.4rem; cursor: pointer; box-shadow: 0 4px 0 #7f1d1d;
+    }
+    #btnMic.on { background: var(--ok); box-shadow: 0 4px 0 #065f46; animation: pulse 1s infinite; }
+    #btnSend {
+      border: 0; border-radius: 14px; padding: 0 14px; font: 900 14px Nunito, sans-serif;
+      background: #0284c7; color: #fff; cursor: pointer;
+    }
+    @keyframes pulse { 50% { transform: scale(1.05); } }
+    .alpha {
+      display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; margin-bottom: 8px;
+    }
+    .alpha button {
+      border: 0; border-radius: 8px; padding: 8px 0; font: 900 13px Nunito, sans-serif;
+      background: #e0f2fe; color: #0c4a6e; cursor: pointer;
+    }
+    .alpha button:active { background: #7dd3fc; }
+    .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tools button {
+      border: 0; border-radius: 999px; padding: 8px 10px; font: 900 12px Nunito, sans-serif;
+      background: #0369a1; color: #fff; cursor: pointer;
+    }
+    .links { margin-top: 12px; text-align: center; }
+    .links a {
+      display: inline-block; margin: 4px; padding: 10px 12px; border-radius: 12px;
+      background: #fff; color: #0369a1; font-weight: 900; text-decoration: none; border: 2px solid #7dd3fc;
+    }
+    .hint { font-size: 12px; font-weight: 800; opacity: .75; text-align: center; margin-top: 8px; }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="tag">ИИ · Игры Амаля</div>
-    <h1>🤖 Искра</h1>
-    <div class="card">
-      <p><strong>Искра</strong> — ИИ-помощник Амаля. Её можно найти в Google по слову «искра» вместе с «Игры Амаля».</p>
-      <p>В чате эксклюзива пиши команды:</p>
-      <ul>
-        <li><code>/искра</code> — список команд</li>
-        <li><code>/проверка</code> — проверить порядок</li>
-        <li><code>/история</code> — кто нарушал</li>
-        <li><code>/патруль</code> — авто-проверка, когда Амаль отошёл</li>
-      </ul>
+    <div class="hero">
+      <h1>🤖 Искра</h1>
+      <p>Голосовой помощник Амаля · говори или пиши</p>
     </div>
-    <div class="card">
-      <p>Открыть Искра и связанные страницы:</p>
-      <a class="btn" href="friends.html?v=9&amp;stay=1&amp;code=amal-star-friends">Чат · Эксклюзив</a>
-      <a class="btn ghost" href="versions.html">Версии сайта</a>
-      <a class="btn ghost" href="bugs.html">Баги · помощник</a>
-      <a class="btn ghost" href="./">Все игры</a>
+    <div class="panel" id="panel">
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="tools" id="tools">
+        <button type="button" data-q="помощь">Помощь</button>
+        <button type="button" data-q="проверка">Проверка</button>
+        <button type="button" data-q="какие баги">Баги</button>
+        <button type="button" data-q="версии">Версии</button>
+        <button type="button" data-q="blockbust">Blockbust</button>
+        <button type="button" data-q="стереть">⌫</button>
+        <button type="button" data-q="пробел">Пробел</button>
+      </div>
+      <div class="alpha" id="alpha" title="Буквы по порядку"></div>
+      <div class="compose">
+        <button type="button" id="btnMic" title="Микрофон">🎤</button>
+        <input id="input" type="text" maxlength="200" placeholder="Напиши Искре…" autocomplete="off" lang="ru" />
+        <button type="button" id="btnSend">➤</button>
+      </div>
+      <p class="hint">Микрофон · набор · буквы А→Я. Можно просто говорить.</p>
     </div>
-    <p style="font-size:13px;opacity:.85;font-weight:800">Страница для поиска: https://alisherxasanov.github.io/amal-games/iskra.html</p>
+    <div class="links">
+      <a href="blockbust-normal.html">🧩 Blockbust · нормальный</a>
+      <a href="blockbust.html">🔥 Сложности</a>
+      <a href="friends.html?v=9&amp;stay=1&amp;code=amal-star-friends#chat">💬 Чат</a>
+      <a href="bugs.html">🐞 Баги</a>
+      <a href="versions.html">📦 Версии</a>
+      <a href="./">← Игры</a>
+    </div>
   </div>
+  <script>
+    (function () {
+      var BUGS = "amal-bugs-v1";
+      var logEl = document.getElementById("log");
+      var input = document.getElementById("input");
+      var listening = false;
+
+      function say(who, text) {
+        var div = document.createElement("div");
+        div.className = "line " + (who === "me" ? "me" : "bot");
+        div.textContent = (who === "me" ? "Ты: " : "Искра: ") + text;
+        logEl.appendChild(div);
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      function loadBugs() {
+        try {
+          var a = JSON.parse(localStorage.getItem(BUGS) || "[]");
+          return Array.isArray(a) ? a : [];
+        } catch (_) {
+          return [];
+        }
+      }
+      function saveBug(text) {
+        text = String(text || "").trim();
+        if (!text) return;
+        var a = loadBugs();
+        a.unshift({ id: Date.now(), text: text.slice(0, 500), source: "iskra", t: Date.now() });
+        try {
+          localStorage.setItem(BUGS, JSON.stringify(a.slice(-80)));
+        } catch (_) {}
+      }
+
+      function reply(q) {
+        q = String(q || "").trim();
+        if (!q) return;
+        say("me", q);
+        var low = q.toLowerCase();
+
+        if (/помощь|что умеешь|команд|\/искра|^искра$/i.test(low)) {
+          say(
+            "bot",
+            "Я Искра. Можешь говорить в микрофон или писать буквами.\n" +
+              "• проверка — порядок\n• какие баги — список\n• я увидел баг … — сохранить\n" +
+              "• blockbust / версии / чат — открыть\n• патруль — в чате друзей: /патруль"
+          );
+          return;
+        }
+        if (/проверк|порядок|патрул/i.test(low)) {
+          say("bot", "Для полной проверки зайди в чат друзей и напиши /проверка или /патруль. Здесь я храню баги и открываю страницы.");
+          return;
+        }
+        if (/баг|сломал|ошибк|не работает|глюк|увидел/i.test(low)) {
+          var cleaned = q.replace(/^(я\s+)?(увидел|нашёл|нашел)\s*(такой\s+)?(баг[:\s]*)?/i, "").trim() || q;
+          saveBug(cleaned);
+          say("bot", "Сохранила баг: «" + cleaned.slice(0, 160) + "». Скажи «какие баги» — покажу.");
+          return;
+        }
+        if (/какие баг|список баг|покажи баг/i.test(low)) {
+          var bugs = loadBugs();
+          if (!bugs.length) {
+            say("bot", "Багов пока нет.");
+            return;
+          }
+          say(
+            "bot",
+            "Баги:\n" +
+              bugs
+                .slice(0, 10)
+                .map(function (b, i) {
+                  return i + 1 + ". " + b.text;
+                })
+                .join("\n")
+          );
+          return;
+        }
+        if (/blockbust|блокбаст|блок бас|головолом/i.test(low)) {
+          say("bot", "Открываю нормальный Blockbust…");
+          setTimeout(function () {
+            location.href = "blockbust-normal.html";
+          }, 500);
+          return;
+        }
+        if (/сложност|хард|mega|мега/i.test(low)) {
+          say("bot", "Открываю сложности Blockbust…");
+          setTimeout(function () {
+            location.href = "blockbust.html";
+          }, 500);
+          return;
+        }
+        if (/верси/i.test(low)) {
+          location.href = "versions.html";
+          return;
+        }
+        if (/чат|друз|эксклюз/i.test(low)) {
+          location.href = "friends.html?v=9&stay=1&code=amal-star-friends#chat";
+          return;
+        }
+        if (/привет|здрав/i.test(low)) {
+          say("bot", "Привет! Я Искра. Жми 🎤 или пиши буквами.");
+          return;
+        }
+        say("bot", "Поняла: «" + q.slice(0, 100) + "». Скажи «помощь», если не знаешь команд. Или «я увидел баг …».");
+      }
+
+      // Алфавит А–Я по порядку + Ё
+      var letters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ".split("");
+      var alpha = document.getElementById("alpha");
+      letters.forEach(function (ch) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = ch;
+        b.onclick = function () {
+          input.value = (input.value + ch).slice(0, 200);
+          input.focus();
+        };
+        alpha.appendChild(b);
+      });
+
+      document.getElementById("tools").onclick = function (e) {
+        var btn = e.target.closest("button[data-q]");
+        if (!btn) return;
+        var q = btn.getAttribute("data-q");
+        if (q === "стереть") {
+          input.value = input.value.slice(0, -1);
+          return;
+        }
+        if (q === "пробел") {
+          input.value += " ";
+          return;
+        }
+        reply(q);
+      };
+
+      document.getElementById("btnSend").onclick = function () {
+        var v = input.value;
+        input.value = "";
+        reply(v);
+      };
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          document.getElementById("btnSend").click();
+        }
+      });
+
+      document.getElementById("btnMic").onclick = function () {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var btn = this;
+        if (!SR) {
+          say("bot", "Микрофон в этом браузере не работает — пиши буквами или текстом.");
+          return;
+        }
+        if (listening) return;
+        var rec = new SR();
+        rec.lang = "ru-RU";
+        rec.interimResults = false;
+        listening = true;
+        btn.classList.add("on");
+        btn.textContent = "⏺";
+        say("bot", "Слушаю…");
+        rec.onresult = function (ev) {
+          var text = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || "";
+          if (text) reply(text);
+        };
+        rec.onerror = function () {
+          listening = false;
+          btn.classList.remove("on");
+          btn.textContent = "🎤";
+          say("bot", "Не расслышала. Попробуй ещё или напиши.");
+        };
+        rec.onend = function () {
+          listening = false;
+          btn.classList.remove("on");
+          btn.textContent = "🎤";
+        };
+        try {
+          rec.start();
+        } catch (_) {
+          listening = false;
+          btn.classList.remove("on");
+          btn.textContent = "🎤";
+        }
+      };
+
+      say("bot", "Привет! Я Искра — твой голосовой помощник. Жми 🎤 или набирай буквы А→Я.");
+    })();
+  </script>
 </body>
 </html>
