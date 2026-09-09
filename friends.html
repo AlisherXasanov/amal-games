@@ -30,6 +30,13 @@
     #commander-powers button.max { background: linear-gradient(135deg,#fbbf24,#f59e0b); color:#111; grid-column: 1/-1; text-align:center; }
     #amal-powers-fab { top: 12px !important; bottom: auto !important; right: 12px !important; }
     #amal-powers-panel { top: 58px !important; bottom: auto !important; right: 12px !important; max-height: min(68vh, 520px); }
+    .cat-btn-smol {
+      padding: 8px 10px !important;
+      font-size: 12px !important;
+      min-height: 0 !important;
+      opacity: 0.95;
+    }
+    .cat-btn-smol span { font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -76,7 +83,7 @@
         <div class="cat-grid">
           <a class="cat-btn" href="my-links.html" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#db2777)"><span>🔗</span>Мои ссылки · доступ</a>
           <a class="cat-btn" href="friends.html?v=8&stay=1&code=amal-star-friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#059669,#0d9488)"><span>👑</span>Включить админку</a>
-          <a class="cat-btn" href="youtube-free/?v=50&from=friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотри (с админкой)</a>
+          <a class="cat-btn cat-btn-smol" href="youtube-free/?v=50&from=friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотри</a>
           <a class="cat-btn" href="go.html?v=2&exclusive=1&code=amal-star-friends&owner=amal" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#4f46e5,#6366f1)"><span>📱</span>Вход с телефона</a>
         </div>
       </div>
@@ -88,7 +95,7 @@
         <a class="cat-btn" href="milashki/?v=7&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#ec4899,#a855f7)"><span>🐣</span>Милашки — играть!</a>
         <a class="cat-btn" href="hits/?v=1&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#ea580c,#fbbf24)"><span>🔥</span>Хиты · папка + умный</a>
         <button type="button" class="cat-btn xclusive" data-go="exclusive"><span>⭐</span>Эксклюзив</button>
-        <a class="cat-btn" href="youtube-free/?v=46&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотри · Ютуб</a>
+        <a class="cat-btn cat-btn-smol" href="youtube-free/?v=46&from=friends" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#7c3aed,#fbbf24)"><span>▶</span>Смотри</a>
         <a class="cat-btn" href="school-party/?v=9&stay=1" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#4f46e5,#7c3aed)"><span>🏫</span>Клуб друзей</a>
         <a class="cat-btn" href="meme-channel.html?v=11&from=friends&stay=1" style="text-decoration:none;color:#fff;background:linear-gradient(145deg,#229ed9,#17212b)"><span>😂</span>Мемы · видео</a>
         <button type="button" class="cat-btn chat" data-go="chat"><span>💬</span>Чат</button>
@@ -128,8 +135,8 @@
   </div>
 
   <script src="./shared/amal-hub-back.js?v=1"></script>
-  <script src="./shared/amal-hub-data.js?v=15"></script>
-  <script src="./shared/amal-catalog-filter.js?v=1"></script>
+  <script src="./shared/amal-hub-data.js?v=16"></script>
+  <script src="./shared/amal-catalog-filter.js?v=2"></script>
   <script src="./shared/amal-device-switcher.js?v=4"></script>
   <script src="./shared/amal-friends-net.js?v=14"></script>
   <script src="./shared/amal-chat-phrases.js?v=1"></script>

@@ -10,7 +10,6 @@
 
   /** Что видно в витрине (короткий список) */
   var SHOWCASE = [
-    "siyanie",
     "animal-hospital",
     "bed-wars",
     "blockbust",
@@ -28,14 +27,23 @@
     "my-links",
     "friends",
     "hits",
+    "zombie-vs-plants",
+    "obby",
+    "work-pizza",
+    "escape-tsunami",
+    "kick-buddy",
+    "minecraft",
   ];
 
+  /** По умолчанию полный каталог. Короткая витрина: ?all=0 или localStorage = "0" */
   function showAll() {
     try {
-      if (new URLSearchParams(location.search).get("all") === "1") return true;
-      if (localStorage.getItem(SHOW_ALL_KEY) === "1") return true;
+      var q = new URLSearchParams(location.search).get("all");
+      if (q === "0") return false;
+      if (q === "1") return true;
+      if (localStorage.getItem(SHOW_ALL_KEY) === "0") return false;
     } catch (_) {}
-    return false;
+    return true;
   }
 
   function setShowAll(on) {
@@ -103,7 +111,7 @@
     var btn = document.createElement("button");
     btn.id = "amal-catalog-toggle";
     btn.type = "button";
-    btn.textContent = showAll() ? "Витрина: коротко" : "Показать все игры";
+    btn.textContent = showAll() ? "Каталог: коротко" : "Показать все игры";
     btn.style.cssText =
       "position:fixed;left:12px;bottom:12px;z-index:99950;border:0;border-radius:12px;" +
       "padding:10px 12px;font:900 12px Nunito,Segoe UI,sans-serif;cursor:pointer;" +
