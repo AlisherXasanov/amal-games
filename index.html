@@ -245,32 +245,53 @@
     .valera-strip-title {
       color: #5b3d8a !important;
       letter-spacing: 0.04em;
-      font-size: 0.95rem !important;
+      font-size: 0.9rem !important;
+      margin-bottom: 0.35rem !important;
     }
-    .valera-spotlight {
-      max-width: 280px;
-      margin-left: auto;
-      margin-right: auto;
+    .grid.valera-spotlight {
+      max-width: 168px !important;
+      width: 168px;
+      margin: 0.35rem auto 0.9rem !important;
+      padding: 0 !important;
+      grid-template-columns: 1fr !important;
+      gap: 0 !important;
     }
     .valera-card {
-      border: 2px solid #c4b5fd !important;
-      box-shadow: 0 6px 16px rgba(91, 61, 138, 0.12);
-      transform: none;
-      transition: box-shadow 0.2s ease;
-    }
-    .valera-card .card-img {
-      min-height: 72px !important;
-      font-size: 1.6rem !important;
-      padding: 0.6rem !important;
-    }
-    .valera-card h2 { font-size: 1rem !important; }
-    .valera-card p { font-size: 0.8rem !important; margin: 0.25rem 0 0.45rem !important; }
-    .valera-card .play-btn {
-      padding: 0.35rem 0.7rem !important;
-      font-size: 11px !important;
+      border: 1px solid #c4b5fd !important;
+      box-shadow: 0 4px 12px rgba(91, 61, 138, 0.1);
+      border-radius: 12px !important;
+      transform: none !important;
     }
     .valera-card:hover {
-      box-shadow: 0 8px 20px rgba(91, 61, 138, 0.18);
+      transform: none !important;
+      box-shadow: 0 6px 14px rgba(91, 61, 138, 0.16);
+    }
+    .valera-card .card-img {
+      aspect-ratio: auto !important;
+      height: 44px !important;
+      min-height: 0 !important;
+      font-size: 1.25rem !important;
+      padding: 0 !important;
+    }
+    .valera-card .card-img::after { display: none !important; }
+    .valera-card .card-body {
+      padding: 0.45rem 0.55rem 0.55rem !important;
+    }
+    .valera-card .badge {
+      font-size: 10px !important;
+      padding: 0.1rem 0.35rem !important;
+    }
+    .valera-card h2 {
+      font-size: 0.88rem !important;
+      margin: 0.2rem 0 !important;
+    }
+    .valera-card p {
+      display: none !important;
+    }
+    .valera-card .play-btn {
+      padding: 0.28rem 0.55rem !important;
+      font-size: 10px !important;
+      border-radius: 8px !important;
     }
     .hub-offline-hint {
       margin: 0.55rem auto 0;
