@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Игры Амаля · версия 1.0</title>
+  <meta name="description" content="Версия 1.0 Игр Амаля — как всё было в самом начале. Первые игры, без Искры и команд." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/v1/" />
+  <meta name="theme-color" content="#0d6e5f" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ecfdf5;
+      --ink: #064e3b;
+      --card: #fff;
+      --line: #6ee7b7;
+      --accent: #059669;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh; font-family: Nunito, system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(700px 380px at 10% -5%, #6ee7b788, transparent),
+        linear-gradient(180deg, #ecfdf5, #a7f3d0 40%, #34d399);
+      padding: 18px 14px 36px;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    .banner {
+      background: #064e3b; color: #ecfdf5; border-radius: 16px; padding: 12px 14px;
+      font-weight: 900; font-size: 13px; margin-bottom: 14px; line-height: 1.4;
+    }
+    .banner a { color: #fde68a; }
+    h1 { margin: 0 0 4px; font-size: clamp(1.6rem, 6vw, 2.2rem); }
+    .ver { display: inline-block; background: #fbbf24; color: #111; font-weight: 900;
+      font-size: 12px; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+    .lead { margin: 0 0 16px; font-weight: 800; font-size: 14px; line-height: 1.45; opacity: .9; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;
+    }
+    a.game {
+      display: block; text-decoration: none; color: inherit; background: var(--card);
+      border: 2px solid var(--line); border-radius: 18px; padding: 14px 12px; text-align: center;
+      box-shadow: 0 6px 0 #05966933;
+    }
+    a.game:active { transform: translateY(2px); box-shadow: 0 3px 0 #05966933; }
+    a.game .ico { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    a.game .name { font-weight: 900; font-size: 14px; }
+    a.game .note { display: block; margin-top: 4px; font-size: 11px; font-weight: 800; opacity: .65; }
+    .nav {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; justify-content: center;
+    }
+    .nav a {
+      text-decoration: none; font-weight: 900; font-size: 13px; padding: 10px 14px;
+      border-radius: 12px; background: #064e3b; color: #ecfdf5;
+    }
+    .nav a.soft { background: #fff; color: #064e3b; border: 2px solid #6ee7b7; }
+    .foot { margin-top: 16px; text-align: center; font-size: 12px; font-weight: 800; opacity: .7; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="banner">
+      Ты в <b>версии 1.0</b> — как в самом начале. Без Искры, без админ-команд, просто игры.
+      <a href="../versions.html">Перейти к другим версиям →</a>
+    </div>
+    <span class="ver">v1.0</span>
+    <h1>Игры Амаля</h1>
+    <p class="lead">Первые игры. Можно зайти и вспомнить, как всё было. Перемещайся по версиям кнопками внизу.</p>
+    <div class="grid">
+      <a class="game" href="../animal-hospital/"><span class="ico">🐾</span><span class="name">Animal Hospital</span><span class="note">больница</span></a>
+      <a class="game" href="../zombie-vs-plants/"><span class="ico">🧟</span><span class="name">Зомби vs растения</span><span class="note">грядки</span></a>
+      <a class="game" href="../snake-game/"><span class="ico">🐍</span><span class="name">Snake</span><span class="note">змейка</span></a>
+      <a class="game" href="../bed-wars/"><span class="ico">🛏️</span><span class="name">Bed Wars</span><span class="note">кровати</span></a>
+      <a class="game" href="../blockbust/?v=16"><span class="ico">🧩</span><span class="name">Blockbust</span><span class="note">классика</span></a>
+      <a class="game" href="../obby/"><span class="ico">🧗</span><span class="name">Obby</span><span class="note">полоса</span></a>
+      <a class="game" href="../kick-buddy/"><span class="ico">🥊</span><span class="name">Kick Buddy</span><span class="note">кукла</span></a>
+      <a class="game" href="../minecraft/"><span class="ico">⛏️</span><span class="name">CraftWorld</span><span class="note">блоки</span></a>
+      <a class="game" href="../create-lab/"><span class="ico">🧪</span><span class="name">Create Lab</span><span class="note">лаборатория</span></a>
+      <a class="game" href="../relax-zone/"><span class="ico">🌿</span><span class="name">Relax Zone</span><span class="note">спокойно</span></a>
+    </div>
+    <div class="nav">
+      <a class="soft" href="../versions.html">📦 Все версии</a>
+      <a href="../versions.html?go=live">→ Сейчас (live)</a>
+      <a class="soft" href="../">Полный каталог</a>
+    </div>
+    <p class="foot">Версия 1.0 · память о начале · Игры Амаля</p>
+  </div>
+  <script>
+    try { localStorage.setItem("amal-site-version-v1", "v1"); } catch (_) {}
+  </script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 User-agent: *
 Allow: /
-Allow: /iskra.html
+Allow: /v1/
 Allow: /versions.html
+Allow: /iskra.html
 Allow: /blockbust/
 Allow: /bed-wars/
 Disallow: /friends.html

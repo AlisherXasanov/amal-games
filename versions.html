@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Версии · Игры Амаля</title>
-  <meta name="description" content="Переключение версий Игр Амаля: что было в каждой сборке, что лучше оставить." />
+  <meta name="description" content="Версия 1.0 и другие сборки Игр Амаля — переключайся и вспоминай, как всё было." />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/versions.html" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
@@ -17,8 +17,16 @@
       padding: 20px 14px 40px;
     }
     .wrap { max-width: 720px; margin: 0 auto; }
-    h1 { margin: 0 0 6px; font-size: 1.7rem; }
-    .sub { font-weight: 800; color: #4c1d95; margin: 0 0 14px; font-size: 13px; line-height: 1.4; }
+    h1 { margin: 0 0 6px; font-size: 1.7rem; color: #fff; }
+    .sub { font-weight: 800; color: #e9d5ff; margin: 0 0 14px; font-size: 13px; line-height: 1.4; }
+    .travel {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center;
+    }
+    .travel button, .travel a {
+      border: 0; border-radius: 12px; padding: 10px 12px; font: 900 13px Nunito, sans-serif;
+      cursor: pointer; text-decoration: none; display: inline-block; background: #fbbf24; color: #111;
+    }
+    .travel a.soft { background: #fff; color: #4c1d95; }
     .active {
       background: #065f46; color: #ecfdf5; font-weight: 900; font-size: 13px;
       padding: 10px 12px; border-radius: 14px; margin-bottom: 14px;
@@ -27,18 +35,19 @@
       background: rgba(255,255,255,.95); border-radius: 18px; padding: 14px 14px 12px;
       border: 2px solid #c4b5fd; margin-bottom: 10px;
     }
+    .card.v1 { border-color: #34d399; box-shadow: 0 0 0 2px #34d39944; }
     .card h2 { margin: 0 0 4px; font-size: 1.05rem; }
     .card .when { font-size: 11px; font-weight: 800; color: #6b7280; margin-bottom: 6px; }
     .card ul { margin: 0 0 10px; padding-left: 1.15em; font-weight: 700; font-size: 13px; line-height: 1.4; }
     .verdict { font-size: 12px; font-weight: 900; color: #065f46; margin-bottom: 8px; }
     .verdict.warn { color: #9a3412; }
     .row { display: flex; flex-wrap: wrap; gap: 8px; }
-    button, a.btn {
+    button.pick, a.btn {
       border: 0; border-radius: 12px; padding: 9px 12px; font: 900 12px Nunito, sans-serif;
       cursor: pointer; text-decoration: none; display: inline-block; color: #fff; background: #7c3aed;
     }
-    button.on { background: #059669; }
-    button.ghost, a.ghost { background: #e0e7ff; color: #312e81; }
+    button.pick.on { background: #059669; }
+    a.ghost { background: #e0e7ff; color: #312e81; }
     .nav { margin-top: 16px; }
     .nav a { color: #fef3c7; font-weight: 900; }
   </style>
@@ -46,12 +55,19 @@
 <body>
   <div class="wrap">
     <h1>📦 Версии сайта</h1>
-    <p class="sub">Выбери сборку как «текущую» — запомнится на этом компьютере. Можно открыть старые ссылки с нужными фичами.</p>
+    <p class="sub">Версия <b>1.0</b> — самые первые игры, как в начале. Можно ходить по версиям вперёд и назад.</p>
+    <div class="travel">
+      <button type="button" id="prev">← Раньше</button>
+      <button type="button" id="next">Позже →</button>
+      <a class="soft" href="v1/">Открыть 1.0</a>
+      <a class="soft" href="./">Сейчас (live)</a>
+    </div>
     <div class="active" id="active">Загрузка…</div>
     <div id="list"></div>
     <p class="nav">
-      <a href="iskra.html">← Искра</a> ·
+      <a href="iskra.html">Искра</a> ·
       <a href="bugs.html">Баги</a> ·
+      <a href="v1/">v1.0</a> ·
       <a href="./">Каталог</a>
     </p>
   </div>
@@ -60,58 +76,54 @@
       var KEY = "amal-site-version-v1";
       var VERSIONS = [
         {
-          id: "live",
-          name: "Сейчас (live)",
-          when: "актуальная",
+          id: "v1",
+          name: "1.0 · Самое начало",
+          when: "первая версия",
           best: true,
-          verdict: "Лучше оставить как основную — всё свежее.",
-          notes: ["Искра в чате", "Blockbust Hard→Mega", "Bed Wars easy-ссылка", "QR 22 кода", "оповещения друзей"],
-          open: "./",
-        },
-        {
-          id: "iskra-v1",
-          name: "С Искрой + сложностями Blockbust",
-          when: "сен 2026 · 5efce1e",
-          best: true,
-          verdict: "Хорошая «рабочая» точка: Искра + все сложности Blockbust без лёгкого.",
-          notes: ["Искра /патруль /проверка", "Hard Extra Extra Hard Mega", "позор только если банят Амаля"],
-          open: "friends.html?v=9&stay=1&code=amal-star-friends",
-        },
-        {
-          id: "blockbust-mega",
-          name: "Blockbust · до упрощения имён",
-          when: "сен 2026 · c202f56",
-          best: false,
-          verdict: "Ок, если нужны анимации чистки — но имена режимов уже снова на live.",
-          notes: ["особые фигуры", "анимации чистки", "смена темы"],
-          open: "blockbust/?v=26&diff=mega",
-        },
-        {
-          id: "qr-22",
-          name: "QR-листок 22 кода",
-          when: "сен 2026 · 2b0a73a",
-          best: true,
-          verdict: "Оставить для школы: 4 адми + 18 друзей.",
-          notes: ["print-qr-22 / print-qr-20", "звезда-админы"],
-          open: "print-qr-22.html",
-        },
-        {
-          id: "emo-v3",
-          name: "Робот Эмо v3",
-          when: "раньше · dec6342",
-          best: false,
-          verdict: "Оставить как отдельную игру, не как основу сайта.",
-          notes: ["игры внутри страницы", "микрофон", "режим Ира"],
-          open: "emo-friend/?v=3",
+          verdict: "Сюда заходи вспоминать: первые игры, без Искры и без админ-команд.",
+          notes: [
+            "Animal Hospital, Зомби, Snake, Bed Wars",
+            "Blockbust классика, Obby, Kick Buddy",
+            "Create Lab, CraftWorld, Relax Zone",
+            "Нет Искры, нет QR-админки, нет патруля",
+          ],
+          open: "v1/",
         },
         {
           id: "pre-iskra",
           name: "До Искры",
-          when: "до патруля",
+          when: "чат друзей уже был",
           best: false,
-          verdict: "Только если нужно сравнить «как было без Искры».",
-          notes: ["чат друзей без /искра", "баны без истории Искры"],
+          verdict: "Эксклюзив и чат есть, но без /искра.",
+          notes: ["чат друзей", "баны без истории Искры"],
           open: "friends.html?v=8&stay=1&code=amal-star-friends",
+        },
+        {
+          id: "qr-22",
+          name: "QR · 22 кода",
+          when: "сен 2026",
+          best: true,
+          verdict: "Оставить для школы.",
+          notes: ["4 адми + 18 друзей"],
+          open: "print-qr-22.html",
+        },
+        {
+          id: "iskra-v1",
+          name: "С Искрой",
+          when: "сен 2026",
+          best: true,
+          verdict: "Голосовая Искра + сложности Blockbust.",
+          notes: ["iskra.html · микрофон · буквы", "Hard → Mega", "патруль в чате"],
+          open: "iskra.html",
+        },
+        {
+          id: "live",
+          name: "Сейчас (live)",
+          when: "актуальная",
+          best: true,
+          verdict: "Основная версия — всё свежее.",
+          notes: ["полный каталог", "Искра", "версии", "баги"],
+          open: "./",
         },
       ];
 
@@ -128,17 +140,29 @@
         } catch (_) {}
         render();
       }
+      function idxOf(id) {
+        for (var i = 0; i < VERSIONS.length; i++) if (VERSIONS[i].id === id) return i;
+        return VERSIONS.length - 1;
+      }
+      function goNeighbor(dir) {
+        var i = idxOf(getActive()) + dir;
+        if (i < 0) i = 0;
+        if (i >= VERSIONS.length) i = VERSIONS.length - 1;
+        var v = VERSIONS[i];
+        setActive(v.id);
+        location.href = v.open;
+      }
 
       function render() {
         var cur = getActive();
-        var curV = VERSIONS.find(function (v) { return v.id === cur; }) || VERSIONS[0];
+        var curV = VERSIONS.find(function (v) { return v.id === cur; }) || VERSIONS[VERSIONS.length - 1];
         document.getElementById("active").textContent =
-          "Сейчас выбрано: " + curV.name + (curV.best ? " · рекомендуется" : "");
+          "Сейчас выбрано: " + curV.name + " · можно ← Раньше / Позже →";
         var list = document.getElementById("list");
         list.innerHTML = "";
         VERSIONS.forEach(function (v) {
           var card = document.createElement("div");
-          card.className = "card";
+          card.className = "card" + (v.id === "v1" ? " v1" : "");
           card.innerHTML =
             "<h2>" +
             v.name +
@@ -155,19 +179,27 @@
           row.className = "row";
           var pick = document.createElement("button");
           pick.type = "button";
+          pick.className = "pick" + (cur === v.id ? " on" : "");
           pick.textContent = cur === v.id ? "✓ Выбрано" : "Сделать текущей";
-          if (cur === v.id) pick.className = "on";
           pick.onclick = function () { setActive(v.id); };
           var open = document.createElement("a");
           open.className = "btn ghost";
           open.href = v.open;
-          open.textContent = "Открыть";
+          open.textContent = "Зайти";
           row.appendChild(pick);
           row.appendChild(open);
           card.appendChild(row);
           list.appendChild(card);
         });
       }
+
+      document.getElementById("prev").onclick = function () { goNeighbor(-1); };
+      document.getElementById("next").onclick = function () { goNeighbor(1); };
+
+      try {
+        var go = new URLSearchParams(location.search).get("go");
+        if (go && VERSIONS.some(function (v) { return v.id === go; })) setActive(go);
+      } catch (_) {}
       render();
     })();
   </script>
