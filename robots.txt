@@ -1,6 +1,13 @@
 User-agent: *
 Allow: /
-Disallow: /youtube-free/
-Disallow: /amal-games/youtube-free/
+Allow: /iskra.html
+Allow: /versions.html
+Allow: /blockbust/
+Allow: /bed-wars/
+Disallow: /friends.html
+Disallow: /my-links.html
+Disallow: /bugs.html
+Disallow: /print-qr
+Disallow: /go.html
 
 Sitemap: https://alisherxasanov.github.io/amal-games/sitemap.xml

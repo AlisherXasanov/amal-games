@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Баги · помощник Амаля</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#7f1d1d" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100dvh; font-family: Nunito, system-ui, sans-serif; color: #fef2f2;
+      background: radial-gradient(800px 400px at 20% -10%, #fb718588, transparent),
+        linear-gradient(180deg, #450a0a, #1c1917 55%, #0c0a09);
+      padding: 18px 14px 40px;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; }
+    h1 { margin: 0 0 6px; font-size: 1.55rem; }
+    .sub { margin: 0 0 14px; font-weight: 800; font-size: 13px; opacity: .85; line-height: 1.4; }
+    .panel {
+      background: rgba(28,25,23,.92); border: 2px solid #fbbf24; border-radius: 18px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 1rem; color: #fde68a; }
+    textarea, input[type="text"] {
+      width: 100%; border: 2px solid #78716c; border-radius: 12px; padding: 10px;
+      font: 800 14px Nunito, sans-serif; background: #1c1917; color: #fff; min-height: 44px;
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    button {
+      border: 0; border-radius: 12px; padding: 10px 12px; font: 900 13px Nunito, sans-serif;
+      cursor: pointer; background: #fbbf24; color: #111;
+    }
+    button.ghost { background: #44403c; color: #fff; }
+    button.mic { background: #dc2626; color: #fff; }
+    button.mic.on { background: #16a34a; }
+    .bug {
+      background: #292524; border-radius: 14px; padding: 10px 12px; margin-bottom: 8px;
+      border: 1px solid #57534e;
+    }
+    .bug .meta { font-size: 11px; font-weight: 800; opacity: .7; margin-bottom: 4px; }
+    .bug .txt { font-weight: 800; font-size: 14px; line-height: 1.35; white-space: pre-wrap; }
+    .ans {
+      min-height: 56px; background: #1e3a5f; border: 2px solid #38bdf8; border-radius: 14px;
+      padding: 12px; font-weight: 800; font-size: 14px; line-height: 1.4; white-space: pre-wrap;
+    }
+    a { color: #fde68a; font-weight: 900; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🐞 Баги · помощник</h1>
+    <p class="sub">Только на этом компьютере. Скажи или напиши: «Я увидел такой баг…» — сохранится. Потом спроси: «какие баги» — выдаст список.</p>
+
+    <div class="panel">
+      <h2>🤖 Сказать / написать помощнику</h2>
+      <input type="text" id="ask" placeholder="Например: какие баги? / я увидел баг в Blockbust…" />
+      <div class="row">
+        <button type="button" id="askBtn">Спросить</button>
+        <button type="button" class="mic" id="micAsk">🎤 Голос</button>
+      </div>
+      <div class="ans" id="ans" style="margin-top:10px">Жду вопрос или рассказ про баг…</div>
+    </div>
+
+    <div class="panel">
+      <h2>➕ Записать баг вручную</h2>
+      <textarea id="bugText" placeholder="Где и что сломалось…"></textarea>
+      <div class="row">
+        <button type="button" id="saveBug">Сохранить</button>
+        <button type="button" class="mic" id="micBug">🎤 Надиктовать</button>
+        <button type="button" class="ghost" id="clearBugs">Очистить все</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>История багов</h2>
+      <div id="list"></div>
+    </div>
+
+    <p><a href="versions.html">Версии</a> · <a href="iskra.html">Искра</a> · <a href="my-links.html">Мои ссылки</a></p>
+  </div>
+  <script>
+    (function () {
+      var KEY = "amal-bugs-v1";
+      function load() {
+        try {
+          var a = JSON.parse(localStorage.getItem(KEY) || "[]");
+          return Array.isArray(a) ? a : [];
+        } catch (_) {
+          return [];
+        }
+      }
+      function save(arr) {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(arr.slice(-80)));
+        } catch (_) {}
+      }
+      function addBug(text, source) {
+        text = String(text || "").trim();
+        if (!text) return null;
+        var arr = load();
+        var item = { id: Date.now(), text: text.slice(0, 500), source: source || "text", t: Date.now() };
+        arr.unshift(item);
+        save(arr);
+        render();
+        return item;
+      }
+      function fmt(t) {
+        var d = new Date(t);
+        return d.getDate() + "." + (d.getMonth() + 1) + " " + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+      }
+      function render() {
+        var list = document.getElementById("list");
+        var arr = load();
+        if (!arr.length) {
+          list.innerHTML = "<p style='opacity:.7;font-weight:800'>Пока пусто — расскажи про баг.</p>";
+          return;
+        }
+        list.innerHTML = arr
+          .map(function (b) {
+            return (
+              "<div class='bug'><div class='meta'>" +
+              fmt(b.t) +
+              " · " +
+              (b.source === "voice" ? "🎤" : "✏️") +
+              "</div><div class='txt'>" +
+              String(b.text).replace(/</g, "&lt;") +
+              "</div></div>"
+            );
+          })
+          .join("");
+      }
+      function answer(q) {
+        q = String(q || "").trim();
+        var low = q.toLowerCase();
+        var box = document.getElementById("ans");
+        if (!q) {
+          box.textContent = "Напиши или скажи вопрос.";
+          return;
+        }
+        // сохранить как баг
+        if (/баг|сломал|ошибк|не работает|глюк|багнул|увидел/i.test(low)) {
+          var cleaned = q.replace(/^(я\s+)?(увидел|нашёл|нашел)\s*(такой\s+)?(баг[:\s]*)?/i, "").trim() || q;
+          addBug(cleaned, "ask");
+          box.textContent = "Сохранил баг:\n«" + cleaned.slice(0, 200) + "»\n\nСкажи «какие баги» — покажу список.";
+          return;
+        }
+        if (/какие баг|список|покажи|история|все баг/i.test(low)) {
+          var arr = load();
+          if (!arr.length) {
+            box.textContent = "Багов пока нет.";
+            return;
+          }
+          box.textContent =
+            "Вот баги (" +
+            arr.length +
+            "):\n" +
+            arr
+              .slice(0, 12)
+              .map(function (b, i) {
+                return i + 1 + ". " + b.text;
+              })
+              .join("\n");
+          return;
+        }
+        if (/верси|сборка|старая/i.test(low)) {
+          box.textContent = "Версии сайта: открой versions.html — там можно переключать сборки.";
+          return;
+        }
+        if (/искр/i.test(low)) {
+          box.textContent = "Искра — ИИ в чате друзей. Команды: /искра /проверка /история /патруль. Страница: iskra.html";
+          return;
+        }
+        box.textContent =
+          "Понял: «" +
+          q.slice(0, 120) +
+          "».\nСкажи «я увидел баг …» — сохраню.\nИли «какие баги» — список.";
+      }
+
+      document.getElementById("askBtn").onclick = function () {
+        answer(document.getElementById("ask").value);
+      };
+      document.getElementById("ask").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") answer(document.getElementById("ask").value);
+      });
+      document.getElementById("saveBug").onclick = function () {
+        var t = document.getElementById("bugText").value;
+        if (addBug(t, "text")) {
+          document.getElementById("bugText").value = "";
+          document.getElementById("ans").textContent = "Баг сохранён.";
+        }
+      };
+      document.getElementById("clearBugs").onclick = function () {
+        if (confirm("Удалить все баги?")) {
+          save([]);
+          render();
+          document.getElementById("ans").textContent = "История очищена.";
+        }
+      };
+
+      function listen(btn, onText) {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) {
+          alert("Голос не поддерживается в этом браузере. Напиши текстом.");
+          return;
+        }
+        var rec = new SR();
+        rec.lang = "ru-RU";
+        rec.interimResults = false;
+        btn.classList.add("on");
+        btn.textContent = "⏺ Слушаю…";
+        rec.onresult = function (ev) {
+          var text = (ev.results[0] && ev.results[0][0] && ev.results[0][0].transcript) || "";
+          onText(text);
+        };
+        rec.onerror = function () {
+          btn.classList.remove("on");
+          btn.textContent = btn.id === "micAsk" ? "🎤 Голос" : "🎤 Надиктовать";
+        };
+        rec.onend = function () {
+          btn.classList.remove("on");
+          btn.textContent = btn.id === "micAsk" ? "🎤 Голос" : "🎤 Надиктовать";
+        };
+        rec.start();
+      }
+      document.getElementById("micAsk").onclick = function () {
+        var btn = this;
+        listen(btn, function (text) {
+          document.getElementById("ask").value = text;
+          answer(text);
+        });
+      };
+      document.getElementById("micBug").onclick = function () {
+        var btn = this;
+        listen(btn, function (text) {
+          document.getElementById("bugText").value = text;
+          addBug(text, "voice");
+          document.getElementById("ans").textContent = "Сохранил с голоса:\n«" + text + "»";
+        });
+      };
+      render();
+    })();
+  </script>
+</body>
+</html>
