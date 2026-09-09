@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>🧩 Blockbust · для друзей</title>
+  <title>🧩 Blockbust · режимы</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta name="theme-color" content="#0d6e5f" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -18,7 +18,7 @@
       padding: 20px 16px;
     }
     .card {
-      width: min(440px, 100%);
+      width: min(460px, 100%);
       background: rgba(255,255,255,.95);
       border: 3px solid #fff;
       border-radius: 28px;
@@ -28,29 +28,44 @@
     }
     h1 { margin: 0 0 8px; font-size: 2.2rem; font-weight: 900; color: #0f766e; }
     .sub { margin: 0 0 16px; font-weight: 800; font-size: 14px; color: #475569; line-height: 1.4; }
+    .modes { display: grid; gap: 10px; }
     a.mode {
       display: block; text-decoration: none; color: #fff; border-radius: 16px;
-      padding: 14px; border: 3px solid #fff; box-shadow: 0 6px 0 #0004; margin-bottom: 10px; text-align: left;
+      padding: 14px; border: 3px solid #fff; box-shadow: 0 6px 0 #0004; text-align: left;
     }
-    .hard { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-    .easy { background: #ecfdf5; color: #065f46; border: 2px solid #a7f3d0; box-shadow: none; }
+    .hard { background: linear-gradient(135deg, #f97316, #ea580c); }
+    .extra { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .xhard { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
+    .mega { background: linear-gradient(135deg, #e11d48, #7f1d1d 55%, #0f172a); }
     .t { font-weight: 900; font-size: 16px; }
     .d { margin-top: 4px; font-size: 12px; font-weight: 800; opacity: .92; }
+    .hint { margin: 14px 0 0; font-size: 12px; font-weight: 800; color: #64748b; }
   </style>
 </head>
 <body>
   <div class="card">
     <div style="font-size:2.6rem">🧩</div>
     <h1>Blockbust</h1>
-    <p class="sub">Выбери режим. Сложный можно менять в игре кнопкой 🎮 в любой момент.</p>
-    <a class="mode hard" href="./blockbust/?v=25&amp;diff=hard">
-      <div class="t">🔥 Сложный</div>
-      <div class="d">Большие особые фигуры · анимации · смена темы</div>
-    </a>
-    <a class="mode easy" href="./blockbust/?v=25&amp;easy=1">
-      <div class="t">🙂 Лёгкий · для подруги</div>
-      <div class="d">Проще фигуры и монеты на старт</div>
-    </a>
+    <p class="sub">Все сложности (без лёгкого). В игре тоже — кнопка 🎮.</p>
+    <div class="modes">
+      <a class="mode hard" href="./blockbust/?v=26&amp;diff=hard">
+        <div class="t">🔥 Hard</div>
+        <div class="d">Сложнее фигуры · анимации</div>
+      </a>
+      <a class="mode extra" href="./blockbust/?v=26&amp;diff=extra">
+        <div class="t">💥 Extra</div>
+        <div class="d">Особые большие фигуры чаще</div>
+      </a>
+      <a class="mode xhard" href="./blockbust/?v=26&amp;diff=xhard">
+        <div class="t">☠️ Extra Hard</div>
+        <div class="d">Редко мелкие · много монстров</div>
+      </a>
+      <a class="mode mega" href="./blockbust/?v=26&amp;diff=mega">
+        <div class="t">🌋 Super Mega Hard</div>
+        <div class="d">Адские фигуры · тема меняется при чистке</div>
+      </a>
+    </div>
+    <p class="hint">Лёгкий режим убран.</p>
   </div>
 </body>
 </html>

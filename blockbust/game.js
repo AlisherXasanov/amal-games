@@ -1,14 +1,7 @@
 (() => {
   const SIZE = 8;
   function isEasy() {
-    try {
-      const q = new URLSearchParams(location.search);
-      if (q.get("easy") === "1" || q.get("mode") === "easy") {
-        localStorage.setItem("amal-blockbust-easy-v1", "1");
-        return true;
-      }
-      if (localStorage.getItem("amal-blockbust-easy-v1") === "1") return true;
-    } catch (_) {}
+    // Лёгкий режим убран по запросу — всегда обычная/сложная игра
     return false;
   }
   const EASY = isEasy();
@@ -72,8 +65,14 @@
     { bg: "radial-gradient(ellipse at top,#0e7490 0%,#083344 50%,#020617 100%)", accent: "#67e8f9", glowL: "#06b6d4", glowR: "#a5f3fc", name: "Лёд" },
   ];
 
-  const DIFF_IDS = ["hard"];
-  const DIFF_ALIASES = { hard: "hard", extra: "hard", xhard: "hard", mega: "hard", сложно: "hard" };
+  const DIFF_IDS = ["hard", "extra", "xhard", "mega"];
+  const DIFF_ALIASES = {
+    hard: "hard",
+    extra: "extra",
+    xhard: "xhard",
+    mega: "mega",
+    сложно: "hard",
+  };
 
   // Фон стола (вторично)
   const BG_SKINS = [
@@ -350,7 +349,10 @@
 
   const MINI_GAMES = [
     { id: "classic", name: "Классика", icon: "🧩", desc: "Обычная игра без таймера" },
-    { id: "hard", name: "Сложный", icon: "🔥", desc: "Большие особые фигуры · анимации · смена темы" },
+    { id: "hard", name: "Hard", icon: "🔥", desc: "Сложнее фигуры + анимации" },
+    { id: "extra", name: "Extra", icon: "💥", desc: "Особые большие фигуры" },
+    { id: "xhard", name: "Extra Hard", icon: "☠️", desc: "Редко мелкие · много монстров" },
+    { id: "mega", name: "Super Mega Hard", icon: "🌋", desc: "Адские фигуры · тема при очистке" },
     { id: "blitz", name: "Блиц 60с", icon: "⏱️", desc: "Успей набрать очки за минуту" },
     { id: "zen", name: "Дзен", icon: "🧘", desc: "Без проигрыша — только счёт" },
     { id: "color", name: "Цветолов", icon: "🎯", desc: "Очищай линии с целевым цветом" },
@@ -671,15 +673,17 @@
   }
 
   function diffTier() {
-    if (typeof state === "undefined" || !state) return EASY ? -1 : 0;
-    if (state.mode === "hard" || DIFF_ALIASES[state.mode] === "hard") return 4;
-    if (EASY) return -1;
+    if (typeof state === "undefined" || !state) return 0;
+    if (state.mode === "mega") return 4;
+    if (state.mode === "xhard") return 3;
+    if (state.mode === "extra") return 2;
+    if (state.mode === "hard") return 1;
     return 0;
   }
 
   function isDiffMode(mode) {
     const m = mode != null ? mode : state?.mode;
-    return m === "hard" || DIFF_ALIASES[m] === "hard";
+    return DIFF_IDS.includes(m) || DIFF_IDS.includes(DIFF_ALIASES[m]);
   }
 
   function activeThemeSkin() {
