@@ -12,6 +12,7 @@
   var SHOWCASE = [
     "animal-hospital",
     "coconut",
+    "vika-songs",
     "bed-wars",
     "blockbust",
     "blockbust-normal",

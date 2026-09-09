@@ -1,0 +1,243 @@
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+:root {
+  --ink: #f6efe6;
+  --muted: #c4b8a8;
+  --card: rgba(36, 28, 42, 0.88);
+  --line: rgba(246, 239, 230, 0.14);
+  --accent: #e8b86d;
+  --accent2: #7eb8a8;
+  --danger: #c45a5a;
+}
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  color: var(--ink);
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: #120e16;
+}
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, #3a2a48 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 20%, #2a3a38 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, #3a2818 0%, transparent 55%),
+    #120e16;
+  pointer-events: none;
+}
+
+.top, .wrap { position: relative; z-index: 1; }
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.back {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--line);
+}
+
+.for-me {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  opacity: 0.9;
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 16px 48px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2rem, 7vw, 2.8rem);
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.lead {
+  margin: 0 0 18px;
+  max-width: 36rem;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #e8b86d, #c48a40);
+  color: #1a1208;
+  border-color: transparent;
+}
+
+.btn:hover { filter: brightness(1.06); }
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent2);
+}
+
+.shelf, .mine { margin-bottom: 28px; }
+
+.list {
+  display: grid;
+  gap: 8px;
+}
+
+.song {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.song:hover {
+  border-color: rgba(232, 184, 109, 0.45);
+  transform: translateY(-1px);
+}
+
+.song .ico {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  background: linear-gradient(145deg, #4a3a28, #2a1e28);
+}
+
+.song .meta strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.song .meta span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.song .go {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.song .rm {
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  font: 800 12px inherit;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.hint {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.add {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.add input {
+  flex: 1;
+  min-width: 180px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: 700 14px "DM Sans", system-ui, sans-serif;
+}
+
+.add button {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font: 800 13px "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+  background: var(--accent2);
+  color: #0e1a16;
+}
+
+.empty {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}

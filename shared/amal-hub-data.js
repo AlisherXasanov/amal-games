@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "🎵", name: "Песни Вики", path: "vika-songs/?v=1", note: "только песни · Яндекс" },
     { ico: "🥥", name: "Кокос", path: "coconut/?v=1", note: "реализм · скилл · пальма" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
