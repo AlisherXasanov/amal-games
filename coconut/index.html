@@ -4,42 +4,44 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Кокос — Игры Амаля</title>
-  <meta name="description" content="Играй за кокос: виси на пальме, падай. Режим Реализм и Скилл." />
+  <meta name="description" content="Кокос: обычный режим с ветром и событиями, реализм — чёрный экран. Можно выйти спокойно." />
   <meta name="theme-color" content="#1a5c4a" />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
-  <a class="back" href="../">← Игры</a>
+  <a class="back" href="../" id="backHome">← Игры</a>
+  <button type="button" class="exit hidden" id="exitBtn">Выйти спокойно</button>
   <canvas id="c"></canvas>
 
   <div class="hud" id="hud" hidden>
     <div class="role" id="role">Ты — кокос</div>
     <div class="timer" id="timer"></div>
     <div class="note" id="note"></div>
+    <div class="event" id="event"></div>
   </div>
 
   <div class="overlay" id="menu">
     <div class="box">
-      <p class="tag">новая игра</p>
+      <p class="tag">игра про кокос</p>
       <h1>Кокос</h1>
-      <p class="lead">Ты висишь на пальме. Ничего особо не делаешь — просто кокос. Через время падаешь. Если ты кокос — второй игрок ничего не сможет сделать.</p>
+      <p class="lead">В обычном режиме висишь на пальме: ветер, события — можешь упасть. Выйти можно спокойно в любой момент, не обязательно ждать падения. Если ты кокос — второй ничего не сможет.</p>
       <div class="modes">
+        <button type="button" class="mode" data-mode="normal">
+          <strong>Обычный</strong>
+          <span>Висишь на пальме. Ветер и события. Можешь упасть — или выйти раньше.</span>
+        </button>
         <button type="button" class="mode" data-mode="realism">
           <strong>Реализм</strong>
-          <span>Красиво: ветер, тени, качание. Смотришь на кокос — он живой.</span>
-        </button>
-        <button type="button" class="mode" data-mode="skill">
-          <strong>Скилл</strong>
-          <span>Кокос не видит и не двигается. Режим без движения — только ждать.</span>
+          <span>Чёрный экран. Кокос не может двигаться и слышать.</span>
         </button>
       </div>
       <div class="seats">
-        <button type="button" class="seat on" id="seatCoco" data-seat="coco">🥥 Я кокос</button>
-        <button type="button" class="seat" id="seatOther" data-seat="other">👀 Я второй</button>
+        <button type="button" class="seat on" data-seat="coco">🥥 Я кокос</button>
+        <button type="button" class="seat" data-seat="other">👀 Я второй</button>
       </div>
       <p class="hint-seat" id="seatHint">Ты кокос — второй ничего не сможет.</p>
-      <a class="cats-link" href="./cats.html">🐱 Смешные и милые котики →</a>
+      <a class="cats-link" href="./cats.html?v=2">🐱 Новый котик · смешные и милые →</a>
     </div>
   </div>
 
@@ -47,15 +49,15 @@
     <div class="box">
       <h1 id="endTitle">Бух!</h1>
       <p id="endText"></p>
-      <button type="button" id="again">Ещё раз</button>
-      <a class="cats-link" href="./cats.html">🐱 Котики после падения →</a>
+      <button type="button" id="again">В меню</button>
+      <a class="cats-link" href="./cats.html?v=2">🐱 Картинка с новым котиком →</a>
     </div>
   </div>
 
   <div class="locked-banner hidden" id="locked">
-    <p>🔒 Ты второй игрок. Кокос занят — <b>ничего не можешь сделать</b>. Только смотри.</p>
+    <p>🔒 Ты второй. Кокос играет — <b>ничего не можешь сделать</b>. Только смотри. Выйти спокойно можно.</p>
   </div>
 
-  <script src="./game.js?v=1"></script>
+  <script src="./game.js?v=2"></script>
 </body>
 </html>

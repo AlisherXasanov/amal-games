@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Котики · смешные и милые — Игры Амаля</title>
+  <title>Новый котик — Игры Амаля</title>
   <meta name="theme-color" content="#1a5c4a" />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
   <style>
@@ -43,6 +43,53 @@
       font-weight: 800;
       opacity: 0.8;
       max-width: 36rem;
+    }
+    .hero {
+      max-width: 420px;
+      margin: 0 0 22px;
+      background: var(--card);
+      border-radius: 20px;
+      border: 2px solid rgba(45, 122, 85, 0.25);
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(30, 40, 30, 0.1);
+    }
+    .hero img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(145deg, #fff6e8, #e8f5ee);
+    }
+    .hero .cap {
+      padding: 12px 14px 14px;
+      font-weight: 900;
+    }
+    .hero .cap small {
+      display: block;
+      margin-top: 4px;
+      font-weight: 700;
+      opacity: 0.65;
+      font-size: 12px;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 14px 14px;
+    }
+    .hero-actions button, .hero-actions a {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font: 900 12px Nunito, sans-serif;
+      cursor: pointer;
+      text-decoration: none;
+      background: var(--accent);
+      color: #fff;
+    }
+    .hero-actions a.alt, .hero-actions button.alt {
+      background: var(--warm);
+      color: #2a1a10;
     }
     .grid {
       display: grid;
@@ -109,49 +156,87 @@
   </style>
 </head>
 <body>
-  <a class="back" href="./">← К кокосу</a>
-  <h1>Котики</h1>
-  <p class="lead">Смешные и милые — из режима «Скилл» у кокоса. Жми карточку: откроется случайный котик в новой вкладке.</p>
+  <a class="back" href="./?v=2">← К кокосу</a>
+  <h1>Новый котик</h1>
+  <p class="lead">Картинка с новым котиком — милый или смешной. Жми «ещё новый», если хочешь другого.</p>
+
+  <div class="hero">
+    <img id="heroImg" alt="Новый котик" width="420" height="420" />
+    <div class="cap">
+      Новый котик 🐱
+      <small id="heroHint">Загружается…</small>
+    </div>
+    <div class="hero-actions">
+      <button type="button" id="newCat">Ещё новый котик</button>
+      <a class="alt" id="openFull" href="#" target="_blank" rel="noopener">Открыть крупно</a>
+    </div>
+  </div>
 
   <div class="grid" id="grid"></div>
 
   <div class="links">
-    <a href="https://cataas.com/cat" target="_blank" rel="noopener">Случайный котик</a>
-    <a class="alt" href="https://cataas.com/cat/cute" target="_blank" rel="noopener">Милый котик</a>
-    <a href="https://cataas.com/cat/says/meow" target="_blank" rel="noopener">Котик с надписью</a>
-    <a class="alt" href="./">🥥 Вернуться к кокосу</a>
+    <a href="https://cataas.com/cat" target="_blank" rel="noopener">Случайный</a>
+    <a class="alt" href="https://cataas.com/cat/cute" target="_blank" rel="noopener">Милый</a>
+    <a href="https://cataas.com/cat/gif" target="_blank" rel="noopener">Смешной GIF</a>
+    <a class="alt" href="./?v=2">🥥 К кокосу</a>
   </div>
 
   <script>
     (function () {
+      var hero = document.getElementById("heroImg");
+      var hint = document.getElementById("heroHint");
+      var openFull = document.getElementById("openFull");
+
+      function freshUrl(tag) {
+        var q = tag ? "cat/" + encodeURIComponent(tag) : "cat";
+        return "https://cataas.com/" + q + "?width=600&height=600&t=" + Date.now();
+      }
+
+      function loadHero(tag) {
+        hint.textContent = "Загружается новый котик…";
+        var url = freshUrl(tag || "cute");
+        hero.onload = function () {
+          hint.textContent = "Вот новый котик. Можно ещё раз.";
+        };
+        hero.onerror = function () {
+          hint.textContent = "Не загрузилось — жми «ещё новый» или ссылки ниже.";
+          hero.removeAttribute("src");
+        };
+        hero.src = url;
+        openFull.href = url;
+      }
+
+      document.getElementById("newCat").onclick = function () {
+        var tags = ["cute", "funny", "fluffy", "sleep", "orange", "gray"];
+        loadHero(tags[(Math.random() * tags.length) | 0]);
+      };
+      loadHero("cute");
+
       var items = [
         { t: "Милый", q: "cute", e: "😻" },
         { t: "Смешной", q: "funny", e: "😹" },
         { t: "Пушистый", q: "fluffy", e: "🐱" },
         { t: "Сонный", q: "sleep", e: "😴" },
-        { t: "Удивлённый", q: "wow", e: "🙀" },
-        { t: "Обнимашки", q: "hug", e: "🤗" },
-        { t: "Сытый", q: "food", e: "🍽️" },
+        { t: "Рыжий", q: "orange", e: "🧡" },
         { t: "Игривый", q: "play", e: "🧶" },
       ];
       var grid = document.getElementById("grid");
       items.forEach(function (it, i) {
         var a = document.createElement("a");
         a.className = "card";
-        a.href = "https://cataas.com/cat?" + encodeURIComponent(it.q) + "&" + Date.now() + i;
+        var u = freshUrl(it.q) + i;
+        a.href = u;
         a.target = "_blank";
         a.rel = "noopener";
         a.innerHTML =
-          '<div class="pic"><img alt="" loading="lazy" src="https://cataas.com/cat?' +
-          encodeURIComponent(it.q) +
-          "&width=400&height=400&" +
-          (Date.now() + i) +
+          '<div class="pic"><img alt="" loading="lazy" src="' +
+          u +
           '" onerror="this.remove();this.parentNode.textContent=\'' +
           it.e +
           '\'" /></div>' +
           '<div class="meta">' +
           it.t +
-          " котик<small>открыть ещё →</small></div>";
+          " котик<small>открыть →</small></div>";
         grid.appendChild(a);
       });
     })();

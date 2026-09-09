@@ -35,14 +35,42 @@ html, body {
   backdrop-filter: blur(6px);
 }
 
-.hud {
+.exit {
   position: fixed;
   top: 12px;
+  right: 12px;
+  z-index: 9;
+  border: 2px solid rgba(246, 231, 193, 0.55);
+  background: rgba(20, 40, 32, 0.85);
+  color: #f6e7c1;
+  font: 800 12px Nunito, sans-serif;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+.exit.hidden { display: none; }
+
+.exit:hover { background: #f0d48a; color: #1a3a28; }
+
+.hud {
+  position: fixed;
+  top: 52px;
   right: 12px;
   z-index: 5;
   text-align: right;
   pointer-events: none;
-  max-width: min(52vw, 260px);
+  max-width: min(52vw, 280px);
+}
+
+.hud .event {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ffe29a;
+  text-shadow: 0 2px 8px #000a;
+  min-height: 1.2em;
 }
 
 .hud .role {
