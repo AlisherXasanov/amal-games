@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Сияние — Игры Амаля</title>
+  <meta name="description" content="Сияние: лети сквозь северное сияние, собирай искры. Красивая графика и плавная игра в браузере." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://alisherxasanov.github.io/amal-games/siyanie/" />
+  <meta name="theme-color" content="#0b1026" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Orbitron:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <a class="back" href="../">← Игры</a>
+  <canvas id="c"></canvas>
+  <div class="hud">
+    <div class="brand">Сияние</div>
+    <div class="stats">
+      <span id="score">0</span>
+      <span class="sep">·</span>
+      <span id="best">рекорд 0</span>
+    </div>
+  </div>
+  <div class="hint" id="hint">Тяни пальцем / мышью · собирай искры · избегай тёмных осколков</div>
+  <div class="overlay" id="start">
+    <div class="box">
+      <p class="tag">не зомби · своё</p>
+      <h1>Сияние</h1>
+      <p class="lead">Лети сквозь северное сияние. Искры — очки. Тёмные осколки — конец. Плавная графика, одна цель — дальше и красивее.</p>
+      <button type="button" id="play">Играть</button>
+    </div>
+  </div>
+  <div class="overlay hidden" id="end">
+    <div class="box">
+      <h1 id="endTitle">Красивый полёт</h1>
+      <p id="endText"></p>
+      <button type="button" id="again">Ещё раз</button>
+    </div>
+  </div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>

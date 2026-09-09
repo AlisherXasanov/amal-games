@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "✨", name: "Сияние", path: "siyanie/", note: "не зомби · северное сияние" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
     { ico: "🍕", name: "Пиццерия", path: "work-pizza/?v=3", note: "Pizza Place" },
     { ico: "🐍", name: "Snake", path: "snake-game/", note: "змейка" },
@@ -30,6 +31,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "✨", name: "Сияние", path: "siyanie/", note: "не зомби · 100/100 полёт" },
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
     { ico: "🥚", name: "Укради яйцо", path: "steal-egg/play3d.html?v=5", note: "3D прокачано" },
     { ico: "🧠", name: "Steal a Brainrot", path: "steal-brainrot/", note: "воруй брейнротов · 3D" },
