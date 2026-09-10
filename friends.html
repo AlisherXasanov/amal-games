@@ -37,6 +37,28 @@
       opacity: 0.95;
     }
     .cat-btn-smol span { font-size: 0.9em; }
+    #watch-box {
+      margin: 0 0 14px; padding: 12px; border-radius: 16px;
+      background: #111827; border: 2px solid #38bdf8; color: #e0f2fe;
+    }
+    #watch-box h2 { margin: 0 0 6px; font-size: 1rem; color: #7dd3fc; }
+    #watch-box .w-sub { margin: 0 0 10px; font-size: 12px; font-weight: 700; opacity: .85; }
+    #watch-list { display: grid; gap: 6px; }
+    #watch-list button, #watch-list .w-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      width: 100%; text-align: left; border: 0; border-radius: 12px;
+      padding: 10px 12px; font: 800 13px inherit; cursor: pointer;
+      background: rgba(255,255,255,.08); color: #fff;
+    }
+    #watch-list .w-meta { font-size: 11px; font-weight: 700; opacity: .75; }
+    #watch-empty { font-size: 12px; font-weight: 700; opacity: .7; margin: 0; }
+    .friends-welcome-box {
+      background: #1e1b2e !important;
+      border: 2px solid #64748b !important;
+      box-shadow: none !important;
+    }
+    .friends-welcome-box h2 { color: #94a3b8 !important; }
+    .friends-welcome-box .star { filter: grayscale(.35); opacity: .85; }
   </style>
 </head>
 <body>
@@ -45,13 +67,12 @@
 
   <div id="friends-welcome" class="friends-welcome" hidden>
     <div class="friends-welcome-box">
-      <div class="star">⭐💜</div>
-      <h2>Спасибо, что зашли!</h2>
-      <p>Это <strong>только для вас</strong> — моих самых дорогих друзей.</p>
-      <p><strong>Можете, пожалуйста, ввести своё имя</strong> в чате — чтобы я знал, кто ты, и не путал одноклассников.</p>
-      <p>Из садика «Эврика», из школы… те, кого я люблю. Не для всего класса — <strong>только мы</strong>.</p>
-      <p class="sign">— Амаль ♥</p>
-      <button type="button" id="friends-welcome-ok">Ура! Играем ✨</button>
+      <div class="star">⭐</div>
+      <h2>Спасибо, что зашли</h2>
+      <p>Это <strong>только для вас</strong> — команда Амаля.</p>
+      <p>Введи имя в чате — чтобы не путать одноклассников.</p>
+      <p class="sign">— Амаль</p>
+      <button type="button" id="friends-welcome-ok">Ок, играем</button>
     </div>
   </div>
 
@@ -76,6 +97,14 @@
         <h2>⚡ Способности командира</h2>
         <p class="cp-sub">Это не готовые фразы. Жми кнопки — настоящие силы хозяина. Панель ⚡ тоже справа сверху.</p>
         <div class="cp-grid" id="commander-powers-grid"></div>
+      </div>
+      <div id="watch-box" hidden>
+        <h2>👁 Следить за игрой</h2>
+        <p class="w-sub">Смотри, кто где играет · жми 👁 · откроется панель и можно зайти в его игру</p>
+        <div id="watch-list"></div>
+        <p id="watch-empty" hidden>Пока никого в сети — как появятся, список обновится.</p>
+        <button type="button" id="watch-open-hub" style="margin-top:10px;width:100%;border:0;border-radius:12px;padding:10px;font:800 13px inherit;cursor:pointer;background:#0ea5e9;color:#082f49">👑 Полное меню хозяина</button>
+        <button type="button" id="mute-rainbow-btn" style="margin-top:8px;width:100%;border:1px solid #64748b;border-radius:12px;padding:9px;font:800 12px inherit;cursor:pointer;background:transparent;color:#cbd5e1">Тихий режим · убрать радужный привет</button>
       </div>
       <p class="tip">💜 Закрытая команда · ссылка от Амаля (QR — только чтобы распечатать друзьям)</p>
       <div id="owner-links-box" class="owner-links-box" hidden>
@@ -137,8 +166,9 @@
   <script src="./shared/amal-hub-back.js?v=1"></script>
   <script src="./shared/amal-hub-data.js?v=16"></script>
   <script src="./shared/amal-catalog-filter.js?v=2"></script>
+  <script src="./shared/amal-hub.js?v=70"></script>
   <script src="./shared/amal-device-switcher.js?v=4"></script>
-  <script src="./shared/amal-friends-net.js?v=14"></script>
+  <script src="./shared/amal-friends-net.js?v=15"></script>
   <script src="./shared/amal-chat-phrases.js?v=1"></script>
   <script>
     (function () {
@@ -168,6 +198,71 @@
           if (tag) tag.textContent = "👑 Амаль — админ на этом Chrome · без QR";
           var box = document.getElementById("owner-links-box");
           if (box) box.hidden = false;
+          var watchBox = document.getElementById("watch-box");
+          if (watchBox) {
+            watchBox.hidden = false;
+            function fillWatch() {
+              var list = document.getElementById("watch-list");
+              var empty = document.getElementById("watch-empty");
+              if (!list || !window.AmalHub) return;
+              var rows = [];
+              try {
+                if (AmalHub.playersTableRows) rows = AmalHub.playersTableRows() || [];
+                else if (AmalHub.listRegistry) {
+                  var reg = AmalHub.listRegistry() || [];
+                  rows = reg.map(function (p) {
+                    return {
+                      nick: p.nick || p.name || "?",
+                      game: p.gameTitle || p.game || "—",
+                      live: !!p.live || !!p.online,
+                    };
+                  });
+                }
+              } catch (_) {}
+              list.innerHTML = "";
+              var shown = 0;
+              rows.slice(0, 12).forEach(function (p) {
+                var nick = p.nick || p.name;
+                if (!nick) return;
+                shown++;
+                var btn = document.createElement("button");
+                btn.type = "button";
+                btn.innerHTML =
+                  "<span><b>" +
+                  nick +
+                  '</b><div class="w-meta">' +
+                  (p.game || p.gameTitle || "игра") +
+                  (p.live || p.online ? " · онлайн" : "") +
+                  "</div></span><span>👁</span>";
+                btn.onclick = function () {
+                  if (AmalHub.startWatch) AmalHub.startWatch(nick);
+                  if (AmalHub.open) AmalHub.open("admin");
+                };
+                list.appendChild(btn);
+              });
+              if (empty) empty.hidden = shown > 0;
+            }
+            fillWatch();
+            setInterval(fillWatch, 8000);
+            var hubBtn = document.getElementById("watch-open-hub");
+            if (hubBtn) {
+              hubBtn.onclick = function () {
+                if (window.AmalHub && AmalHub.open) AmalHub.open("admin");
+              };
+            }
+            var muteBtn = document.getElementById("mute-rainbow-btn");
+            if (muteBtn) {
+              muteBtn.onclick = function () {
+                if (window.AmalHub && AmalHub.setRainbowMuted) {
+                  AmalHub.setRainbowMuted(true);
+                  if (AmalHub.clearRainbowFx) AmalHub.clearRainbowFx();
+                } else {
+                  try { localStorage.setItem("amal-mute-rainbow-hello-v1", "1"); } catch (_) {}
+                }
+                muteBtn.textContent = "Радужный привет выключен ✓";
+              };
+            }
+          }
         } else if (starAdmin) {
           if (tag) {
             var aid = "";
