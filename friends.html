@@ -6,7 +6,11 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=8" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=9" />
+  <style>
+    html, body { background: #e8f4ef !important; color: #0f172a !important; }
+    #hub-root, .hub { display: block !important; visibility: visible !important; opacity: 1 !important; min-height: 40vh; }
+  </style>
   <script src="./shared/amal-lite-ui.js?v=1"></script>
   <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./owner-cheats.js?v=2"></script>
@@ -166,12 +170,29 @@
   <script src="./shared/amal-hub-back.js?v=1"></script>
   <script src="./shared/amal-hub-data.js?v=16"></script>
   <script src="./shared/amal-catalog-filter.js?v=2"></script>
-  <script src="./shared/amal-hub.js?v=70"></script>
   <script src="./shared/amal-device-switcher.js?v=4"></script>
   <script src="./shared/amal-friends-net.js?v=15"></script>
   <script src="./shared/amal-chat-phrases.js?v=1"></script>
   <script>
     (function () {
+      function loadHub(cb) {
+        if (window.AmalHub) { if (cb) cb(); return; }
+        if (document.querySelector('script[data-amal-hub-lazy]')) {
+          var t = setInterval(function () {
+            if (window.AmalHub) { clearInterval(t); if (cb) cb(); }
+          }, 80);
+          setTimeout(function () { clearInterval(t); if (cb) cb(); }, 4000);
+          return;
+        }
+        var s = document.createElement("script");
+        s.src = "./shared/amal-hub.js?v=70";
+        s.async = true;
+        s.setAttribute("data-amal-hub-lazy", "1");
+        s.onload = function () { if (cb) cb(); };
+        s.onerror = function () { if (cb) cb(); };
+        document.head.appendChild(s);
+      }
+
       try {
         var qc = new URLSearchParams(location.search).get("code") || "";
         if (window.AmalDevice && AmalDevice.admitFriendsCode) AmalDevice.admitFriendsCode(qc);
@@ -181,6 +202,7 @@
         AmalOwnerSession.syncOwnerCheats();
       }
       function startFriendsHub() {
+        try {
         var tag = document.getElementById("friends-tag");
         var starAdmin = false;
         try {
@@ -204,21 +226,12 @@
             function fillWatch() {
               var list = document.getElementById("watch-list");
               var empty = document.getElementById("watch-empty");
-              if (!list || !window.AmalHub) return;
+              if (!list || !window.AmalHub || !AmalHub.playersTableRows) {
+                if (empty) empty.hidden = false;
+                return;
+              }
               var rows = [];
-              try {
-                if (AmalHub.playersTableRows) rows = AmalHub.playersTableRows() || [];
-                else if (AmalHub.listRegistry) {
-                  var reg = AmalHub.listRegistry() || [];
-                  rows = reg.map(function (p) {
-                    return {
-                      nick: p.nick || p.name || "?",
-                      game: p.gameTitle || p.game || "—",
-                      live: !!p.live || !!p.online,
-                    };
-                  });
-                }
-              } catch (_) {}
+              try { rows = AmalHub.playersTableRows() || []; } catch (_) {}
               list.innerHTML = "";
               var shown = 0;
               rows.slice(0, 12).forEach(function (p) {
@@ -231,34 +244,39 @@
                   "<span><b>" +
                   nick +
                   '</b><div class="w-meta">' +
-                  (p.game || p.gameTitle || "игра") +
-                  (p.live || p.online ? " · онлайн" : "") +
+                  (p.game || "игра") +
+                  (p.online ? " · онлайн" : "") +
                   "</div></span><span>👁</span>";
                 btn.onclick = function () {
-                  if (AmalHub.startWatch) AmalHub.startWatch(nick);
-                  if (AmalHub.open) AmalHub.open("admin");
+                  loadHub(function () {
+                    if (AmalHub.startWatch) AmalHub.startWatch(nick);
+                    if (AmalHub.open) AmalHub.open("admin");
+                  });
                 };
                 list.appendChild(btn);
               });
               if (empty) empty.hidden = shown > 0;
             }
-            fillWatch();
-            setInterval(fillWatch, 8000);
+            loadHub(function () {
+              fillWatch();
+              setInterval(fillWatch, 8000);
+            });
             var hubBtn = document.getElementById("watch-open-hub");
             if (hubBtn) {
               hubBtn.onclick = function () {
-                if (window.AmalHub && AmalHub.open) AmalHub.open("admin");
+                loadHub(function () {
+                  if (window.AmalHub && AmalHub.open) AmalHub.open("admin");
+                });
               };
             }
             var muteBtn = document.getElementById("mute-rainbow-btn");
             if (muteBtn) {
               muteBtn.onclick = function () {
-                if (window.AmalHub && AmalHub.setRainbowMuted) {
-                  AmalHub.setRainbowMuted(true);
-                  if (AmalHub.clearRainbowFx) AmalHub.clearRainbowFx();
-                } else {
-                  try { localStorage.setItem("amal-mute-rainbow-hello-v1", "1"); } catch (_) {}
-                }
+                try { localStorage.setItem("amal-mute-rainbow-hello-v1", "1"); } catch (_) {}
+                loadHub(function () {
+                  if (window.AmalHub && AmalHub.setRainbowMuted) AmalHub.setRainbowMuted(true);
+                  if (window.AmalHub && AmalHub.clearRainbowFx) AmalHub.clearRainbowFx();
+                });
                 muteBtn.textContent = "Радужный привет выключен ✓";
               };
             }
@@ -309,6 +327,17 @@
             AmalFriendsNet.trackGame(name ? name.textContent : "игра");
           }
         });
+        } catch (err) {
+          try {
+            var root = document.getElementById("hub-root");
+            if (root) {
+              var note = document.createElement("p");
+              note.style.cssText = "padding:12px;background:#fee2e2;color:#991b1b;border-radius:12px;font-weight:800";
+              note.textContent = "Часть функций не загрузилась — обнови страницу (Ctrl+F5).";
+              root.insertBefore(note, root.firstChild);
+            }
+          } catch (_) {}
+        }
       }
       startFriendsHub();
     })();
