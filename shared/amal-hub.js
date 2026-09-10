@@ -1693,9 +1693,35 @@
     {
       id: "rainbow-hello",
       label: "Радужный привет",
-      detail: "Радуга на экране + поздравление от хозяина",
+      detail: "Тихий привет (можно убрать) · без громкой радуги",
     },
   ];
+
+  var RAINBOW_MUTE_KEY = "amal-mute-rainbow-hello-v1";
+
+  function isRainbowMuted() {
+    try {
+      return localStorage.getItem(RAINBOW_MUTE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setRainbowMuted(on) {
+    try {
+      localStorage.setItem(RAINBOW_MUTE_KEY, on ? "1" : "0");
+    } catch (_) {}
+  }
+
+  function clearRainbowFx() {
+    const el = document.getElementById("amal-soft-rainbow");
+    if (el) el.remove();
+    const abuse = document.getElementById("amal-abuse-fx");
+    if (abuse) {
+      abuse.classList.remove("on");
+      abuse.innerHTML = "";
+    }
+  }
 
   function giftById(id) {
     return OWNER_GIFTS.find((g) => g.id === id) || OWNER_GIFTS[0];
@@ -1722,13 +1748,25 @@
     if (old) old.remove();
     const old2 = document.getElementById("amal-abuse-css-v2");
     if (old2) old2.remove();
+    const old3 = document.getElementById("amal-abuse-css-v3");
+    if (old3) old3.remove();
     const css = document.createElement("style");
-    css.id = "amal-abuse-css-v2";
+    css.id = "amal-abuse-css-v3";
     css.textContent =
       "#amal-abuse-fx{position:fixed;inset:0;z-index:2147483600;pointer-events:none;display:none;overflow:hidden}" +
       "#amal-abuse-fx.on{display:block}" +
       "#amal-abuse-fx .ab-rainbow{position:absolute;inset:0;opacity:.38;background:linear-gradient(120deg,#ff004c,#ff8a00,#ffe600,#00e676,#00b0ff,#7c4dff,#ff004c);background-size:280% 280%;animation:abRain 2s linear infinite;mix-blend-mode:soft-light}" +
       "#amal-abuse-fx .ab-veil{position:absolute;inset:0;background:radial-gradient(circle at 50% 70%,rgba(255,255,255,.05),rgba(0,0,0,.18));pointer-events:none}" +
+      "#amal-abuse-fx .ab-close{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:max(10px,env(safe-area-inset-right));z-index:5;pointer-events:auto;border:0;border-radius:999px;padding:8px 12px;font:900 12px system-ui,sans-serif;cursor:pointer;background:rgba(0,0,0,.75);color:#fff;border:1px solid rgba(255,255,255,.25)}" +
+      "#amal-soft-rainbow{position:fixed;inset:0;z-index:2147483590;pointer-events:none;display:none}" +
+      "#amal-soft-rainbow.on{display:block}" +
+      "#amal-soft-rainbow .sr-tint{position:absolute;inset:0;opacity:.12;background:linear-gradient(160deg,#4a5568,#2d3748 50%,#1a202c);pointer-events:none}" +
+      "#amal-soft-rainbow .sr-card{pointer-events:auto;position:absolute;left:50%;top:12%;transform:translateX(-50%);min-width:min(88vw,320px);padding:14px 16px;border-radius:16px;background:rgba(20,24,28,.92);border:1px solid rgba(160,174,192,.35);color:#e2e8f0;font-family:system-ui,sans-serif;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.45)}" +
+      "#amal-soft-rainbow .sr-card strong{display:block;font:900 15px/1.25 system-ui;margin-bottom:4px;color:#cbd5e0}" +
+      "#amal-soft-rainbow .sr-card span{display:block;font:700 12px/1.35 system-ui;opacity:.8;margin-bottom:10px}" +
+      "#amal-soft-rainbow .sr-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}" +
+      "#amal-soft-rainbow button{pointer-events:auto;border:0;border-radius:10px;padding:8px 12px;font:800 12px system-ui;cursor:pointer;background:#4a5568;color:#fff}" +
+      "#amal-soft-rainbow button.ghost{background:transparent;border:1px solid rgba(255,255,255,.25)}" +
       "#amal-abuse-fx .ab-watcher{position:absolute;left:max(8px,env(safe-area-inset-left));bottom:calc(72px + env(safe-area-inset-bottom,0px));width:min(28vw,140px);height:min(42vh,220px);pointer-events:none;opacity:.78;filter:drop-shadow(0 10px 18px rgba(0,0,0,.4));animation:abWatch 3.2s ease-in-out infinite;z-index:1}" +
       "#amal-abuse-fx .ab-watcher svg{width:100%;height:100%;display:block}" +
       "#amal-abuse-fx .ab-banner{position:absolute;left:50%;top:10%;transform:translateX(-50%);padding:12px 20px;border-radius:999px;background:rgba(0,0,0,.78);border:1px solid rgba(255,230,120,.65);color:#fff7ed;font:900 16px/1.2 system-ui,sans-serif;text-align:center;max-width:92vw;pointer-events:none;box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:3}" +
@@ -1785,6 +1823,7 @@
     const from = (payload && payload.fromNick) || "Амаль";
     const face = faceUrl("abuse-" + from);
     el.innerHTML =
+      '<button type="button" class="ab-close" id="amal-abuse-close" title="Убрать">✕ Убрать</button>' +
       '<div class="ab-rainbow"></div><div class="ab-veil"></div>' +
       '<div class="ab-watcher">' +
       abuseWatcherSvg() +
@@ -1793,7 +1832,7 @@
       escapeHtml(text) +
       "<small>от " +
       escapeHtml(from) +
-      " · радуга · смотрит сбоку · можно забрать всё</small></div>" +
+      " · можно убрать ✕</small></div>" +
       '<div class="ab-happy">Раздача открыта ✨<br/>Жми человечка справа · поле свободно</div>' +
       '<button type="button" class="ab-buddy" id="amal-abuse-buddy" title="Забрать всё">' +
       '<img src="' +
@@ -1801,6 +1840,15 @@
       '" alt="" />' +
       '<div class="ab-label">🎁 Забрать всё</div></button>';
     el.classList.add("on");
+    const closeBtn = el.querySelector("#amal-abuse-close");
+    if (closeBtn) {
+      closeBtn.onclick = function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearRainbowFx();
+        showHubToast("Убрали с экрана");
+      };
+    }
     const buddy = el.querySelector("#amal-abuse-buddy");
     if (buddy) {
       buddy.onclick = () => claimAbuseGift(payload);
@@ -1810,6 +1858,54 @@
     showAdminAbuseFx._t = setTimeout(() => {
       el.classList.remove("on");
     }, Math.min(left, 90000));
+  }
+
+  function showSoftRainbowHello(payload) {
+    if (isRainbowMuted()) {
+      showHubToast("👋 Привет от " + ((payload && payload.fromNick) || "Амаля") + " (радуга выкл.)");
+      return;
+    }
+    ensureAbuseStyles();
+    let el = document.getElementById("amal-soft-rainbow");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "amal-soft-rainbow";
+      document.body.appendChild(el);
+    }
+    const from = (payload && payload.fromNick) || "Амаль";
+    const label = (payload && payload.label) || "Радужный привет";
+    el.innerHTML =
+      '<div class="sr-tint"></div>' +
+      '<div class="sr-card">' +
+      "<strong>👋 " +
+      escapeHtml(label) +
+      "</strong>" +
+      "<span>от " +
+      escapeHtml(from) +
+      " · тихий режим (не громкая радуга)</span>" +
+      '<div class="sr-actions">' +
+      '<button type="button" id="amal-sr-close">Убрать</button>' +
+      '<button type="button" class="ghost" id="amal-sr-mute">Больше не показывать</button>' +
+      "</div></div>";
+    el.classList.add("on");
+    const close = el.querySelector("#amal-sr-close");
+    const mute = el.querySelector("#amal-sr-mute");
+    if (close) {
+      close.onclick = function () {
+        clearRainbowFx();
+      };
+    }
+    if (mute) {
+      mute.onclick = function () {
+        setRainbowMuted(true);
+        clearRainbowFx();
+        showHubToast("Радужный привет выключен на этом устройстве");
+      };
+    }
+    clearTimeout(showSoftRainbowHello._t);
+    showSoftRainbowHello._t = setTimeout(function () {
+      clearRainbowFx();
+    }, 8000);
   }
 
   function claimAbuseGift(payload) {
@@ -1874,11 +1970,7 @@
       "</p></div>";
     el.classList.add("on");
     if (payload && payload.giftId === "rainbow-hello") {
-      showAdminAbuseFx({
-        text: (payload && payload.label) || "Радужный привет!",
-        fromNick: payload.fromNick,
-        until: Date.now() + 12000,
-      });
+      showSoftRainbowHello(payload);
     }
     clearTimeout(showGiftReceived._t);
     showGiftReceived._t = setTimeout(() => el.classList.remove("on"), 4200);
@@ -6459,6 +6551,9 @@
     listRegistry,
     startAdminAbuse,
     giveGiftToPlayer,
+    clearRainbowFx,
+    setRainbowMuted,
+    isRainbowMuted,
     playersInThisGame,
     refreshPlayerProfile,
     findPlayerByNick,
