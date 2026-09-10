@@ -102,7 +102,7 @@
   <script src="./shared/amal-lite-ui.js?v=2"></script>
   <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./shared/amal-device.js?v=8"></script>
-  <script src="./shared/amal-device-switcher.js?v=5"></script>
+  <script src="./shared/amal-device-switcher.js?v=6"></script>
   <script>
     try {
       if (/[?&]hub=friends/.test(location.search)) {
@@ -225,20 +225,25 @@
       justify-content: center;
     }
     .hub-quick-links a {
-      display: inline-block;
-      padding: 0.4rem 0.75rem;
-      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7rem 1rem;
+      min-height: 48px;
+      border-radius: 14px;
       background: #fff;
       color: var(--ink);
-      font: 800 12px Nunito, sans-serif;
+      font: 800 15px Nunito, sans-serif;
       text-decoration: none;
-      border: 1px solid rgba(13,110,95,.16);
+      border: 2px solid rgba(13,110,95,.18);
     }
     .hub-quick-links a:hover { background: var(--mint); }
     .hub-quick-links a.quick-smol {
-      padding: 0.28rem 0.55rem;
-      font-size: 11px;
-      opacity: 0.92;
+      padding: 0.7rem 1rem;
+      font-size: 15px;
+      opacity: 1;
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-color: rgba(180, 83, 9, 0.35);
     }
     .hub-quick-note {
       margin: 0.55rem 0 0;
@@ -1355,10 +1360,11 @@
     <div class="hub-quick" aria-label="Быстрый вход для всех игроков">
       <div class="hub-quick-title">⚡ Быстрый вход · для всех игроков</div>
       <div class="hub-quick-links" id="hubQuickLinks">
-        <a href="relax-songs/?v=4">🎵 Расслаб · песни</a>
-        <a href="coconut/?v=1">🥥 Кокос</a>
+        <a href="mult-studio/?v=6" class="quick-smol">🐻 Полка Валеры · мульты</a>
+        <a href="relax-songs/?v=5">🎵 Расслаб · песни</a>
+        <a href="coconut/?v=3">🥥 Кокос</a>
         <a href="milashki/?v=7">🐣 Милашки</a>
-        <a href="youtube-free/?v=46" class="quick-smol">📺 Смотри</a>
+        <a href="youtube-free/?v=46">📺 Смотри</a>
         <a href="bed-wars/">🛏️ Bed Wars</a>
         <a href="animal-hospital/">🐾 Animal Hospital</a>
         <a href="zombie-vs-plants/">🧟 Зомби vs растения</a>
@@ -1395,14 +1401,23 @@
 
   </header>
 
-  <p class="section-title valera-strip-title">▶ Смотри</p>
-  <div class="grid valera-spotlight" style="margin-bottom:0.8rem">
+  <p class="section-title valera-strip-title">🐻 Мульты Валеры · Смотри</p>
+  <div class="grid" style="margin-bottom:0.8rem;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:min(720px,94vw)">
+    <a class="card featured" href="mult-studio/?v=6">
+      <div class="card-img" style="background:linear-gradient(145deg,#ffe566 0%,#f5c93a 45%,#e51d30 100%)">🐻</div>
+      <div class="card-body">
+        <span class="badge new">Валера</span>
+        <h2>Полка Валеры</h2>
+        <p>Свои рисованные мульты · герой Валера · как у ютуберов, но свои.</p>
+        <span class="play-btn" style="background:#b45309">▶ Смотреть мульт</span>
+      </div>
+    </a>
     <a class="card valera-card featured" href="youtube-free/?v=46">
       <div class="card-img" style="background:linear-gradient(145deg,#2d1b4e 0%,#5b3d8a 45%,#f5c93a 100%)">📺</div>
       <div class="card-body">
         <span class="badge">ТВ</span>
         <h2>Смотри</h2>
-        <p>Каналы и мульты · свои рисованные серии.</p>
+        <p>ТВ-спальня · свои каналы. Не чужой YouTube Premium.</p>
         <span class="play-btn" style="background:#2d1b4e">▶ Открыть</span>
       </div>
     </a>

@@ -1,6 +1,6 @@
 /**
  * Переключатель версий: телефон / планшет / ПК / друзья.
- * На домашнем ПК Амаля 📱 не уводит в «пустой» phone.html — в Эксклюзив.
+ * Крупные кнопки с подписями — удобно друзьям с QR.
  */
 (function (global) {
   "use strict";
@@ -49,7 +49,6 @@
     return "./?stay=1";
   }
 
-  /** Телефон / планшет: друзья идут в обычную версию (+ метка hub=friends), эксклюзив — отдельная кнопка ⭐ */
   function phoneHref() {
     if (hasFriendsAccess()) return "./phone.html?v=3&stay=1&hub=friends";
     return "./phone.html?v=3&stay=1";
@@ -60,9 +59,38 @@
     return "./tablet.html?v=2&stay=1";
   }
 
+  function ensureCss() {
+    if (document.getElementById("amal-device-switcher-css")) return;
+    var s = document.createElement("style");
+    s.id = "amal-device-switcher-css";
+    s.textContent =
+      ".device-switcher{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;" +
+      "padding:12px 14px;margin:8px auto 12px;max-width:min(720px,96vw);" +
+      "background:rgba(255,255,255,.96);border:2px solid rgba(13,110,95,.22);border-radius:20px;" +
+      "font-family:Nunito,system-ui,sans-serif;font-weight:800}" +
+      ".device-switcher .ds-label{color:#5a6a62;font-size:13px;margin-right:4px}" +
+      ".device-switcher .ds-btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;" +
+      "gap:2px;min-width:72px;min-height:64px;padding:10px 12px;border-radius:16px;text-decoration:none;" +
+      "font-size:28px;line-height:1;border:2px solid transparent;background:#f1f5f9;color:#102018}" +
+      ".device-switcher .ds-btn small{font-size:11px;font-weight:800;letter-spacing:.02em;opacity:.85}" +
+      ".device-switcher .ds-btn.on{background:#0d6e5f;border-color:#0d6e5f;color:#fff;" +
+      "box-shadow:0 0 0 3px rgba(126,217,184,.55)}" +
+      ".device-switcher .ds-btn.on small{opacity:1;color:#ecfdf5}" +
+      ".device-switcher .ds-hint{font-size:12px;color:#5a6a62;font-weight:700;margin-left:4px}";
+    document.head.appendChild(s);
+  }
+
+  function btn(cls, href, ico, label) {
+    return (
+      '<a class="ds-btn' + cls + '" href="' + href + '" title="' + label + '">' +
+      ico + "<small>" + label + "</small></a>"
+    );
+  }
+
   function mount(containerId) {
     var root = typeof containerId === "string" ? document.getElementById(containerId) : containerId;
     if (!root || root.querySelector(".device-switcher")) return;
+    ensureCss();
 
     var dev = global.AmalDevice ? AmalDevice.detect() : "desktop";
     var path = (location.pathname || "").toLowerCase();
@@ -77,15 +105,13 @@
     el.setAttribute("aria-label", "Выбор версии сайта");
     el.innerHTML =
       '<span class="ds-label">Версия:</span>' +
-      '<a class="ds-btn' + (current === "phone" ? " on" : "") + '" href="' + phoneHref() + '" title="Телефон">📱</a>' +
-      '<a class="ds-btn' + (current === "tablet" ? " on" : "") + '" href="' + tabletHref() + '" title="Планшет">📟</a>' +
-      '<a class="ds-btn' + (current === "desktop" ? " on" : "") + '" href="' + desktopHref() + '" title="Основной сайт">💻</a>' +
+      btn(current === "phone" ? " on" : "", phoneHref(), "📱", "Телефон") +
+      btn(current === "tablet" ? " on" : "", tabletHref(), "📟", "Планшет") +
+      btn(current === "desktop" ? " on" : "", desktopHref(), "💻", "Сайт") +
       (hasFriendsAccess() || isOwnerPc()
-        ? '<a class="ds-btn' + (current === "friends" ? " on" : "") + '" href="' + friendsHref() + '" title="Эксклюзив друзей">⭐</a>'
+        ? btn(current === "friends" ? " on" : "", friendsHref(), "⭐", "Друзья")
         : "") +
-      (isOwnerPc()
-        ? '<a class="ds-btn" href="./my-links.html" title="Мои ссылки">🔗</a>'
-        : "") +
+      (isOwnerPc() ? btn("", "./my-links.html", "🔗", "Ссылки") : "") +
       '<span class="ds-hint">' + (global.AmalDevice ? AmalDevice.icon(dev) : "💻") + "</span>";
 
     root.appendChild(el);
