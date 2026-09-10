@@ -102,12 +102,15 @@
   <script src="./shared/amal-lite-ui.js?v=2"></script>
   <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./shared/amal-device.js?v=8"></script>
-  <script src="./shared/amal-device-switcher.js?v=4"></script>
+  <script src="./shared/amal-device-switcher.js?v=5"></script>
   <script>
     try {
       if (/[?&]hub=friends/.test(location.search)) {
         sessionStorage.setItem("amal-device-hub-v1", "friends");
+        localStorage.setItem("amal-friends-access-v1", "1");
       }
+      var qc = new URLSearchParams(location.search).get("code") || "";
+      if (qc && window.AmalDevice && AmalDevice.admitFriendsCode) AmalDevice.admitFriendsCode(qc);
     } catch (_) {}
   </script>
   <!-- шрифты Google убраны: в некоторых браузерах они давали белый экран / вечную загрузку -->
@@ -1311,7 +1314,8 @@
   </div>
   <div id="device-switcher-slot"></div>
   <div id="friends-mode-strip" hidden style="max-width:min(720px,94vw);margin:.45rem auto 0;padding:.55rem .85rem;border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(236,72,153,.12));border:2px solid rgba(124,58,237,.35);font:800 13px/1.4 Nunito,system-ui,sans-serif;text-align:center;color:#5b21b6">
-    ⭐ Режим друзей · <a href="friends.html?v=8&stay=1&code=amal-star-friends&owner=amal" style="color:#7c3aed">← вернуться к друзьям</a>
+    ⭐ Режим друзей · <a href="friends.html?v=10&stay=1&code=amal-star-friends" style="color:#7c3aed">← эксклюзив</a>
+    · <a href="./?stay=1&hub=friends" style="color:#7c3aed">💻 основной сайт</a>
     · <a href="my-links.html" style="color:#7c3aed">🔗 Мои ссылки</a>
   </div>
   <script>
@@ -2937,7 +2941,7 @@
     })();
   </script>
   
-  <script src="./shared/amal-3d-wip-lock.js?v=1" defer></script>
+  <script src="./shared/amal-3d-wip-lock.js?v=3" defer></script>
   <script>
     (() => {
       const games = [

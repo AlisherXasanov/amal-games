@@ -7,6 +7,9 @@
   function canEnter3d() {
     try {
       if (window.__AMAL_OWNER__ === true || window.__AMAL_GOD__ === true) return true;
+      // QR-друзья и star-админы тоже играют на основном сайте
+      if (localStorage.getItem("amal-friends-access-v1") === "1") return true;
+      if (localStorage.getItem("amal-friends-star-admin-v1") === "1") return true;
       if (window.AmalPowers && typeof window.AmalPowers.isOwner === "function" && window.AmalPowers.isOwner()) {
         return true;
       }

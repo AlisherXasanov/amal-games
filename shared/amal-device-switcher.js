@@ -37,7 +37,7 @@
   }
 
   function friendsHref() {
-    var h = "./friends.html?v=8&stay=1&code=" + encodeURIComponent(FRIEND_CODE);
+    var h = "./friends.html?v=10&stay=1&code=" + encodeURIComponent(FRIEND_CODE);
     if (isOwnerPc()) h += "&owner=amal";
     return h;
   }
@@ -49,15 +49,15 @@
     return "./?stay=1";
   }
 
-  /** Телефон: с доступом друзей / хозяина — в Эксклюзив, не в обычный phone.html */
+  /** Телефон / планшет: друзья идут в обычную версию (+ метка hub=friends), эксклюзив — отдельная кнопка ⭐ */
   function phoneHref() {
-    if (hasFriendsAccess() || isOwnerPc()) return friendsHref();
-    return "./phone.html?v=2&stay=1";
+    if (hasFriendsAccess()) return "./phone.html?v=3&stay=1&hub=friends";
+    return "./phone.html?v=3&stay=1";
   }
 
   function tabletHref() {
-    if (hasFriendsAccess() || isOwnerPc()) return friendsHref();
-    return "./tablet.html?v=1&stay=1";
+    if (hasFriendsAccess()) return "./tablet.html?v=2&stay=1&hub=friends";
+    return "./tablet.html?v=2&stay=1";
   }
 
   function mount(containerId) {
@@ -77,11 +77,11 @@
     el.setAttribute("aria-label", "Выбор версии сайта");
     el.innerHTML =
       '<span class="ds-label">Версия:</span>' +
-      '<a class="ds-btn' + (current === "phone" ? " on" : "") + '" href="' + phoneHref() + '" title="Телефон / Эксклюзив">📱</a>' +
-      '<a class="ds-btn' + (current === "tablet" ? " on" : "") + '" href="' + tabletHref() + '" title="Планшет / Эксклюзив">📟</a>' +
-      '<a class="ds-btn' + (current === "desktop" ? " on" : "") + '" href="' + desktopHref() + '" title="Компьютер">💻</a>' +
+      '<a class="ds-btn' + (current === "phone" ? " on" : "") + '" href="' + phoneHref() + '" title="Телефон">📱</a>' +
+      '<a class="ds-btn' + (current === "tablet" ? " on" : "") + '" href="' + tabletHref() + '" title="Планшет">📟</a>' +
+      '<a class="ds-btn' + (current === "desktop" ? " on" : "") + '" href="' + desktopHref() + '" title="Основной сайт">💻</a>' +
       (hasFriendsAccess() || isOwnerPc()
-        ? '<a class="ds-btn' + (current === "friends" ? " on" : "") + '" href="' + friendsHref() + '" title="Друзья">⭐</a>'
+        ? '<a class="ds-btn' + (current === "friends" ? " on" : "") + '" href="' + friendsHref() + '" title="Эксклюзив друзей">⭐</a>'
         : "") +
       (isOwnerPc()
         ? '<a class="ds-btn" href="./my-links.html" title="Мои ссылки">🔗</a>'

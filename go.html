@@ -28,6 +28,7 @@
     }
     .pick-btn .ico { font-size: 32px; }
     .pick-btn.suggest { border-color: #0d6e5f; background: #ecfdf5; }
+    .pick-btn.main-site { border-color: #7c3aed; background: linear-gradient(135deg,#faf5ff,#ecfdf5); }
     .pick-btn small { display: block; font-weight: 600; font-size: 11px; color: #5a6a62; margin-top: 2px; }
     .pick-note { margin-top: 14px; font-size: 12px; color: #5a6a62; font-weight: 600; line-height: 1.45; }
   </style>
@@ -38,7 +39,7 @@
     <p class="pick-note">Выбери версию сам — никуда не перекинет без нажатия.</p>
     <p class="guess" id="guess">🔍 Определяем…</p>
     <div class="pick-grid" id="grid"></div>
-    <p class="pick-note">Потом можно переключать в меню сверху: 📱 📟 💻</p>
+    <p class="pick-note">Потом можно переключать в меню сверху: 📱 📟 💻 ⭐</p>
     <p class="pick-note" style="margin-top:8px"><a href="qr-scanner.html" style="color:#0d6e5f;font-weight:800">📷 На компьютере — Сканер QR</a></p>
   </div>
   <script>
@@ -60,37 +61,60 @@
       }
       var isStarAdmin = false;
       try { isStarAdmin = localStorage.getItem("amal-friends-star-admin-v1") === "1"; } catch (_) {}
-      var friendsHref = "./friends.html?v=9&stay=1&code=" + encodeURIComponent(code || "amal-star-friends");
+      var friendsHref = "./friends.html?v=10&stay=1&code=" + encodeURIComponent(code || "amal-star-friends");
       if (isStarAdmin || /^amal-star-admin-/.test(code)) {
         friendsHref += "&admin=1";
       }
+      var hubQ = exclusive || (function () {
+        try { return localStorage.getItem("amal-friends-access-v1") === "1"; } catch (_) { return false; }
+      })() ? "&hub=friends" : "";
+      var mainHref = "./?stay=1" + (hubQ ? hubQ : "");
+      var phoneHref = "./phone.html?v=3&stay=1" + hubQ;
+      var tabletHref = "./tablet.html?v=2&stay=1" + hubQ;
+
       var dev = AmalDevice.detect();
-      document.getElementById("guess").textContent =
-        "Подсказка: у тебя " + AmalDevice.label(dev) + " — но выбирай сам!";
-      var items = [
-        {
+      document.getElementById("guess").textContent = exclusive
+        ? "⭐ Друзья: есть эксклюзив и полный основной сайт — выбирай сам!"
+        : ("Подсказка: у тебя " + AmalDevice.label(dev) + " — но выбирай сам!");
+
+      var items = [];
+      if (exclusive) {
+        items.push({
           id: "friends",
           ico: isStarAdmin ? "👑" : "⭐",
           name: isStarAdmin ? "👑 Эксклюзив · АДМИ" : "⭐ Эксклюзив",
-          sub: isStarAdmin ? "для вас · адми · особые силы" : "Смотри · чат · игры · друзья",
+          sub: isStarAdmin ? "для вас · адми · особые силы" : "Смотри · чат · особые игры",
           href: friendsHref,
-        },
-        { id: "phone", ico: "📱", name: "Телефон (обычная)", sub: "большие кнопки · вертикально", href: "./phone.html?v=2&stay=1" },
-        { id: "tablet", ico: "📟", name: "Планшет / iPad", sub: "средний экран · можно 3D", href: "./tablet.html?v=1&stay=1" },
-        { id: "desktop", ico: "💻", name: "Компьютер", sub: "все игры · Bed Wars · 3D", href: "./?stay=1" },
-      ];
-      // Автоперенаправление на эксклюзив для телефонов
-      if (dev === "phone" || dev === "tablet") {
-        dev = "friends";
+          extra: "",
+        });
+        items.push({
+          id: "desktop",
+          ico: "💻",
+          name: "Основной сайт · все игры",
+          sub: "полный каталог · телефон и ПК · то же, что у Амаля",
+          href: mainHref,
+          extra: " main-site",
+        });
+        items.push({ id: "phone", ico: "📱", name: "Телефон (основной)", sub: "большие кнопки · полный каталог", href: phoneHref, extra: "" });
+        items.push({ id: "tablet", ico: "📟", name: "Планшет / iPad", sub: "средний экран · полный каталог", href: tabletHref, extra: "" });
+      } else {
+        items = [
+          { id: "phone", ico: "📱", name: "Телефон", sub: "большие кнопки · вертикально", href: phoneHref, extra: "" },
+          { id: "tablet", ico: "📟", name: "Планшет / iPad", sub: "средний экран · можно 3D", href: tabletHref, extra: "" },
+          { id: "desktop", ico: "💻", name: "Компьютер", sub: "все игры · Bed Wars · 3D", href: mainHref, extra: "" },
+        ];
       }
-      if (exclusive) {
-        dev = "friends";
-      }
+
+      var suggest = exclusive
+        ? (dev === "desktop" ? "desktop" : "friends")
+        : (dev === "phone" || dev === "tablet" || dev === "desktop" ? dev : "desktop");
 
       var grid = document.getElementById("grid");
       items.forEach(function (it) {
         var a = document.createElement("a");
-        a.className = "pick-btn" + (it.id === dev ? " suggest" : "");
+        var mark = it.id === suggest ? " suggest" : "";
+        if (exclusive && it.id === "desktop") mark += " suggest";
+        a.className = "pick-btn" + mark + (it.extra || "");
         a.href = it.href;
         a.innerHTML = '<span class="ico">' + it.ico + '</span><span>' + it.name + '<small>' + it.sub + '</small></span>';
         grid.appendChild(a);

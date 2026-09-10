@@ -63,17 +63,23 @@
     </section>
 
     <div class="bottom-links">
-      <a href="./?stay=1">💻 ПК</a>
-      <a href="tablet.html?v=1&stay=1">📟 Планшет</a>
-      <a href="qr-school.html">QR класс</a>
+      <a href="./?stay=1&hub=friends" id="link-main">💻 Основной сайт</a>
+      <a href="tablet.html?v=2&stay=1&hub=friends">📟 Планшет</a>
+      <a href="friends.html?v=10&stay=1&code=amal-star-friends">⭐ Эксклюзив</a>
       <a href="qr-scanner.html">📷 Сканер</a>
     </div>
   </div>
 
   <script src="./shared/amal-hub-data.js?v=16"></script>
   <script src="./shared/amal-catalog-filter.js?v=2"></script>
-  <script src="./shared/amal-device-switcher.js?v=2"></script>
+  <script src="./shared/amal-device-switcher.js?v=5"></script>
   <script>
+    try {
+      if (/[?&]hub=friends/.test(location.search)) {
+        sessionStorage.setItem("amal-device-hub-v1", "friends");
+        localStorage.setItem("amal-friends-access-v1", "1");
+      }
+    } catch (_) {}
     AmalDevice.setHub("phone");
     AmalDevice.remember("phone", "phone");
     AmalHubUI.init({ from: "phone", d3Playable: false });
