@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR · Kinder Minecraft — для друзей</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#3d8b5a" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font-family: Nunito, system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse at 20% 0%, #2a5a3a 0%, transparent 50%),
+        radial-gradient(ellipse at 90% 80%, #1a3040 0%, transparent 45%),
+        #101820;
+      color: #eef6f0;
+      text-align: center;
+    }
+    .box {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(16, 28, 22, 0.92);
+      border: 2px solid rgba(100, 200, 120, 0.35);
+      border-radius: 20px;
+      padding: 22px 18px 20px;
+      box-shadow: 0 20px 40px #0008;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+    }
+    p {
+      margin: 0 0 16px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+      opacity: 0.88;
+    }
+    img.qr {
+      width: min(280px, 78vw);
+      height: auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    a.link {
+      display: inline-block;
+      margin-top: 14px;
+      color: #9dffb0;
+      font-weight: 800;
+      font-size: 13px;
+      word-break: break-all;
+    }
+    a.back {
+      display: inline-block;
+      margin-top: 16px;
+      color: #c8d8cc;
+      font-weight: 800;
+      font-size: 13px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>QR · Kinder Minecraft</h1>
+    <p>Тот QR, что с Kinder Joy Minecraft — мини-игра Kinder. Скинь эту страницу друзьям или пусть сканируют код.</p>
+    <img
+      class="qr"
+      alt="QR Kinder Minecraft"
+      width="280"
+      height="280"
+      src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=8&data=https%3A%2F%2Ffandom.kinder.com%2Fminecraft%2F"
+    />
+    <br />
+    <a class="link" href="https://fandom.kinder.com/minecraft/" target="_blank" rel="noopener">fandom.kinder.com/minecraft</a>
+    <br />
+    <a class="back" href="./">← Игры Амаля</a>
+  </div>
+</body>
+</html>
