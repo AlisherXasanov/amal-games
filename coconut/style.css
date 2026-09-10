@@ -23,29 +23,34 @@ html, body {
 
 .back {
   position: fixed;
-  top: 12px;
+  top: max(12px, env(safe-area-inset-top));
   left: 12px;
   z-index: 6;
   color: #fff;
   text-decoration: none;
-  font: 800 13px Nunito, sans-serif;
-  padding: 7px 12px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.4);
+  font: 900 16px Nunito, sans-serif;
+  padding: 14px 18px;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 2px solid rgba(246, 231, 193, 0.4);
   backdrop-filter: blur(6px);
 }
 
 .exit {
   position: fixed;
-  top: 12px;
+  top: max(12px, env(safe-area-inset-top));
   right: 12px;
   z-index: 9;
   border: 2px solid rgba(246, 231, 193, 0.55);
-  background: rgba(20, 40, 32, 0.85);
+  background: rgba(20, 40, 32, 0.9);
   color: #f6e7c1;
-  font: 800 12px Nunito, sans-serif;
-  padding: 8px 12px;
-  border-radius: 10px;
+  font: 900 15px Nunito, sans-serif;
+  padding: 14px 16px;
+  min-height: 52px;
+  border-radius: 14px;
   cursor: pointer;
   backdrop-filter: blur(6px);
 }
@@ -108,7 +113,7 @@ html, body {
 .overlay.hidden { display: none; }
 
 .box {
-  width: min(440px, 100%);
+  width: min(520px, 100%);
   background: linear-gradient(165deg, #1f6b55, #123a32 70%);
   border: 2px solid rgba(246, 231, 193, 0.35);
   border-radius: 22px;
@@ -142,33 +147,34 @@ h1 {
 
 .modes {
   display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .mode {
   text-align: left;
-  border: 2px solid rgba(246, 231, 193, 0.28);
-  background: rgba(0, 0, 0, 0.22);
+  border: 3px solid rgba(246, 231, 193, 0.4);
+  background: rgba(0, 0, 0, 0.28);
   color: #fff;
-  border-radius: 14px;
-  padding: 12px 12px;
+  border-radius: 18px;
+  padding: 18px 16px;
+  min-height: 88px;
   cursor: pointer;
   font: inherit;
 }
 
 .mode strong {
   display: block;
-  font-size: 15px;
-  margin-bottom: 3px;
+  font-size: 1.25rem;
+  margin-bottom: 6px;
   color: #f6e7c1;
 }
 
 .mode span {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  opacity: 0.88;
-  line-height: 1.35;
+  opacity: 0.92;
+  line-height: 1.4;
 }
 
 .mode:hover, .mode:focus {
@@ -189,8 +195,9 @@ h1 {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   border-radius: 999px;
-  padding: 8px 14px;
-  font: 800 13px Nunito, sans-serif;
+  padding: 14px 18px;
+  min-height: 48px;
+  font: 900 15px Nunito, sans-serif;
   cursor: pointer;
 }
 

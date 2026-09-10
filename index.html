@@ -251,50 +251,48 @@
       font-size: 0.9rem !important;
       margin-bottom: 0.35rem !important;
     }
+    /* Смотри — обычная крупная карточка + большая кнопка */
     .grid.valera-spotlight {
-      max-width: 168px !important;
-      width: 168px;
+      max-width: min(420px, 94vw) !important;
+      width: 100%;
       margin: 0.35rem auto 0.9rem !important;
-      padding: 0 !important;
+      padding: 0 1rem !important;
       grid-template-columns: 1fr !important;
       gap: 0 !important;
     }
     .valera-card {
-      border: 1px solid #c4b5fd !important;
-      box-shadow: 0 4px 12px rgba(91, 61, 138, 0.1);
-      border-radius: 12px !important;
-      transform: none !important;
-    }
-    .valera-card:hover {
-      transform: none !important;
-      box-shadow: 0 6px 14px rgba(91, 61, 138, 0.16);
+      border: 2px solid #c4b5fd !important;
+      box-shadow: 0 8px 22px rgba(91, 61, 138, 0.14);
+      border-radius: 16px !important;
     }
     .valera-card .card-img {
-      aspect-ratio: auto !important;
-      height: 44px !important;
-      min-height: 0 !important;
-      font-size: 1.25rem !important;
-      padding: 0 !important;
-    }
-    .valera-card .card-img::after { display: none !important; }
-    .valera-card .card-body {
-      padding: 0.45rem 0.55rem 0.55rem !important;
-    }
-    .valera-card .badge {
-      font-size: 10px !important;
-      padding: 0.1rem 0.35rem !important;
-    }
-    .valera-card h2 {
-      font-size: 0.88rem !important;
-      margin: 0.2rem 0 !important;
-    }
-    .valera-card p {
-      display: none !important;
+      min-height: 120px !important;
+      font-size: 3.4rem !important;
     }
     .valera-card .play-btn {
-      padding: 0.28rem 0.55rem !important;
-      font-size: 10px !important;
-      border-radius: 8px !important;
+      display: block !important;
+      width: 100% !important;
+      text-align: center !important;
+      padding: 0.85rem 1.1rem !important;
+      font-size: 1.05rem !important;
+      border-radius: 12px !important;
+      margin-top: 0.75rem !important;
+    }
+    /* Крупные кнопки на топ-карточках (Смотри / песни / Кокос) */
+    .grid .card.featured .play-btn,
+    .grid.valera-spotlight .play-btn {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.9rem 1.15rem;
+      font-size: 1.1rem;
+      border-radius: 14px;
+      margin-top: 0.85rem;
+      text-align: center;
+    }
+    .grid .card.featured .card-img {
+      min-height: 140px;
+      font-size: 4rem;
     }
     .hub-offline-hint {
       margin: 0.55rem auto 0;
@@ -470,15 +468,17 @@
     .play-btn {
       display: inline-block;
       margin-top: 0.9rem;
-      padding: .5rem 1.05rem;
-      border-radius: 10px;
+      padding: .7rem 1.25rem;
+      border-radius: 12px;
       font-weight: 800;
-      font-size: .85rem;
+      font-size: 1rem;
       text-align: center;
       color: #f3efe6 !important;
       background: linear-gradient(135deg, #0d6e5f, #0a5248) !important;
       transition: filter .15s, transform .15s;
       width: fit-content;
+      min-height: 44px;
+      line-height: 1.2;
     }
     .play-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
     footer {
@@ -1288,7 +1288,13 @@
       }
       .card-body h2 { font-size: 1rem; }
       .card-body p { font-size: 12px; line-height: 1.35; }
-      .play-btn { padding: 0.45rem 0.75rem; font-size: 12px; }
+      .play-btn { padding: 0.75rem 1rem; font-size: 15px; min-height: 48px; }
+      .grid .card.featured .play-btn,
+      .grid.valera-spotlight .play-btn {
+        padding: 1rem 1.1rem;
+        font-size: 1.15rem;
+        min-height: 52px;
+      }
       .section-title { padding: 0 0.75rem; font-size: 0.7rem; }
       .amal-gallery-wrap { padding: 0 0.75rem; }
     }
@@ -1391,39 +1397,39 @@
 
   <p class="section-title valera-strip-title">▶ Смотри</p>
   <div class="grid valera-spotlight" style="margin-bottom:0.8rem">
-    <a class="card valera-card" href="youtube-free/?v=46">
+    <a class="card valera-card featured" href="youtube-free/?v=46">
       <div class="card-img" style="background:linear-gradient(145deg,#2d1b4e 0%,#5b3d8a 45%,#f5c93a 100%)">📺</div>
       <div class="card-body">
         <span class="badge">ТВ</span>
         <h2>Смотри</h2>
-        <p>Каналы и мульты.</p>
-        <span class="play-btn" style="background:#2d1b4e">Открыть</span>
+        <p>Каналы и мульты · свои рисованные серии.</p>
+        <span class="play-btn" style="background:#2d1b4e">▶ Открыть</span>
       </div>
     </a>
   </div>
 
   <p class="section-title">Только песни · расслабиться</p>
   <div class="grid" style="margin-bottom:0.8rem">
-    <a class="card featured" href="relax-songs/?v=4">
+    <a class="card featured" href="relax-songs/?v=5">
       <div class="card-img" style="background:linear-gradient(135deg,#2a1820,#3d8b5a)">🌹</div>
       <div class="card-body">
         <span class="badge new">YouTube</span>
         <h2>Расслаб · песни</h2>
         <p>Black Rose и Minecraft — открыть на YouTube (Яндекс у тебя не работает).</p>
-        <span class="play-btn" style="background:#3d8b5a">Слушать</span>
+        <span class="play-btn" style="background:#3d8b5a">▶ Слушать</span>
       </div>
     </a>
   </div>
 
   <p class="section-title">Новое · Кокос</p>
   <div class="grid" style="margin-bottom:0.8rem">
-    <a class="card featured" href="coconut/?v=2">
+    <a class="card featured" href="coconut/?v=3">
       <div class="card-img" style="background:linear-gradient(135deg,#1f6b55,#e8d5a3)">🥥</div>
       <div class="card-body">
         <span class="badge new">Новое</span>
         <h2>Кокос</h2>
         <p>Обычный: висишь, ветер, события, выход спокойно. Реализм: чёрный экран — не двигается и не слышит.</p>
-        <span class="play-btn" style="background:#1f6b55">Играть</span>
+        <span class="play-btn" style="background:#1f6b55">▶ Играть</span>
       </div>
     </a>
   </div>
