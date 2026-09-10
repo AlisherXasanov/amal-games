@@ -270,34 +270,32 @@
       box-shadow: 0 8px 22px rgba(91, 61, 138, 0.14);
       border-radius: 16px !important;
     }
-    .valera-card .card-img {
-      min-height: 120px !important;
-      font-size: 3.4rem !important;
-    }
-    .valera-card .play-btn {
-      display: block !important;
-      width: 100% !important;
-      text-align: center !important;
-      padding: 0.85rem 1.1rem !important;
-      font-size: 1.05rem !important;
-      border-radius: 12px !important;
-      margin-top: 0.75rem !important;
-    }
-    /* Крупные кнопки на топ-карточках (Смотри / песни / Кокос) */
+    /* Кнопки на топ-карточках — удобные, не гигантские */
     .grid .card.featured .play-btn,
     .grid.valera-spotlight .play-btn {
-      display: block;
-      width: 100%;
+      display: inline-block;
+      width: auto;
       box-sizing: border-box;
-      padding: 0.9rem 1.15rem;
-      font-size: 1.1rem;
-      border-radius: 14px;
-      margin-top: 0.85rem;
+      padding: 0.65rem 1.15rem;
+      font-size: 0.95rem;
+      border-radius: 12px;
+      margin-top: 0.75rem;
       text-align: center;
+      min-height: 44px;
     }
     .grid .card.featured .card-img {
-      min-height: 140px;
-      font-size: 4rem;
+      min-height: 110px;
+      font-size: 3.2rem;
+    }
+    .valera-card .play-btn {
+      display: inline-block !important;
+      width: auto !important;
+      padding: 0.65rem 1.15rem !important;
+      font-size: 0.95rem !important;
+    }
+    .valera-card .card-img {
+      min-height: 100px !important;
+      font-size: 2.8rem !important;
     }
     .hub-offline-hint {
       margin: 0.55rem auto 0;
@@ -1293,12 +1291,13 @@
       }
       .card-body h2 { font-size: 1rem; }
       .card-body p { font-size: 12px; line-height: 1.35; }
-      .play-btn { padding: 0.75rem 1rem; font-size: 15px; min-height: 48px; }
+      .play-btn { padding: 0.55rem 0.95rem; font-size: 14px; min-height: 44px; }
       .grid .card.featured .play-btn,
       .grid.valera-spotlight .play-btn {
-        padding: 1rem 1.1rem;
-        font-size: 1.15rem;
-        min-height: 52px;
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+        min-height: 44px;
+        width: auto;
       }
       .section-title { padding: 0 0.75rem; font-size: 0.7rem; }
       .amal-gallery-wrap { padding: 0 0.75rem; }
@@ -1360,8 +1359,9 @@
     <div class="hub-quick" aria-label="Быстрый вход для всех игроков">
       <div class="hub-quick-title">⚡ Быстрый вход · для всех игроков</div>
       <div class="hub-quick-links" id="hubQuickLinks">
-        <a href="mult-studio/?v=6" class="quick-smol">🐻 Полка Валеры · мульты</a>
-        <a href="relax-songs/?v=5">🎵 Расслаб · песни</a>
+        <a href="apps/?v=3" class="quick-smol">🧰 Приложения</a>
+        <a href="mult-studio/?v=6">🐻 Полка Валеры</a>
+        <a href="relax-songs/?v=6">🎵 Расслаб · песни</a>
         <a href="coconut/?v=3">🥥 Кокос</a>
         <a href="milashki/?v=7">🐣 Милашки</a>
         <a href="youtube-free/?v=46">📺 Смотри</a>
@@ -1378,11 +1378,11 @@
     </div>
     <p class="hub-offline-hint">📴 Открой сайт один раз с интернетом — потом главная и сохранённые игры работают и без сети. На телефоне включена экономия батареи.</p>
     <div class="lab-links" hidden>
+      <a href="apps/?v=3" class="primary" style="background:linear-gradient(135deg,#0d6e5f,#f0b429)">🧰 Приложения</a>
       <a class="primary" href="create-lab/game.html">✨ Создать игру</a>
       <a href="create-lab/comic.html">📖 Комикс</a>
       <a href="create-lab/">Create Lab</a>
       <a href="gallery.html" id="galleryLinkTop" hidden>🎨 Галерея</a>
-      <a href="apps/#faq">Приложения 🔒</a>
     </div>
     <p class="hint">Новое: <strong>своя игра</strong> за минуту · маленький комикс · ник 📝 в любой игре.</p>
     <div class="vials" aria-hidden="true">
@@ -1425,13 +1425,22 @@
 
   <p class="section-title">Только песни · расслабиться</p>
   <div class="grid" style="margin-bottom:0.8rem">
-    <a class="card featured" href="relax-songs/?v=5">
+    <a class="card featured" href="relax-songs/?v=6">
       <div class="card-img" style="background:linear-gradient(135deg,#2a1820,#3d8b5a)">🌹</div>
       <div class="card-body">
         <span class="badge new">YouTube</span>
         <h2>Расслаб · песни</h2>
         <p>Black Rose и Minecraft — открыть на YouTube (Яндекс у тебя не работает).</p>
         <span class="play-btn" style="background:#3d8b5a">▶ Слушать</span>
+      </div>
+    </a>
+    <a class="card featured" href="apps/?v=3" id="appsCardTop">
+      <div class="card-img" style="background:linear-gradient(135deg,#0d6e5f,#f0b429)">🧰</div>
+      <div class="card-body">
+        <span class="badge">Apps</span>
+        <h2>Приложения</h2>
+        <p>Полка: Смотри, Валера, QR, мемы, Create Lab. Хозяину — всё открыто.</p>
+        <span class="play-btn createlab">▶ Открыть полку</span>
       </div>
     </a>
   </div>
@@ -1905,16 +1914,15 @@
         <span class="play-btn echo">Играть</span>
       </div>
     </a>
-    <div class="card featured" data-amal-3d-lock data-href="apps/" role="button" tabindex="0" style="position:relative;cursor:pointer">
-      <div class="card-img createlab">🔒</div>
-      <div style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,23,42,.35);font-size:1.4rem;letter-spacing:.25em;pointer-events:none">⛓ 🔒 ⛓</div>
+    <a class="card featured" href="apps/?v=3">
+      <div class="card-img createlab">🧰</div>
       <div class="card-body">
-        <span class="badge">LOCKED</span>
+        <span class="badge">Apps</span>
         <h2>Приложения</h2>
-        <p>СкажиИгру и Create Lab на сайте, но под замком для гостей. Хозяин / админ входит свободно.</p>
-        <span class="play-btn createlab">Полка приложений</span>
+        <p>СкажиИгру, Create Lab, Смотри, Полка Валеры. Хозяин и друзья с QR входят свободно.</p>
+        <span class="play-btn createlab">▶ Полка приложений</span>
       </div>
-    </div>
+    </a>
     <a class="card featured" href="animal-hospital/">
       <div class="card-img hospital">🐾</div>
       <div class="card-body">
