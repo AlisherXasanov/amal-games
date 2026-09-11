@@ -37,7 +37,7 @@
   }
 
   function friendsHref() {
-    var h = "./friends.html?v=10&stay=1&code=" + encodeURIComponent(FRIEND_CODE);
+    var h = "./friends.html?v=11&stay=1&code=" + encodeURIComponent(FRIEND_CODE);
     if (isOwnerPc()) h += "&owner=amal";
     return h;
   }

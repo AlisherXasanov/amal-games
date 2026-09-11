@@ -6,16 +6,59 @@
   <title>⭐ Эксклюзив · друзья Амаля</title>
   <meta name="theme-color" content="#7c3aed" />
   <meta name="robots" content="noindex, nofollow" />
-  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=9" />
+  <link rel="stylesheet" href="./shared/amal-hub-ui.css?v=10" />
   <style>
-    html, body { background: #e8f4ef !important; color: #0f172a !important; }
-    #hub-root, .hub { display: block !important; visibility: visible !important; opacity: 1 !important; min-height: 40vh; }
+    /* Друзья — своя фиолетовая тема (не как основной зелёный сайт) */
+    html, body {
+      background:
+        radial-gradient(ellipse 70% 40% at 10% 0%, rgba(168,85,247,.35), transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 10%, rgba(236,72,153,.25), transparent 50%),
+        linear-gradient(165deg, #1e1030, #2e1065 45%, #4c1d95) !important;
+      color: #f8fafc !important;
+      min-height: 100dvh;
+    }
+    #hub-root, .hub {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      min-height: 50vh;
+      max-width: 720px;
+    }
+    .top h1 { color: #fde68a !important; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+    .device-tag { color: #e9d5ff !important; }
+    .tabs .tab {
+      background: rgba(255,255,255,.12) !important;
+      color: #f5f3ff !important;
+      border-color: rgba(253,230,138,.35) !important;
+    }
+    .tabs .tab.on {
+      background: linear-gradient(135deg, #a855f7, #db2777) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+    .panel, .tip, .bottom-links a {
+      color: #f1e7ff !important;
+    }
+    .tip { background: rgba(0,0,0,.25); border-radius: 12px; padding: 8px 10px; }
+    .cat-btn { box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+    .device-switcher {
+      background: rgba(30,16,48,.9) !important;
+      border-color: rgba(253,230,138,.4) !important;
+      color: #fde68a !important;
+    }
+    .friends-banner {
+      margin: 0 0 12px; padding: 12px 14px; border-radius: 16px; text-align: center;
+      background: linear-gradient(135deg, rgba(253,230,138,.2), rgba(168,85,247,.25));
+      border: 2px solid rgba(253,230,138,.45);
+      font: 800 13px/1.4 system-ui, sans-serif; color: #fde68a;
+    }
   </style>
   <script src="./shared/amal-lite-ui.js?v=1"></script>
   <script src="./shared/amal-owner-session.js?v=4"></script>
   <script src="./owner-cheats.js?v=2"></script>
   <script src="./shared/amal-owner-powers.js?v=26"></script>
   <script src="./shared/amal-device.js?v=9"></script>
+  <script src="./shared/amal-auto-refresh.js?v=1" defer></script>
   <style>
     /* Способности командира — сверху, крупно */
     #commander-powers {
@@ -83,9 +126,10 @@
   <div class="hub" id="hub-root">
     <div id="device-switcher-slot"></div>
     <div class="top">
-      <h1>⭐ Эксклюзив</h1>
-      <p class="device-tag" id="friends-tag">Закрытая зона · только команда Амаля</p>
+      <h1>⭐ Эксклюзив друзей</h1>
+      <p class="device-tag" id="friends-tag">Закрытая зона · не обычный сайт</p>
     </div>
+    <p class="friends-banner">Это <b>версия для друзей</b> — фиолетовая, не зелёная главная. Основной каталог — кнопка «Основной сайт».</p>
 
     <nav class="tabs" id="tabs">
       <button type="button" class="tab on" data-tab="home">🏠</button>
@@ -177,11 +221,18 @@
   <script src="./shared/amal-hub-back.js?v=1"></script>
   <script src="./shared/amal-hub-data.js?v=16"></script>
   <script src="./shared/amal-catalog-filter.js?v=2"></script>
-  <script src="./shared/amal-device-switcher.js?v=5"></script>
+  <script src="./shared/amal-device-switcher.js?v=6"></script>
   <script src="./shared/amal-friends-net.js?v=15"></script>
   <script src="./shared/amal-chat-phrases.js?v=1"></script>
   <script>
     (function () {
+      // Анти-белый-экран: контент всегда виден даже если скрипты упали
+      try {
+        document.documentElement.style.background = "#1e1030";
+        document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
+      } catch (_) {}
+
       function loadHub(cb) {
         if (window.AmalHub) { if (cb) cb(); return; }
         if (document.querySelector('script[data-amal-hub-lazy]')) {
@@ -192,7 +243,7 @@
           return;
         }
         var s = document.createElement("script");
-        s.src = "./shared/amal-hub.js?v=70";
+        s.src = "./shared/amal-hub.js?v=71";
         s.async = true;
         s.setAttribute("data-amal-hub-lazy", "1");
         s.onload = function () { if (cb) cb(); };
@@ -203,10 +254,13 @@
       try {
         var qc = new URLSearchParams(location.search).get("code") || "";
         if (window.AmalDevice && AmalDevice.admitFriendsCode) AmalDevice.admitFriendsCode(qc);
+        else try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
       } catch (_) {}
       if (window.AmalOwnerSession) {
-        AmalOwnerSession.admitLikeQrScanned();
-        AmalOwnerSession.syncOwnerCheats();
+        try {
+          AmalOwnerSession.admitLikeQrScanned();
+          AmalOwnerSession.syncOwnerCheats();
+        } catch (_) {}
       }
       function startFriendsHub() {
         try {
@@ -316,37 +370,56 @@
           };
           if (AmalFriendsNet.clearOwnerBan) AmalFriendsNet.clearOwnerBan();
         }
-        AmalDevice.setHub("friends");
-        AmalDevice.remember(AmalDevice.detect(), "friends");
-        AmalHubUI.init({ from: "friends", d3Playable: AmalDevice.detect() !== "phone" });
-        AmalDeviceSwitcher.mount("device-switcher-slot");
-        AmalFriendsNet.init();
-        AmalFriendsNet.mountChat("friends-chat-root");
-        if (window.AmalChatPhrases) AmalChatPhrases.init("friends-chat-root");
+        if (window.AmalDevice) {
+          AmalDevice.setHub("friends");
+          AmalDevice.remember(AmalDevice.detect(), "friends");
+        }
+        if (window.AmalHubUI && AmalHubUI.init) {
+          try {
+            AmalHubUI.init({ from: "friends", d3Playable: !(window.AmalDevice && AmalDevice.detect() === "phone") });
+          } catch (_) {}
+        }
+        if (window.AmalDeviceSwitcher) AmalDeviceSwitcher.mount("device-switcher-slot");
+        if (window.AmalFriendsNet) {
+          try {
+            AmalFriendsNet.init();
+            AmalFriendsNet.mountChat("friends-chat-root");
+          } catch (_) {}
+        }
+        if (window.AmalChatPhrases) {
+          try { AmalChatPhrases.init("friends-chat-root"); } catch (_) {}
+        }
         if (location.hash === "#chat") {
           var chatTab = document.querySelector('.tab[data-tab="chat"]');
           if (chatTab) chatTab.click();
         }
-        document.getElementById("hub-root").addEventListener("click", function (e) {
-          var a = e.target.closest("a.game-card");
-          if (a && window.AmalFriendsNet) {
-            var name = a.querySelector(".name");
-            AmalFriendsNet.trackGame(name ? name.textContent : "игра");
-          }
-        });
+        var hubRoot = document.getElementById("hub-root");
+        if (hubRoot) {
+          hubRoot.addEventListener("click", function (e) {
+            var a = e.target.closest("a.game-card");
+            if (a && window.AmalFriendsNet) {
+              var name = a.querySelector(".name");
+              AmalFriendsNet.trackGame(name ? name.textContent : "игра");
+            }
+          });
+        }
         } catch (err) {
           try {
             var root = document.getElementById("hub-root");
             if (root) {
               var note = document.createElement("p");
               note.style.cssText = "padding:12px;background:#fee2e2;color:#991b1b;border-radius:12px;font-weight:800";
-              note.textContent = "Часть функций не загрузилась — обнови страницу (Ctrl+F5).";
+              note.textContent = "Часть функций не загрузилась — обнови страницу (Ctrl+F5). Кнопки ниже всё равно работают.";
               root.insertBefore(note, root.firstChild);
             }
           } catch (_) {}
         }
       }
-      startFriendsHub();
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", startFriendsHub);
+      } else {
+        startFriendsHub();
+      }
     })();
   </script>
 </body>

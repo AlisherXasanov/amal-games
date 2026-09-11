@@ -757,9 +757,8 @@
     if (!panel) {
       panel = document.createElement("div");
       panel.id = "amal-watch-panel";
-      const hub = document.getElementById("amal-hub-root");
-      if (hub) hub.appendChild(panel);
-      else document.body.appendChild(panel);
+      // Не в #amal-hub-root: paint() сносит root.innerHTML и панель «вылетает»
+      document.body.appendChild(panel);
       panel.addEventListener("click", (e) => {
         const btn = e.target.closest("[data-amal]");
         if (!btn) return;
@@ -795,25 +794,31 @@
     const activity = String((p && p.activity) || "В игре").slice(0, 120);
     const gameLabel = escapeHtml((p && (p.gameTitle || gameTitle(p.game))) || "—");
     const log = (activityLog[nick] || []).slice(0, 4);
+    const onlineLabel = online ? "● онлайн" : "○ оффлайн";
+    const banHtml = ban ? `<span class="amal-hub-pill off">🚫 бан ${escapeHtml(formatBanLeft(ban.until))}</span>` : "";
+    const logHtml = log.length
+      ? `<ul class="amal-watch-log">${log
+          .map(
+            (row) =>
+              `<li><span class="t">${fmtTime(row.at)}</span> ${escapeHtml(row.game)} · ${escapeHtml(row.activity)}</li>`,
+          )
+          .join("")}</ul>`
+      : "";
+    const sig = [nick, onlineLabel, activity, gameLabel, banHtml, logHtml].join("|");
+    if (panel.dataset.sig === sig) return;
+    panel.dataset.sig = sig;
     panel.innerHTML =
       `<div class="amal-watch-head"><span>👁 Слежу</span><button type="button" data-amal="watch-stop" title="Стоп">✕</button></div>` +
       `<div class="amal-watch-body">` +
-      `<img src="${faceUrl(nick, Date.now())}" alt="" />` +
+      `<img src="${faceUrl(nick)}" alt="" />` +
       `<div class="amal-watch-info">` +
       `<div class="amal-watch-nick">${escapeHtml(nick)}</div>` +
       `<div class="amal-watch-game">${gameLabel}</div>` +
       `<div class="amal-watch-act">${escapeHtml(activity)}</div>` +
-      `<div class="amal-watch-on"><span class="amal-hub-pill ${online ? "" : "off"}">${online ? "● онлайн" : "○ оффлайн"}</span>` +
-      (ban ? `<span class="amal-hub-pill off">🚫 бан ${escapeHtml(formatBanLeft(ban.until))}</span>` : "") +
+      `<div class="amal-watch-on"><span class="amal-hub-pill ${online ? "" : "off"}">${onlineLabel}</span>` +
+      banHtml +
       `</div></div></div>` +
-      (log.length
-        ? `<ul class="amal-watch-log">${log
-            .map(
-              (row) =>
-                `<li><span class="t">${fmtTime(row.at)}</span> ${escapeHtml(row.game)} · ${escapeHtml(row.activity)}</li>`,
-            )
-            .join("")}</ul>`
-        : "") +
+      logHtml +
       `<div class="amal-watch-actions">` +
       `<button type="button" data-amal="watch-open" data-nick="${escapeHtml(nick)}">В игру</button>` +
       `<button type="button" data-amal="watch-profile" data-nick="${escapeHtml(nick)}">Профиль</button>` +
@@ -2334,12 +2339,18 @@
 
   function maybeRepaintPlayers() {
     updateSameGameStrip();
-    if (isOwner()) updateWatchPanel();
-    if (!open || (adminPage !== "players" && adminPage !== "live" && adminPage !== "profile" && adminPage !== "watch")) return;
+    if (!open || (adminPage !== "players" && adminPage !== "live" && adminPage !== "profile" && adminPage !== "watch")) {
+      if (isOwner()) updateWatchPanel();
+      return;
+    }
     const now = Date.now();
-    if (now - lastPlayersPaint < 800) return;
+    if (now - lastPlayersPaint < 800) {
+      if (isOwner()) updateWatchPanel();
+      return;
+    }
     lastPlayersPaint = now;
     paint();
+    if (isOwner()) updateWatchPanel();
   }
 
   function clearPresenceList() {
@@ -2986,6 +2997,13 @@
       root.id = "amal-hub-root";
       document.body.appendChild(root);
     }
+    let savedScroll = 0;
+    try {
+      const bodyEl = root.querySelector(".amal-hub-modal-body");
+      if (bodyEl) savedScroll = bodyEl.scrollTop || 0;
+    } catch (_) {
+      /* ignore */
+    }
     const nick = getNick();
     const owner = isOwner();
     const gameAdmin = isGameAdmin();
@@ -3047,6 +3065,15 @@
     root.innerHTML = html;
     bindUi();
     updateSameGameStrip();
+    if (owner && watchNick) updateWatchPanel();
+    if (savedScroll > 0) {
+      try {
+        const bodyEl = root.querySelector(".amal-hub-modal-body");
+        if (bodyEl) bodyEl.scrollTop = savedScroll;
+      } catch (_) {
+        /* ignore */
+      }
+    }
   }
 
   function escapeHtml(s) {
