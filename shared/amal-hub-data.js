@@ -33,7 +33,7 @@
 
   var EXCLUSIVE = [
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
-    { ico: "🥚", name: "Укради яйцо", path: "steal-egg/play3d.html?v=5", note: "3D прокачано" },
+    { ico: "🥚", name: "Укради яйцо", path: "steal-egg/play3d.html?v=6", note: "как оригинал: вылуп + дорожка" },
     { ico: "🧠", name: "Steal a Brainrot", path: "steal-brainrot/", note: "воруй брейнротов · 3D" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🔥", name: "Хиты · папка", path: "hits/", note: "хиты + умный" },

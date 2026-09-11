@@ -1,5 +1,5 @@
 /**
- * Укради яйцо · 3D v5 — прокачка: магазин, вольер, зоны, боссы, дорожка, сейв.
+ * Укради яйцо · 3D v6 — как оригинал: вылупление, отброс, дорожка/вольер за монеты.
  */
 import * as THREE from "three";
 import { createOrbitCam } from "../shared/amal-3d/orbit.js";
@@ -22,7 +22,7 @@ const EGG_DEFS = [
 ];
 
 const ZONES = [
-  { id: "mine", name: "ТВОЯ", x: -32, z: 0, r: 7, color: 0x22c55e, pool: [], slots: 4, boss: false },
+  { id: "mine", name: "ТВОЯ", x: -32, z: 0, r: 7, color: 0x22c55e, pool: [], slots: 6, boss: false },
   { id: "z1", name: "НУБ", x: -18, z: 0, r: 6, color: 0x64748b, pool: ["basic", "basic", "gold"], boss: true },
   { id: "z2", name: "СОСЕД", x: -4, z: 0, r: 6, color: 0xef4444, pool: ["basic", "gold", "slime", "rare"], boss: true },
   { id: "z3", name: "КАТЯ", x: 10, z: 0, r: 6, color: 0xf97316, pool: ["gold", "slime", "rare", "crystal"], boss: true },
@@ -32,7 +32,7 @@ const ZONES = [
   { id: "z7", name: "ФИНАЛ", x: 66, z: 0, r: 7, color: 0xeab308, pool: ["dragon", "void", "star", "final"], boss: true },
 ];
 
-const SAVE_KEY = "amal-steal-egg-3d-v5";
+const SAVE_KEY = "amal-steal-egg-3d-v6";
 let nextUid = 1;
 
 function eggDef(id) {
@@ -170,6 +170,41 @@ function makeEggMesh(def, scaleMul) {
   return g;
 }
 
+/** Существо после вылупления яйца */
+function makePetMesh(def, scaleMul) {
+  const g = new THREE.Group();
+  const s = (def.scale || 1) * (scaleMul || 1);
+  const mat = makeMat(def);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.36 * s, 14, 12), mat);
+  body.position.y = 0.45 * s;
+  body.castShadow = true;
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22 * s, 12, 10), mat);
+  head.position.set(0, 0.85 * s, 0.05 * s);
+  head.castShadow = true;
+  g.add(head);
+  [-0.18, 0.18].forEach((x) => {
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.07 * s, 0.22 * s, 6), mat);
+    ear.position.set(x * s, 1.05 * s, 0);
+    g.add(ear);
+  });
+  [-0.14, 0.14].forEach((x) => {
+    const leg = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.07 * s, 0.08 * s, 0.28 * s, 8),
+      mat
+    );
+    leg.position.set(x * s, 0.14 * s, 0);
+    g.add(leg);
+  });
+  g.userData.spin = 1.1 + Math.random() * 0.4;
+  g.userData.isPet = true;
+  return g;
+}
+
+function hatchSeconds(def) {
+  return Math.max(8, 28 - Math.min(18, (def.rate || 1) * 0.12));
+}
+
 function makeHumanoid(shirt, pants, helm) {
   const g = new THREE.Group();
   const skin = 0xffc9a3;
@@ -286,11 +321,17 @@ ZONES.forEach((z, zi) => {
 const treadmill = { x: myZone.x, z: myZone.z + 5.4, w: 6.2, d: 2.6 };
 const treadMesh = new THREE.Mesh(
   new THREE.BoxGeometry(treadmill.w, 0.28, treadmill.d),
-  new THREE.MeshStandardMaterial({ color: 0x94a3b8, emissive: 0x64748b, emissiveIntensity: 0.2 })
+  new THREE.MeshStandardMaterial({ color: 0x64748b, emissive: 0x334155, emissiveIntensity: 0.15 })
 );
 treadMesh.position.set(treadmill.x, 0.3, treadmill.z);
 treadMesh.castShadow = true;
 scene.add(treadMesh);
+const treadLock = new THREE.Mesh(
+  new THREE.BoxGeometry(treadmill.w + 0.2, 1.4, 0.12),
+  new THREE.MeshStandardMaterial({ color: 0xef4444, transparent: true, opacity: 0.55 })
+);
+treadLock.position.set(treadmill.x, 0.9, treadmill.z + treadmill.d / 2 + 0.05);
+scene.add(treadLock);
 
 const playerMesh = makeHumanoid(0x38bdf8, 0x1e3a8a, 0xfbbf24);
 playerMesh.position.set(myZone.x, 0, myZone.z + 2);
@@ -328,6 +369,10 @@ let incomeAcc = 0;
 let onTreadmill = false;
 let treadmillRun = false;
 let forceRun = false;
+let unlockedSlots = 2;
+let treadmillUnlocked = false;
+let treadLevel = 1;
+let flingT = 0;
 
 const coinsEl = document.getElementById("coins");
 const incomeEl = document.getElementById("income");
@@ -338,6 +383,15 @@ const toastEl = document.getElementById("toast");
 const alarmEl = document.getElementById("alarm");
 const slotList = document.getElementById("slotList");
 const shopList = document.getElementById("shopList");
+const upgList = document.getElementById("upgList");
+const slotCapEl = document.getElementById("slotCap");
+const treadStatEl = document.getElementById("treadStat");
+
+const UPGRADES = {
+  slot: [0, 0, 80, 180, 350, 600, 1000],
+  treadUnlock: 150,
+  treadLv: [0, 0, 200, 450, 900, 1600],
+};
 
 function formatNum(n) {
   if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
@@ -352,7 +406,16 @@ function toast(msg) {
 }
 
 function incomeRate() {
-  return mySlots.reduce((s, sl) => s + (sl.egg ? sl.egg.rate : 0), 0);
+  return mySlots.reduce((s, sl) => {
+    if (!sl.egg) return s;
+    const mul = sl.hatched ? 2 : 1;
+    return s + sl.egg.rate * mul;
+  }, 0);
+}
+
+function syncTreadVisual() {
+  treadLock.visible = !treadmillUnlocked;
+  treadMesh.material.color.setHex(treadmillUnlocked ? 0x94a3b8 : 0x475569);
 }
 
 function syncUI() {
@@ -360,10 +423,35 @@ function syncUI() {
   incomeEl.textContent = formatNum(incomeRate());
   speedEl.textContent = formatNum(speedStat);
   carryEl.textContent = carry ? carry.name : "пусто";
+  if (slotCapEl) slotCapEl.textContent = String(unlockedSlots) + "/" + mySlots.length;
+  if (treadStatEl) {
+    treadStatEl.textContent = treadmillUnlocked ? "ур." + treadLevel : "закрыта";
+  }
   slotList.innerHTML = mySlots
     .map((sl, i) => {
+      if (i >= unlockedSlots) return "<div>Слот " + (i + 1) + ": 🔒 купи слот</div>";
       if (!sl.egg) return "<div>Слот " + (i + 1) + ": пусто</div>";
-      return "<div>Слот " + (i + 1) + ": " + sl.egg.name + " · +" + sl.egg.rate + "/с</div>";
+      if (!sl.hatched) {
+        const left = Math.ceil(sl.hatchLeft || 0);
+        return (
+          "<div>Слот " +
+          (i + 1) +
+          ": 🥚 " +
+          sl.egg.name +
+          " · вылуп " +
+          left +
+          "с</div>"
+        );
+      }
+      return (
+        "<div>Слот " +
+        (i + 1) +
+        ": 🐾 " +
+        sl.egg.name +
+        " · +" +
+        sl.egg.rate * 2 +
+        "/с</div>"
+      );
     })
     .join("");
 }
@@ -375,7 +463,18 @@ function saveGame() {
       JSON.stringify({
         coins,
         speedStat,
-        mine: mySlots.map((s) => (s.egg ? s.egg.id : null)),
+        unlockedSlots,
+        treadmillUnlocked,
+        treadLevel,
+        mine: mySlots.map((s) =>
+          s.egg
+            ? {
+                id: s.egg.id,
+                hatched: !!s.hatched,
+                hatchLeft: s.hatchLeft || 0,
+              }
+            : null
+        ),
       })
     );
   } catch (_) {}
@@ -383,20 +482,29 @@ function saveGame() {
 
 function loadGame() {
   try {
-    const d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+    let raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) raw = localStorage.getItem("amal-steal-egg-3d-v5");
+    const d = JSON.parse(raw || "null");
     if (!d) return;
     if (d.coins != null) coins = d.coins;
     if (d.speedStat != null) speedStat = d.speedStat;
+    if (d.unlockedSlots != null) unlockedSlots = Math.max(2, Math.min(mySlots.length, d.unlockedSlots));
+    if (d.treadmillUnlocked) treadmillUnlocked = true;
+    if (d.treadLevel != null) treadLevel = Math.max(1, Math.min(5, d.treadLevel));
     if (Array.isArray(d.mine)) {
-      d.mine.forEach((id, i) => {
-        if (!id || !mySlots[i]) return;
+      d.mine.forEach((row, i) => {
+        if (!row || !mySlots[i]) return;
+        const id = typeof row === "string" ? row : row.id;
         const def = eggDef(id);
         mySlots[i].egg = Object.assign({}, def);
-        mySlots[i].mesh = makeEggMesh(def);
-        mySlots[i].mesh.position.set(mySlots[i].x, 1.05, mySlots[i].z);
+        mySlots[i].hatched = !!(row.hatched);
+        mySlots[i].hatchLeft = row.hatched ? 0 : row.hatchLeft != null ? row.hatchLeft : hatchSeconds(def);
+        mySlots[i].mesh = mySlots[i].hatched ? makePetMesh(def) : makeEggMesh(def);
+        mySlots[i].mesh.position.set(mySlots[i].x, mySlots[i].hatched ? 0.2 : 1.05, mySlots[i].z);
         scene.add(mySlots[i].mesh);
       });
     }
+    syncTreadVisual();
   } catch (_) {}
 }
 
@@ -421,7 +529,7 @@ function nearestSteal() {
 }
 
 function freeMySlot() {
-  return mySlots.find((s) => !s.egg);
+  return mySlots.find((s, i) => i < unlockedSlots && !s.egg);
 }
 
 function onMyBase() {
@@ -430,12 +538,13 @@ function onMyBase() {
 
 function updatePrompt() {
   let t = "";
-  if (onTreadmill) {
+  if (onTreadmill && !treadmillUnlocked) t = "🔒 Купи дорожку в магазине («Прокачка»)";
+  else if (onTreadmill) {
     t = treadmillRun
-      ? "🏃 БЕЖИМ! +" + formatNum(8 + speedStat * 0.02) + " ⚡/с"
+      ? "🏃 БЕЖИМ! +" + formatNum((8 + speedStat * 0.02) * treadLevel) + " ⚡/с"
       : "👟 Жми W на дорожке!";
-  } else if (carry && onMyBase() && freeMySlot()) t = "E — в вольер";
-  else if (carry && onMyBase() && !freeMySlot()) t = "Вольер полон (4)";
+  } else if (carry && onMyBase() && freeMySlot()) t = "E — в вольер (потом вылупится)";
+  else if (carry && onMyBase() && !freeMySlot()) t = "Вольер полон / слоты закрыты";
   else if (!carry && nearestSteal()) t = "E — украсть «" + nearestSteal().def.name + "»";
   promptEl.style.display = t ? "block" : "none";
   promptEl.textContent = t;
@@ -445,6 +554,8 @@ function placeEgg() {
   const slot = freeMySlot();
   if (!slot || !carry) return false;
   slot.egg = Object.assign({}, carry);
+  slot.hatched = false;
+  slot.hatchLeft = hatchSeconds(carry);
   slot.mesh = makeEggMesh(carry);
   slot.mesh.position.set(slot.x, 1.05, slot.z);
   scene.add(slot.mesh);
@@ -456,7 +567,7 @@ function placeEgg() {
     const w = worldEggs.find((x) => x.uid === carryFromUid);
     if (w) w.respawn = 10;
   }
-  toast("🐣 " + carry.name + " в вольере! +" + carry.rate + "/с");
+  toast("🥚 " + carry.name + " в вольере! Вылупится через " + Math.ceil(slot.hatchLeft) + "с");
   carry = null;
   carryFromUid = 0;
   carryFromZone = null;
@@ -534,6 +645,127 @@ function dropCarry(msg) {
   });
   syncUI();
   if (msg) toast(msg);
+}
+
+function flingFrom(bx, bz) {
+  const px = playerMesh.position.x;
+  const pz = playerMesh.position.z;
+  let dx = px - bx;
+  let dz = pz - bz;
+  const len = Math.hypot(dx, dz) || 1;
+  dx /= len;
+  dz /= len;
+  vel.x = dx * 26;
+  vel.z = dz * 26;
+  vel.y = 11;
+  onGround = false;
+  flingT = 0.85;
+}
+
+function hatchSlot(slot) {
+  if (!slot.egg || slot.hatched) return;
+  slot.hatched = true;
+  slot.hatchLeft = 0;
+  if (slot.mesh) scene.remove(slot.mesh);
+  slot.mesh = makePetMesh(slot.egg);
+  slot.mesh.position.set(slot.x, 0.2, slot.z);
+  scene.add(slot.mesh);
+  toast("🐣 Вылупился «" + slot.egg.name + "»! Доход ×2");
+  saveGame();
+  syncUI();
+}
+
+function buyUpgrade(kind) {
+  if (kind === "slot") {
+    if (unlockedSlots >= mySlots.length) {
+      toast("Все слоты уже открыты");
+      return;
+    }
+    const cost = UPGRADES.slot[unlockedSlots + 1] || 99999;
+    if (coins < cost) {
+      toast("Мало монет · слот стоит " + cost);
+      return;
+    }
+    coins -= cost;
+    unlockedSlots += 1;
+    toast("🔓 Слот " + unlockedSlots + " открыт!");
+    saveGame();
+    syncUI();
+    renderUpgrades();
+    return;
+  }
+  if (kind === "tread") {
+    if (!treadmillUnlocked) {
+      if (coins < UPGRADES.treadUnlock) {
+        toast("Мало монет · дорожка " + UPGRADES.treadUnlock);
+        return;
+      }
+      coins -= UPGRADES.treadUnlock;
+      treadmillUnlocked = true;
+      syncTreadVisual();
+      toast("👟 Дорожка открыта! Беги W для скорости");
+      saveGame();
+      syncUI();
+      renderUpgrades();
+      return;
+    }
+    if (treadLevel >= 5) {
+      toast("Дорожка макс. уровня");
+      return;
+    }
+    const cost = UPGRADES.treadLv[treadLevel + 1] || 99999;
+    if (coins < cost) {
+      toast("Мало монет · апгрейд " + cost);
+      return;
+    }
+    coins -= cost;
+    treadLevel += 1;
+    toast("⚡ Дорожка ур." + treadLevel);
+    saveGame();
+    syncUI();
+    renderUpgrades();
+  }
+}
+
+function renderUpgrades() {
+  if (!upgList) return;
+  const bits = [];
+  if (unlockedSlots < mySlots.length) {
+    const cost = UPGRADES.slot[unlockedSlots + 1];
+    bits.push(
+      '<button type="button" class="item" data-upg="slot"><span>🔓 Слот вольера (' +
+        (unlockedSlots + 1) +
+        "/" +
+        mySlots.length +
+        ')</span><span class="price">🪙' +
+        cost +
+        "</span></button>"
+    );
+  } else {
+    bits.push('<div style="opacity:.7;margin:4px 0">Вольер: все слоты открыты</div>');
+  }
+  if (!treadmillUnlocked) {
+    bits.push(
+      '<button type="button" class="item" data-upg="tread"><span>👟 Открыть дорожку</span><span class="price">🪙' +
+        UPGRADES.treadUnlock +
+        "</span></button>"
+    );
+  } else if (treadLevel < 5) {
+    const cost = UPGRADES.treadLv[treadLevel + 1];
+    bits.push(
+      '<button type="button" class="item" data-upg="tread"><span>⚡ Дорожка → ур.' +
+        (treadLevel + 1) +
+        '</span><span class="price">🪙' +
+        cost +
+        "</span></button>"
+    );
+  } else {
+    bits.push('<div style="opacity:.7;margin:4px 0">Дорожка: макс</div>');
+  }
+  upgList.innerHTML = bits.join("");
+  upgList.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = () => buyUpgrade(btn.getAttribute("data-upg"));
+  });
 }
 
 function doAction() {
@@ -645,9 +877,11 @@ function getInput() {
 }
 
 renderShop();
+renderUpgrades();
 loadGame();
+syncTreadVisual();
 syncUI();
-toast("Укради яйцо прокачано! Купи или воруй → вольер");
+toast("Как в оригинале: укради → вылупи → качай вольер и дорожку!");
 
 let last = performance.now();
 function frame(now) {
@@ -655,7 +889,9 @@ function frame(now) {
   last = now;
 
   const input = getInput();
-  const baseSpeed = 8.5 + Math.min(6, Math.log10(Math.max(10, speedStat)));
+  const carrySlow = carry ? 0.55 : 1;
+  const flingSlow = flingT > 0 ? 0.35 : 1;
+  const baseSpeed = (8.5 + Math.min(6, Math.log10(Math.max(10, speedStat)))) * carrySlow;
   const forward = new THREE.Vector3();
   camera.getWorldDirection(forward);
   forward.y = 0;
@@ -664,10 +900,12 @@ function frame(now) {
   const wish = new THREE.Vector3();
   wish.addScaledVector(right, input.x);
   wish.addScaledVector(forward, -input.z);
-  if (wish.lengthSq() > 0.0001) {
+  if (flingT > 0) {
+    flingT -= dt;
+  } else if (wish.lengthSq() > 0.0001) {
     wish.normalize();
-    vel.x = wish.x * baseSpeed;
-    vel.z = wish.z * baseSpeed;
+    vel.x = wish.x * baseSpeed * flingSlow;
+    vel.z = wish.z * baseSpeed * flingSlow;
     playerMesh.rotation.y = Math.atan2(wish.x, wish.z);
   } else {
     vel.x *= 0.8;
@@ -698,10 +936,12 @@ function frame(now) {
     pz > treadmill.z - treadmill.d / 2 &&
     pz < treadmill.z + treadmill.d / 2;
 
-  treadmillRun = onTreadmill && input.forward;
-  treadMesh.material.emissiveIntensity = treadmillRun ? 0.6 : 0.2;
-  treadMesh.material.color.setHex(treadmillRun ? 0xfde68a : 0x94a3b8);
-  if (treadmillRun) speedStat += (8 + Math.log10(Math.max(10, speedStat)) * 6) * dt;
+  treadmillRun = treadmillUnlocked && onTreadmill && input.forward;
+  if (treadmillUnlocked) {
+    treadMesh.material.emissiveIntensity = treadmillRun ? 0.6 : 0.2;
+    treadMesh.material.color.setHex(treadmillRun ? 0xfde68a : 0x94a3b8);
+  }
+  if (treadmillRun) speedStat += (8 + Math.log10(Math.max(10, speedStat)) * 6) * treadLevel * dt;
 
   if (carryMesh) {
     carryMesh.position.set(px, 1.55, pz);
@@ -727,14 +967,28 @@ function frame(now) {
   });
 
   mySlots.forEach((s) => {
-    if (s.mesh) s.mesh.rotation.y += dt * 0.55;
+    if (!s.egg) return;
+    if (!s.hatched) {
+      s.hatchLeft = Math.max(0, (s.hatchLeft || 0) - dt);
+      if (s.mesh) {
+        s.mesh.rotation.y += dt * 1.2;
+        s.mesh.position.y = 1.05 + Math.sin(now * 0.008) * 0.1;
+        const shake = 1 + Math.sin(now * 0.02) * 0.04;
+        s.mesh.scale.setScalar(shake);
+      }
+      if (s.hatchLeft <= 0) hatchSlot(s);
+    } else if (s.mesh) {
+      s.mesh.rotation.y += dt * 0.9;
+      s.mesh.position.y = 0.2 + Math.sin(now * 0.004 + s.x) * 0.04;
+    }
   });
 
   bosses.forEach((b) => {
     if (carry && carryFromZone === b.zone.id && b.angry) {
       const d = dist2(px, pz, b.mesh.position.x, b.mesh.position.z);
       if (d < 1.55) {
-        dropCarry("💥 " + b.zone.name + " вернул яйцо!");
+        flingFrom(b.mesh.position.x, b.mesh.position.z);
+        dropCarry("💥 " + b.zone.name + " отбросил тебя и забрал яйцо!");
       } else if (d < 22) {
         b.mesh.position.x += (px - b.mesh.position.x) * dt * 3.2;
         b.mesh.position.z += (pz - b.mesh.position.z) * dt * 3.2;

@@ -88,22 +88,28 @@
 </head>
 <body>
   <div id="hud">
-    <b>🥚 Укради яйцо · 3D</b><br />
+    <b>🥚 Укради яйцо · как оригинал</b><br />
     🪙 <span class="big" id="coins">120</span><br />
     +<span id="income">0</span>/сек · ⚡ <span id="speed">1</span><br />
-    В руках: <span id="carry">пусто</span>
+    В руках: <span id="carry">пусто</span><br />
+    <span style="opacity:.85;font-size:11px">Слоты: <span id="slotCap">2</span> · Дорожка: <span id="treadStat">закрыта</span></span>
   </div>
   <div class="top-bar">
     <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Эксклюзив</a>
     <a class="back" href="./classic.html?v=1" style="background:linear-gradient(135deg,#64748b,#334155)">2D</a>
     <button type="button" class="run-btn" id="btnRun">🏃 Бег</button>
   </div>
-  <div id="shop"><h3>Магазин яиц</h3><div id="shopList"></div></div>
+  <div id="shop">
+    <h3>Прокачка (как в оригинале)</h3>
+    <div id="upgList"></div>
+    <h3 style="margin-top:10px">Магазин яиц</h3>
+    <div id="shopList"></div>
+  </div>
   <div id="slots"><h3>Твой вольер</h3><div id="slotList"></div></div>
   <div id="prompt"></div>
   <div id="toast"></div>
   <div id="alarm"></div>
-  <div id="tip">WASD · E взять/украсть/поставить · на дорожке W = ⚡ · ПКМ камера</div>
+  <div id="tip">WASD · E украсть/поставить · яйца вылупляются · поймали = отброс · дорожку купи · ПКМ камера</div>
   <div id="pad"><div id="pad-knob"></div></div>
   <div id="act-btns">
     <button type="button" id="btn-e">E</button>
@@ -113,6 +119,6 @@
   <script type="importmap">
   { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./main3d.js?v=5"></script>
+  <script type="module" src="./main3d.js?v=6"></script>
 </body>
 </html>
