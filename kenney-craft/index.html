@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Kenney Craft · 3D Minecraft | Игры Амаля</title>
+  <meta name="theme-color" content="#4d7c0f" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#0c1a0c;font-family:system-ui,sans-serif;color:#ecfccb;user-select:none}
+    canvas{display:block;width:100%;height:100%;touch-action:none}
+    #hud{position:fixed;top:10px;left:10px;z-index:10;padding:12px 14px;border-radius:14px;background:rgba(15,23,12,.9);border:2px solid #84cc16;font:800 13px/1.45 system-ui;max-width:min(380px,92vw);pointer-events:none}
+    #cross{position:fixed;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;z-index:5;border:2px solid #fff;border-radius:50%;opacity:.7;pointer-events:none}
+    #hot{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:6px}
+    #hot button{width:48px;height:48px;border:2px solid #3f6212;border-radius:10px;background:#1a2e05;color:#fff;font:900 11px system-ui;cursor:pointer;image-rendering:pixelated}
+    #hot button.on{border-color:#facc15;box-shadow:0 0 0 2px #facc15}
+    #toast{position:fixed;top:28%;left:50%;transform:translate(-50%,-50%);z-index:20;padding:12px 16px;border-radius:14px;background:rgba(15,23,12,.95);border:2px solid #84cc16;font:900 15px system-ui;display:none}
+    .back{position:fixed;bottom:12px;left:12px;z-index:10;padding:8px 12px;border-radius:12px;background:#3f6212;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #lock{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(12,26,12,.85);font:900 18px system-ui;cursor:pointer;text-align:center;padding:20px}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <b>🧱 Kenney Craft</b> · 3D Minecraft-стиль<br />
+    WASD · мышь · ЛКМ ломать · ПКМ ставить · 1–6 блок<br />
+    <span style="opacity:.8;font-size:12px">Текстуры блоков в духе Kenney (сгенерированы)</span>
+  </div>
+  <div id="cross"></div>
+  <div id="hot"></div>
+  <div id="toast"></div>
+  <div id="lock">Кликни, чтобы играть<br /><span style="font-size:13px;opacity:.8">3D мир · бесконечные чанки вокруг</span></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <script type="importmap">
+  {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
+  </script>
+  <script type="module" src="./main.js?v=1"></script>
+</body>
+</html>

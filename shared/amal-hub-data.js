@@ -5,7 +5,8 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=2", note: "песок · вода · лава · рука" },
+    { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D Minecraft · Kenney-стиль" },
+    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=3", note: "жизнь · дома · боты · без края" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal 2D · синий/оранж · коробки" },
     { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "E метка · Q в прошлое" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "вправо=время+ · уровни колонкой" },
@@ -30,6 +31,7 @@
     { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
+    { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D Minecraft · Kenney" },
     { ico: "⛏️", name: "CraftWorld", path: "minecraft/", note: "майнкрафт" },
     { ico: "🌀", name: "Portal 3D", path: "portal-3d/", note: "порталы" },
     { ico: "🌍", name: "Globe Battle", path: "globe-battle/", note: "глобус" },
@@ -42,7 +44,8 @@
   ];
 
   var EXCLUSIVE = [
-    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=2", note: "новый биом · песок сыпется" },
+    { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D · Kenney блоки" },
+    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=3", note: "бесконечный · жизнь · торговля" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal · 2D петля" },
     { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "метка + телепорт во время" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "живопись · шаг = время" },
