@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Тайный питомец · Миры Амаля</title>
+  <meta name="theme-color" content="#7c3aed" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    :root{
+      --bg:#1a1030;--card:rgba(30,20,50,.92);--line:#a78bfa;--text:#f5f3ff;--muted:#c4b5fd;
+      --ok:#34d399;--warn:#fbbf24;--bad:#f87171;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:radial-gradient(ellipse at 50% 0%,#4c1d95,var(--bg) 70%);font-family:"Segoe UI",system-ui,sans-serif;color:var(--text);user-select:none}
+    #app{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:10px}
+    #stage{position:relative;width:min(420px,94vw);aspect-ratio:1/1.15;border-radius:24px;background:linear-gradient(180deg,#312e81,#1e1b4b 55%,#0f172a);border:3px solid var(--line);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+    canvas{display:block;width:100%;height:100%}
+    #bubble{position:absolute;left:12%;right:12%;top:10%;min-height:52px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.95);color:#1e1b4b;font:800 15px/1.35 system-ui;text-align:center;opacity:0;transform:translateY(6px);transition:.25s ease;pointer-events:none;z-index:5}
+    #bubble.on{opacity:1;transform:none}
+    #bubble:after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-8px;border:8px solid transparent;border-top-color:rgba(255,255,255,.95)}
+    #hud{width:min(420px,94vw);padding:12px 14px;border-radius:18px;background:var(--card);border:2px solid var(--line);font:800 13px/1.4 system-ui}
+    .bar{height:12px;border-radius:8px;background:#2e1065;overflow:hidden;margin:4px 0 8px;border:1px solid #6d28d9}
+    .bar>i{display:block;height:100%;width:100%;transform-origin:left;transition:transform .2s}
+    #hunger>i{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+    #mood>i{background:linear-gradient(90deg,#ec4899,#a78bfa)}
+    #energy>i{background:linear-gradient(90deg,#22d3ee,#34d399)}
+    #species{opacity:.85;font:700 12px system-ui;margin-top:4px}
+    #btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:min(420px,94vw)}
+    #btns button{flex:1;min-width:90px;padding:14px 10px;border:0;border-radius:16px;font:900 14px system-ui;cursor:pointer;color:#fff;background:#7c3aed}
+    #btn-feed{background:#ea580c}#btn-pet{background:#db2777}#btn-play{background:#0891b2}#btn-sleep{background:#4f46e5}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#5b21b6;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #note{width:min(420px,94vw);font:600 11px/1.4 system-ui;color:var(--muted);text-align:center}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="hud">
+      <b>🐾 Тайный питомец</b> · без телефона<br />
+      <div>🍽 Голод <div class="bar" id="hunger"><i id="h-fill"></i></div></div>
+      <div>💕 Настроение <div class="bar" id="mood"><i id="m-fill"></i></div></div>
+      <div>⚡ Энергия <div class="bar" id="energy"><i id="e-fill"></i></div></div>
+      <div id="species">Кто это? Пока загадка…</div>
+    </div>
+    <div id="stage">
+      <div id="bubble"></div>
+      <canvas id="c" width="420" height="480"></canvas>
+    </div>
+    <div id="btns">
+      <button type="button" id="btn-feed">Покормить</button>
+      <button type="button" id="btn-pet">Погладить</button>
+      <button type="button" id="btn-play">Играть</button>
+      <button type="button" id="btn-sleep">Спать</button>
+    </div>
+    <p id="note">Иногда ест сам. Иногда просит: «Ну, покорми меня». Вид откроется, если хорошо заботиться.</p>
+  </div>
+  <a class="back" href="../index.html">← Миры Амаля</a>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
