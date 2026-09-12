@@ -7,7 +7,6 @@
   var GAMES_2D = [
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы · питомцы" },
     { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "Kenney 2D · боссы · Ишка · дабл-прыг" },
-    { ico: "🧪", name: "Мозг в колбе", path: "brain-jar/?v=1", note: "лаба · Ишка · колба в трубу" },
     { ico: "🌹", name: "Расслаб · песни", path: "relax-songs/?v=4", note: "Black Rose · Minecraft · YouTube" },
     { ico: "🥥", name: "Кокос", path: "coconut/?v=1", note: "реализм · скилл · пальма" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
