@@ -290,12 +290,12 @@
       var ux = i % COLS;
       var uy = (i / COLS) | 0;
       if (get(ux, uy) === SAND) {
-        // «рассыпать» — дать шанс соседям тоже поехать
         for (var dx = -1; dx <= 1; dx++) {
           if (get(ux + dx, uy) === SAND) unstable[idx(ux + dx, uy)] = 1;
         }
       }
     }
+    checkUnsupportedTrees();
   }
 
   function disturbSandAt(tx, ty) {
@@ -309,25 +309,40 @@
   }
 
   function fallTree(tx, ty) {
-    // собрать ствол вверх и листву, уронить вбок
+    // вся связанная крона/ствол — чтобы не оставались «летающие» листья
     var dir = player.facing >= 0 ? 1 : -1;
     var parts = [];
-    for (var y = ty; y >= 0; y--) {
-      var id = get(tx, y);
-      if (id !== WOOD && id !== LEAF) break;
-      parts.push({ x: tx, y: y, id: id });
-      set(tx, y, AIR);
+    var seen = Object.create(null);
+    var queue = [];
+    function pushCell(x, y) {
+      if (!inb(x, y)) return;
+      var id = get(x, y);
+      if (id !== WOOD && id !== LEAF) return;
+      var k = idx(x, y);
+      if (seen[k]) return;
+      seen[k] = 1;
+      queue.push({ x: x, y: y, id: id });
     }
-    for (var dx = -3; dx <= 3; dx++) {
-      for (var dy = -4; dy <= 2; dy++) {
-        var x = tx + dx;
-        var y = ty + dy;
-        if (get(x, y) === LEAF) {
-          parts.push({ x: x, y: y, id: LEAF });
-          set(x, y, AIR);
+    pushCell(tx, ty);
+    if (get(tx, ty) !== WOOD) {
+      for (var dx0 = -2; dx0 <= 2; dx0++) {
+        for (var dy0 = -2; dy0 <= 2; dy0++) {
+          if (get(tx + dx0, ty + dy0) === WOOD) pushCell(tx + dx0, ty + dy0);
         }
       }
     }
+    while (queue.length) {
+      var c = queue.pop();
+      parts.push(c);
+      set(c.x, c.y, AIR);
+      for (var dx = -1; dx <= 1; dx++) {
+        for (var dy = -1; dy <= 1; dy++) {
+          if (!dx && !dy) continue;
+          pushCell(c.x + dx, c.y + dy);
+        }
+      }
+    }
+    if (!parts.length) return;
     for (var i = 0; i < parts.length; i++) {
       var p = parts[i];
       falling.push({
@@ -342,6 +357,54 @@
       });
     }
     toast("Дерево упало!", 1.5);
+  }
+
+  /** Нет твёрдой опоры снизу — дерево само валится (песок осыпался). */
+  function treeSupported(tx, ty) {
+    var y = ty;
+    while (y + 1 < ROWS && (get(tx, y + 1) === WOOD || get(tx, y + 1) === LEAF)) y++;
+    var below = get(tx, y + 1);
+    return below === STONE || below === DIRT || below === SAND || below === BEDROCK || below === WOOD;
+  }
+
+  function checkUnsupportedTrees() {
+    for (var x = 1; x < COLS - 1; x++) {
+      for (var y = ROWS - 4; y >= 1; y--) {
+        if (get(x, y) !== WOOD) continue;
+        if (get(x, y + 1) === WOOD) continue;
+        if (!treeSupported(x, y)) {
+          fallTree(x, y);
+          return;
+        }
+      }
+    }
+    for (var x2 = 1; x2 < COLS - 1; x2++) {
+      for (var y2 = 1; y2 < ROWS - 2; y2++) {
+        if (get(x2, y2) !== LEAF) continue;
+        var nearWood = false;
+        for (var dx = -2; dx <= 2 && !nearWood; dx++) {
+          for (var dy = -2; dy <= 2; dy++) {
+            if (get(x2 + dx, y2 + dy) === WOOD) {
+              nearWood = true;
+              break;
+            }
+          }
+        }
+        if (!nearWood) {
+          set(x2, y2, AIR);
+          falling.push({
+            id: LEAF,
+            x: x2 * TS,
+            y: y2 * TS,
+            vx: (Math.random() - 0.5) * 60,
+            vy: 20,
+            rot: 0,
+            vr: (Math.random() - 0.5) * 4,
+            life: 1.8,
+          });
+        }
+      }
+    }
   }
 
   function hurtArm(amount, msg) {
