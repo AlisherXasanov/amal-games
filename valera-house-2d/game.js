@@ -89,6 +89,7 @@
   var ITEMS = [
     // living
     { id: "sofa", room: "living", x: 3, y: 3, spr: "loungeSofa", title: "Диван", text: "Мягкий. Валера тут смотрит «ролики».", take: false },
+    { id: "rug", room: "living", x: 6, y: 5, spr: "rugRectangle", title: "Ковёр", text: "Тёплый. Хорошо для съёмок с пола.", take: false },
     { id: "tv", room: "living", x: 8, y: 2, spr: "televisionModern", title: "Телевизор", text: "Можно «снимать» и потом пересматривать клипы.", take: false, action: "clips" },
     { id: "tablec", room: "living", x: 5, y: 5, spr: "tableCoffee", title: "Столик", text: "На нём обычно лежит пульт… и крошки.", take: false },
     { id: "radio", room: "living", x: 12, y: 3, spr: "radio", title: "Радио", text: "Шумит волнами. Почти как фон в видео.", take: true },
@@ -206,6 +207,10 @@
   }
 
   function interact() {
+    if (nearValera()) {
+      talkValera();
+      return;
+    }
     var it = nearItem();
     if (!it) {
       // doors
@@ -214,7 +219,7 @@
       if (state.x >= R.w - 2 && R.doors.right) return goRoom(R.doors.right, 2, state.y);
       if (state.y <= 1 && R.doors.up) return goRoom(R.doors.up, state.x, R.h - 3);
       if (state.y >= R.h - 2 && R.doors.down) return goRoom(R.doors.down, state.x, 2);
-      toast("Подойди к вещи или к двери");
+      toast("Подойди к вещи, к Валере или к двери");
       return;
     }
     showTitle(it.title + " — " + it.text, 3.2);
@@ -304,7 +309,7 @@
 
   function openClips() {
     panel.style.display = "flex";
-    var html = "<h2>🎞 Ролики Валеры</h2><p style='opacity:.8;margin-bottom:8px;font:600 13px system-ui'>Не настоящее видео — игровые клипы, можно пересмотреть.</p>";
+    var html = "<h2>🎞 Ролики из дома</h2><p style='opacity:.8;margin-bottom:8px;font:600 13px system-ui'>Ты гость со камерой. Не настоящее видео — игровые клипы.</p>";
     if (!state.clips.length) html += "<p>Пока пусто. Жми «камера», походи, снова «камера».</p>";
     state.clips
       .slice()
@@ -412,6 +417,73 @@
   var stickX = 0,
     stickY = 0;
   var player = { bob: 0 };
+  /* Валера — NPC в доме; ты — гость со съёмкой */
+  var valera = {
+    room: "living",
+    x: 4.2,
+    y: 4.5,
+    facing: 1,
+    bob: 0,
+    wanderT: 0,
+    tx: 4.2,
+    ty: 4.5,
+    sayT: 0,
+  };
+  var VALERA_LINES = [
+    "Привет! Это мой дом — смотри всё!",
+    "Давай снимем ролик про опыт!",
+    "В кухне сода и уксус — классика.",
+    "Жми камеру и ходи рядом со мной.",
+    "В уголке опытов самые крутые штуки.",
+    "Я жёлтый! Не перепутай с мебелью 😄",
+  ];
+
+  function nearValera() {
+    if (valera.room !== state.room) return false;
+    return Math.hypot(valera.x - state.x, valera.y - state.y) < 1.55;
+  }
+
+  function talkValera() {
+    var line = VALERA_LINES[(Math.random() * VALERA_LINES.length) | 0];
+    showTitle("Валера: «" + line + "»", 3.2);
+    toast("Валера что-то сказал");
+    valera.sayT = 2.5;
+  }
+
+  function updateValera(dt) {
+    valera.bob += dt * 7;
+    valera.wanderT -= dt;
+    valera.sayT = Math.max(0, valera.sayT - dt);
+    var R = ROOMS[valera.room];
+    if (valera.wanderT <= 0) {
+      valera.wanderT = 2.2 + Math.random() * 3.5;
+      /* иногда переходит в комнату игрока */
+      if (Math.random() < 0.28) {
+        valera.room = state.room;
+        R = ROOMS[valera.room];
+      } else if (Math.random() < 0.18) {
+        var keysD = Object.keys(R.doors);
+        if (keysD.length) {
+          var side = keysD[(Math.random() * keysD.length) | 0];
+          valera.room = R.doors[side];
+          R = ROOMS[valera.room];
+          valera.x = R.w / 2;
+          valera.y = R.h / 2;
+        }
+      }
+      valera.tx = 2 + Math.random() * (R.w - 4);
+      valera.ty = 2 + Math.random() * (R.h - 4);
+    }
+    var dx = valera.tx - valera.x;
+    var dy = valera.ty - valera.y;
+    var dist = Math.hypot(dx, dy);
+    if (dist > 0.08) {
+      var sp = 1.35 * dt;
+      valera.x += (dx / dist) * sp;
+      valera.y += (dy / dist) * sp;
+      if (dx) valera.facing = dx > 0 ? 1 : -1;
+    }
+  }
 
   function update(dt) {
     if (replay) {
@@ -424,6 +496,7 @@
           toast("Конец ролика");
         }
       }
+      updateValera(dt * 0.35);
       return;
     }
 
@@ -443,12 +516,7 @@
     state.x = Math.max(1, Math.min(R.w - 2, state.x + ix * sp));
     state.y = Math.max(1, Math.min(R.h - 2, state.y + iy * sp));
     player.bob += dt * 8;
-
-    // door auto-hint titles
-    var it = nearItem();
-    if (it && titleT <= 0) {
-      /* soft hint via hud only */
-    }
+    updateValera(dt);
 
     if (state.recording) {
       state.recT += dt;
@@ -460,66 +528,162 @@
           y: state.y,
           facing: state.facing,
           held: state.held,
+          vx: valera.room === state.room ? valera.x : null,
+          vy: valera.room === state.room ? valera.y : null,
+          vf: valera.facing,
         });
         if (state.recFrames.length > 200) state.recFrames.shift();
       }
     }
   }
 
-  function drawSpr(name, x, y, s) {
+  /** Рисует спрайт с сохранением пропорций (без растягивания в квадрат). */
+  function drawSpr(name, cx, cy, maxW, maxH) {
     var im = imgs[name];
-    if (im) {
-      ctx.drawImage(im, x, y, s, s);
-      return true;
-    }
-    return false;
+    if (!im || !im.width) return false;
+    var scale = Math.min(maxW / im.width, maxH / im.height);
+    /* крошечные пиксельки увеличиваем сильнее, но без каши */
+    if (im.width < 20 || im.height < 16) scale = Math.max(scale, 2.4);
+    var dw = im.width * scale;
+    var dh = im.height * scale;
+    var x = cx - dw / 2;
+    var y = cy - dh;
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 2, dw * 0.42, Math.max(4, dh * 0.12), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(im, x, y, dw, dh);
+    return true;
+  }
+
+  function itemMax(it) {
+    if (it.spr === "loungeSofa" || it.spr === "rugRectangle") return { w: 110, h: 58 };
+    if (it.spr === "bedSingle") return { w: 70, h: 100 };
+    if (it.spr === "table" || it.spr === "tableCoffee" || it.spr === "desk") return { w: 88, h: 56 };
+    if (it.spr === "televisionModern") return { w: 72, h: 36 };
+    if (it.spr === "bookcaseOpen" || it.spr === "kitchenFridge") return { w: 64, h: 72 };
+    return { w: 64, h: 64 };
   }
 
   function drawItem(it, ox, oy) {
-    var px = worldPx(it.x) - ox;
-    var py = worldPx(it.y) - oy;
-    if (!drawSpr(it.spr, px, py, TS)) {
+    var cx = worldPx(it.x) + TS * 0.5 - ox;
+    var cy = worldPx(it.y) + TS * 0.92 - oy;
+    var m = itemMax(it);
+    if (!drawSpr(it.spr, cx, cy, m.w, m.h)) {
       ctx.fillStyle = it.color || "#fbbf24";
       ctx.beginPath();
-      ctx.roundRect(px + 8, py + 8, TS - 16, TS - 16, 8);
+      ctx.roundRect(cx - 16, cy - 36, 32, 32, 8);
       ctx.fill();
       if (it.emoji) {
-        ctx.font = "24px system-ui";
-        ctx.fillText(it.emoji, px + 12, py + 32);
+        ctx.font = "22px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(it.emoji, cx, cy - 12);
+        ctx.textAlign = "left";
       }
     }
   }
 
-  function drawValera(px, py, facing) {
-    var bob = Math.sin(player.bob) * 3;
+  function drawGuest(px, py, facing) {
+    var bob = Math.sin(player.bob) * 2.5;
+    var cx = px + 20;
+    var cy = py + 28 + bob;
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.beginPath();
+    ctx.ellipse(cx, py + 48, 12, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* тело — гость в синем, с «камерой» */
+    ctx.fillStyle = "#0ea5e9";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 13, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#7dd3fc";
+    ctx.beginPath();
+    ctx.arc(cx, cy - 16, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#0369a1";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 22, 12, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    var look = facing > 0 ? 2 : -2;
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(cx - 5 + look, cy - 18, 3, 3);
+    ctx.fillRect(cx + 2 + look, cy - 18, 3, 3);
+    /* камера на руке */
+    ctx.fillStyle = "#111827";
+    ctx.fillRect(cx + (facing > 0 ? 10 : -18), cy - 4, 10, 7);
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(cx + (facing > 0 ? 12 : -16), cy - 2, 4, 3);
+    ctx.fillStyle = "#e0f2fe";
+    ctx.font = "800 10px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("Гость", cx, py + 54 + bob);
+    ctx.textAlign = "left";
+  }
+
+  function drawValeraNpc(px, py, facing, talking) {
+    var bob = Math.sin(valera.bob) * 3;
+    var cx = px + 20;
+    var cy = py + 26 + bob;
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.beginPath();
+    ctx.ellipse(cx, py + 48, 13, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    /* жёлтый медвежонок-мармелад */
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
-    ctx.ellipse(px + 20, py + 28 + bob, 16, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 4, 17, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#fbbf24";
+    ctx.beginPath();
+    ctx.arc(cx, cy - 14, 14, 0, Math.PI * 2);
+    ctx.fill();
+    /* ушки */
+    ctx.fillStyle = "#d97706";
+    ctx.beginPath();
+    ctx.arc(cx - 11, cy - 24, 5, 0, Math.PI * 2);
+    ctx.arc(cx + 11, cy - 24, 5, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "#fde68a";
     ctx.beginPath();
-    ctx.arc(px + 20, py + 10 + bob, 12, 0, Math.PI * 2);
+    ctx.arc(cx - 11, cy - 24, 2.5, 0, Math.PI * 2);
+    ctx.arc(cx + 11, cy - 24, 2.5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#b45309";
+    /* мордочка */
+    ctx.fillStyle = "#fef3c7";
     ctx.beginPath();
-    ctx.ellipse(px + 20, py + 4 + bob, 13, 7, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy - 10, 7, 5, 0, 0, Math.PI * 2);
     ctx.fill();
+    var look = facing > 0 ? 2 : -2;
     ctx.fillStyle = "#0f172a";
-    ctx.fillRect(px + 14 + (facing > 0 ? 2 : -2), py + 8 + bob, 3, 3);
-    ctx.fillRect(px + 22 + (facing > 0 ? 2 : -2), py + 8 + bob, 3, 3);
-    ctx.fillStyle = "#fff7ed";
+    ctx.beginPath();
+    ctx.arc(cx - 5 + look, cy - 16, 2.2, 0, Math.PI * 2);
+    ctx.arc(cx + 5 + look, cy - 16, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#92400e";
+    ctx.beginPath();
+    ctx.ellipse(cx + look * 0.5, cy - 9, 2.5, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    if (talking) {
+      ctx.fillStyle = "#fff7ed";
+      ctx.beginPath();
+      ctx.roundRect(cx + 16, cy - 34, 10, 10, 4);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#fef3c7";
     ctx.font = "800 10px system-ui";
-    ctx.fillText("Валера", px + 2, py + 52 + bob);
+    ctx.textAlign = "center";
+    ctx.fillText("Валера", cx, py + 54 + bob);
+    ctx.textAlign = "left";
   }
 
   function draw() {
-    var view = replay
-      ? {
-          room: replay.clip.frames[Math.min(replay.i, replay.clip.frames.length - 1)].room,
-          x: replay.clip.frames[Math.min(replay.i, replay.clip.frames.length - 1)].x,
-          y: replay.clip.frames[Math.min(replay.i, replay.clip.frames.length - 1)].y,
-          facing: replay.clip.frames[Math.min(replay.i, replay.clip.frames.length - 1)].facing,
-        }
+    var fr = null;
+    if (replay) {
+      fr = replay.clip.frames[Math.min(replay.i, replay.clip.frames.length - 1)];
+    }
+    var view = fr
+      ? { room: fr.room, x: fr.x, y: fr.y, facing: fr.facing }
       : { room: state.room, x: state.x, y: state.y, facing: state.facing };
 
     var R = ROOMS[view.room];
@@ -548,13 +712,40 @@
     if (R.doors.up) ctx.fillText("↑ " + ROOMS[R.doors.up].name, W / 2 - 40, 24);
     if (R.doors.down) ctx.fillText("↓ " + ROOMS[R.doors.down].name, W / 2 - 40, H - 16);
 
-    ITEMS.forEach(function (it) {
-      if (it.room !== view.room || state.gone[it.id]) return;
-      if (replay && state.gone[it.id]) return;
+    /* сначала ковры, потом остальное по глубине (y) */
+    var here = ITEMS.filter(function (it) {
+      return it.room === view.room && !state.gone[it.id];
+    }).sort(function (a, b) {
+      var ra = a.spr && a.spr.indexOf("rug") === 0 ? 0 : 1;
+      var rb = b.spr && b.spr.indexOf("rug") === 0 ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return a.y - b.y || a.x - b.x;
+    });
+    here.forEach(function (it) {
       drawItem(it, ox, oy);
     });
 
-    drawValera(view.x * TS - ox, view.y * TS - oy, view.facing);
+    /* Валера и гость — кто ниже по экрану, тот поверх */
+    var actors = [];
+    var vx = valera.x;
+    var vy = valera.y;
+    var vf = valera.facing;
+    if (fr && fr.vx != null) {
+      vx = fr.vx;
+      vy = fr.vy;
+      vf = fr.vf || 1;
+    }
+    if ((fr && fr.vx != null) || (!fr && valera.room === view.room)) {
+      actors.push({ kind: "v", x: vx, y: vy, f: vf });
+    }
+    actors.push({ kind: "g", x: view.x, y: view.y, f: view.facing });
+    actors.sort(function (a, b) {
+      return a.y - b.y;
+    });
+    actors.forEach(function (a) {
+      if (a.kind === "v") drawValeraNpc(a.x * TS - ox, a.y * TS - oy, a.f, valera.sayT > 0);
+      else drawGuest(a.x * TS - ox, a.y * TS - oy, a.f);
+    });
 
     // film frame when recording / replay
     if (state.recording || replay) {
@@ -623,6 +814,10 @@
     itemsHere().forEach(function (it) {
       if (Math.hypot(it.x + 0.5 - tx, it.y + 0.5 - ty) < 1.1) hit = it;
     });
+    if (valera.room === state.room && Math.hypot(valera.x + 0.3 - tx, valera.y + 0.3 - ty) < 1.2) {
+      talkValera();
+      return;
+    }
     if (hit) {
       state.x = hit.x;
       state.y = Math.min(room().h - 2, hit.y + 1);
@@ -691,8 +886,8 @@
       for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === state.held) h = ITEMS[i];
       invEl.textContent = "в руках: " + (h ? h.title : state.held);
     }
-    showTitle("Дом Валеры · жёлтый друг", 2.5);
-    toast("Исследуй комнаты · E смотреть · C камера");
+    showTitle("Дом Валеры · ты гость", 2.5);
+    toast("Мебель нормальная · подойди к жёлтому Валере (E)");
     requestAnimationFrame(frame);
   });
 })();
