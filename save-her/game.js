@@ -13,7 +13,7 @@
   var JUMP = 720;
   var JUMP2 = 640;
   var SPEED = 270;
-  var SAVE = "amal-save-her-v1";
+  var SAVE = "amal-save-her-v2";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -72,108 +72,160 @@
     };
   }
 
-  /* ——— Комикс ——— */
+  /* ——— Комикс на спрайтах Kenney (жёлтый герой + розовая жена) ——— */
   var COMIC = [
     { title: "Спокойная жизнь", text: "Герой жил тихо со своей женой. Дом, сад, смех — всё было хорошо." },
     { title: "Утро", text: "Они пили чай. Он обещал: «Сегодня только мы вдвоём»." },
     { title: "Тень", text: "Вдруг — вспышка магии. Злодеи ворвались и схватили её." },
-    { title: "Пропала", text: "Осталась только перчатка и записка: «Заберишь — если дойдёшь»." },
+    { title: "Пропала", text: "Осталась только её вещица и записка: «Заберишь — если дойдёшь»." },
     { title: "Клятва", text: "Он взял монеты как оружие и отправился в путь. Спасти её — любой ценой." },
     { title: "Обучение", text: "Сначала — школа боя. Потом луга, магия, война… и клетка с ней." },
   ];
   var comicI = 0;
 
-  function drawChar(c, x, y, color, scale) {
-    scale = scale || 1;
-    c.save();
-    c.translate(x, y);
-    c.scale(scale, scale);
-    c.fillStyle = color;
-    c.fillRect(-10, -8, 20, 24);
-    c.fillStyle = "#ffc9a3";
-    c.beginPath();
-    c.arc(0, -16, 9, 0, Math.PI * 2);
-    c.fill();
-    c.fillStyle = "#1e293b";
-    c.fillRect(-7, -18, 5, 3);
-    c.fillRect(2, -18, 5, 3);
-    c.restore();
+  /** Нарисовать кадр персонажа Kenney (центр по низу ног). */
+  function drawKenney(c, atlas, frame, x, y, size, flip) {
+    size = size || 128;
+    if (!atlas || !atlas.draw(c, frame, x - size / 2, y - size, size, size, !!flip)) {
+      c.fillStyle = "#f9a8d4";
+      c.fillRect(x - 20, y - 60, 40, 60);
+    }
+  }
+
+  function drawGroundStrip(c, y, theme) {
+    theme = theme || "grass";
+    if (!tiles) {
+      c.fillStyle = "#4d7c0f";
+      c.fillRect(0, y, comicC.width, comicC.height - y);
+      return;
+    }
+    for (var x = 0; x < comicC.width; x += 64) {
+      tiles.draw(c, "terrain_" + theme + "_block_top", x, y, 64, 64, false);
+      tiles.draw(c, theme === "grass" ? "terrain_dirt_block_center" : "terrain_" + theme + "_block_center", x, y + 64, 64, 64, false);
+    }
   }
 
   function drawComicPanel(i) {
     var w = comicC.width;
     var h = comicC.height;
     cctx.clearRect(0, 0, w, h);
-    var g = cctx.createLinearGradient(0, 0, 0, h);
-    if (i <= 1) {
-      g.addColorStop(0, "#7dd3fc");
-      g.addColorStop(1, "#86efac");
+    cctx.imageSmoothingEnabled = false;
+
+    // фон
+    if (i <= 1 && bgHills) {
+      cctx.fillStyle = "#87ceeb";
+      cctx.fillRect(0, 0, w, h);
+      cctx.drawImage(bgHills, 0, h - 180, w, 160);
     } else if (i === 2) {
-      g.addColorStop(0, "#312e81");
-      g.addColorStop(1, "#7f1d1d");
+      var g2 = cctx.createLinearGradient(0, 0, 0, h);
+      g2.addColorStop(0, "#312e81");
+      g2.addColorStop(1, "#7f1d1d");
+      cctx.fillStyle = g2;
+      cctx.fillRect(0, 0, w, h);
     } else if (i === 3) {
-      g.addColorStop(0, "#1e1b4b");
-      g.addColorStop(1, "#0f172a");
+      cctx.fillStyle = "#0f172a";
+      cctx.fillRect(0, 0, w, h);
+    } else if (i === 4 || i === 5) {
+      var g3 = cctx.createLinearGradient(0, 0, 0, h);
+      g3.addColorStop(0, "#4c1d95");
+      g3.addColorStop(1, "#be185d");
+      cctx.fillStyle = g3;
+      cctx.fillRect(0, 0, w, h);
     } else {
-      g.addColorStop(0, "#4c1d95");
-      g.addColorStop(1, "#be185d");
+      cctx.fillStyle = "#87ceeb";
+      cctx.fillRect(0, 0, w, h);
     }
-    cctx.fillStyle = g;
-    cctx.fillRect(0, 0, w, h);
+
+    var groundY = h - 100;
+
+    if (i === 0 || i === 1) {
+      drawGroundStrip(cctx, groundY, "grass");
+      // домик из тайлов
+      if (tiles) {
+        for (var hx = 70; hx < 280; hx += 48) {
+          tiles.draw(cctx, "bricks_brown", hx, groundY - 96, 48, 48, false);
+          tiles.draw(cctx, "bricks_brown", hx, groundY - 48, 48, 48, false);
+        }
+        tiles.draw(cctx, "terrain_grass_block_top", 70, groundY - 120, 48, 48, false);
+        tiles.draw(cctx, "terrain_grass_block_top", 118, groundY - 120, 48, 48, false);
+        tiles.draw(cctx, "terrain_grass_block_top", 166, groundY - 120, 48, 48, false);
+        tiles.draw(cctx, "terrain_grass_block_top", 214, groundY - 120, 48, 48, false);
+      }
+      // герой (жёлтый) + жена (розовая) — настоящие спрайты Kenney
+      drawKenney(cctx, chars, i === 1 ? "character_yellow_front" : "character_yellow_idle", 340, groundY + 8, 140, false);
+      drawKenney(cctx, chars, i === 1 ? "character_pink_front" : "character_pink_idle", 470, groundY + 8, 140, false);
+      cctx.fillStyle = "#fb7185";
+      cctx.font = "900 36px system-ui";
+      cctx.fillText("❤", 390, groundY - 110);
+      if (i === 1 && tiles) {
+        tiles.draw(cctx, "coin_gold", 400, groundY - 40, 28, 28, false);
+      }
+    } else if (i === 2) {
+      drawGroundStrip(cctx, groundY, "purple");
+      drawKenney(cctx, chars, "character_yellow_hit", 160, groundY + 8, 130, false);
+      // злодеи тянут жену
+      drawKenney(cctx, chars, "character_purple_walk_a", 360, groundY + 8, 120, false);
+      drawKenney(cctx, chars, "character_pink_hit", 480, groundY - 10, 130, false);
+      drawKenney(cctx, chars, "character_beige_walk_b", 560, groundY + 8, 120, true);
+      if (enemies) {
+        enemies.draw(cctx, "slime_spike_walk_a", 250, groundY - 50, 64, 64, false);
+      }
+      // магическая вспышка
+      cctx.strokeStyle = "rgba(232,121,249,0.9)";
+      cctx.lineWidth = 5;
+      cctx.beginPath();
+      cctx.arc(420, groundY - 80, 50 + (comicI % 2) * 8, 0, Math.PI * 2);
+      cctx.stroke();
+    } else if (i === 3) {
+      drawGroundStrip(cctx, groundY, "stone");
+      drawKenney(cctx, chars, "character_yellow_duck", 200, groundY + 8, 140, false);
+      // «оставшаяся» розовая — силуэт / hit
+      cctx.globalAlpha = 0.35;
+      drawKenney(cctx, chars, "character_pink_idle", 420, groundY + 8, 120, false);
+      cctx.globalAlpha = 1;
+      if (tiles) {
+        tiles.draw(cctx, "flag_red_a", 500, groundY - 40, 48, 48, false);
+      }
+      cctx.fillStyle = "#fde68a";
+      cctx.font = "800 18px system-ui";
+      cctx.fillText("«Заберишь — если дойдёшь»", 280, 120);
+    } else if (i === 4) {
+      drawGroundStrip(cctx, groundY, "grass");
+      drawKenney(cctx, chars, "character_yellow_jump", 180, groundY - 20, 150, false);
+      if (tiles) {
+        for (var k = 0; k < 6; k++) {
+          tiles.draw(cctx, "coin_gold", 300 + k * 42, groundY - 60 - (k % 2) * 20, 36, 36, false);
+        }
+      }
+      cctx.fillStyle = "#fff";
+      cctx.font = "900 22px system-ui";
+      cctx.fillText("Монеты = оружие", 320, 100);
+    } else {
+      drawGroundStrip(cctx, groundY, "stone");
+      drawKenney(cctx, chars, "character_yellow_idle", 160, groundY + 8, 140, false);
+      // клетка
+      cctx.strokeStyle = "#fbbf24";
+      cctx.lineWidth = 4;
+      cctx.strokeRect(380, groundY - 150, 160, 160);
+      for (var bx = 0; bx < 4; bx++) {
+        cctx.beginPath();
+        cctx.moveTo(400 + bx * 35, groundY - 150);
+        cctx.lineTo(400 + bx * 35, groundY + 10);
+        cctx.stroke();
+      }
+      drawKenney(cctx, chars, "character_pink_front", 460, groundY + 8, 130, false);
+      if (tiles) tiles.draw(cctx, "flag_yellow_a", 560, groundY - 40, 48, 48, false);
+      cctx.fillStyle = "#fff";
+      cctx.font = "900 18px system-ui";
+      cctx.fillText("Цель: спасти её", 380, 80);
+    }
+
+    // заголовок кадра
+    cctx.fillStyle = "rgba(0,0,0,0.55)";
+    cctx.fillRect(12, 12, 280, 40);
     cctx.fillStyle = "#fff";
     cctx.font = "900 22px system-ui";
     cctx.fillText(COMIC[i].title, 24, 40);
-
-    if (i === 0 || i === 1) {
-      cctx.fillStyle = "#92400e";
-      cctx.fillRect(80, 220, 200, 120);
-      cctx.fillStyle = "#fbbf24";
-      cctx.fillRect(80, 200, 200, 24);
-      drawChar(cctx, 140, 280, "#2563eb", 1.6);
-      drawChar(cctx, 220, 280, "#db2777", 1.6);
-      cctx.fillStyle = "#fff";
-      cctx.font = "700 14px system-ui";
-      cctx.fillText("❤", 175, 250);
-    } else if (i === 2) {
-      drawChar(cctx, 180, 260, "#2563eb", 1.5);
-      drawChar(cctx, 320, 200, "#db2777", 1.4);
-      cctx.strokeStyle = "#c084fc";
-      cctx.lineWidth = 4;
-      cctx.beginPath();
-      cctx.moveTo(200, 240);
-      cctx.lineTo(300, 210);
-      cctx.stroke();
-      cctx.fillStyle = "#7f1d1d";
-      cctx.fillRect(400, 180, 40, 100);
-      cctx.fillRect(480, 160, 40, 120);
-    } else if (i === 3) {
-      drawChar(cctx, 200, 280, "#2563eb", 1.6);
-      cctx.fillStyle = "#f472b6";
-      cctx.fillRect(280, 300, 28, 12);
-      cctx.fillStyle = "#fde68a";
-      cctx.font = "700 13px system-ui";
-      cctx.fillText("«Заберишь — если дойдёшь»", 300, 200);
-    } else if (i === 4) {
-      drawChar(cctx, 160, 270, "#2563eb", 1.7);
-      cctx.fillStyle = "#fbbf24";
-      for (var k = 0; k < 5; k++) {
-        cctx.beginPath();
-        cctx.arc(240 + k * 30, 250 - (k % 2) * 10, 8, 0, Math.PI * 2);
-        cctx.fill();
-      }
-      cctx.fillStyle = "#fff";
-      cctx.font = "800 16px system-ui";
-      cctx.fillText("Монеты = оружие", 340, 270);
-    } else {
-      drawChar(cctx, 200, 260, "#2563eb", 1.5);
-      cctx.strokeStyle = "#fbbf24";
-      cctx.lineWidth = 3;
-      cctx.strokeRect(360, 160, 120, 160);
-      drawChar(cctx, 420, 260, "#db2777", 1.3);
-      cctx.fillStyle = "#fff";
-      cctx.font = "800 14px system-ui";
-      cctx.fillText("Цель: спасти её", 360, 350);
-    }
   }
 
   function showComic() {
