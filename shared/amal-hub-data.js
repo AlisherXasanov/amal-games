@@ -5,7 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "⏳", name: "Время с шагом", path: "time-walk/?v=2", note: "вперёд=время+ · назад=время−" },
+    { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "вправо=время+ · уровни колонкой" },
     { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "ночь · фары · яичные текстуры" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы · питомцы" },
     { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "Kenney 2D · боссы · Ишка · дабл-прыг" },
