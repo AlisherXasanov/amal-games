@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Спаси её · комикс-приключение | Игры Амаля</title>
+  <meta name="theme-color" content="#be185d" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#0c0612;font-family:system-ui,sans-serif;color:#fce7f3;user-select:none;-webkit-user-select:none}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 10%,#4a044e,#0c0612 70%)}
+    canvas#c{display:block;width:100%;height:100%;max-width:1100px;max-height:100%;image-rendering:pixelated;touch-action:none;background:#87ceeb}
+    #hud{position:fixed;top:10px;left:10px;z-index:20;padding:10px 12px;border-radius:14px;background:rgba(20,5,25,.9);border:2px solid #f472b6;font:800 12px/1.35 system-ui;pointer-events:none}
+    #hud .big{font-size:18px;color:#fde68a}
+    #toast{position:fixed;top:32%;left:50%;transform:translate(-50%,-50%);z-index:50;padding:12px 16px;border-radius:14px;background:rgba(20,5,30,.95);border:2px solid #f9a8d4;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
+    .back{position:fixed;bottom:12px;left:12px;z-index:40;padding:8px 12px;border-radius:12px;background:#db2777;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btn-restart{position:fixed;top:10px;right:12px;z-index:40;padding:8px 12px;border-radius:12px;border:2px solid #fda4af;background:rgba(127,29,29,.9);color:#fff;font:800 12px system-ui;cursor:pointer}
+    #hint{position:fixed;bottom:18%;left:50%;transform:translateX(-50%);z-index:35;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.75);border:2px solid #fbbf24;font:800 14px system-ui;display:none;text-align:center;max-width:92vw}
+    #heart-fx{position:fixed;inset:0;z-index:60;pointer-events:none;display:none;align-items:center;justify-content:center}
+    #heart-fx.show{display:flex}
+    #heart-fx .h{font-size:min(40vw,220px);line-height:1;transition:transform .35s,opacity .35s;filter:drop-shadow(0 8px 20px rgba(0,0,0,.5))}
+    #heart-fx.break .left{transform:translate(-18vw,-8vh) rotate(-25deg);opacity:0}
+    #heart-fx.break .right{transform:translate(18vw,-8vh) rotate(25deg);opacity:0}
+    #comic{position:fixed;inset:0;z-index:80;background:rgba(8,4,16,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+    #comic.hide{display:none}
+    #comic-art{width:min(520px,94vw);aspect-ratio:16/10;border-radius:16px;border:3px solid #f9a8d4;background:#1f0a2e;position:relative;overflow:hidden}
+    #comic-art canvas{width:100%;height:100%;display:block}
+    #comic-text{max-width:520px;text-align:center;font:800 16px/1.4 system-ui}
+    #comic-next{padding:12px 22px;border:0;border-radius:14px;background:linear-gradient(135deg,#db2777,#7c3aed);color:#fff;font:900 15px system-ui;cursor:pointer}
+    #pad{position:fixed;bottom:16px;left:12px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(244,114,182,.55);pointer-events:none}
+    #btns{position:fixed;bottom:20px;right:12px;z-index:25;display:none;gap:8px;flex-direction:column;align-items:flex-end}
+    #btns button{width:64px;height:64px;border-radius:50%;border:0;color:#fff;font:900 11px system-ui}
+    #btn-jump{background:rgba(37,99,235,.75)}
+    #btn-hit{background:rgba(234,88,12,.8)}
+    #btn-throw{background:rgba(202,138,4,.85)}
+    @media(pointer:coarse){#pad,#btns{display:flex}}
+  </style>
+</head>
+<body>
+  <div id="comic">
+    <div id="comic-art"><canvas id="comic-c" width="640" height="400"></canvas></div>
+    <p id="comic-text"></p>
+    <button type="button" id="comic-next">Далее ▶</button>
+  </div>
+  <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
+  <div id="hud"><b>💕 Спаси её</b><br />💰 <span class="big" id="coins">0</span> · ❤️ <span id="hp">3</span> · ур. <span id="lvl">1</span>/<span id="lvlt">8</span><br />🐾 <span id="pet">нет</span> · 🤝 <span id="ally">бот</span></div>
+  <div id="toast"></div>
+  <div id="hint"></div>
+  <div id="heart-fx"><span class="h left">❤️</span><span class="h right" style="position:absolute">❤️</span></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <button type="button" id="btn-restart">↻ Рестарт</button>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <div id="btns">
+    <button type="button" id="btn-hit">удар J</button>
+    <button type="button" id="btn-throw">монета K</button>
+    <button type="button" id="btn-jump">прыг</button>
+  </div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
