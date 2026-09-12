@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Жаркий террариум · песчаный биом | Игры Амаля</title>
+  <meta name="theme-color" content="#c2410c" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#1c0a00;font-family:system-ui,sans-serif;color:#fff7ed;user-select:none}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 0%,#7c2d12,#1c0a00 70%)}
+    canvas{display:block;width:min(1100px,100%);height:auto;max-height:100%;touch-action:none;border-radius:6px;cursor:crosshair;image-rendering:pixelated}
+    #hud{position:fixed;top:10px;left:10px;z-index:20;padding:12px 14px;border-radius:14px;background:rgba(28,10,0,.92);border:2px solid #fb923c;font:800 13px/1.45 system-ui;max-width:min(400px,92vw);pointer-events:none}
+    #bars{margin-top:8px}
+    .bar{height:10px;border-radius:6px;background:#431407;overflow:hidden;margin:4px 0;border:1px solid #9a3412}
+    .bar>i{display:block;height:100%;width:100%;transform-origin:left center}
+    #hp>i{background:linear-gradient(90deg,#ef4444,#fbbf24)}
+    #arm>i{background:linear-gradient(90deg,#64748b,#22d3ee)}
+    #heat>i{background:linear-gradient(90deg,#f97316,#dc2626)}
+    #toast{position:fixed;top:34%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:12px 16px;border-radius:14px;background:rgba(28,10,0,.96);border:2px solid #fb923c;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#9a3412;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #inv{position:fixed;top:10px;right:10px;z-index:20;padding:10px 12px;border-radius:12px;background:rgba(28,10,0,.92);border:2px solid #fbbf24;font:800 12px system-ui}
+    #btns{position:fixed;bottom:12px;right:12px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    #btns button{padding:10px 12px;border:0;border-radius:12px;font:800 12px system-ui;cursor:pointer;color:#fff;background:#ea580c}
+    #btn-heal{background:#16a34a}#btn-jump{background:#4f46e5}
+    #pad{position:fixed;bottom:16px;left:14px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.07);border:2px solid rgba(251,146,60,.4);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(251,146,60,.5);pointer-events:none}
+    @media(pointer:coarse){#pad{display:block}.back{bottom:140px}#btns{bottom:150px}}
+  </style>
+</head>
+<body>
+  <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
+  <div id="hud">
+    <b>🏜️ Жаркий террариум</b> · новый биом<br />
+    Песок сыпется · вода течёт · лава жжёт · дерево валится рукой<br />
+    <span style="opacity:.85;font-size:12px">WASD · ЛКМ ломать · ПКМ ставить · E хил · 1–4 слот</span>
+    <div id="bars">
+      <div>❤️ HP <div class="bar" id="hp"><i id="hp-fill"></i></div></div>
+      <div>🤚 Рука <div class="bar" id="arm"><i id="arm-fill"></i></div></div>
+      <div>🔥 Жар <div class="bar" id="heat"><i id="heat-fill"></i></div></div>
+    </div>
+  </div>
+  <div id="inv">хил×<span id="heal-n">0</span> · дерево×<span id="wood-n">0</span> · песок×<span id="sand-n">0</span></div>
+  <div id="toast"></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <div id="btns">
+    <button type="button" id="btn-heal">хил (E)</button>
+    <button type="button" id="btn-jump">прыг</button>
+    <button type="button" id="btn-reset">сброс мира</button>
+  </div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>

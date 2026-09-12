@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=1", note: "песок · вода · лава · рука" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal 2D · синий/оранж · коробки" },
     { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "E метка · Q в прошлое" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "вправо=время+ · уровни колонкой" },
@@ -41,6 +42,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=1", note: "новый биом · песок сыпется" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal · 2D петля" },
     { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "метка + телепорт во время" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "живопись · шаг = время" },
