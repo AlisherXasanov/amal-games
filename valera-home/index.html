@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Дом Валеры · 3D | Миры Амаля</title>
+  <meta name="theme-color" content="#f59e0b" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#0c1222;font-family:system-ui,sans-serif;color:#fff7ed;user-select:none}
+    canvas#game{display:block;width:100%;height:100%}
+    #hud{position:fixed;top:10px;left:10px;z-index:10;padding:12px 14px;border-radius:16px;background:rgba(12,18,34,.92);border:2px solid #fbbf24;font:800 13px/1.45 system-ui;max-width:min(400px,92vw);pointer-events:none}
+    #toast{position:fixed;top:28%;left:50%;transform:translate(-50%,-50%);z-index:20;padding:12px 16px;border-radius:14px;background:rgba(12,18,34,.96);border:2px solid #fbbf24;font:900 15px system-ui;display:none;text-align:center}
+    .back{position:fixed;bottom:12px;left:12px;z-index:10;padding:8px 12px;border-radius:12px;background:#b45309;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btns{position:fixed;bottom:12px;right:12px;z-index:10;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:70vw}
+    #btns button{padding:10px 12px;border:0;border-radius:12px;font:800 12px system-ui;cursor:pointer;color:#fff;background:#ea580c}
+    #btn-draw{background:#7c3aed}#btn-drop{background:#0891b2}
+    #draw{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px}
+    #draw .box{background:#111827;border:2px solid #a78bfa;border-radius:16px;padding:14px;max-width:360px;width:100%}
+    #paint{width:100%;height:220px;background:#fff;border-radius:10px;cursor:crosshair;touch-action:none}
+    #draw button{margin-top:8px;margin-right:6px;padding:10px 12px;border:0;border-radius:10px;font:800 12px system-ui;cursor:pointer;color:#fff;background:#7c3aed}
+    #credit{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:5;font:600 10px system-ui;opacity:.5;pointer-events:none}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <b>🏠 Дом Валеры · 3D</b><br />
+    WASD — ходить · клик — взять вещь · стрелки — двигать вещь в руках<br />
+    <span style="opacity:.85;font-size:12px">E / «положить» — поставить · «нарисовать» — свой предмет. Телефон на столе.</span><br />
+    <span id="held">в руках: ничего</span>
+  </div>
+  <div id="toast"></div>
+  <a class="back" href="../index.html">← Миры Амаля</a>
+  <div id="btns">
+    <button type="button" id="btn-draw">нарисовать</button>
+    <button type="button" id="btn-drop">положить (E)</button>
+  </div>
+  <div id="credit">Мебель: Kenney Furniture Kit (CC0) · телефон и дом собраны для Валеры</div>
+  <div id="draw"><div class="box">
+    <b>Нарисуй предмет</b>
+    <canvas id="paint" width="320" height="220"></canvas>
+    <div>
+      <button type="button" id="paint-ok">В дом</button>
+      <button type="button" id="paint-clear" style="background:#64748b">очистить</button>
+      <button type="button" id="paint-x" style="background:#334155">закрыть</button>
+    </div>
+  </div></div>
+  <script type="importmap">
+  {"imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }}
+  </script>
+  <script type="module" src="./main.js?v=1"></script>
+</body>
+</html>
