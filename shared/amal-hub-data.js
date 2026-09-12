@@ -5,7 +5,8 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "E метка · Q телепорт во время" },
+    { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=1", note: "Portal 2D · синий/оранж · коробки" },
+    { ico: "⏱", name: "Метка времени", path: "time-mark/?v=2", note: "E метка · Q в прошлое" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "вправо=время+ · уровни колонкой" },
     { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "ночь · фары · яичные текстуры" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы · питомцы" },
