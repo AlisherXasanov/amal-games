@@ -5,6 +5,8 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "🌲", name: "Шёпот рощи", path: "echo-grove/?v=1", note: "Sunny Land · эхо-платформы" },
+    { ico: "🍎", name: "Фрукт-гравитация", path: "fruit-gravity/?v=1", note: "Pixel Adventure · гравитация" },
     { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D Minecraft · Kenney-стиль" },
     { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=3", note: "жизнь · дома · боты · без края" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal 2D · синий/оранж · коробки" },
@@ -31,6 +33,8 @@
     { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
+    { ico: "🌲", name: "Шёпот рощи", path: "echo-grove/?v=1", note: "Sunny Land" },
+    { ico: "🍎", name: "Фрукт-гравитация", path: "fruit-gravity/?v=1", note: "Pixel Adventure" },
     { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D Minecraft · Kenney" },
     { ico: "⛏️", name: "CraftWorld", path: "minecraft/", note: "майнкрафт" },
     { ico: "🌀", name: "Portal 3D", path: "portal-3d/", note: "порталы" },
@@ -44,6 +48,8 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "🌲", name: "Шёпот рощи", path: "echo-grove/?v=1", note: "эхо · Sunny Land" },
+    { ico: "🍎", name: "Фрукт-гравитация", path: "fruit-gravity/?v=1", note: "фрукты крутят гравитацию" },
     { ico: "🧱", name: "Kenney Craft", path: "kenney-craft/?v=1", note: "3D · Kenney блоки" },
     { ico: "🏜️", name: "Жаркий террариум", path: "hot-terrarium/?v=3", note: "бесконечный · жизнь · торговля" },
     { ico: "🌀", name: "Портал-петля", path: "portal-loop/?v=2", note: "Portal · 2D петля" },

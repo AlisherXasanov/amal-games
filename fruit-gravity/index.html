@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Фрукт-гравитация · Миры Амаля</title>
+  <meta name="theme-color" content="#4c1d95" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#1e1b4b;font-family:system-ui,sans-serif;color:#ede9fe;user-select:none}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 40% 0%,#5b21b6,#0f0a1e 70%)}
+    canvas{display:block;width:min(1100px,100%);height:auto;max-height:100%;image-rendering:pixelated;border-radius:8px;touch-action:none}
+    #hud{position:fixed;top:10px;left:10px;z-index:20;padding:12px 14px;border-radius:16px;background:rgba(15,10,30,.92);border:2px solid #a78bfa;font:800 13px/1.45 system-ui;max-width:min(400px,92vw);pointer-events:none}
+    #toast{position:fixed;top:32%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:12px 16px;border-radius:14px;background:rgba(15,10,30,.96);border:2px solid #c4b5fd;font:900 15px system-ui;display:none;text-align:center}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#6d28d9;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btns{position:fixed;bottom:12px;right:12px;z-index:20;display:flex;gap:8px}
+    #btns button{padding:10px 12px;border:0;border-radius:12px;font:800 12px system-ui;cursor:pointer;color:#fff;background:#7c3aed}
+    #credit{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:15;font:600 10px system-ui;opacity:.55;text-align:center}
+    #pad{position:fixed;bottom:16px;left:14px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.07);border:2px solid rgba(167,139,250,.4);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(167,139,250,.5);pointer-events:none}
+    @media(pointer:coarse){#pad{display:block}.back{bottom:140px}#btns{bottom:150px}#credit{bottom:140px}}
+  </style>
+</head>
+<body>
+  <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
+  <div id="hud">
+    <b>🍎 Фрукт-гравитация</b> · ур. <span id="lvl">1</span>/5<br />
+    Уникально: фрукты меняют гравитацию — яблоко вверх, банан вбок, вишня обычная.<br />
+    <span style="opacity:.8;font-size:12px">WASD · до флага · гравитация: <span id="grav">↓</span></span>
+  </div>
+  <div id="toast"></div>
+  <a class="back" href="../index.html">← Миры Амаля</a>
+  <div id="btns"><button type="button" id="btn-jump">прыг</button></div>
+  <div id="credit">Графика: Pixel Adventure · Pixel Frog · free asset pack</div>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
