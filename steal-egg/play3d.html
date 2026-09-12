@@ -110,10 +110,10 @@
 </head>
 <body>
   <div id="hud">
-    <b>🥚 Укради яйцо · оригинал v7</b><br />
-    🪙 <span class="big" id="coins">120</span><br />
+    <b>🥚 Укради яйцо · играбельно v8</b><br />
+    🪙 <span class="big" id="coins">150</span><br />
     ⚡ скорость <span id="speed">1</span> · руки: <span id="carry">пусто</span><br />
-    <span style="opacity:.85;font-size:11px">Слоты: <span id="slotCap">2</span> · Дорожка: <span id="treadStat">закрыта</span></span>
+    <span style="opacity:.85;font-size:11px">Слоты: <span id="slotCap">2</span> · Дорожка: <span id="treadStat">купи</span></span>
   </div>
   <div class="top-bar">
     <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Эксклюзив</a>
@@ -124,9 +124,9 @@
     <h3>Редкости · доход · скорость для кражи</h3>
     <div id="rarityTable"></div>
     <p style="margin-top:8px;opacity:.85;font-size:10px;line-height:1.4">
-      Фишки как в оригинале: белые яйца часто · редкие реже и дороже · чем круче яйцо — тем больше $/с ·
-      вылупление дольше у редких · боты несут яйца по дороге · E украсть/поставить · охранник отбрасывает ·
-      дорожка и слоты за монеты · с яйцом бежишь медленнее
+      Фишки: зелёный СЕЙФ — погоня не заходит · синий РЫНОК — добрые боты отдают яйца (E) ·
+      в сейф яйцо ставится само · дорожка качает без W (просто стой) · белые чаще · редкие дороже ·
+      вылупление · доход ×2 · отброс вне сейфа · таблица редкостей
     </p>
   </div>
   <div id="shop">
@@ -143,7 +143,7 @@
   <div id="prompt"></div>
   <div id="toast"></div>
   <div id="alarm"></div>
-  <div id="tip">WASD · E · боты несут яйца по дороге · Таблица = редкости и скорость</div>
+  <div id="tip">Сейф слева (зелёный) · Рынок ботов (синий) · E у бота · в сейфе само ставится · дорожка без W</div>
   <div id="pad"><div id="pad-knob"></div></div>
   <div id="act-btns">
     <button type="button" id="btn-e">E</button>
@@ -153,6 +153,6 @@
   <script type="importmap">
   { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./main3d.js?v=7"></script>
+  <script type="module" src="./main3d.js?v=8"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 /**
- * Укради яйцо · 3D v7 — ближе к оригиналу: редкости, таблица, боты-курьеры, доход внизу.
+ * Укради яйцо · 3D v8 — играбельная карта:
+ * сейф-база (погоня не достаёт) · рынок добрых ботов · вражеские базы · авто-дорожка без W.
  */
 import * as THREE from "three";
 import { createOrbitCam } from "../shared/amal-3d/orbit.js";
@@ -7,38 +8,39 @@ import { createOrbitCam } from "../shared/amal-3d/orbit.js";
 window.__AMAL_NO_WORLD__ = true;
 
 const EGG_DEFS = [
-  { id: "basic", name: "Белое", rarity: "Обычное", price: 25, rate: 1, weight: 40, hatchMul: 0.7, recSpeed: 1, color: 0xf8fafc, geo: "egg", emissive: 0, scale: 1 },
-  { id: "gold", name: "Золотое", rarity: "Необычное", price: 70, rate: 3, weight: 18, hatchMul: 0.9, recSpeed: 3, color: 0xfbbf24, geo: "egg", emissive: 0.35, scale: 1.08 },
-  { id: "slime", name: "Слайм", rarity: "Необычное", price: 120, rate: 6, weight: 12, hatchMul: 1, recSpeed: 6, color: 0x84cc16, geo: "blob", emissive: 0.2, scale: 1.1 },
-  { id: "rare", name: "Редкое", rarity: "Редкое", price: 200, rate: 12, weight: 8, hatchMul: 1.2, recSpeed: 12, color: 0xa855f7, geo: "crystal", emissive: 0.4, scale: 1 },
-  { id: "crystal", name: "Кристалл", rarity: "Редкое", price: 320, rate: 20, weight: 6, hatchMul: 1.35, recSpeed: 20, color: 0x38bdf8, geo: "diamond", emissive: 0.45, scale: 1.05 },
-  { id: "epic", name: "Эпик", rarity: "Эпик", price: 450, rate: 28, weight: 4, hatchMul: 1.5, recSpeed: 35, color: 0x6366f1, geo: "ring", emissive: 0.5, scale: 1 },
-  { id: "ghost", name: "Призрак", rarity: "Эпик", price: 650, rate: 42, weight: 3.5, hatchMul: 1.6, recSpeed: 50, color: 0xe2e8f0, geo: "ghost", emissive: 0.15, scale: 1 },
-  { id: "lava", name: "Лава", rarity: "Легенда", price: 900, rate: 58, weight: 2.5, hatchMul: 1.8, recSpeed: 80, color: 0xf97316, geo: "lava", emissive: 0.7, scale: 1.1 },
-  { id: "dragon", name: "Дракон", rarity: "Легенда", price: 1250, rate: 75, weight: 2, hatchMul: 2, recSpeed: 110, color: 0xef4444, geo: "dragon", emissive: 0.55, scale: 1.15 },
-  { id: "void", name: "Пустота", rarity: "Миф", price: 1800, rate: 110, weight: 1.2, hatchMul: 2.3, recSpeed: 160, color: 0x312e81, geo: "void", emissive: 0.6, scale: 1.1 },
-  { id: "star", name: "Звезда", rarity: "Миф", price: 2500, rate: 160, weight: 0.8, hatchMul: 2.5, recSpeed: 220, color: 0xfde68a, geo: "star", emissive: 0.65, scale: 1.2 },
-  { id: "final", name: "ФИНАЛ", rarity: "Секрет", price: 4000, rate: 220, weight: 0.35, hatchMul: 3, recSpeed: 300, color: 0xfde68a, geo: "crown", emissive: 0.8, scale: 1.25 },
+  { id: "basic", name: "Белое", rarity: "Обычное", price: 20, rate: 1, weight: 45, hatchMul: 0.65, recSpeed: 1, color: 0xf8fafc, geo: "egg", emissive: 0, scale: 1 },
+  { id: "gold", name: "Золотое", rarity: "Необычное", price: 60, rate: 3, weight: 16, hatchMul: 0.85, recSpeed: 4, color: 0xfbbf24, geo: "egg", emissive: 0.35, scale: 1.08 },
+  { id: "slime", name: "Слайм", rarity: "Необычное", price: 100, rate: 6, weight: 11, hatchMul: 1, recSpeed: 8, color: 0x84cc16, geo: "blob", emissive: 0.2, scale: 1.1 },
+  { id: "rare", name: "Редкое", rarity: "Редкое", price: 180, rate: 12, weight: 7, hatchMul: 1.25, recSpeed: 15, color: 0xa855f7, geo: "crystal", emissive: 0.4, scale: 1 },
+  { id: "crystal", name: "Кристалл", rarity: "Редкое", price: 280, rate: 20, weight: 5, hatchMul: 1.4, recSpeed: 25, color: 0x38bdf8, geo: "diamond", emissive: 0.45, scale: 1.05 },
+  { id: "epic", name: "Эпик", rarity: "Эпик", price: 420, rate: 30, weight: 3.5, hatchMul: 1.55, recSpeed: 40, color: 0x6366f1, geo: "ring", emissive: 0.5, scale: 1 },
+  { id: "ghost", name: "Призрак", rarity: "Эпик", price: 600, rate: 45, weight: 2.8, hatchMul: 1.7, recSpeed: 55, color: 0xe2e8f0, geo: "ghost", emissive: 0.15, scale: 1 },
+  { id: "lava", name: "Лава", rarity: "Легенда", price: 850, rate: 60, weight: 2, hatchMul: 1.9, recSpeed: 90, color: 0xf97316, geo: "lava", emissive: 0.7, scale: 1.1 },
+  { id: "dragon", name: "Дракон", rarity: "Легенда", price: 1200, rate: 80, weight: 1.5, hatchMul: 2.1, recSpeed: 120, color: 0xef4444, geo: "dragon", emissive: 0.55, scale: 1.15 },
+  { id: "void", name: "Пустота", rarity: "Миф", price: 1700, rate: 115, weight: 1, hatchMul: 2.4, recSpeed: 180, color: 0x312e81, geo: "void", emissive: 0.6, scale: 1.1 },
+  { id: "star", name: "Звезда", rarity: "Миф", price: 2400, rate: 165, weight: 0.7, hatchMul: 2.6, recSpeed: 240, color: 0xfde68a, geo: "star", emissive: 0.65, scale: 1.2 },
+  { id: "final", name: "ФИНАЛ", rarity: "Секрет", price: 3800, rate: 230, weight: 0.3, hatchMul: 3, recSpeed: 320, color: 0xfde68a, geo: "crown", emissive: 0.8, scale: 1.25 },
 ];
 
+/** Карта: СЕЙФ слева → РЫНОК ботов → базы врагов справа */
 const ZONES = [
-  { id: "mine", name: "ТВОЯ", x: -32, z: 0, r: 7, color: 0x22c55e, pool: [], slots: 6, boss: false, recSpeed: 0 },
-  { id: "z1", name: "НУБ", x: -18, z: 0, r: 6, color: 0x64748b, pool: ["basic", "basic", "basic", "basic", "gold"], boss: true, recSpeed: 1 },
-  { id: "z2", name: "СОСЕД", x: -4, z: 0, r: 6, color: 0xef4444, pool: ["basic", "basic", "gold", "gold", "slime"], boss: true, recSpeed: 5 },
-  { id: "z3", name: "КАТЯ", x: 10, z: 0, r: 6, color: 0xf97316, pool: ["basic", "gold", "slime", "rare", "rare"], boss: true, recSpeed: 15 },
-  { id: "z4", name: "РИК", x: 24, z: 0, r: 6, color: 0x3b82f6, pool: ["gold", "rare", "crystal", "epic"], boss: true, recSpeed: 35 },
-  { id: "z5", name: "ЕРОКС", x: 38, z: 0, r: 6.5, color: 0xa855f7, pool: ["rare", "epic", "ghost", "lava"], boss: true, recSpeed: 70 },
-  { id: "z6", name: "ДРАКОН", x: 52, z: 0, r: 6.5, color: 0xdc2626, pool: ["lava", "dragon", "void", "star"], boss: true, recSpeed: 140 },
-  { id: "z7", name: "ФИНАЛ", x: 66, z: 0, r: 7, color: 0xeab308, pool: ["dragon", "void", "star", "final"], boss: true, recSpeed: 250 },
+  { id: "mine", name: "ТВОЯ · СЕЙФ", x: -36, z: 0, r: 8.5, color: 0x22c55e, pool: [], slots: 6, boss: false, safe: true, recSpeed: 0 },
+  { id: "market", name: "РЫНОК БОТОВ", x: -14, z: 0, r: 9, color: 0x38bdf8, pool: [], slots: 0, boss: false, market: true, recSpeed: 0 },
+  { id: "z1", name: "НУБ", x: 6, z: 0, r: 5.5, color: 0x64748b, pool: ["basic", "basic", "basic", "basic", "gold"], boss: true, recSpeed: 1 },
+  { id: "z2", name: "СОСЕД", x: 20, z: 0, r: 5.5, color: 0xef4444, pool: ["basic", "basic", "gold", "slime"], boss: true, recSpeed: 6 },
+  { id: "z3", name: "КАТЯ", x: 34, z: 0, r: 5.5, color: 0xf97316, pool: ["gold", "slime", "rare", "rare"], boss: true, recSpeed: 18 },
+  { id: "z4", name: "РИК", x: 48, z: 0, r: 5.8, color: 0x3b82f6, pool: ["rare", "crystal", "epic"], boss: true, recSpeed: 40 },
+  { id: "z5", name: "ДРАКОН", x: 62, z: 0, r: 6, color: 0xdc2626, pool: ["epic", "lava", "dragon", "void"], boss: true, recSpeed: 100 },
+  { id: "z6", name: "ФИНАЛ", x: 78, z: 0, r: 6.5, color: 0xeab308, pool: ["dragon", "void", "star", "final"], boss: true, recSpeed: 220 },
 ];
 
-const SAVE_KEY = "amal-steal-egg-3d-v7";
+const SAVE_KEY = "amal-steal-egg-3d-v8";
 let nextUid = 1;
 
 function eggDef(id) {
   return EGG_DEFS.find((e) => e.id === id) || EGG_DEFS[0];
 }
-function pickEgg(pool) {
+function pickWeighted(pool) {
   let total = 0;
   const items = pool.map((id) => {
     const d = eggDef(id);
@@ -53,36 +55,34 @@ function pickEgg(pool) {
   }
   return Object.assign({}, items[0].d);
 }
-function pickCourierEgg() {
-  // чаще белые / обычные
-  return pickEgg(["basic", "basic", "basic", "basic", "basic", "gold", "gold", "slime", "rare", "crystal", "epic", "lava"]);
+function pickMarketEgg() {
+  return pickWeighted(["basic", "basic", "basic", "basic", "basic", "gold", "gold", "slime", "rare", "crystal"]);
+}
+function hatchSeconds(def) {
+  return Math.max(6, 18 - Math.min(10, (def.rate || 1) * 0.06)) * (def.hatchMul || 1);
 }
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x7dd3fc);
-scene.fog = new THREE.Fog(0x86efac, 40, 140);
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x9be7ff, 55, 170);
 
-const camera = new THREE.PerspectiveCamera(60, innerWidth / Math.max(1, innerHeight), 0.1, 220);
+const camera = new THREE.PerspectiveCamera(58, innerWidth / Math.max(1, innerHeight), 0.1, 240);
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
 document.body.appendChild(renderer.domElement);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.45));
-const sun = new THREE.DirectionalLight(0xfff7ed, 1.2);
-sun.position.set(28, 48, 18);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sun = new THREE.DirectionalLight(0xfff7ed, 1.15);
+sun.position.set(20, 50, 20);
 sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
 scene.add(sun);
-scene.add(new THREE.HemisphereLight(0xbae6fd, 0x4ade80, 0.45));
+scene.add(new THREE.HemisphereLight(0xbae6fd, 0x4ade80, 0.4));
 
-const MAP_W = 160;
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(MAP_W, 42),
+  new THREE.PlaneGeometry(180, 48),
   new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.92 })
 );
 floor.rotation.x = -Math.PI / 2;
@@ -90,24 +90,13 @@ floor.receiveShadow = true;
 scene.add(floor);
 
 const road = new THREE.Mesh(
-  new THREE.PlaneGeometry(MAP_W - 8, 7.5),
+  new THREE.PlaneGeometry(170, 8),
   new THREE.MeshStandardMaterial({ color: 0xd4a574, roughness: 0.85 })
 );
 road.rotation.x = -Math.PI / 2;
-road.position.set(17, 0.02, 0);
+road.position.set(20, 0.02, 0);
 road.receiveShadow = true;
 scene.add(road);
-
-// Полоски на дорожке
-for (let i = -6; i < 12; i++) {
-  const stripe = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.2, 0.35),
-    new THREE.MeshStandardMaterial({ color: 0xf8fafc })
-  );
-  stripe.rotation.x = -Math.PI / 2;
-  stripe.position.set(i * 6, 0.03, 0);
-  scene.add(stripe);
-}
 
 function makeMat(def, alpha) {
   return new THREE.MeshStandardMaterial({
@@ -127,57 +116,34 @@ function makeEggMesh(def, scaleMul) {
   const mat = makeMat(def);
   let core;
   if (def.geo === "egg") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 18, 18), mat);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 16, 16), mat);
     core.scale.y = 1.28;
   } else if (def.geo === "blob") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.42 * s, 14, 12), mat);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.42 * s, 12, 10), mat);
     core.scale.set(1.15, 0.85, 1.15);
   } else if (def.geo === "crystal") {
     core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42 * s, 0), mat);
   } else if (def.geo === "diamond") {
     core = new THREE.Mesh(new THREE.OctahedronGeometry(0.45 * s, 0), mat);
   } else if (def.geo === "ring") {
-    core = new THREE.Mesh(new THREE.TorusGeometry(0.32 * s, 0.12 * s, 10, 24), mat);
+    core = new THREE.Mesh(new THREE.TorusGeometry(0.32 * s, 0.12 * s, 8, 20), mat);
     core.rotation.x = Math.PI / 2;
   } else if (def.geo === "ghost") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.4 * s, 16, 16), makeMat(def, 0.72));
-    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.28 * s, 0.5 * s, 8), makeMat(def, 0.55));
-    tail.position.y = -0.35 * s;
-    g.add(tail);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.4 * s, 14, 14), makeMat(def, 0.72));
   } else if (def.geo === "lava") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.36 * s, 14, 14), mat);
-    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.15 * s, 0.35 * s, 6), mat);
-    spike.position.set(0, 0.42 * s, 0);
-    g.add(spike);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.36 * s, 12, 12), mat);
   } else if (def.geo === "dragon") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.34 * s, 16, 16), mat);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.34 * s, 14, 14), mat);
     core.scale.set(1, 1.35, 0.9);
-    [[-0.25], [0.25]].forEach(([x]) => {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08 * s, 0.35 * s, 5), mat);
-      horn.position.set(x * s, 0.45 * s, 0);
-      g.add(horn);
-    });
   } else if (def.geo === "void") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.4 * s, 16, 16), mat);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(0.55 * s, 0.04 * s, 8, 32),
-      makeMat({ color: 0xa855f7, emissive: 0.8, id: "void" }, 0.9)
-    );
-    ring.rotation.x = Math.PI / 2;
-    g.add(ring);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.4 * s, 14, 14), mat);
   } else if (def.geo === "star") {
     core = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 * s, 0), mat);
   } else if (def.geo === "crown") {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 18, 18), mat);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 16, 16), mat);
     core.scale.y = 1.2;
-    const crown = new THREE.Mesh(
-      new THREE.ConeGeometry(0.12 * s, 0.35 * s, 4),
-      makeMat({ color: 0xfde68a, emissive: 0.9, id: "final" })
-    );
-    crown.position.set(0, 0.55 * s, 0);
-    g.add(crown);
   } else {
-    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 14, 14), mat);
+    core = new THREE.Mesh(new THREE.SphereGeometry(0.38 * s, 12, 12), mat);
   }
   core.castShadow = true;
   g.add(core);
@@ -185,168 +151,177 @@ function makeEggMesh(def, scaleMul) {
   return g;
 }
 
-/** Существо после вылупления яйца */
-function makePetMesh(def, scaleMul) {
+function makePetMesh(def) {
   const g = new THREE.Group();
-  const s = (def.scale || 1) * (scaleMul || 1);
+  const s = def.scale || 1;
   const mat = makeMat(def);
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.36 * s, 14, 12), mat);
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.36 * s, 12, 10), mat);
   body.position.y = 0.45 * s;
   body.castShadow = true;
   g.add(body);
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22 * s, 12, 10), mat);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22 * s, 10, 8), mat);
   head.position.set(0, 0.85 * s, 0.05 * s);
-  head.castShadow = true;
   g.add(head);
-  [-0.18, 0.18].forEach((x) => {
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.07 * s, 0.22 * s, 6), mat);
-    ear.position.set(x * s, 1.05 * s, 0);
-    g.add(ear);
-  });
-  [-0.14, 0.14].forEach((x) => {
-    const leg = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.07 * s, 0.08 * s, 0.28 * s, 8),
-      mat
-    );
-    leg.position.set(x * s, 0.14 * s, 0);
-    g.add(leg);
-  });
-  g.userData.spin = 1.1 + Math.random() * 0.4;
+  g.userData.spin = 1.2;
   g.userData.isPet = true;
   return g;
-}
-
-function hatchSeconds(def) {
-  const base = Math.max(8, 22 - Math.min(12, (def.rate || 1) * 0.08));
-  return base * (def.hatchMul || 1);
 }
 
 function makeHumanoid(shirt, pants, helm) {
   const g = new THREE.Group();
   const skin = 0xffc9a3;
-  const torso = new THREE.Mesh(
-    new THREE.BoxGeometry(0.5, 0.6, 0.3),
-    new THREE.MeshStandardMaterial({ color: shirt, roughness: 0.5 })
-  );
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.6, 0.3), new THREE.MeshStandardMaterial({ color: shirt }));
   torso.position.y = 1.05;
   torso.castShadow = true;
   g.add(torso);
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.2, 14, 12),
-    new THREE.MeshStandardMaterial({ color: skin, roughness: 0.65 })
-  );
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), new THREE.MeshStandardMaterial({ color: skin }));
   head.position.y = 1.55;
-  head.castShadow = true;
   g.add(head);
   if (helm != null) {
     const h = new THREE.Mesh(
-      new THREE.SphereGeometry(0.22, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.55),
-      new THREE.MeshStandardMaterial({ color: helm, roughness: 0.4, metalness: 0.25 })
+      new THREE.SphereGeometry(0.22, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
+      new THREE.MeshStandardMaterial({ color: helm, metalness: 0.3 })
     );
     h.position.y = 1.62;
     g.add(h);
   }
   [-0.32, 0.32].forEach((x) => {
-    const arm = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.07, 0.07, 0.45, 8),
-      new THREE.MeshStandardMaterial({ color: skin })
-    );
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.45, 6), new THREE.MeshStandardMaterial({ color: skin }));
     arm.position.set(x, 1.1, 0);
-    arm.castShadow = true;
     g.add(arm);
   });
   [-0.12, 0.12].forEach((x) => {
-    const leg = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.09, 0.09, 0.5, 8),
-      new THREE.MeshStandardMaterial({ color: pants })
-    );
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.5, 6), new THREE.MeshStandardMaterial({ color: pants }));
     leg.position.set(x, 0.4, 0);
-    leg.castShadow = true;
     g.add(leg);
   });
   return g;
 }
 
 const myZone = ZONES[0];
+const marketZone = ZONES.find((z) => z.market);
 const mySlots = [];
 const worldEggs = [];
 const bosses = [];
+const marketBots = [];
 
 ZONES.forEach((z, zi) => {
   const pad = new THREE.Mesh(
-    new THREE.CylinderGeometry(z.r, z.r + 0.3, 0.38, 36),
+    new THREE.CylinderGeometry(z.r, z.r + 0.35, z.safe ? 0.5 : 0.38, 40),
     new THREE.MeshStandardMaterial({
       color: z.color,
       emissive: z.color,
-      emissiveIntensity: zi === 0 ? 0.4 : 0.14,
+      emissiveIntensity: z.safe ? 0.55 : z.market ? 0.4 : 0.14,
       roughness: 0.55,
     })
   );
-  pad.position.set(z.x, 0.19, z.z);
+  pad.position.set(z.x, z.safe ? 0.25 : 0.19, z.z);
   pad.receiveShadow = true;
   scene.add(pad);
 
-  // табличка зоны
+  // кольцо сейфа
+  if (z.safe) {
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(z.r + 0.4, 0.12, 8, 48),
+      new THREE.MeshStandardMaterial({ color: 0xfde68a, emissive: 0xfbbf24, emissiveIntensity: 0.8 })
+    );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(z.x, 0.55, z.z);
+    scene.add(ring);
+  }
+
   const sign = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 0.9, 0.12),
-    new THREE.MeshStandardMaterial({ color: z.color, emissive: z.color, emissiveIntensity: 0.2 })
+    new THREE.BoxGeometry(z.market ? 3.4 : 2.4, 1, 0.14),
+    new THREE.MeshStandardMaterial({ color: z.color, emissive: z.color, emissiveIntensity: 0.25 })
   );
-  sign.position.set(z.x, 2.6, z.z + z.r * 0.7);
+  sign.position.set(z.x, 2.8, z.z + z.r * 0.75);
   scene.add(sign);
 
-  const slotN = zi === 0 ? myZone.slots : 3;
-  for (let s = 0; s < slotN; s++) {
-    const ang = (s / slotN) * Math.PI * 2 - Math.PI / 2;
-    const sx = z.x + Math.cos(ang) * (z.r * 0.52);
-    const sz = z.z + Math.sin(ang) * (z.r * 0.52);
-    const ped = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.55, 0.7, 0.55, 12),
-      new THREE.MeshStandardMaterial({ color: zi === 0 ? 0x166534 : 0x475569 })
-    );
-    ped.position.set(sx, 0.4, sz);
-    ped.castShadow = true;
-    scene.add(ped);
-
-    const slot = { x: sx, z: sz, ped, egg: null, mesh: null, zone: z };
-    if (zi === 0) {
-      mySlots.push(slot);
-    } else {
-      const def = pickEgg(z.pool);
+  if (z.safe) {
+    const slotN = z.slots;
+    for (let s = 0; s < slotN; s++) {
+      const ang = (s / slotN) * Math.PI * 2 - Math.PI / 2;
+      const sx = z.x + Math.cos(ang) * (z.r * 0.48);
+      const sz = z.z + Math.sin(ang) * (z.r * 0.48);
+      const ped = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.55, 0.7, 0.55, 12),
+        new THREE.MeshStandardMaterial({ color: 0x166534 })
+      );
+      ped.position.set(sx, 0.45, sz);
+      scene.add(ped);
+      mySlots.push({ x: sx, z: sz, ped, egg: null, mesh: null, hatched: false, hatchLeft: 0 });
+    }
+  } else if (z.boss) {
+    for (let s = 0; s < 3; s++) {
+      const ang = (s / 3) * Math.PI * 2 - Math.PI / 2;
+      const sx = z.x + Math.cos(ang) * (z.r * 0.5);
+      const sz = z.z + Math.sin(ang) * (z.r * 0.5);
+      const ped = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 0.65, 0.5, 10),
+        new THREE.MeshStandardMaterial({ color: 0x475569 })
+      );
+      ped.position.set(sx, 0.4, sz);
+      scene.add(ped);
+      const def = pickWeighted(z.pool);
       const mesh = makeEggMesh(def);
       mesh.position.set(sx, 1.05, sz);
       scene.add(mesh);
-      const uid = nextUid++;
-      worldEggs.push({ uid, def, mesh, x: sx, z: sz, zone: z, taken: false, respawn: 0 });
+      worldEggs.push({
+        uid: nextUid++,
+        def,
+        mesh,
+        x: sx,
+        z: sz,
+        zone: z,
+        taken: false,
+        respawn: 0,
+      });
     }
-  }
-
-  if (z.boss) {
     const b = makeHumanoid(z.color, 0x1e293b, 0x7f1d1d);
-    b.position.set(z.x, 0, z.z - 3.4);
+    b.position.set(z.x, 0, z.z - 3.2);
     scene.add(b);
-    bosses.push({
-      mesh: b,
-      zone: z,
-      homeX: z.x,
-      homeZ: z.z - 3.4,
-      angry: false,
-    });
+    bosses.push({ mesh: b, zone: z, homeX: z.x, homeZ: z.z - 3.2, angry: false });
   }
 });
 
-const treadmill = { x: myZone.x, z: myZone.z + 5.4, w: 6.2, d: 2.6 };
+// Добрые боты только на РЫНКЕ — патруль по кругу
+for (let i = 0; i < 5; i++) {
+  const def = pickMarketEgg();
+  const body = makeHumanoid(0xe0f2fe, 0x0369a1, 0x38bdf8);
+  const eggM = makeEggMesh(def, 0.7);
+  eggM.position.set(0, 1.85, 0);
+  body.add(eggM);
+  const ang = (i / 5) * Math.PI * 2;
+  body.position.set(
+    marketZone.x + Math.cos(ang) * 4.5,
+    0,
+    marketZone.z + Math.sin(ang) * 4.5
+  );
+  scene.add(body);
+  marketBots.push({
+    mesh: body,
+    eggMesh: eggM,
+    def,
+    ang,
+    radius: 4.2 + (i % 2) * 1.2,
+    spin: 0.55 + i * 0.08,
+    reload: 0,
+  });
+}
+
+// Дорожка в сейфе — без W: просто стой на ней
+const treadmill = { x: myZone.x, z: myZone.z + 6.2, w: 7, d: 2.8 };
 const treadMesh = new THREE.Mesh(
   new THREE.BoxGeometry(treadmill.w, 0.28, treadmill.d),
   new THREE.MeshStandardMaterial({ color: 0x64748b, emissive: 0x334155, emissiveIntensity: 0.15 })
 );
-treadMesh.position.set(treadmill.x, 0.3, treadmill.z);
-treadMesh.castShadow = true;
+treadMesh.position.set(treadmill.x, 0.35, treadmill.z);
 scene.add(treadMesh);
 const treadLock = new THREE.Mesh(
-  new THREE.BoxGeometry(treadmill.w + 0.2, 1.4, 0.12),
-  new THREE.MeshStandardMaterial({ color: 0xef4444, transparent: true, opacity: 0.55 })
+  new THREE.BoxGeometry(treadmill.w + 0.15, 1.2, 0.1),
+  new THREE.MeshStandardMaterial({ color: 0xef4444, transparent: true, opacity: 0.5 })
 );
-treadLock.position.set(treadmill.x, 0.9, treadmill.z + treadmill.d / 2 + 0.05);
+treadLock.position.set(treadmill.x, 0.85, treadmill.z + treadmill.d / 2);
 scene.add(treadLock);
 
 const playerMesh = makeHumanoid(0x38bdf8, 0x1e3a8a, 0xfbbf24);
@@ -356,12 +331,12 @@ const vel = new THREE.Vector3();
 let onGround = true;
 
 const orbit = createOrbitCam(camera, renderer.domElement, {
-  distance: 13,
-  pitch: 0.5,
+  distance: 14,
+  pitch: 0.48,
   yaw: Math.PI * 0.5,
   lookOffsetY: 1.2,
-  minDist: 5,
-  maxDist: 26,
+  minDist: 6,
+  maxDist: 28,
   lerp: 0.2,
 });
 
@@ -371,9 +346,9 @@ window.addEventListener("resize", () => {
   renderer.setSize(innerWidth, innerHeight);
 });
 
-const bounds = { minX: -40, maxX: 78, minZ: -15, maxZ: 15 };
+const bounds = { minX: -50, maxX: 92, minZ: -18, maxZ: 18 };
 
-let coins = 120;
+let coins = 150;
 let speedStat = 1;
 let carry = null;
 let carryMesh = null;
@@ -382,13 +357,12 @@ let carryFromZone = null;
 let toastT = 0;
 let alarmT = 0;
 let incomeAcc = 0;
-let onTreadmill = false;
-let treadmillRun = false;
-let forceRun = false;
 let unlockedSlots = 2;
 let treadmillUnlocked = false;
 let treadLevel = 1;
 let flingT = 0;
+let forceRun = false;
+let autoDepositFlash = 0;
 
 const coinsEl = document.getElementById("coins");
 const incomeEl = document.getElementById("income");
@@ -406,114 +380,39 @@ const rarityBox = document.getElementById("rarityBox");
 const rarityTable = document.getElementById("rarityTable");
 
 const UPGRADES = {
-  slot: [0, 0, 80, 180, 350, 600, 1000],
-  treadUnlock: 150,
-  treadLv: [0, 0, 200, 450, 900, 1600],
+  slot: [0, 0, 70, 160, 300, 520, 900],
+  treadUnlock: 100,
+  treadLv: [0, 0, 160, 380, 750, 1400],
 };
-
-const couriers = [];
-let courierCd = 2.5;
-
-function renderRarityTable() {
-  if (!rarityTable) return;
-  let html =
-    "<table><tr><th>Яйцо</th><th>Редкость</th><th>$/с</th><th>Вылуп</th><th>⚡ советую</th></tr>";
-  EGG_DEFS.forEach((e) => {
-    html +=
-      "<tr><td>" +
-      e.name +
-      "</td><td>" +
-      e.rarity +
-      "</td><td>+" +
-      e.rate +
-      "</td><td>" +
-      Math.round(hatchSeconds(e)) +
-      "с</td><td>" +
-      e.recSpeed +
-      "+</td></tr>";
-  });
-  html += "</table><p style='margin-top:8px;color:#94a3b8'>Зоны:</p><table><tr><th>База</th><th>⚡ для кражи</th></tr>";
-  ZONES.filter((z) => z.boss).forEach((z) => {
-    html += "<tr><td>" + z.name + "</td><td>" + z.recSpeed + "+</td></tr>";
-  });
-  html += "</table>";
-  rarityTable.innerHTML = html;
-}
-
-function spawnCourier() {
-  if (couriers.length >= 5) return;
-  const def = pickCourierEgg();
-  const body = makeHumanoid(0xf8fafc, 0x334155, 0x94a3b8);
-  const eggM = makeEggMesh(def, 0.72);
-  eggM.position.set(0, 1.85, 0);
-  body.add(eggM);
-  const laneZ = Math.random() < 0.5 ? 2.8 : -2.8;
-  body.position.set(74, 0, laneZ);
-  scene.add(body);
-  couriers.push({
-    mesh: body,
-    eggMesh: eggM,
-    def,
-    z: laneZ,
-    speed: 3.2 + Math.random() * 2.4,
-    claimed: false,
-  });
-}
-
-function nearestCourier() {
-  const px = playerMesh.position.x;
-  const pz = playerMesh.position.z;
-  let best = null;
-  let bestD = 2.3;
-  couriers.forEach((c) => {
-    if (c.claimed) return;
-    const d = dist2(px, pz, c.mesh.position.x, c.mesh.position.z);
-    if (d < bestD) {
-      bestD = d;
-      best = c;
-    }
-  });
-  return best;
-}
-
-function claimCourier(c) {
-  if (!c || c.claimed || carry) return false;
-  c.claimed = true;
-  carry = Object.assign({}, c.def);
-  carryFromUid = 0;
-  carryFromZone = null;
-  if (carryMesh) scene.remove(carryMesh);
-  carryMesh = makeEggMesh(carry, 0.85);
-  scene.add(carryMesh);
-  if (c.eggMesh) {
-    c.mesh.remove(c.eggMesh);
-    c.eggMesh = null;
-  }
-  toast("🚚 Забрал у бота «" + carry.name + "» (" + carry.rarity + ")!");
-  syncUI();
-  return true;
-}
 
 function formatNum(n) {
   if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
   if (n >= 1e4) return Math.round(n / 1000) + "K";
   return Math.floor(n).toString();
 }
-
 function toast(msg) {
   toastEl.textContent = msg;
   toastEl.style.display = "block";
-  toastT = 2.1;
+  toastT = 2.4;
 }
-
+function dist2(x1, z1, x2, z2) {
+  return Math.hypot(x1 - x2, z1 - z2);
+}
+function inSafeZone() {
+  return dist2(playerMesh.position.x, playerMesh.position.z, myZone.x, myZone.z) < myZone.r + 0.35;
+}
+function inMarket() {
+  return dist2(playerMesh.position.x, playerMesh.position.z, marketZone.x, marketZone.z) < marketZone.r;
+}
 function incomeRate() {
   return mySlots.reduce((s, sl) => {
     if (!sl.egg) return s;
-    const mul = sl.hatched ? 2 : 1;
-    return s + sl.egg.rate * mul;
+    return s + sl.egg.rate * (sl.hatched ? 2 : 1);
   }, 0);
 }
-
+function freeMySlot() {
+  return mySlots.find((s, i) => i < unlockedSlots && !s.egg);
+}
 function syncTreadVisual() {
   treadLock.visible = !treadmillUnlocked;
   treadMesh.material.color.setHex(treadmillUnlocked ? 0x94a3b8 : 0x475569);
@@ -524,35 +423,14 @@ function syncUI() {
   incomeEl.textContent = formatNum(incomeRate());
   speedEl.textContent = formatNum(speedStat);
   carryEl.textContent = carry ? carry.name : "пусто";
-  if (slotCapEl) slotCapEl.textContent = String(unlockedSlots) + "/" + mySlots.length;
-  if (treadStatEl) {
-    treadStatEl.textContent = treadmillUnlocked ? "ур." + treadLevel : "закрыта";
-  }
+  if (slotCapEl) slotCapEl.textContent = unlockedSlots + "/" + mySlots.length;
+  if (treadStatEl) treadStatEl.textContent = treadmillUnlocked ? "ур." + treadLevel + " (стой — качает)" : "купи";
   slotList.innerHTML = mySlots
     .map((sl, i) => {
-      if (i >= unlockedSlots) return "<div>Слот " + (i + 1) + ": 🔒 купи слот</div>";
+      if (i >= unlockedSlots) return "<div>Слот " + (i + 1) + ": 🔒</div>";
       if (!sl.egg) return "<div>Слот " + (i + 1) + ": пусто</div>";
-      if (!sl.hatched) {
-        const left = Math.ceil(sl.hatchLeft || 0);
-        return (
-          "<div>Слот " +
-          (i + 1) +
-          ": 🥚 " +
-          sl.egg.name +
-          " · вылуп " +
-          left +
-          "с</div>"
-        );
-      }
-      return (
-        "<div>Слот " +
-        (i + 1) +
-        ": 🐾 " +
-        sl.egg.name +
-        " · +" +
-        sl.egg.rate * 2 +
-        "/с</div>"
-      );
+      if (!sl.hatched) return "<div>Слот " + (i + 1) + ": 🥚 " + sl.egg.name + " · " + Math.ceil(sl.hatchLeft) + "с</div>";
+      return "<div>Слот " + (i + 1) + ": 🐾 " + sl.egg.name + " · +" + sl.egg.rate * 2 + "/с</div>";
     })
     .join("");
 }
@@ -568,13 +446,7 @@ function saveGame() {
         treadmillUnlocked,
         treadLevel,
         mine: mySlots.map((s) =>
-          s.egg
-            ? {
-                id: s.egg.id,
-                hatched: !!s.hatched,
-                hatchLeft: s.hatchLeft || 0,
-              }
-            : null
+          s.egg ? { id: s.egg.id, hatched: !!s.hatched, hatchLeft: s.hatchLeft || 0 } : null
         ),
       })
     );
@@ -583,9 +455,7 @@ function saveGame() {
 
 function loadGame() {
   try {
-    let raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) raw = localStorage.getItem("amal-steal-egg-3d-v6");
-    if (!raw) raw = localStorage.getItem("amal-steal-egg-3d-v5");
+    let raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem("amal-steal-egg-3d-v7") || localStorage.getItem("amal-steal-egg-3d-v6");
     const d = JSON.parse(raw || "null");
     if (!d) return;
     if (d.coins != null) coins = d.coins;
@@ -599,10 +469,10 @@ function loadGame() {
         const id = typeof row === "string" ? row : row.id;
         const def = eggDef(id);
         mySlots[i].egg = Object.assign({}, def);
-        mySlots[i].hatched = !!(row.hatched);
+        mySlots[i].hatched = !!row.hatched;
         mySlots[i].hatchLeft = row.hatched ? 0 : row.hatchLeft != null ? row.hatchLeft : hatchSeconds(def);
         mySlots[i].mesh = mySlots[i].hatched ? makePetMesh(def) : makeEggMesh(def);
-        mySlots[i].mesh.position.set(mySlots[i].x, mySlots[i].hatched ? 0.2 : 1.05, mySlots[i].z);
+        mySlots[i].mesh.position.set(mySlots[i].x, mySlots[i].hatched ? 0.25 : 1.05, mySlots[i].z);
         scene.add(mySlots[i].mesh);
       });
     }
@@ -610,15 +480,36 @@ function loadGame() {
   } catch (_) {}
 }
 
-function dist2(x1, z1, x2, z2) {
-  return Math.hypot(x1 - x2, z1 - z2);
+function renderRarityTable() {
+  if (!rarityTable) return;
+  let html = "<table><tr><th>Яйцо</th><th>Редкость</th><th>$/с</th><th>Вылуп</th><th>⚡</th></tr>";
+  EGG_DEFS.forEach((e) => {
+    html +=
+      "<tr><td>" +
+      e.name +
+      "</td><td>" +
+      e.rarity +
+      "</td><td>+" +
+      e.rate +
+      "</td><td>" +
+      Math.round(hatchSeconds(e)) +
+      "с</td><td>" +
+      e.recSpeed +
+      "+</td></tr>";
+  });
+  html += "</table><p style='margin-top:6px;color:#94a3b8'>Базы:</p><table><tr><th>Зона</th><th>⚡ советую</th></tr>";
+  ZONES.filter((z) => z.boss).forEach((z) => {
+    html += "<tr><td>" + z.name + "</td><td>" + z.recSpeed + "+</td></tr>";
+  });
+  html += "</table>";
+  rarityTable.innerHTML = html;
 }
 
 function nearestSteal() {
   const px = playerMesh.position.x;
   const pz = playerMesh.position.z;
   let best = null;
-  let bestD = 2.15;
+  let bestD = 2.2;
   worldEggs.forEach((w) => {
     if (w.taken || w.respawn > 0) return;
     const d = dist2(px, pz, w.x, w.z);
@@ -630,34 +521,53 @@ function nearestSteal() {
   return best;
 }
 
-function freeMySlot() {
-  return mySlots.find((s, i) => i < unlockedSlots && !s.egg);
+function nearestMarketBot() {
+  const px = playerMesh.position.x;
+  const pz = playerMesh.position.z;
+  let best = null;
+  let bestD = 2.4;
+  marketBots.forEach((b) => {
+    if (!b.eggMesh || b.reload > 0) return;
+    const d = dist2(px, pz, b.mesh.position.x, b.mesh.position.z);
+    if (d < bestD) {
+      bestD = d;
+      best = b;
+    }
+  });
+  return best;
 }
 
-function onMyBase() {
-  return dist2(playerMesh.position.x, playerMesh.position.z, myZone.x, myZone.z) < myZone.r + 0.55;
+function takeFromBot(b) {
+  if (!b || !b.eggMesh || carry) return;
+  carry = Object.assign({}, b.def);
+  carryFromUid = 0;
+  carryFromZone = null;
+  if (carryMesh) scene.remove(carryMesh);
+  carryMesh = makeEggMesh(carry, 0.85);
+  scene.add(carryMesh);
+  b.mesh.remove(b.eggMesh);
+  b.eggMesh = null;
+  b.reload = 4 + Math.random() * 3;
+  toast("🤝 Бот отдал «" + carry.name + "»! Беги в зелёный СЕЙФ");
+  syncUI();
 }
 
-function updatePrompt() {
-  let t = "";
-  if (onTreadmill && !treadmillUnlocked) t = "🔒 Купи дорожку в магазине («Прокачка»)";
-  else if (onTreadmill) {
-    t = treadmillRun
-      ? "🏃 БЕЖИМ! +" + formatNum((8 + speedStat * 0.02) * treadLevel) + " ⚡/с"
-      : "👟 Жми W на дорожке!";
-  }   else if (carry && onMyBase() && freeMySlot()) t = "E — в вольер (потом вылупится)";
-  else if (carry && onMyBase() && !freeMySlot()) t = "Вольер полон / слоты закрыты";
-  else if (!carry && nearestCourier()) {
-    const c = nearestCourier();
-    t = "E — забрать у бота «" + c.def.name + "» · +" + c.def.rate + "/с";
-  } else if (!carry && nearestSteal()) {
-    const w = nearestSteal();
-    const need = w.zone.recSpeed || 1;
-    const ok = speedStat >= need ? "✓" : "мало ⚡";
-    t = "E — украсть «" + w.def.name + "» · нужно ⚡" + need + " (" + ok + ")";
-  }
-  promptEl.style.display = t ? "block" : "none";
-  promptEl.textContent = t;
+function stealEgg(w) {
+  w.taken = true;
+  w.mesh.visible = false;
+  carry = Object.assign({}, w.def);
+  carryFromUid = w.uid;
+  carryFromZone = w.zone.id;
+  if (carryMesh) scene.remove(carryMesh);
+  carryMesh = makeEggMesh(carry, 0.85);
+  scene.add(carryMesh);
+  bosses.forEach((b) => {
+    b.angry = b.zone.id === w.zone.id;
+  });
+  alarmT = 5;
+  alarmEl.style.display = "block";
+  toast("Украл «" + carry.name + "»! В СЕЙФ — там не поймают!");
+  syncUI();
 }
 
 function placeEgg() {
@@ -675,9 +585,9 @@ function placeEgg() {
   }
   if (carryFromUid) {
     const w = worldEggs.find((x) => x.uid === carryFromUid);
-    if (w) w.respawn = 10;
+    if (w) w.respawn = 8;
   }
-  toast("🥚 " + carry.name + " в вольере! Вылупится через " + Math.ceil(slot.hatchLeft) + "с");
+  toast("✅ В сейфе! «" + carry.name + "» вылупится через " + Math.ceil(slot.hatchLeft) + "с");
   carry = null;
   carryFromUid = 0;
   carryFromZone = null;
@@ -689,46 +599,6 @@ function placeEgg() {
   saveGame();
   syncUI();
   return true;
-}
-
-function stealEgg(w) {
-  w.taken = true;
-  w.mesh.visible = false;
-  carry = Object.assign({}, w.def);
-  carryFromUid = w.uid;
-  carryFromZone = w.zone.id;
-  if (carryMesh) scene.remove(carryMesh);
-  carryMesh = makeEggMesh(carry, 0.85);
-  scene.add(carryMesh);
-  bosses.forEach((b) => {
-    b.angry = b.zone.id === w.zone.id;
-  });
-  alarmT = 4;
-  alarmEl.style.display = "block";
-  toast("Украл «" + carry.name + "»! Беги домой!");
-  syncUI();
-}
-
-function buyEgg(i) {
-  const def = EGG_DEFS[i];
-  if (carry) {
-    toast("Сначала поставь яйцо в вольер!");
-    return;
-  }
-  if (coins < def.price) {
-    toast("Мало монет · нужно " + def.price);
-    return;
-  }
-  coins -= def.price;
-  carry = Object.assign({}, def);
-  carryFromUid = 0;
-  carryFromZone = null;
-  if (carryMesh) scene.remove(carryMesh);
-  carryMesh = makeEggMesh(carry, 0.85);
-  scene.add(carryMesh);
-  toast("Куплено: " + def.name);
-  syncUI();
-  saveGame();
 }
 
 function dropCarry(msg) {
@@ -763,13 +633,11 @@ function flingFrom(bx, bz) {
   let dx = px - bx;
   let dz = pz - bz;
   const len = Math.hypot(dx, dz) || 1;
-  dx /= len;
-  dz /= len;
-  vel.x = dx * 26;
-  vel.z = dz * 26;
+  vel.x = (dx / len) * 28;
+  vel.z = (dz / len) * 28;
   vel.y = 11;
   onGround = false;
-  flingT = 0.85;
+  flingT = 0.9;
 }
 
 function hatchSlot(slot) {
@@ -778,27 +646,43 @@ function hatchSlot(slot) {
   slot.hatchLeft = 0;
   if (slot.mesh) scene.remove(slot.mesh);
   slot.mesh = makePetMesh(slot.egg);
-  slot.mesh.position.set(slot.x, 0.2, slot.z);
+  slot.mesh.position.set(slot.x, 0.25, slot.z);
   scene.add(slot.mesh);
-  toast("🐣 Вылупился «" + slot.egg.name + "»! Доход ×2");
+  toast("🐣 Вылупился «" + slot.egg.name + "» · доход ×2");
   saveGame();
   syncUI();
 }
 
+function buyEgg(i) {
+  const def = EGG_DEFS[i];
+  if (carry) {
+    toast("Сначала положи яйцо в сейф!");
+    return;
+  }
+  if (coins < def.price) {
+    toast("Мало монет · " + def.price);
+    return;
+  }
+  coins -= def.price;
+  carry = Object.assign({}, def);
+  carryFromUid = 0;
+  carryFromZone = null;
+  if (carryMesh) scene.remove(carryMesh);
+  carryMesh = makeEggMesh(carry, 0.85);
+  scene.add(carryMesh);
+  toast("Куплено: " + def.name);
+  syncUI();
+  saveGame();
+}
+
 function buyUpgrade(kind) {
   if (kind === "slot") {
-    if (unlockedSlots >= mySlots.length) {
-      toast("Все слоты уже открыты");
-      return;
-    }
-    const cost = UPGRADES.slot[unlockedSlots + 1] || 99999;
-    if (coins < cost) {
-      toast("Мало монет · слот стоит " + cost);
-      return;
-    }
+    if (unlockedSlots >= mySlots.length) return toast("Все слоты открыты");
+    const cost = UPGRADES.slot[unlockedSlots + 1];
+    if (coins < cost) return toast("Нужно " + cost);
     coins -= cost;
     unlockedSlots += 1;
-    toast("🔓 Слот " + unlockedSlots + " открыт!");
+    toast("🔓 Слот " + unlockedSlots);
     saveGame();
     syncUI();
     renderUpgrades();
@@ -806,28 +690,19 @@ function buyUpgrade(kind) {
   }
   if (kind === "tread") {
     if (!treadmillUnlocked) {
-      if (coins < UPGRADES.treadUnlock) {
-        toast("Мало монет · дорожка " + UPGRADES.treadUnlock);
-        return;
-      }
+      if (coins < UPGRADES.treadUnlock) return toast("Дорожка " + UPGRADES.treadUnlock);
       coins -= UPGRADES.treadUnlock;
       treadmillUnlocked = true;
       syncTreadVisual();
-      toast("👟 Дорожка открыта! Беги W для скорости");
+      toast("👟 Дорожка! Просто стой на ней — W не нужен");
       saveGame();
       syncUI();
       renderUpgrades();
       return;
     }
-    if (treadLevel >= 5) {
-      toast("Дорожка макс. уровня");
-      return;
-    }
-    const cost = UPGRADES.treadLv[treadLevel + 1] || 99999;
-    if (coins < cost) {
-      toast("Мало монет · апгрейд " + cost);
-      return;
-    }
+    if (treadLevel >= 5) return toast("Макс");
+    const cost = UPGRADES.treadLv[treadLevel + 1];
+    if (coins < cost) return toast("Нужно " + cost);
     coins -= cost;
     treadLevel += 1;
     toast("⚡ Дорожка ур." + treadLevel);
@@ -837,67 +712,10 @@ function buyUpgrade(kind) {
   }
 }
 
-function renderUpgrades() {
-  if (!upgList) return;
-  const bits = [];
-  if (unlockedSlots < mySlots.length) {
-    const cost = UPGRADES.slot[unlockedSlots + 1];
-    bits.push(
-      '<button type="button" class="item" data-upg="slot"><span>🔓 Слот вольера (' +
-        (unlockedSlots + 1) +
-        "/" +
-        mySlots.length +
-        ')</span><span class="price">🪙' +
-        cost +
-        "</span></button>"
-    );
-  } else {
-    bits.push('<div style="opacity:.7;margin:4px 0">Вольер: все слоты открыты</div>');
-  }
-  if (!treadmillUnlocked) {
-    bits.push(
-      '<button type="button" class="item" data-upg="tread"><span>👟 Открыть дорожку</span><span class="price">🪙' +
-        UPGRADES.treadUnlock +
-        "</span></button>"
-    );
-  } else if (treadLevel < 5) {
-    const cost = UPGRADES.treadLv[treadLevel + 1];
-    bits.push(
-      '<button type="button" class="item" data-upg="tread"><span>⚡ Дорожка → ур.' +
-        (treadLevel + 1) +
-        '</span><span class="price">🪙' +
-        cost +
-        "</span></button>"
-    );
-  } else {
-    bits.push('<div style="opacity:.7;margin:4px 0">Дорожка: макс</div>');
-  }
-  upgList.innerHTML = bits.join("");
-  upgList.querySelectorAll("button").forEach((btn) => {
-    btn.onclick = () => buyUpgrade(btn.getAttribute("data-upg"));
-  });
-}
-
-function doAction() {
-  if (carry && onMyBase()) {
-    placeEgg();
-    return;
-  }
-  if (!carry) {
-    const c = nearestCourier();
-    if (c) {
-      claimCourier(c);
-      return;
-    }
-    const w = nearestSteal();
-    if (w) stealEgg(w);
-  }
-}
-
 function renderShop() {
   shopList.innerHTML = EGG_DEFS.slice(0, 8)
-    .map((item, i) => {
-      return (
+    .map(
+      (item, i) =>
         '<button type="button" class="item" data-i="' +
         i +
         '"><span>' +
@@ -907,12 +725,84 @@ function renderShop() {
         '/с</span><span class="price">🪙' +
         item.price +
         "</span></button>"
-      );
-    })
+    )
     .join("");
   shopList.querySelectorAll("button").forEach((btn) => {
     btn.onclick = () => buyEgg(+btn.getAttribute("data-i"));
   });
+}
+
+function renderUpgrades() {
+  if (!upgList) return;
+  const bits = [];
+  if (unlockedSlots < mySlots.length) {
+    bits.push(
+      '<button type="button" class="item" data-upg="slot"><span>🔓 Слот вольера</span><span class="price">🪙' +
+        UPGRADES.slot[unlockedSlots + 1] +
+        "</span></button>"
+    );
+  }
+  if (!treadmillUnlocked) {
+    bits.push(
+      '<button type="button" class="item" data-upg="tread"><span>👟 Дорожка (без W)</span><span class="price">🪙' +
+        UPGRADES.treadUnlock +
+        "</span></button>"
+    );
+  } else if (treadLevel < 5) {
+    bits.push(
+      '<button type="button" class="item" data-upg="tread"><span>⚡ Дорожка ур.' +
+        (treadLevel + 1) +
+        '</span><span class="price">🪙' +
+        UPGRADES.treadLv[treadLevel + 1] +
+        "</span></button>"
+    );
+  }
+  upgList.innerHTML = bits.join("") || "<div style='opacity:.7'>Прокачка макс</div>";
+  upgList.querySelectorAll("button").forEach((btn) => {
+    btn.onclick = () => buyUpgrade(btn.getAttribute("data-upg"));
+  });
+}
+
+function updatePrompt() {
+  let t = "";
+  const px = playerMesh.position.x;
+  const pz = playerMesh.position.z;
+  const onTread =
+    px > treadmill.x - treadmill.w / 2 &&
+    px < treadmill.x + treadmill.w / 2 &&
+    pz > treadmill.z - treadmill.d / 2 &&
+    pz < treadmill.z + treadmill.d / 2;
+
+  if (inSafeZone() && carry && freeMySlot()) t = "✅ СЕЙФ — яйцо ставится само!";
+  else if (inSafeZone() && carry && !freeMySlot()) t = "Сейф полон — купи слот";
+  else if (inSafeZone()) t = "🛡 СЕЙФ — охранники сюда не заходят";
+  else if (onTread && !treadmillUnlocked) t = "🔒 Купи дорожку слева в магазине";
+  else if (onTread && treadmillUnlocked) t = "👟 Качается скорость (стой, W не нужен)";
+  else if (!carry && nearestMarketBot()) t = "E — взять яйцо у доброго бота";
+  else if (!carry && nearestSteal()) {
+    const w = nearestSteal();
+    t = "E — украсть «" + w.def.name + "» · ⚡" + (w.zone.recSpeed || 1) + "+";
+  } else if (carry) t = "Неси в зелёный СЕЙФ слева!";
+  else if (inMarket()) t = "Рынок: подойди к боту и жми E";
+
+  promptEl.style.display = t ? "block" : "none";
+  promptEl.textContent = t;
+}
+
+function doAction() {
+  if (carry && inSafeZone()) {
+    placeEgg();
+    return;
+  }
+  if (!carry) {
+    const bot = nearestMarketBot();
+    if (bot) {
+      takeFromBot(bot);
+      return;
+    }
+    const w = nearestSteal();
+    if (w) stealEgg(w);
+  }
 }
 
 const keys = Object.create(null);
@@ -992,7 +882,7 @@ function getInput() {
     x /= len;
     z /= len;
   }
-  return { x, z, jump: !!keys.Space, forward: !!(keys.KeyW || keys.ArrowUp || (stick.active && stick.y < -0.3) || forceRun) };
+  return { x, z, jump: !!keys.Space };
 }
 
 renderShop();
@@ -1001,7 +891,7 @@ renderRarityTable();
 loadGame();
 syncTreadVisual();
 syncUI();
-toast("v7: белые чаще · боты несут яйца · таблица редкостей · доход внизу");
+toast("1) Рынок (синий) — E у бота  2) Неси в зелёный СЕЙФ  3) Там тебя не поймают");
 
 let last = performance.now();
 function frame(now) {
@@ -1009,9 +899,8 @@ function frame(now) {
   last = now;
 
   const input = getInput();
-  const carrySlow = carry ? 0.55 : 1;
-  const flingSlow = flingT > 0 ? 0.35 : 1;
-  const baseSpeed = (8.5 + Math.min(6, Math.log10(Math.max(10, speedStat)))) * carrySlow;
+  const carrySlow = carry ? 0.58 : 1;
+  const baseSpeed = (9 + Math.min(7, Math.log10(Math.max(10, speedStat)))) * carrySlow * (forceRun ? 1.15 : 1);
   const forward = new THREE.Vector3();
   camera.getWorldDirection(forward);
   forward.y = 0;
@@ -1020,19 +909,20 @@ function frame(now) {
   const wish = new THREE.Vector3();
   wish.addScaledVector(right, input.x);
   wish.addScaledVector(forward, -input.z);
-  if (flingT > 0) {
-    flingT -= dt;
-  } else if (wish.lengthSq() > 0.0001) {
+
+  if (flingT > 0) flingT -= dt;
+  else if (wish.lengthSq() > 0.0001) {
     wish.normalize();
-    vel.x = wish.x * baseSpeed * flingSlow;
-    vel.z = wish.z * baseSpeed * flingSlow;
+    vel.x = wish.x * baseSpeed;
+    vel.z = wish.z * baseSpeed;
     playerMesh.rotation.y = Math.atan2(wish.x, wish.z);
   } else {
-    vel.x *= 0.8;
-    vel.z *= 0.8;
+    vel.x *= 0.78;
+    vel.z *= 0.78;
   }
+
   if (input.jump && onGround) {
-    vel.y = 7.2;
+    vel.y = 7.4;
     onGround = false;
   }
   vel.y -= 22 * dt;
@@ -1049,35 +939,64 @@ function frame(now) {
 
   const px = playerMesh.position.x;
   const pz = playerMesh.position.z;
+  const safe = inSafeZone();
 
-  onTreadmill =
+  // Авто-сдача яйца в сейфе
+  if (carry && safe && freeMySlot()) {
+    autoDepositFlash += dt;
+    if (autoDepositFlash > 0.15) {
+      placeEgg();
+      autoDepositFlash = 0;
+    }
+  } else autoDepositFlash = 0;
+
+  // Дорожка: просто стой
+  const onTread =
     px > treadmill.x - treadmill.w / 2 &&
     px < treadmill.x + treadmill.w / 2 &&
     pz > treadmill.z - treadmill.d / 2 &&
     pz < treadmill.z + treadmill.d / 2;
-
-  treadmillRun = treadmillUnlocked && onTreadmill && input.forward;
-  if (treadmillUnlocked) {
-    treadMesh.material.emissiveIntensity = treadmillRun ? 0.6 : 0.2;
-    treadMesh.material.color.setHex(treadmillRun ? 0xfde68a : 0x94a3b8);
+  if (treadmillUnlocked && onTread) {
+    speedStat += (10 + Math.log10(Math.max(10, speedStat)) * 7) * treadLevel * dt;
+    treadMesh.material.emissiveIntensity = 0.7;
+    treadMesh.material.color.setHex(0xfde68a);
+  } else if (treadmillUnlocked) {
+    treadMesh.material.emissiveIntensity = 0.2;
+    treadMesh.material.color.setHex(0x94a3b8);
   }
-  if (treadmillRun) speedStat += (8 + Math.log10(Math.max(10, speedStat)) * 6) * treadLevel * dt;
 
   if (carryMesh) {
     carryMesh.position.set(px, 1.55, pz);
     carryMesh.rotation.y += dt * 2.2;
   }
 
+  // Рыночные боты — кружат только на рынке
+  marketBots.forEach((b) => {
+    b.ang += b.spin * dt;
+    b.mesh.position.x = marketZone.x + Math.cos(b.ang) * b.radius;
+    b.mesh.position.z = marketZone.z + Math.sin(b.ang) * b.radius;
+    b.mesh.rotation.y = b.ang + Math.PI / 2;
+    if (b.reload > 0) {
+      b.reload -= dt;
+      if (b.reload <= 0 && !b.eggMesh) {
+        b.def = pickMarketEgg();
+        b.eggMesh = makeEggMesh(b.def, 0.7);
+        b.eggMesh.position.set(0, 1.85, 0);
+        b.mesh.add(b.eggMesh);
+      }
+    } else if (b.eggMesh) b.eggMesh.rotation.y += dt * 2;
+  });
+
   worldEggs.forEach((w) => {
     if (!w.taken && w.mesh.visible) {
-      w.mesh.rotation.y += dt * w.mesh.userData.spin;
+      w.mesh.rotation.y += dt * (w.mesh.userData.spin || 1);
       w.mesh.position.y = 1.05 + Math.sin(now * 0.003 + w.x) * 0.07;
     }
     if (w.taken && w.respawn > 0) {
       w.respawn -= dt;
       if (w.respawn <= 0) {
         w.taken = false;
-        w.def = pickEgg(w.zone.pool);
+        w.def = pickWeighted(w.zone.pool);
         scene.remove(w.mesh);
         w.mesh = makeEggMesh(w.def);
         w.mesh.position.set(w.x, 1.05, w.z);
@@ -1091,70 +1010,42 @@ function frame(now) {
     if (!s.hatched) {
       s.hatchLeft = Math.max(0, (s.hatchLeft || 0) - dt);
       if (s.mesh) {
-        s.mesh.rotation.y += dt * 1.2;
-        s.mesh.position.y = 1.05 + Math.sin(now * 0.008) * 0.1;
-        const shake = 1 + Math.sin(now * 0.02) * 0.04;
-        s.mesh.scale.setScalar(shake);
+        s.mesh.rotation.y += dt * 1.3;
+        s.mesh.position.y = 1.05 + Math.sin(now * 0.01) * 0.1;
       }
       if (s.hatchLeft <= 0) hatchSlot(s);
     } else if (s.mesh) {
       s.mesh.rotation.y += dt * 0.9;
-      s.mesh.position.y = 0.2 + Math.sin(now * 0.004 + s.x) * 0.04;
     }
   });
 
+  // Охранники: НЕ заходят в сейф и не ловят там
   bosses.forEach((b) => {
-    if (carry && carryFromZone === b.zone.id && b.angry) {
+    if (carry && carryFromZone === b.zone.id && b.angry && !safe) {
       const d = dist2(px, pz, b.mesh.position.x, b.mesh.position.z);
-      if (d < 1.55) {
+      if (d < 1.6) {
         flingFrom(b.mesh.position.x, b.mesh.position.z);
-        dropCarry("💥 " + b.zone.name + " отбросил тебя и забрал яйцо!");
-      } else if (d < 22) {
-        b.mesh.position.x += (px - b.mesh.position.x) * dt * 3.2;
-        b.mesh.position.z += (pz - b.mesh.position.z) * dt * 3.2;
+        dropCarry("💥 Поймали вне сейфа! Яйцо вернули");
+      } else if (d < 24) {
+        let nx = b.mesh.position.x + (px - b.mesh.position.x) * dt * 3.4;
+        let nz = b.mesh.position.z + (pz - b.mesh.position.z) * dt * 3.4;
+        // стоп у границы сейфа
+        if (dist2(nx, nz, myZone.x, myZone.z) < myZone.r + 1.2) {
+          const ang = Math.atan2(nz - myZone.z, nx - myZone.x);
+          nx = myZone.x + Math.cos(ang) * (myZone.r + 1.3);
+          nz = myZone.z + Math.sin(ang) * (myZone.r + 1.3);
+        }
+        // не в рынок глубоко
+        b.mesh.position.x = nx;
+        b.mesh.position.z = nz;
         b.mesh.rotation.y = Math.atan2(px - b.mesh.position.x, pz - b.mesh.position.z);
       }
     } else {
-      // домой
-      b.mesh.position.x += (b.homeX - b.mesh.position.x) * dt * 1.8;
-      b.mesh.position.z += (b.homeZ - b.mesh.position.z) * dt * 1.8;
+      b.mesh.position.x += (b.homeX - b.mesh.position.x) * dt * 2;
+      b.mesh.position.z += (b.homeZ - b.mesh.position.z) * dt * 2;
+      if (safe && b.angry) b.angry = false;
     }
   });
-
-  courierCd -= dt;
-  if (courierCd <= 0) {
-    spawnCourier();
-    courierCd = 3.5 + Math.random() * 3;
-  }
-  for (let i = couriers.length - 1; i >= 0; i--) {
-    const c = couriers[i];
-    c.mesh.position.x -= c.speed * dt;
-    c.mesh.rotation.y = -Math.PI / 2;
-    if (c.eggMesh) c.eggMesh.rotation.y += dt * 2;
-    // бот «дарит» яйцо пустому слоту чужой базы
-    if (!c.claimed) {
-      ZONES.forEach((z, zi) => {
-        if (zi === 0 || c.claimed) return;
-        if (Math.abs(c.mesh.position.x - z.x) < 1.2) {
-          const empty = worldEggs.find((w) => w.zone.id === z.id && (w.taken || w.respawn > 0));
-          // refill a taken pedestal visually by resetting soon
-          const dead = worldEggs.find((w) => w.zone.id === z.id && w.taken && w.respawn > 2);
-          if (dead && Math.random() < 0.35) {
-            dead.respawn = Math.min(dead.respawn, 1.2);
-            c.claimed = true;
-            if (c.eggMesh) {
-              c.mesh.remove(c.eggMesh);
-              c.eggMesh = null;
-            }
-          }
-        }
-      });
-    }
-    if (c.mesh.position.x < -42) {
-      scene.remove(c.mesh);
-      couriers.splice(i, 1);
-    }
-  }
 
   incomeAcc += dt;
   if (incomeAcc >= 1) {
@@ -1169,8 +1060,8 @@ function frame(now) {
   }
   if (alarmT > 0) {
     alarmT -= dt;
-    alarmEl.style.opacity = String(0.25 + 0.35 * Math.abs(Math.sin(now * 0.012)));
-    if (alarmT <= 0) alarmEl.style.display = "none";
+    alarmEl.style.opacity = String(0.2 + 0.35 * Math.abs(Math.sin(now * 0.012)));
+    if (alarmT <= 0 || safe) alarmEl.style.display = "none";
   }
 
   orbit.follow(playerMesh.position);
