@@ -13,7 +13,7 @@
   var JUMP = 720;
   var JUMP2 = 640;
   var SPEED = 270;
-  var SAVE = "amal-save-her-v6";
+  var SAVE = "amal-save-her-v7";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -448,23 +448,20 @@
   }
 
   var LEVELS = [
-    mkMap("grass", "P..A.................S...............F....", {
+    mkMap("grass", "P.....................S...............F....", {
       name: "Обучение",
       tutorial: true,
       speedMul: 1,
       jumps: 2,
       enemyMul: 0.85,
-      parkourWalls: [10, 16],
       row2: "..............C...........................",
       row3: "...........====...........................",
       row5: ".....X....K...............................",
       row6: "..........................................",
       hints: [
-        { at: 1, text: "←→ или A D — ходить" },
-        { at: 6, text: "↑ прыжок · у стены ↑ = стенной прыжок" },
-        { at: 10, text: "Паркур: прыгай от стен по бокам" },
-        { at: 12, text: "Рядом с союзником ↑ — прыжок от него" },
-        { at: 18, text: "↓ удар · C монета · ломай X · кейсы" },
+        { at: 1, text: "←→ ходить · ↑ прыжок (2 раза в воздухе)" },
+        { at: 8, text: "↓ удар · дважды подряд = комбо" },
+        { at: 14, text: "C — монета · дойди до флага →" },
       ],
     }),
     mkMap("grass", "P.....S.....G.....S.....B............F....", {
@@ -472,14 +469,13 @@
       speedMul: 1.05,
       jumps: 2,
       enemyMul: 1,
-      parkourWalls: [14, 22],
     }),
     mkMap("grass", "P..S..G..S..B..S..G.................F....", {
       name: "Луга 2",
       speedMul: 1.1,
       jumps: 2,
       enemyMul: 1.05,
-      parkourWalls: [8, 18, 28],
+      parkourWalls: [22, 30],
       row5: "....====..X..K..====..X..====.............",
     }),
     mkMap("grass", "P........S......O......S.............F....", {
@@ -497,7 +493,7 @@
       speedMul: 1.15,
       jumps: 3,
       enemyMul: 1.1,
-      parkourWalls: [12, 20, 30],
+      parkourWalls: [24, 32],
     }),
     mkMap("purple", "P..G..B..G..S..G..B..................F....", {
       name: "Магия 2",
@@ -505,7 +501,7 @@
       speedMul: 1.18,
       jumps: 3,
       enemyMul: 1.15,
-      parkourWalls: [9, 17, 25],
+      parkourWalls: [26],
       row5: "..X....K....X....K....X...................",
     }),
     mkMap("purple", "P.....G......O......G....B...........F....", {
@@ -517,10 +513,10 @@
       jumps: 3,
       enemyMul: 1.2,
     }),
-    mkMap("stone", "P..A...S.....S.....G.....S...........F....", {
+    mkMap("stone", "P.....S.....S.....G.....S...........F....", {
       name: "Войнушка 1",
       war: true,
-      story: "Глава: поле боя. Союзник идёт с тобой.",
+      story: "Глава: поле боя. Иди вперёд к флагу.",
       speedMul: 1.22,
       jumps: 3,
       enemyMul: 1.2,
@@ -533,7 +529,7 @@
       enemyMul: 1.25,
       row5: ".......X....K.............X...............",
     }),
-    mkMap("stone", "P..A........O........S...............F....", {
+    mkMap("stone", "P..........O........S...............F....", {
       name: "Босс · Капитан-мышь",
       war: true,
       bossId: "captain",
@@ -554,7 +550,7 @@
       speedMul: 1.32,
       jumps: 3,
       enemyMul: 1.35,
-      parkourWalls: [11, 19, 27, 33],
+      parkourWalls: [28, 34],
       row5: ".....X.............X.............X........",
       row3: "........====...====...====................",
     }),
@@ -572,9 +568,9 @@
       speedMul: 1.38,
       jumps: 4,
       enemyMul: 1.4,
-      parkourWalls: [10, 18, 26],
+      parkourWalls: [30],
     }),
-    mkMap("snow", "P..A..S..G......O......S.............F....", {
+    mkMap("snow", "P....S..G......O......S.............F....", {
       name: "Босс · Ледяная улитка",
       bossId: "iceSnail",
       weaponDrop: "fan",
@@ -582,7 +578,7 @@
       jumps: 4,
       enemyMul: 1.45,
     }),
-    mkMap("stone", "P..A...S...........S.................W....", {
+    mkMap("stone", "P.....S...........S.................W....", {
       name: "Спасение",
       story: "Финал: она в клетке. Победи стража и освободи!",
       bossId: "jailFrog",
@@ -611,6 +607,7 @@
   try {
     var d = JSON.parse(
       localStorage.getItem(SAVE) ||
+        localStorage.getItem("amal-save-her-v6") ||
         localStorage.getItem("amal-save-her-v5") ||
         localStorage.getItem("amal-save-her-v4") ||
         "null"
@@ -712,7 +709,7 @@
     var flag = null;
     var wife = null;
     var ally = null;
-    var p1 = makePlayer(TILE * 2, TILE, "yellow", false);
+    var p1 = makePlayer(TILE * 3, TILE, "yellow", false);
     var p2 = null;
 
     for (var y = 0; y < rows; y++) {
@@ -775,30 +772,29 @@
           p1.y = py - 8;
         } else if (ch === "2") {
           p2 = makePlayer(px + 6, py - 8, "pink", true);
-        } else if (ch === "A") {
-          ally = makePlayer(px + 6, py - 8, "green", false);
-          ally.isAlly = true;
         }
+        // A (союзник) намеренно игнорируем — мешал, выносил всех
       }
     }
-    if (!ally && L.war) {
-      ally = makePlayer(p1.x + 60, p1.y, "green", false);
-      ally.isAlly = true;
+    // боковые стены только ВВЕРХУ (не на полу, не у спавна) — паркур без залипания
+    for (var wy = 0; wy < Math.max(1, rows - 5); wy++) {
+      solids.push({ x: 0, y: wy * TILE, w: 16, h: TILE, sprite: th.left, wall: true });
+      solids.push({ x: cols * TILE - 16, y: wy * TILE, w: 16, h: TILE, sprite: th.right, wall: true });
     }
-    // стены по краям карты — для стенного прыжка
-    for (var wy = 0; wy < rows - 2; wy++) {
-      solids.push({ x: 0, y: wy * TILE, w: 18, h: TILE, sprite: th.left, wall: true });
-      solids.push({ x: cols * TILE - 18, y: wy * TILE, w: 18, h: TILE, sprite: th.right, wall: true });
-    }
-    // дополнительные паркур-столбы
+    // столбы паркура — только в воздухе, пол свободен
     if (L.parkourWalls) {
       for (var pw = 0; pw < L.parkourWalls.length; pw++) {
         var wx = L.parkourWalls[pw];
-        for (var pyw = 1; pyw < rows - 3; pyw++) {
+        for (var pyw = 1; pyw < rows - 5; pyw++) {
           solids.push({ x: wx * TILE, y: pyw * TILE, w: TILE, h: TILE, sprite: th.fill, wall: true });
         }
       }
     }
+    // безопасный спавн: не внутри стены, стоим на полу
+    p1.x = Math.max(40, Math.min(p1.x, cols * TILE - 80));
+    p1.y = Math.min(p1.y, (rows - 3) * TILE - p1.h - 2);
+    p1.vx = 0;
+    p1.vy = 0;
     projectiles = [];
     particles = [];
 
@@ -818,7 +814,7 @@
       wife: wife,
       p1: p1,
       p2: p2,
-      ally: ally,
+      ally: null,
       won: false,
       dead: false,
       hintI: 0,
@@ -1062,7 +1058,7 @@
     if (boss) setTimeout(function () {
       toast("Босс · слабое место: " + boss.weakLabel, 2.8);
     }, L.story ? 2800 : 1000);
-    if (L.tutorial) hint("↑ у стены = стенной прыжок · ↑ у союзника = прыжок от него", 4.5);
+    if (L.tutorial) hint("←→ ходить · ↑ прыжок · ↓ удар · C монета · дойди до флага", 4.5);
     save();
   }
 
@@ -1189,30 +1185,15 @@
       p.wallL = p.wallR = false;
     }
 
-    // опора от союзника / жены — прыжок от «плеча»
-    var boostPad = null;
-    if (world.ally) boostPad = world.ally;
-    if (!boostPad && world.wife) boostPad = world.wife;
-    var canBoost =
-      boostPad &&
-      Math.abs(p.x + p.w / 2 - (boostPad.x + boostPad.w / 2)) < 52 &&
-      Math.abs(p.y + p.h - (boostPad.y + 20)) < 48;
-
+    // стенной прыжок только в воздухе и только от паркур-стен (не с пола)
     if (jump) {
       var jPow = hasPetAbility("jump") ? 1.12 : 1;
-      if (canBoost && !p.onGround) {
-        p.vy = -JUMP * 1.08 * jPow;
-        p.vx = p.facing * spd * 1.15;
-        p.wallLock = 0.08;
-        toast("Прыжок от друга!", 0.45);
-      } else if (!p.onGround && (p.wallL || p.wallR)) {
-        // стенной прыжок (паркур)
+      if (!p.onGround && (p.wallL || p.wallR) && p.vy > -40) {
         var away = p.wallL ? 1 : -1;
-        p.vy = -JUMP * 0.98 * jPow;
-        p.vx = away * spd * 1.4;
+        p.vy = -JUMP * 0.92 * jPow;
+        p.vx = away * spd * 1.25;
         p.facing = away;
-        p.wallLock = 0.12;
-        p.jumpsLeft = Math.max(p.jumpsLeft, 1);
+        p.wallLock = 0.1;
         p.wallL = p.wallR = false;
       } else if (p.jumpsLeft > 0) {
         p.vy = p.onGround ? -JUMP * jPow : -JUMP2 * jPow;
@@ -1240,15 +1221,9 @@
     var probeR = { x: p.x + p.w - 2, y: p.y + 10, w: 6, h: p.h - 20 };
     for (var wi = 0; wi < world.solids.length; wi++) {
       var ws = world.solids[wi];
-      if (ws.platform) continue;
+      if (!ws.wall || ws.platform) continue;
       if (aabb(probeL, ws)) p.wallL = true;
       if (aabb(probeR, ws)) p.wallR = true;
-    }
-    for (var wb = 0; wb < world.breaks.length; wb++) {
-      var brk = world.breaks[wb];
-      if (brk.hp <= 0) continue;
-      if (aabb(probeL, brk)) p.wallL = true;
-      if (aabb(probeR, brk)) p.wallR = true;
     }
     p.y += p.vy * dt;
     for (var j = 0; j < world.solids.length; j++) resolveSolid(p, world.solids[j], "y");
