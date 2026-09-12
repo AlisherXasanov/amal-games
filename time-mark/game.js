@@ -205,10 +205,10 @@
 
   function syncMarkHud() {
     if (world && world.mark) {
-      markState.textContent = "есть · t=" + world.mark.t.toFixed(1) + "с";
+      markState.textContent = "t=" + world.mark.t.toFixed(1) + "с · жми Q → в прошлое";
       markState.className = "ok";
     } else {
-      markState.textContent = "нет";
+      markState.textContent = "нет (сначала E)";
       markState.className = "no";
     }
   }
@@ -235,7 +235,7 @@
   }
 
   function placeMark() {
-    if (!world || world.won) return;
+    if (!world || world.won || world.rewinding) return;
     world.mark = {
       t: world.t,
       x: world.p.x,
@@ -245,30 +245,68 @@
       passedDoor: world.passedDoor,
     };
     syncMarkHud();
-    toast("Метка: здесь и сейчас (t=" + world.t.toFixed(1) + ")", 1.4);
+    toast("Метка в настоящем. Q — иди вперёд в прошлое к ней", 2);
   }
 
-  function teleportToMark() {
-    if (!world || !world.mark || world.won) {
-      toast("Сначала поставь метку (E)", 1.4);
+  /** Плавный путь «вперёд в прошлое» к метке */
+  function startRewindToMark() {
+    if (!world || world.won) return;
+    if (!world.mark) {
+      toast("Сначала метка (E)", 1.4);
       return;
     }
-    var m = world.mark;
-    world.t = m.t;
-    world.p.x = m.x;
-    world.p.y = m.y;
+    if (world.rewinding) return;
+    if (world.t <= world.mark.t + 0.05) {
+      toast("Ты уже в прошлом метки", 1.2);
+      world.p.x = world.mark.x;
+      world.p.y = world.mark.y;
+      return;
+    }
+    world.rewinding = {
+      fromT: world.t,
+      toT: world.mark.t,
+      fromX: world.p.x,
+      fromY: world.p.y,
+      toX: world.mark.x,
+      toY: world.mark.y,
+      u: 0,
+      dur: Math.min(2.2, 0.55 + (world.t - world.mark.t) * 0.35),
+    };
     world.p.vx = 0;
     world.p.vy = 0;
-    world.hasCoin = m.hasCoin;
-    world.hasKey = m.hasKey;
-    world.passedDoor = m.passedDoor;
-    toast("Телепорт в то время!", 1.3);
+    toast("→ в прошлое…", 1.2);
   }
 
   function update(dt) {
     if (!world || world.won) return;
     var L = world.L;
     var p = world.p;
+
+    // Идём «вперёд» по шкале в прошлое к метке
+    if (world.rewinding) {
+      var rw = world.rewinding;
+      rw.u += dt / rw.dur;
+      if (rw.u >= 1) rw.u = 1;
+      var ease = rw.u * rw.u * (3 - 2 * rw.u);
+      world.t = rw.fromT + (rw.toT - rw.fromT) * ease;
+      p.x = rw.fromX + (rw.toX - rw.fromX) * ease;
+      p.y = rw.fromY + (rw.toY - rw.fromY) * ease;
+      p.vx = p.vy = 0;
+      p.facing = rw.toX >= rw.fromX ? 1 : -1;
+      if (rw.u >= 1) {
+        var m = world.mark;
+        world.t = m.t;
+        p.x = m.x;
+        p.y = m.y;
+        world.hasCoin = m.hasCoin;
+        world.hasKey = m.hasKey;
+        world.passedDoor = m.passedDoor;
+        world.rewinding = null;
+        toast("Ты в прошлом метки", 1.3);
+      }
+      camX += (p.x - W * 0.4 - camX) * Math.min(1, dt * 8);
+      return;
+    }
 
     world.t += dt;
 
@@ -289,7 +327,7 @@
       markQ = false;
     }
     if (tpQ) {
-      teleportToMark();
+      startRewindToMark();
       tpQ = false;
     }
 
@@ -496,14 +534,29 @@
 
     ctx.restore();
 
-    // полоска времени
+    // полоска времени: настоящее → метка в прошлом
     ctx.fillStyle = "rgba(0,0,0,0.45)";
-    ctx.fillRect(W / 2 - 120, 12, 240, 10);
+    ctx.fillRect(W / 2 - 140, 12, 280, 12);
     ctx.fillStyle = "#a78bfa";
-    ctx.fillRect(W / 2 - 120, 12, Math.min(240, world.t * 18), 10);
+    ctx.fillRect(W / 2 - 140, 12, Math.min(280, world.t * 16), 12);
+    if (world.mark) {
+      var mx = W / 2 - 140 + Math.min(280, world.mark.t * 16);
+      ctx.fillStyle = "#86efac";
+      ctx.fillRect(mx - 2, 8, 4, 20);
+      ctx.fillStyle = "#bbf7d0";
+      ctx.font = "800 10px system-ui";
+      ctx.fillText("прошлое", mx - 18, 42);
+    }
+    if (world.rewinding) {
+      ctx.fillStyle = "rgba(244,114,182,0.18)";
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#f9a8d4";
+      ctx.font = "900 22px system-ui";
+      ctx.fillText("→ вперёд в прошлое…", W / 2 - 110, H / 2);
+    }
     ctx.fillStyle = "#e9d5ff";
     ctx.font = "800 11px system-ui";
-    ctx.fillText("время мира: " + world.t.toFixed(1) + "с", W / 2 - 50, 38);
+    ctx.fillText("сейчас: " + world.t.toFixed(1) + "с", W / 2 - 40, 56);
   }
 
   var last = performance.now();
@@ -530,14 +583,14 @@
       jumpQ = true;
     }
     if (e.code === "KeyE" || e.code === "KeyF") placeMark();
-    if (e.code === "KeyQ" || e.code === "KeyR") teleportToMark();
+    if (e.code === "KeyQ" || e.code === "KeyR") startRewindToMark();
   });
   window.addEventListener("keyup", function (e) {
     keys[e.code] = false;
   });
 
   document.getElementById("btn-mark").onclick = placeMark;
-  document.getElementById("btn-tp").onclick = teleportToMark;
+  document.getElementById("btn-tp").onclick = startRewindToMark;
   document.getElementById("btn-jump").onpointerdown = function (e) {
     e.preventDefault();
     jumpQ = true;
