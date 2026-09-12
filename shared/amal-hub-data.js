@@ -33,6 +33,7 @@
 
   var EXCLUSIVE = [
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
+    { ico: "🎯", name: "Шарик и кольца", path: "ring-ball/?v=1", note: "дыры · прокачка · 20 ур." },
     { ico: "🎮", name: "Icon Tycoon 2D", path: "icon-tycoon/?v=1", note: "иконки · яйца · GUI как itch" },
     { ico: "🧱", name: "Stud Park", path: "stud-park/?v=1", note: "Roblox-стадды · тайкун" },
     { ico: "🌲", name: "Тайга · Тайгун", path: "taiga-tycoon/?v=1", note: "3D тайга · дерево прокачки" },
