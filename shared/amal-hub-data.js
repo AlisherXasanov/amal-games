@@ -18,6 +18,9 @@
   ];
 
   var GAMES_3D = [
+    { ico: "🏕️", name: "Лагерь Kenney", path: "nature-camp/?v=1", note: "Nature Kit · палатки" },
+    { ico: "🛶", name: "Река Kenney", path: "nature-river/?v=1", note: "Nature Kit · каноэ" },
+    { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
     { ico: "⛏️", name: "CraftWorld", path: "minecraft/", note: "майнкрафт" },
@@ -33,6 +36,9 @@
 
   var EXCLUSIVE = [
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
+    { ico: "🏕️", name: "Лагерь Kenney", path: "nature-camp/?v=1", note: "Nature Kit · палатки · дрова" },
+    { ico: "🛶", name: "Река Kenney", path: "nature-river/?v=1", note: "Nature Kit · каноэ · лилии" },
+    { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы · fall" },
     { ico: "🎯", name: "Шарик и кольца", path: "ring-ball/?v=1", note: "дыры · прокачка · 20 ур." },
     { ico: "🎮", name: "Icon Tycoon 2D", path: "icon-tycoon/?v=1", note: "иконки · яйца · GUI как itch" },
     { ico: "🧱", name: "Stud Park", path: "stud-park/?v=1", note: "Roblox-стадды · тайкун" },

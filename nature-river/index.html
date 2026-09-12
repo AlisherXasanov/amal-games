@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Река Kenney · 3D | Игры Амаля</title>
+  <meta name="theme-color" content="#0e7490" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#0c2a35;font-family:system-ui,sans-serif;color:#ecfeff;user-select:none}
+    canvas{display:block;touch-action:none}
+    #hud{position:fixed;top:12px;left:12px;z-index:20;padding:12px 14px;border-radius:14px;background:rgba(6,30,40,.92);border:2px solid #22d3ee;font:700 13px/1.4 system-ui}
+    #hud .big{font-size:22px;color:#a5f3fc}
+    #shop{position:fixed;top:12px;right:12px;z-index:20;width:min(240px,42vw);padding:12px;border-radius:14px;background:rgba(6,30,40,.92);border:1px solid #67e8f9;font:700 12px system-ui;max-height:50vh;overflow:auto}
+    #shop button{display:block;width:100%;margin:0 0 6px;padding:8px;border:0;border-radius:10px;background:rgba(255,255,255,.1);color:#fff;font:800 12px system-ui;cursor:pointer;text-align:left}
+    #prompt{position:fixed;bottom:18%;left:50%;transform:translateX(-50%);z-index:20;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.8);border:2px solid #22d3ee;font:800 14px system-ui;display:none}
+    #toast{position:fixed;top:36%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:12px 16px;border-radius:14px;background:rgba(8,35,48,.95);border:2px solid #67e8f9;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#0891b2;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #pad{position:fixed;bottom:18px;right:14px;z-index:25;display:none;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:rgba(103,232,249,.55);pointer-events:none}
+    #btn-e{position:fixed;bottom:150px;right:28px;z-index:25;display:none;width:64px;height:64px;border-radius:50%;border:0;background:rgba(8,145,178,.7);color:#fff;font:900 14px system-ui}
+    @media(pointer:coarse){#pad,#btn-e{display:block}}
+  </style>
+</head>
+<body>
+  <div id="hud"><b>🛶 Река · Kenney</b><br />🌸 <span class="big" id="score">0</span> · мост <span id="bridge">0</span></div>
+  <div id="shop"><b>Прокачка реки</b><div id="ups"></div></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <div id="prompt"></div><div id="toast"></div>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <button type="button" id="btn-e">E</button>
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+  <script type="module" src="./main.js?v=1"></script>
+</body>
+</html>
