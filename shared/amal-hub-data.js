@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "⏱", name: "Метка времени", path: "time-mark/?v=1", note: "E метка · Q телепорт во время" },
     { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "вправо=время+ · уровни колонкой" },
     { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "ночь · фары · яичные текстуры" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы · питомцы" },
@@ -39,7 +40,7 @@
   ];
 
   var EXCLUSIVE = [
-    { ico: "⏳", name: "Время с шагом", path: "time-walk/?v=2", note: "шаг = время · 2.5D" },
+    { ico: "⏳", name: "Время и место", path: "time-walk/?v=3", note: "живопись · шаг = время" },
     { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "шорт · фары · яйцо" },
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы" },

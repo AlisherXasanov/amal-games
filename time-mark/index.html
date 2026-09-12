@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Метка времени · новая | Игры Амаля</title>
+  <meta name="theme-color" content="#111827" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#030712;font-family:system-ui,sans-serif;color:#e5e7eb;user-select:none}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 10%,#1e1b4b,#030712 70%)}
+    canvas{display:block;width:min(1100px,100%);height:auto;max-height:100%;touch-action:none;border-radius:8px}
+    #hud{position:fixed;top:10px;left:10px;z-index:20;padding:12px 14px;border-radius:14px;background:rgba(3,7,18,.92);border:2px solid #a78bfa;font:800 13px/1.45 system-ui;max-width:min(360px,92vw)}
+    #hud b{color:#ddd6fe}
+    #hud .ok{color:#86efac}
+    #hud .no{color:#fca5a5}
+    #toast{position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:14px 18px;border-radius:14px;background:rgba(3,7,18,.96);border:2px solid #c4b5fd;font:900 16px system-ui;display:none;text-align:center;max-width:90vw}
+    #hint{position:fixed;bottom:16%;left:50%;transform:translateX(-50%);z-index:25;padding:10px 14px;border-radius:12px;background:rgba(3,7,18,.92);border:1px solid #a78bfa;font:700 14px system-ui;display:none;white-space:nowrap}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#4c1d95;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btns{position:fixed;bottom:12px;right:12px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    #btns button{padding:10px 12px;border:0;border-radius:12px;font:800 12px system-ui;cursor:pointer;color:#fff}
+    #btn-mark{background:linear-gradient(135deg,#7c3aed,#4c1d95)}
+    #btn-tp{background:linear-gradient(135deg,#06b6d4,#0891b2)}
+    #btn-jump{background:linear-gradient(135deg,#6366f1,#4338ca)}
+    #btn-next{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    #pad{position:fixed;bottom:16px;left:14px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.07);border:2px solid rgba(167,139,250,.35);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(167,139,250,.55);pointer-events:none}
+    @media(pointer:coarse){#pad{display:block}.back{bottom:140px}#btns{bottom:150px}}
+  </style>
+</head>
+<body>
+  <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
+  <div id="hud">
+    <b>⏱ Метка времени</b> · ур. <span id="lvl">1</span>/6<br />
+    Метка: <span id="markState" class="no">нет</span><br />
+    <span style="opacity:.8;font-size:12px">←→ ходить · ↑ прыжок · <b>E</b> поставить метку · <b>Q</b> телепорт в то время</span>
+  </div>
+  <div id="hint"></div>
+  <div id="toast"></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <div id="btns">
+    <button type="button" id="btn-mark">E метка</button>
+    <button type="button" id="btn-tp">Q телепорт</button>
+    <button type="button" id="btn-jump">↑ прыг</button>
+    <button type="button" id="btn-next">Сначала</button>
+  </div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
