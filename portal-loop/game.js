@@ -14,6 +14,7 @@
   var JUMP = 720;
   var SPEED = 250;
   var SAVE = "amal-portal-loop-v1";
+  var ASSET = "../shared/kenney-abstract/";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -23,6 +24,53 @@
   var gunEl = document.getElementById("gun");
   var toastT = 0;
   var hintT = 0;
+
+  var tiles = null;
+  var players = null;
+  var other = null;
+  var bgImg = null;
+  var hillImg = null;
+  var animT = 0;
+
+  function loadImage(src) {
+    return new Promise(function (res, rej) {
+      var img = new Image();
+      img.onload = function () {
+        res(img);
+      };
+      img.onerror = rej;
+      img.src = src;
+    });
+  }
+  function parseAtlas(xml) {
+    var f = Object.create(null);
+    var re = /name="([^"]+)"\s+x="(\d+)"\s+y="(\d+)"\s+width="(\d+)"\s+height="(\d+)"/g;
+    var m;
+    while ((m = re.exec(xml))) f[m[1]] = { x: +m[2], y: +m[3], w: +m[4], h: +m[5] };
+    return f;
+  }
+  function makeAtlas(img, frames) {
+    return {
+      img: img,
+      frames: frames,
+      draw: function (c, name, dx, dy, dw, dh, flip) {
+        var fr = frames[name];
+        if (!fr) return false;
+        c.save();
+        if (flip) {
+          c.translate(dx + dw, dy);
+          c.scale(-1, 1);
+          c.drawImage(img, fr.x, fr.y, fr.w, fr.h, 0, 0, dw, dh);
+        } else c.drawImage(img, fr.x, fr.y, fr.w, fr.h, dx, dy, dw, dh);
+        c.restore();
+        return true;
+      },
+    };
+  }
+  function blit(atlas, name, x, y, w, h, flip) {
+    if (!atlas || !atlas.draw(ctx, name, x, y, w, h, !!flip)) return false;
+    return true;
+  }
 
   function toast(m, t) {
     toastEl.textContent = m;
@@ -431,15 +479,16 @@
   }
 
   function draw() {
-    ctx.fillStyle = "#0b1220";
-    ctx.fillRect(0, 0, W, H);
-    // сетка лаборатории
-    ctx.strokeStyle = "rgba(56,189,248,0.06)";
-    for (var gx = 0; gx < W; gx += 40) {
-      ctx.beginPath();
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, H);
-      ctx.stroke();
+    if (bgImg) {
+      ctx.drawImage(bgImg, 0, 0, W, H);
+      if (hillImg) {
+        var hx = (-camX * 0.15) % W;
+        ctx.drawImage(hillImg, hx, H - 180, W, 180);
+        ctx.drawImage(hillImg, hx + W, H - 180, W, 180);
+      }
+    } else {
+      ctx.fillStyle = "#0b1220";
+      ctx.fillRect(0, 0, W, H);
     }
 
     if (!world) return;
@@ -448,16 +497,10 @@
 
     for (var i = 0; i < world.solids.length; i++) {
       var s = world.solids[i];
-      if (s.floor) {
-        ctx.fillStyle = "#334155";
+      var tile = s.floor ? "tileBlue_02.png" : "tileBlue_05.png";
+      if (!blit(tiles, tile, s.x, s.y, s.w, s.h)) {
+        ctx.fillStyle = s.floor ? "#334155" : "#1e293b";
         ctx.fillRect(s.x, s.y, s.w, s.h);
-        ctx.fillStyle = "#64748b";
-        ctx.fillRect(s.x, s.y, s.w, 4);
-      } else {
-        ctx.fillStyle = "#1e293b";
-        ctx.fillRect(s.x, s.y, s.w, s.h);
-        ctx.strokeStyle = "#475569";
-        ctx.strokeRect(s.x + 0.5, s.y + 0.5, s.w - 1, s.h - 1);
       }
     }
 
@@ -465,50 +508,52 @@
     drawPortal(world.orange, "#fb923c");
 
     if (world.btn) {
-      ctx.fillStyle = world.btn.on ? "#4ade80" : "#f87171";
-      ctx.fillRect(world.btn.x, world.btn.y, world.btn.w, world.btn.h);
-      ctx.fillStyle = "#fff";
-      ctx.font = "800 10px system-ui";
-      ctx.fillText("кнопка", world.btn.x - 4, world.btn.y - 4);
+      var bn = world.btn.on ? "buttonGreen_pressed.png" : "buttonGreen.png";
+      if (!blit(other, bn, world.btn.x - 4, world.btn.y - 8, world.btn.w + 8, world.btn.h + 10)) {
+        ctx.fillStyle = world.btn.on ? "#4ade80" : "#f87171";
+        ctx.fillRect(world.btn.x, world.btn.y, world.btn.w, world.btn.h);
+      }
     }
 
     for (var b = 0; b < world.boxes.length; b++) {
       var box = world.boxes[b];
-      ctx.fillStyle = "#a3e635";
-      ctx.fillRect(box.x, box.y, box.w, box.h);
-      ctx.strokeStyle = "#365314";
-      ctx.strokeRect(box.x, box.y, box.w, box.h);
-      ctx.fillStyle = "#14532d";
-      ctx.font = "900 11px system-ui";
-      ctx.fillText("BOX", box.x + 4, box.y + 20);
+      if (!blit(other, "blockGrey.png", box.x - 4, box.y - 4, box.w + 8, box.h + 8)) {
+        ctx.fillStyle = "#a3e635";
+        ctx.fillRect(box.x, box.y, box.w, box.h);
+      }
     }
 
     if (world.exit) {
-      ctx.fillStyle = world.open ? "#22d3ee" : "#475569";
-      ctx.fillRect(world.exit.x, world.exit.y, world.exit.w, world.exit.h);
-      ctx.fillStyle = "#ecfeff";
-      ctx.font = "900 11px system-ui";
-      ctx.fillText(world.open ? "ВЫХОД" : "ЗАКР", world.exit.x, world.exit.y - 6);
+      var dn = world.open ? "doorOpen.png" : "doorRed_lock.png";
+      if (!blit(other, dn, world.exit.x - 8, world.exit.y - 16, world.exit.w + 16, world.exit.h + 20)) {
+        ctx.fillStyle = world.open ? "#22d3ee" : "#475569";
+        ctx.fillRect(world.exit.x, world.exit.y, world.exit.w, world.exit.h);
+      }
     }
 
-    // игрок — «голова» + тело (стилистика петли)
     var p = world.p;
-    ctx.fillStyle = "#e2e8f0";
-    ctx.beginPath();
-    ctx.arc(p.x + 14, p.y + 10, 11, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillRect(p.x + 4, p.y + 18, 20, 18);
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(p.x + 10, p.y + 8, 3, 3);
-    ctx.fillRect(p.x + 16, p.y + 8, 3, 3);
+    var pf = "playerBlue_stand.png";
+    if (!p.onGround) pf = p.vy < 0 ? "playerBlue_up1.png" : "playerBlue_fall.png";
+    else if (Math.abs(p.vx) > 20) {
+      var wi = (Math.floor(animT * 10) % 4) + 1;
+      pf = "playerBlue_walk" + wi + ".png";
+    }
+    if (!blit(players, pf, p.x - 6, p.y - 10, p.w + 12, p.h + 12, p.facing < 0)) {
+      ctx.fillStyle = "#e2e8f0";
+      ctx.beginPath();
+      ctx.arc(p.x + 14, p.y + 10, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(p.x + 4, p.y + 18, 20, 18);
+    }
 
-    // прицел
     var m = worldMouse();
     ctx.strokeStyle = gun === "blue" ? "#38bdf8" : "#fb923c";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(m.x, m.y, 8, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.lineWidth = 1;
 
     ctx.restore();
   }
@@ -517,6 +562,7 @@
   function frame(now) {
     var dt = Math.min(0.033, (now - last) / 1000);
     last = now;
+    animT += dt;
     update(dt);
     if (toastT > 0) {
       toastT -= dt;
@@ -612,6 +658,35 @@
   pad.addEventListener("pointercancel", endStick);
 
   setGun("blue");
-  build(level);
-  requestAnimationFrame(frame);
+
+  Promise.all([
+    loadImage(ASSET + "Spritesheet/spritesheet_tiles.png"),
+    fetch(ASSET + "Spritesheet/spritesheet_tiles.xml").then(function (r) {
+      return r.text();
+    }),
+    loadImage(ASSET + "Spritesheet/spritesheet_players.png"),
+    fetch(ASSET + "Spritesheet/spritesheet_players.xml").then(function (r) {
+      return r.text();
+    }),
+    loadImage(ASSET + "Spritesheet/spritesheet_other.png"),
+    fetch(ASSET + "Spritesheet/spritesheet_other.xml").then(function (r) {
+      return r.text();
+    }),
+    loadImage(ASSET + "Backgrounds/set1_background.png"),
+    loadImage(ASSET + "Backgrounds/set1_hills.png"),
+  ])
+    .then(function (arr) {
+      tiles = makeAtlas(arr[0], parseAtlas(arr[1]));
+      players = makeAtlas(arr[2], parseAtlas(arr[3]));
+      other = makeAtlas(arr[4], parseAtlas(arr[5]));
+      bgImg = arr[6];
+      hillImg = arr[7];
+      build(level);
+      requestAnimationFrame(frame);
+    })
+    .catch(function () {
+      toast("Текстуры не загрузились — цветной режим", 3);
+      build(level);
+      requestAnimationFrame(frame);
+    });
 })();
