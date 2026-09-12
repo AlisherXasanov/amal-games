@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "ночь · фары · яичные текстуры" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы · питомцы" },
     { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "Kenney 2D · боссы · Ишка · дабл-прыг" },
     { ico: "🌹", name: "Расслаб · песни", path: "relax-songs/?v=4", note: "Black Rose · Minecraft · YouTube" },
@@ -37,10 +38,10 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "🥚", name: "Яйцо в фарах", path: "egg-night/?v=1", note: "шорт · фары · яйцо" },
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
     { ico: "💕", name: "Спаси её", path: "save-her/?v=7", note: "жена · карта · боссы" },
     { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "боссы · Ишка · дабл-прыг" },
-    { ico: "🧪", name: "Мозг в колбе", path: "brain-jar/?v=1", note: "Ишка · колба · лаба" },
     { ico: "🏕️", name: "Лагерь Kenney", path: "nature-camp/?v=1", note: "Nature Kit · палатки · дрова" },
     { ico: "🛶", name: "Река Kenney", path: "nature-river/?v=1", note: "Nature Kit · каноэ · лилии" },
     { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы · fall" },

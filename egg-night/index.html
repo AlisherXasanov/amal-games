@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Яйцо в фарах · шорт | Игры Амаля</title>
+  <meta name="theme-color" content="#0b1220" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#05070e;font-family:system-ui,sans-serif;color:#e2e8f0;user-select:none}
+    canvas{display:block;touch-action:none}
+    #hud{position:fixed;top:12px;left:12px;z-index:20;padding:12px 14px;border-radius:14px;background:rgba(8,12,24,.92);border:2px solid #fbbf24;font:700 13px/1.4 system-ui;max-width:min(280px,80vw)}
+    #hud .big{font-size:22px;color:#fde68a}
+    #title{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:25;font:900 28px/1.1 system-ui;color:#fff;text-shadow:0 2px 0 #0f172a,0 0 24px #38bdf8;text-align:center;pointer-events:none;opacity:.9}
+    #toast{position:fixed;top:42%;left:50%;transform:translate(-50%,-50%);z-index:30;padding:12px 16px;border-radius:14px;background:rgba(10,16,30,.95);border:2px solid #67e8f9;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
+    .back{position:fixed;bottom:12px;left:12px;z-index:20;padding:8px 12px;border-radius:12px;background:#334155;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btns{position:fixed;bottom:12px;right:12px;z-index:20;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    #btns button{padding:10px 14px;border:0;border-radius:12px;font:800 13px system-ui;cursor:pointer;color:#fff}
+    #btn-jump{background:linear-gradient(135deg,#0ea5e9,#2563eb)}
+    #btn-next{background:linear-gradient(135deg,#f59e0b,#d97706)}
+    #pad{position:fixed;bottom:18px;left:14px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);touch-action:none}
+    #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(125,211,252,.55);pointer-events:none}
+    @media(pointer:coarse){#pad{display:block}.back{bottom:140px}}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <b>🥚 Яйцо в фарах</b><br />
+    очки <span class="big" id="score">0</span> · сцена <span id="scene">1</span>/5<br />
+    <span style="opacity:.75;font-size:12px">←→ / WASD катись · пробел прыжок · увернись от машины</span>
+  </div>
+  <div id="title">креативных</div>
+  <div id="toast"></div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <div id="btns">
+    <button type="button" id="btn-jump">Прыг</button>
+    <button type="button" id="btn-next">След. шорт →</button>
+  </div>
+  <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+  <script type="module" src="./main.js?v=1"></script>
+</body>
+</html>
