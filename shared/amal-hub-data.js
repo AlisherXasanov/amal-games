@@ -5,7 +5,8 @@
   "use strict";
 
   var GAMES_2D = [
-    { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=1", note: "Kenney 2D · персонаж · 5 ур." },
+    { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "Kenney 2D · боссы · Ишка · дабл-прыг" },
+    { ico: "🧪", name: "Мозг в колбе", path: "brain-jar/?v=1", note: "лаба · Ишка · колба в трубу" },
     { ico: "🌹", name: "Расслаб · песни", path: "relax-songs/?v=4", note: "Black Rose · Minecraft · YouTube" },
     { ico: "🥥", name: "Кокос", path: "coconut/?v=1", note: "реализм · скилл · пальма" },
     { ico: "🌊", name: "Escape Tsunami", path: "escape-tsunami/?v=4", note: "бег от волны" },
@@ -37,7 +38,8 @@
 
   var EXCLUSIVE = [
     { ico: "🤖", name: "Робот Эмо", path: "emo-friend/?v=3", note: "игры здесь · микрофон · 3D" },
-    { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=1", note: "Kenney New Platformer · 2D герой" },
+    { ico: "🦸", name: "Прыг-Герой", path: "platform-hero/?v=2", note: "боссы · Ишка · дабл-прыг" },
+    { ico: "🧪", name: "Мозг в колбе", path: "brain-jar/?v=1", note: "Ишка · колба · лаба" },
     { ico: "🏕️", name: "Лагерь Kenney", path: "nature-camp/?v=1", note: "Nature Kit · палатки · дрова" },
     { ico: "🛶", name: "Река Kenney", path: "nature-river/?v=1", note: "Nature Kit · каноэ · лилии" },
     { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы · fall" },
