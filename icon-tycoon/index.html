@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Icon Tycoon 2D | Игры Амаля</title>
+  <meta name="theme-color" content="#7c3aed" />
+  <style>
+    :root {
+      --bg1: #4f46e5;
+      --bg2: #db2777;
+      --panel: #1e1b4b;
+      --card: #312e81;
+      --gold: #fbbf24;
+      --ok: #22c55e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100dvh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: #fff;
+      background:
+        radial-gradient(circle at 20% 20%, #818cf8 0, transparent 40%),
+        radial-gradient(circle at 80% 0%, #f472b6 0, transparent 35%),
+        linear-gradient(160deg, var(--bg1), #0f172a 55%, var(--bg2));
+      overflow-x: hidden;
+    }
+    .top {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+      padding: 12px 14px; position: sticky; top: 0; z-index: 20;
+      background: rgba(15, 23, 42, .85); backdrop-filter: blur(8px);
+      border-bottom: 4px solid var(--gold);
+    }
+    .brand { font-weight: 900; font-size: 18px; }
+    .stat {
+      display: flex; gap: 10px; flex-wrap: wrap; font-weight: 800;
+    }
+    .pill {
+      background: #0f172a; border: 3px solid #38bdf8; border-radius: 14px;
+      padding: 8px 12px; box-shadow: 3px 3px 0 #0284c7;
+    }
+    .pill b { color: var(--gold); font-size: 18px; }
+    .back {
+      text-decoration: none; color: #fff; font-weight: 800;
+      background: var(--ok); border: 3px solid #14532d; border-radius: 12px;
+      padding: 8px 12px; box-shadow: 3px 3px 0 #14532d;
+    }
+    main {
+      max-width: 920px; margin: 0 auto; padding: 14px 12px 40px;
+      display: grid; gap: 14px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      border: 4px solid #fde68a; border-radius: 20px;
+      padding: 16px; box-shadow: 6px 6px 0 #1e293b;
+    }
+    .hero h1 { font-size: clamp(22px, 5vw, 32px); margin-bottom: 6px; }
+    .hero p { opacity: .92; font-weight: 700; }
+    .grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+    }
+    .icon-card {
+      background: var(--card); border: 3px solid #a78bfa; border-radius: 16px;
+      padding: 12px 10px; text-align: center; cursor: pointer;
+      box-shadow: 4px 4px 0 #4c1d95; transition: transform .12s;
+      font-weight: 800;
+    }
+    .icon-card:active { transform: scale(.96); }
+    .icon-card .emoji { font-size: 42px; line-height: 1; margin-bottom: 6px; filter: drop-shadow(2px 2px 0 rgba(0,0,0,.35)); }
+    .icon-card .name { font-size: 13px; }
+    .icon-card .rate { color: #86efac; font-size: 12px; margin-top: 4px; }
+    .icon-card .price { color: var(--gold); margin-top: 6px; font-size: 13px; }
+    .icon-card.owned { border-color: var(--ok); box-shadow: 4px 4px 0 #14532d; }
+    .panel {
+      background: rgba(30, 27, 75, .92); border: 4px solid #38bdf8; border-radius: 18px;
+      padding: 14px; box-shadow: 5px 5px 0 #0369a1;
+    }
+    .panel h2 { font-size: 16px; margin-bottom: 10px; color: #7dd3fc; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn {
+      border: 3px solid #fff; border-radius: 14px; padding: 10px 14px;
+      font: 900 13px system-ui; cursor: pointer; color: #fff;
+      box-shadow: 3px 3px 0 #0f172a;
+    }
+    .btn.tap { background: linear-gradient(135deg, #f59e0b, #ef4444); font-size: 16px; flex: 1; min-width: 160px; }
+    .btn.up { background: #2563eb; }
+    .btn.egg { background: #db2777; }
+    .toast {
+      position: fixed; left: 50%; top: 20%; transform: translate(-50%, -50%);
+      background: #0f172a; border: 4px solid var(--gold); border-radius: 16px;
+      padding: 12px 18px; font-weight: 900; z-index: 50; display: none;
+      box-shadow: 5px 5px 0 #92400e; max-width: 90vw; text-align: center;
+    }
+    .inv {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .badge {
+      background: #0f172a; border: 3px solid #f472b6; border-radius: 999px;
+      padding: 6px 10px; font-weight: 800; font-size: 12px;
+    }
+    .tip { opacity: .85; font-size: 12px; font-weight: 700; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand">🎮 Icon Tycoon 2D</div>
+    <div class="stat">
+      <div class="pill">🪙 <b id="coins">0</b></div>
+      <div class="pill">📈 +<b id="income">0</b>/с</div>
+      <div class="pill">👆 ×<b id="tap">1</b></div>
+    </div>
+    <a class="back" href="../index.html">← Каталог</a>
+  </div>
+
+  <main>
+    <section class="hero">
+      <h1>Тайкун из иконок</h1>
+      <p>Стиль как на itch: еда, яйца, монеты, GUI. Тапай, покупай иконки, качай доход.</p>
+    </section>
+
+    <section class="panel">
+      <h2>⚡ Быстрые действия</h2>
+      <div class="row">
+        <button type="button" class="btn tap" id="btnTap">👆 Тап +монеты</button>
+        <button type="button" class="btn up" id="btnTapUp">💪 Сила тапа</button>
+        <button type="button" class="btn egg" id="btnEgg">🥚 Открыть яйцо</button>
+      </div>
+      <p class="tip">Яйцо даёт случайную иконку. Чем круче иконка — тем больше доход.</p>
+    </section>
+
+    <section class="panel">
+      <h2>🎒 Твои иконки</h2>
+      <div class="inv" id="inv"></div>
+    </section>
+
+    <section class="panel">
+      <h2>🛒 Магазин иконок</h2>
+      <div class="grid" id="shop"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./game.js?v=1"></script>
+</body>
+</html>
