@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Stud Park · Тайкун | Игры Амаля</title>
+  <meta name="theme-color" content="#2563eb" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow: hidden; height: 100%; background: #1e3a8a; font-family: "Segoe UI", system-ui, sans-serif; color: #fff; user-select: none; }
+    canvas { display: block; touch-action: none; }
+    #hud {
+      position: fixed; top: 12px; left: 12px; z-index: 40;
+      padding: 12px 14px; border-radius: 14px;
+      background: linear-gradient(145deg, rgba(30,58,138,.95), rgba(15,23,42,.95));
+      border: 3px solid #fbbf24; font: 800 13px/1.4 system-ui;
+      box-shadow: 4px 4px 0 #1e293b;
+    }
+    #hud .big { font-size: 26px; color: #fde68a; }
+    #shop {
+      position: fixed; top: 12px; right: 12px; z-index: 40; width: min(260px, 44vw);
+      max-height: 55vh; overflow: auto; padding: 12px; border-radius: 14px;
+      background: rgba(15,23,42,.92); border: 3px solid #38bdf8;
+      box-shadow: 4px 4px 0 #0ea5e9; font: 700 12px system-ui;
+    }
+    #shop h3 { color: #7dd3fc; margin-bottom: 8px; }
+    #shop button {
+      display: flex; justify-content: space-between; width: 100%; gap: 8px;
+      margin: 0 0 6px; padding: 9px 10px; border: 0; border-radius: 10px;
+      background: rgba(255,255,255,.1); color: #fff; font: 800 12px system-ui; cursor: pointer;
+    }
+    #shop button:hover { background: rgba(56,189,248,.35); }
+    #shop .c { color: #fbbf24; }
+    #prompt {
+      position: fixed; bottom: 18%; left: 50%; transform: translateX(-50%); z-index: 40;
+      padding: 10px 16px; border-radius: 12px; display: none;
+      background: rgba(0,0,0,.85); border: 3px solid #f472b6; font: 900 14px system-ui;
+    }
+    #toast {
+      position: fixed; top: 38%; left: 50%; transform: translate(-50%,-50%); z-index: 50;
+      padding: 12px 18px; border-radius: 14px; display: none; pointer-events: none;
+      background: rgba(15,23,42,.95); border: 3px solid #fbbf24; font: 900 16px system-ui; text-align: center;
+    }
+    #tip {
+      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 30;
+      padding: 7px 12px; border-radius: 999px; background: rgba(0,0,0,.65); font: 700 11px system-ui;
+    }
+    .back {
+      position: fixed; bottom: 12px; left: 12px; z-index: 45;
+      padding: 8px 12px; border-radius: 12px; background: #22c55e; color: #fff;
+      text-decoration: none; font: 800 12px system-ui; border: 3px solid #14532d;
+    }
+    #pad {
+      position: fixed; bottom: 18px; right: 14px; z-index: 45; display: none;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.25); touch-action: none;
+    }
+    #pad-knob {
+      position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px;
+      border-radius: 50%; background: rgba(125,211,252,.6); pointer-events: none;
+    }
+    #btn-e {
+      position: fixed; bottom: 150px; right: 28px; z-index: 45; display: none;
+      width: 64px; height: 64px; border-radius: 50%; border: 3px solid #fff;
+      background: #ec4899; color: #fff; font: 900 16px system-ui;
+    }
+    @media (pointer: coarse) {
+      #pad, #btn-e { display: block; }
+      #tip { display: none; }
+      #shop { max-height: 38vh; }
+    }
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div>🧱 Stud Park · Тайкун</div>
+    🪙 <span class="big" id="coins">0</span><br />
+    Доход: +<span id="income">0</span>/с · ⚡<span id="spd">1</span>
+  </div>
+  <div id="shop">
+    <h3>🛒 Магазин стаддов</h3>
+    <div id="shopList"></div>
+  </div>
+  <a class="back" href="../index.html">← Каталог</a>
+  <div id="prompt"></div>
+  <div id="toast"></div>
+  <div id="tip">WASD · E взять монету/строить рядом с плотом · ПКМ камера</div>
+  <div id="pad"><div id="pad-knob"></div></div>
+  <button type="button" id="btn-e">E</button>
+
+  <script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="./main.js?v=1"></script>
+</body>
+</html>
