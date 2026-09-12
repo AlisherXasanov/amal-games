@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Укради яйцо · 3D | Игры Амаля</title>
+  <title>Укради яйцо · оригинал | Игры Амаля</title>
   <meta name="theme-color" content="#0ea5e9" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <style>
@@ -11,15 +11,34 @@
     html, body { overflow: hidden; height: 100%; background: #0c4a6e; font-family: "Segoe UI", system-ui, sans-serif; color: #fff; user-select: none; }
     canvas { display: block; touch-action: none; }
     #hud {
-      position: fixed; top: 12px; left: 12px; z-index: 40; max-width: min(300px, 78vw);
+      position: fixed; top: 12px; left: 12px; z-index: 40; max-width: min(280px, 72vw);
       padding: 12px 14px; border-radius: 16px;
       background: rgba(15, 23, 42, .9); border: 2px solid #fbbf24;
       backdrop-filter: blur(10px); font: 700 13px/1.45 system-ui;
     }
     #hud b { color: #fde68a; font-size: 15px; }
     #hud .big { font-size: 24px; font-weight: 900; color: #fde68a; }
+    #rarityBox {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 40;
+      width: min(420px, 92vw); max-height: 42vh; overflow: auto;
+      padding: 10px 12px; border-radius: 14px;
+      background: rgba(15, 23, 42, .92); border: 1px solid rgba(148,163,184,.45);
+      font: 700 11px/1.35 system-ui; display: none;
+    }
+    #rarityBox.open { display: block; }
+    #rarityBox h3 { color: #fde68a; font-size: 13px; margin-bottom: 6px; }
+    #rarityBox table { width: 100%; border-collapse: collapse; }
+    #rarityBox th, #rarityBox td { padding: 3px 4px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.08); }
+    #rarityBox th { color: #94a3b8; font-size: 10px; }
+    #incomeBar {
+      position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%); z-index: 40;
+      padding: 10px 18px; border-radius: 14px; min-width: min(340px, 88vw); text-align: center;
+      background: rgba(10, 20, 40, .92); border: 2px solid #4ade80;
+      font: 800 14px/1.35 system-ui;
+    }
+    #incomeBar .cash { color: #86efac; font-size: 20px; }
     #prompt {
-      position: fixed; bottom: 18%; left: 50%; transform: translateX(-50%); z-index: 40;
+      position: fixed; bottom: 22%; left: 50%; transform: translateX(-50%); z-index: 40;
       padding: 10px 16px; border-radius: 12px; display: none;
       background: rgba(0,0,0,.8); border: 2px solid #c084fc; font: 800 14px system-ui; white-space: nowrap;
     }
@@ -39,9 +58,10 @@
     }
     .back { background: linear-gradient(135deg,#22c55e,#16a34a); }
     .run-btn { background: linear-gradient(135deg,#f59e0b,#d97706); }
+    .info-btn { background: linear-gradient(135deg,#38bdf8,#2563eb); }
     #shop {
-      position: fixed; bottom: 12px; left: 12px; z-index: 40; width: min(320px, 94vw);
-      max-height: 34vh; overflow: auto; padding: 12px; border-radius: 14px;
+      position: fixed; bottom: 12px; left: 12px; z-index: 40; width: min(300px, 90vw);
+      max-height: 30vh; overflow: auto; padding: 12px; border-radius: 14px;
       background: rgba(15,23,42,.92); border: 1px solid rgba(251,191,36,.4);
     }
     #shop h3 { font-size: 13px; color: #fde68a; margin-bottom: 8px; }
@@ -54,14 +74,14 @@
     #shop .price { color: #fbbf24; white-space: nowrap; }
     #slots {
       position: fixed; bottom: 12px; right: 12px; z-index: 40; width: min(180px, 36vw);
-      padding: 10px; border-radius: 14px; background: rgba(10,30,18,.9); border: 1px solid #4ade80;
+      max-height: 30vh; overflow: auto; padding: 10px; border-radius: 14px; background: rgba(10,30,18,.9); border: 1px solid #4ade80;
       font: 700 11px/1.4 system-ui;
     }
     #slots h3 { color: #86efac; font-size: 12px; margin-bottom: 6px; }
     #tip {
-      position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 30;
-      padding: 7px 12px; border-radius: 999px; background: rgba(0,0,0,.65);
-      font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,.2);
+      position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 30;
+      padding: 6px 12px; border-radius: 999px; background: rgba(0,0,0,.65);
+      font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,.2); max-width: 92vw; text-align: center;
     }
     #pad {
       position: fixed; bottom: 18px; left: 14px; z-index: 45; display: none;
@@ -82,34 +102,48 @@
     @media (pointer: coarse) {
       #pad, #act-btns { display: flex; }
       #tip { display: none; }
-      #shop { max-height: 26vh; }
+      #shop { max-height: 22vh; }
+      #rarityBox { top: 56px; max-height: 34vh; }
+      #incomeBar { bottom: 52px; font-size: 12px; }
     }
   </style>
 </head>
 <body>
   <div id="hud">
-    <b>🥚 Укради яйцо · как оригинал</b><br />
+    <b>🥚 Укради яйцо · оригинал v7</b><br />
     🪙 <span class="big" id="coins">120</span><br />
-    +<span id="income">0</span>/сек · ⚡ <span id="speed">1</span><br />
-    В руках: <span id="carry">пусто</span><br />
+    ⚡ скорость <span id="speed">1</span> · руки: <span id="carry">пусто</span><br />
     <span style="opacity:.85;font-size:11px">Слоты: <span id="slotCap">2</span> · Дорожка: <span id="treadStat">закрыта</span></span>
   </div>
   <div class="top-bar">
     <a class="back" href="../friends.html?v=8&stay=1&code=amal-star-friends">← Эксклюзив</a>
-    <a class="back" href="./classic.html?v=1" style="background:linear-gradient(135deg,#64748b,#334155)">2D</a>
+    <button type="button" class="info-btn" id="btnTable">📋 Таблица</button>
     <button type="button" class="run-btn" id="btnRun">🏃 Бег</button>
   </div>
+  <div id="rarityBox">
+    <h3>Редкости · доход · скорость для кражи</h3>
+    <div id="rarityTable"></div>
+    <p style="margin-top:8px;opacity:.85;font-size:10px;line-height:1.4">
+      Фишки как в оригинале: белые яйца часто · редкие реже и дороже · чем круче яйцо — тем больше $/с ·
+      вылупление дольше у редких · боты несут яйца по дороге · E украсть/поставить · охранник отбрасывает ·
+      дорожка и слоты за монеты · с яйцом бежишь медленнее
+    </p>
+  </div>
   <div id="shop">
-    <h3>Прокачка (как в оригинале)</h3>
+    <h3>Прокачка</h3>
     <div id="upgList"></div>
     <h3 style="margin-top:10px">Магазин яиц</h3>
     <div id="shopList"></div>
   </div>
   <div id="slots"><h3>Твой вольер</h3><div id="slotList"></div></div>
+  <div id="incomeBar">
+    Доход базы сейчас<br />
+    <span class="cash">+<span id="income">0</span> 🪙/сек</span>
+  </div>
   <div id="prompt"></div>
   <div id="toast"></div>
   <div id="alarm"></div>
-  <div id="tip">WASD · E украсть/поставить · яйца вылупляются · поймали = отброс · дорожку купи · ПКМ камера</div>
+  <div id="tip">WASD · E · боты несут яйца по дороге · Таблица = редкости и скорость</div>
   <div id="pad"><div id="pad-knob"></div></div>
   <div id="act-btns">
     <button type="button" id="btn-e">E</button>
@@ -119,6 +153,6 @@
   <script type="importmap">
   { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
   </script>
-  <script type="module" src="./main3d.js?v=6"></script>
+  <script type="module" src="./main3d.js?v=7"></script>
 </body>
 </html>

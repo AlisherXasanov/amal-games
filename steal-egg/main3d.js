@@ -1,5 +1,5 @@
 /**
- * Укради яйцо · 3D v6 — как оригинал: вылупление, отброс, дорожка/вольер за монеты.
+ * Укради яйцо · 3D v7 — ближе к оригиналу: редкости, таблица, боты-курьеры, доход внизу.
  */
 import * as THREE from "three";
 import { createOrbitCam } from "../shared/amal-3d/orbit.js";
@@ -7,40 +7,55 @@ import { createOrbitCam } from "../shared/amal-3d/orbit.js";
 window.__AMAL_NO_WORLD__ = true;
 
 const EGG_DEFS = [
-  { id: "basic", name: "Обычное", price: 30, rate: 1, color: 0xf8fafc, geo: "egg", emissive: 0, scale: 1 },
-  { id: "gold", name: "Золотое", price: 80, rate: 4, color: 0xfbbf24, geo: "egg", emissive: 0.35, scale: 1.08 },
-  { id: "slime", name: "Слайм", price: 140, rate: 8, color: 0x84cc16, geo: "blob", emissive: 0.2, scale: 1.1 },
-  { id: "rare", name: "Редкое", price: 220, rate: 12, color: 0xa855f7, geo: "crystal", emissive: 0.4, scale: 1 },
-  { id: "crystal", name: "Кристалл", price: 350, rate: 22, color: 0x38bdf8, geo: "diamond", emissive: 0.45, scale: 1.05 },
-  { id: "epic", name: "Эпик", price: 480, rate: 28, color: 0x6366f1, geo: "ring", emissive: 0.5, scale: 1 },
-  { id: "ghost", name: "Призрак", price: 700, rate: 45, color: 0xe2e8f0, geo: "ghost", emissive: 0.15, scale: 1 },
-  { id: "lava", name: "Лава", price: 950, rate: 58, color: 0xf97316, geo: "lava", emissive: 0.7, scale: 1.1 },
-  { id: "dragon", name: "Дракон", price: 1300, rate: 70, color: 0xef4444, geo: "dragon", emissive: 0.55, scale: 1.15 },
-  { id: "void", name: "Пустота", price: 1800, rate: 110, color: 0x312e81, geo: "void", emissive: 0.6, scale: 1.1 },
-  { id: "star", name: "Звезда", price: 2500, rate: 160, color: 0xfde68a, geo: "star", emissive: 0.65, scale: 1.2 },
-  { id: "final", name: "ФИНАЛ", price: 4000, rate: 200, color: 0xfde68a, geo: "crown", emissive: 0.8, scale: 1.25 },
+  { id: "basic", name: "Белое", rarity: "Обычное", price: 25, rate: 1, weight: 40, hatchMul: 0.7, recSpeed: 1, color: 0xf8fafc, geo: "egg", emissive: 0, scale: 1 },
+  { id: "gold", name: "Золотое", rarity: "Необычное", price: 70, rate: 3, weight: 18, hatchMul: 0.9, recSpeed: 3, color: 0xfbbf24, geo: "egg", emissive: 0.35, scale: 1.08 },
+  { id: "slime", name: "Слайм", rarity: "Необычное", price: 120, rate: 6, weight: 12, hatchMul: 1, recSpeed: 6, color: 0x84cc16, geo: "blob", emissive: 0.2, scale: 1.1 },
+  { id: "rare", name: "Редкое", rarity: "Редкое", price: 200, rate: 12, weight: 8, hatchMul: 1.2, recSpeed: 12, color: 0xa855f7, geo: "crystal", emissive: 0.4, scale: 1 },
+  { id: "crystal", name: "Кристалл", rarity: "Редкое", price: 320, rate: 20, weight: 6, hatchMul: 1.35, recSpeed: 20, color: 0x38bdf8, geo: "diamond", emissive: 0.45, scale: 1.05 },
+  { id: "epic", name: "Эпик", rarity: "Эпик", price: 450, rate: 28, weight: 4, hatchMul: 1.5, recSpeed: 35, color: 0x6366f1, geo: "ring", emissive: 0.5, scale: 1 },
+  { id: "ghost", name: "Призрак", rarity: "Эпик", price: 650, rate: 42, weight: 3.5, hatchMul: 1.6, recSpeed: 50, color: 0xe2e8f0, geo: "ghost", emissive: 0.15, scale: 1 },
+  { id: "lava", name: "Лава", rarity: "Легенда", price: 900, rate: 58, weight: 2.5, hatchMul: 1.8, recSpeed: 80, color: 0xf97316, geo: "lava", emissive: 0.7, scale: 1.1 },
+  { id: "dragon", name: "Дракон", rarity: "Легенда", price: 1250, rate: 75, weight: 2, hatchMul: 2, recSpeed: 110, color: 0xef4444, geo: "dragon", emissive: 0.55, scale: 1.15 },
+  { id: "void", name: "Пустота", rarity: "Миф", price: 1800, rate: 110, weight: 1.2, hatchMul: 2.3, recSpeed: 160, color: 0x312e81, geo: "void", emissive: 0.6, scale: 1.1 },
+  { id: "star", name: "Звезда", rarity: "Миф", price: 2500, rate: 160, weight: 0.8, hatchMul: 2.5, recSpeed: 220, color: 0xfde68a, geo: "star", emissive: 0.65, scale: 1.2 },
+  { id: "final", name: "ФИНАЛ", rarity: "Секрет", price: 4000, rate: 220, weight: 0.35, hatchMul: 3, recSpeed: 300, color: 0xfde68a, geo: "crown", emissive: 0.8, scale: 1.25 },
 ];
 
 const ZONES = [
-  { id: "mine", name: "ТВОЯ", x: -32, z: 0, r: 7, color: 0x22c55e, pool: [], slots: 6, boss: false },
-  { id: "z1", name: "НУБ", x: -18, z: 0, r: 6, color: 0x64748b, pool: ["basic", "basic", "gold"], boss: true },
-  { id: "z2", name: "СОСЕД", x: -4, z: 0, r: 6, color: 0xef4444, pool: ["basic", "gold", "slime", "rare"], boss: true },
-  { id: "z3", name: "КАТЯ", x: 10, z: 0, r: 6, color: 0xf97316, pool: ["gold", "slime", "rare", "crystal"], boss: true },
-  { id: "z4", name: "РИК", x: 24, z: 0, r: 6, color: 0x3b82f6, pool: ["rare", "crystal", "epic", "ghost"], boss: true },
-  { id: "z5", name: "ЕРОКС", x: 38, z: 0, r: 6.5, color: 0xa855f7, pool: ["epic", "ghost", "lava", "dragon"], boss: true },
-  { id: "z6", name: "ДРАКОН", x: 52, z: 0, r: 6.5, color: 0xdc2626, pool: ["lava", "dragon", "void", "star"], boss: true },
-  { id: "z7", name: "ФИНАЛ", x: 66, z: 0, r: 7, color: 0xeab308, pool: ["dragon", "void", "star", "final"], boss: true },
+  { id: "mine", name: "ТВОЯ", x: -32, z: 0, r: 7, color: 0x22c55e, pool: [], slots: 6, boss: false, recSpeed: 0 },
+  { id: "z1", name: "НУБ", x: -18, z: 0, r: 6, color: 0x64748b, pool: ["basic", "basic", "basic", "basic", "gold"], boss: true, recSpeed: 1 },
+  { id: "z2", name: "СОСЕД", x: -4, z: 0, r: 6, color: 0xef4444, pool: ["basic", "basic", "gold", "gold", "slime"], boss: true, recSpeed: 5 },
+  { id: "z3", name: "КАТЯ", x: 10, z: 0, r: 6, color: 0xf97316, pool: ["basic", "gold", "slime", "rare", "rare"], boss: true, recSpeed: 15 },
+  { id: "z4", name: "РИК", x: 24, z: 0, r: 6, color: 0x3b82f6, pool: ["gold", "rare", "crystal", "epic"], boss: true, recSpeed: 35 },
+  { id: "z5", name: "ЕРОКС", x: 38, z: 0, r: 6.5, color: 0xa855f7, pool: ["rare", "epic", "ghost", "lava"], boss: true, recSpeed: 70 },
+  { id: "z6", name: "ДРАКОН", x: 52, z: 0, r: 6.5, color: 0xdc2626, pool: ["lava", "dragon", "void", "star"], boss: true, recSpeed: 140 },
+  { id: "z7", name: "ФИНАЛ", x: 66, z: 0, r: 7, color: 0xeab308, pool: ["dragon", "void", "star", "final"], boss: true, recSpeed: 250 },
 ];
 
-const SAVE_KEY = "amal-steal-egg-3d-v6";
+const SAVE_KEY = "amal-steal-egg-3d-v7";
 let nextUid = 1;
 
 function eggDef(id) {
   return EGG_DEFS.find((e) => e.id === id) || EGG_DEFS[0];
 }
 function pickEgg(pool) {
-  const id = pool[Math.floor(Math.random() * pool.length)];
-  return Object.assign({}, eggDef(id));
+  let total = 0;
+  const items = pool.map((id) => {
+    const d = eggDef(id);
+    const w = d.weight || 1;
+    total += w;
+    return { d, w };
+  });
+  let r = Math.random() * total;
+  for (const it of items) {
+    r -= it.w;
+    if (r <= 0) return Object.assign({}, it.d);
+  }
+  return Object.assign({}, items[0].d);
+}
+function pickCourierEgg() {
+  // чаще белые / обычные
+  return pickEgg(["basic", "basic", "basic", "basic", "basic", "gold", "gold", "slime", "rare", "crystal", "epic", "lava"]);
 }
 
 const scene = new THREE.Scene();
@@ -202,7 +217,8 @@ function makePetMesh(def, scaleMul) {
 }
 
 function hatchSeconds(def) {
-  return Math.max(8, 28 - Math.min(18, (def.rate || 1) * 0.12));
+  const base = Math.max(8, 22 - Math.min(12, (def.rate || 1) * 0.08));
+  return base * (def.hatchMul || 1);
 }
 
 function makeHumanoid(shirt, pants, helm) {
@@ -386,12 +402,97 @@ const shopList = document.getElementById("shopList");
 const upgList = document.getElementById("upgList");
 const slotCapEl = document.getElementById("slotCap");
 const treadStatEl = document.getElementById("treadStat");
+const rarityBox = document.getElementById("rarityBox");
+const rarityTable = document.getElementById("rarityTable");
 
 const UPGRADES = {
   slot: [0, 0, 80, 180, 350, 600, 1000],
   treadUnlock: 150,
   treadLv: [0, 0, 200, 450, 900, 1600],
 };
+
+const couriers = [];
+let courierCd = 2.5;
+
+function renderRarityTable() {
+  if (!rarityTable) return;
+  let html =
+    "<table><tr><th>Яйцо</th><th>Редкость</th><th>$/с</th><th>Вылуп</th><th>⚡ советую</th></tr>";
+  EGG_DEFS.forEach((e) => {
+    html +=
+      "<tr><td>" +
+      e.name +
+      "</td><td>" +
+      e.rarity +
+      "</td><td>+" +
+      e.rate +
+      "</td><td>" +
+      Math.round(hatchSeconds(e)) +
+      "с</td><td>" +
+      e.recSpeed +
+      "+</td></tr>";
+  });
+  html += "</table><p style='margin-top:8px;color:#94a3b8'>Зоны:</p><table><tr><th>База</th><th>⚡ для кражи</th></tr>";
+  ZONES.filter((z) => z.boss).forEach((z) => {
+    html += "<tr><td>" + z.name + "</td><td>" + z.recSpeed + "+</td></tr>";
+  });
+  html += "</table>";
+  rarityTable.innerHTML = html;
+}
+
+function spawnCourier() {
+  if (couriers.length >= 5) return;
+  const def = pickCourierEgg();
+  const body = makeHumanoid(0xf8fafc, 0x334155, 0x94a3b8);
+  const eggM = makeEggMesh(def, 0.72);
+  eggM.position.set(0, 1.85, 0);
+  body.add(eggM);
+  const laneZ = Math.random() < 0.5 ? 2.8 : -2.8;
+  body.position.set(74, 0, laneZ);
+  scene.add(body);
+  couriers.push({
+    mesh: body,
+    eggMesh: eggM,
+    def,
+    z: laneZ,
+    speed: 3.2 + Math.random() * 2.4,
+    claimed: false,
+  });
+}
+
+function nearestCourier() {
+  const px = playerMesh.position.x;
+  const pz = playerMesh.position.z;
+  let best = null;
+  let bestD = 2.3;
+  couriers.forEach((c) => {
+    if (c.claimed) return;
+    const d = dist2(px, pz, c.mesh.position.x, c.mesh.position.z);
+    if (d < bestD) {
+      bestD = d;
+      best = c;
+    }
+  });
+  return best;
+}
+
+function claimCourier(c) {
+  if (!c || c.claimed || carry) return false;
+  c.claimed = true;
+  carry = Object.assign({}, c.def);
+  carryFromUid = 0;
+  carryFromZone = null;
+  if (carryMesh) scene.remove(carryMesh);
+  carryMesh = makeEggMesh(carry, 0.85);
+  scene.add(carryMesh);
+  if (c.eggMesh) {
+    c.mesh.remove(c.eggMesh);
+    c.eggMesh = null;
+  }
+  toast("🚚 Забрал у бота «" + carry.name + "» (" + carry.rarity + ")!");
+  syncUI();
+  return true;
+}
 
 function formatNum(n) {
   if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
@@ -483,6 +584,7 @@ function saveGame() {
 function loadGame() {
   try {
     let raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) raw = localStorage.getItem("amal-steal-egg-3d-v6");
     if (!raw) raw = localStorage.getItem("amal-steal-egg-3d-v5");
     const d = JSON.parse(raw || "null");
     if (!d) return;
@@ -543,9 +645,17 @@ function updatePrompt() {
     t = treadmillRun
       ? "🏃 БЕЖИМ! +" + formatNum((8 + speedStat * 0.02) * treadLevel) + " ⚡/с"
       : "👟 Жми W на дорожке!";
-  } else if (carry && onMyBase() && freeMySlot()) t = "E — в вольер (потом вылупится)";
+  }   else if (carry && onMyBase() && freeMySlot()) t = "E — в вольер (потом вылупится)";
   else if (carry && onMyBase() && !freeMySlot()) t = "Вольер полон / слоты закрыты";
-  else if (!carry && nearestSteal()) t = "E — украсть «" + nearestSteal().def.name + "»";
+  else if (!carry && nearestCourier()) {
+    const c = nearestCourier();
+    t = "E — забрать у бота «" + c.def.name + "» · +" + c.def.rate + "/с";
+  } else if (!carry && nearestSteal()) {
+    const w = nearestSteal();
+    const need = w.zone.recSpeed || 1;
+    const ok = speedStat >= need ? "✓" : "мало ⚡";
+    t = "E — украсть «" + w.def.name + "» · нужно ⚡" + need + " (" + ok + ")";
+  }
   promptEl.style.display = t ? "block" : "none";
   promptEl.textContent = t;
 }
@@ -774,6 +884,11 @@ function doAction() {
     return;
   }
   if (!carry) {
+    const c = nearestCourier();
+    if (c) {
+      claimCourier(c);
+      return;
+    }
     const w = nearestSteal();
     if (w) stealEgg(w);
   }
@@ -816,6 +931,10 @@ window.addEventListener("keyup", (e) => {
 document.getElementById("btnRun").onclick = () => {
   forceRun = !forceRun;
   document.getElementById("btnRun").textContent = forceRun ? "🏃 Бег ВКЛ" : "🏃 Бег";
+};
+document.getElementById("btnTable").onclick = () => {
+  rarityBox.classList.toggle("open");
+  if (rarityBox.classList.contains("open")) renderRarityTable();
 };
 document.getElementById("btn-e").onclick = () => doAction();
 document.getElementById("btn-jump").addEventListener("pointerdown", (e) => {
@@ -878,10 +997,11 @@ function getInput() {
 
 renderShop();
 renderUpgrades();
+renderRarityTable();
 loadGame();
 syncTreadVisual();
 syncUI();
-toast("Как в оригинале: укради → вылупи → качай вольер и дорожку!");
+toast("v7: белые чаще · боты несут яйца · таблица редкостей · доход внизу");
 
 let last = performance.now();
 function frame(now) {
@@ -1000,6 +1120,41 @@ function frame(now) {
       b.mesh.position.z += (b.homeZ - b.mesh.position.z) * dt * 1.8;
     }
   });
+
+  courierCd -= dt;
+  if (courierCd <= 0) {
+    spawnCourier();
+    courierCd = 3.5 + Math.random() * 3;
+  }
+  for (let i = couriers.length - 1; i >= 0; i--) {
+    const c = couriers[i];
+    c.mesh.position.x -= c.speed * dt;
+    c.mesh.rotation.y = -Math.PI / 2;
+    if (c.eggMesh) c.eggMesh.rotation.y += dt * 2;
+    // бот «дарит» яйцо пустому слоту чужой базы
+    if (!c.claimed) {
+      ZONES.forEach((z, zi) => {
+        if (zi === 0 || c.claimed) return;
+        if (Math.abs(c.mesh.position.x - z.x) < 1.2) {
+          const empty = worldEggs.find((w) => w.zone.id === z.id && (w.taken || w.respawn > 0));
+          // refill a taken pedestal visually by resetting soon
+          const dead = worldEggs.find((w) => w.zone.id === z.id && w.taken && w.respawn > 2);
+          if (dead && Math.random() < 0.35) {
+            dead.respawn = Math.min(dead.respawn, 1.2);
+            c.claimed = true;
+            if (c.eggMesh) {
+              c.mesh.remove(c.eggMesh);
+              c.eggMesh = null;
+            }
+          }
+        }
+      });
+    }
+    if (c.mesh.position.x < -42) {
+      scene.remove(c.mesh);
+      couriers.splice(i, 1);
+    }
+  }
 
   incomeAcc += dt;
   if (incomeAcc >= 1) {
