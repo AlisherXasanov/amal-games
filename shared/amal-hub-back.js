@@ -15,7 +15,10 @@
 
   function detectFromUrl() {
     if (/[?&]from=phone/.test(location.search)) return "phone";
-    if (/[?&]from=friends/.test(location.search)) return "friends";
+    if (/[?&]from=friends/.test(location.search)) {
+      try { localStorage.setItem("amal-friends-access-v1", "1"); } catch (_) {}
+      return "friends";
+    }
     if (/[?&]from=tablet/.test(location.search)) return "tablet";
     if (/[?&]from=desktop/.test(location.search)) return "desktop";
     try {

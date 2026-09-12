@@ -13,7 +13,7 @@
   var JUMP = 720;
   var JUMP2 = 640;
   var SPEED = 270;
-  var SAVE = "amal-save-her-v4";
+  var SAVE = "amal-save-her-v6";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -72,8 +72,8 @@
     };
   }
 
-  /* ——— Комикс на спрайтах Kenney (жёлтый герой + розовая жена) ——— */
-  var COMIC = [
+  /* ——— Комикс ——— */
+  var INTRO_COMIC = [
     { title: "Спокойная жизнь", text: "Герой жил тихо со своей женой. Дом, сад, смех — всё было хорошо." },
     { title: "Утро", text: "Они пили чай. Он обещал: «Сегодня только мы вдвоём»." },
     { title: "Тень", text: "Вдруг — вспышка магии. Злодеи ворвались и схватили её." },
@@ -81,6 +81,13 @@
     { title: "Клятва", text: "Он взял монеты как оружие и отправился в путь. Спасти её — любой ценой." },
     { title: "Обучение", text: "Сначала — школа боя. Потом луга, магия, война… и клетка с ней." },
   ];
+  var END_COMIC = [
+    { title: "Свобода", text: "Клетка падает. Она бежит к нему — малиновое платье, цветок в волосах. Не похожа на героя — и это она." },
+    { title: "Домой", text: "Вместе снова. Он в жёлтом, она в платье. Можно снова смотреть начало и финал на карте." },
+    { title: "Карта открыта", text: "Все пройденные уровни открыты. Заходи снова когда захочешь!" },
+  ];
+  var comicPanels = INTRO_COMIC;
+  var comicMode = "intro"; // intro | ending
   var comicI = 0;
 
   /** Нарисовать кадр персонажа Kenney (центр по низу ног). */
@@ -138,6 +145,9 @@
       c.arc(x + size * 0.18 + Math.cos(a) * size * 0.07, y - size * 0.78 + Math.sin(a) * size * 0.07, size * 0.035, 0, Math.PI * 2);
       c.fill();
     }
+    // подмигивание — один глаз закрыт (отличие от героя)
+    c.fillStyle = "#9d174d";
+    c.fillRect(x - size * 0.12, y - size * 0.72, size * 0.1, size * 0.035);
     c.restore();
   }
 
@@ -274,14 +284,35 @@
     cctx.fillRect(12, 12, 280, 40);
     cctx.fillStyle = "#fff";
     cctx.font = "900 22px system-ui";
-    cctx.fillText(COMIC[i].title, 24, 40);
+    cctx.fillText(comicPanels[i].title, 24, 40);
   }
 
   function showComic() {
     document.getElementById("comic").classList.remove("hide");
-    document.getElementById("comic-text").textContent = COMIC[comicI].text;
+    document.getElementById("comic-text").textContent = comicPanels[comicI].text;
     drawComicPanel(comicI);
-    document.getElementById("comic-next").textContent = comicI >= COMIC.length - 1 ? "Начать обучение ▶" : "Далее ▶";
+    var last = comicI >= comicPanels.length - 1;
+    if (comicMode === "ending") {
+      document.getElementById("comic-next").textContent = last ? "На карту ▶" : "Далее ▶";
+    } else {
+      document.getElementById("comic-next").textContent = last ? "Играть ▶" : "Далее ▶";
+    }
+  }
+
+  function playIntroComic(fromMap) {
+    comicMode = fromMap ? "intro-replay" : "intro";
+    comicPanels = INTRO_COMIC;
+    comicI = 0;
+    document.getElementById("map").classList.remove("open");
+    showComic();
+  }
+
+  function playEndingComic(fromMap) {
+    comicMode = fromMap ? "ending-replay" : "ending";
+    comicPanels = END_COMIC;
+    comicI = 0;
+    document.getElementById("map").classList.remove("open");
+    showComic();
   }
 
   /* ——— Уровни ———
@@ -299,11 +330,91 @@
     { id: "dragon", name: "Дракончик", ico: "🐉", theme: "магия", ability: "burn", desc: "редкий ожог без откидывания" },
   ];
   var WEAPONS = [
-    { id: "gloves", name: "Перчатки", dmg: 1, throwBonus: 0 },
-    { id: "bat", name: "Бита", dmg: 2, throwBonus: 0 },
-    { id: "coinGun", name: "Монетомёт", dmg: 1, throwBonus: 1 },
-    { id: "magic", name: "Жезл магии", dmg: 2, throwBonus: 2 },
+    { id: "gloves", name: "Перчатки", dmg: 1, throwBonus: 0, reach: 40 },
+    { id: "bat", name: "Бита", dmg: 2, throwBonus: 0, reach: 50 },
+    { id: "coinGun", name: "Монетомёт", dmg: 1, throwBonus: 2, reach: 36 },
+    { id: "magic", name: "Жезл магии", dmg: 2, throwBonus: 2, reach: 54 },
+    { id: "hammer", name: "Молот", dmg: 3, throwBonus: 0, reach: 46 },
+    { id: "fan", name: "Веер ветра", dmg: 1, throwBonus: 1, reach: 64 },
+    { id: "spike", name: "Шипастая перчатка", dmg: 2, throwBonus: 1, reach: 44 },
   ];
+
+  // Уникальные боссы (не одна и та же слизь)
+  var BOSS_DEFS = {
+    slimeKing: {
+      title: "Слайм-король",
+      sprA: "slime_spike_walk_a",
+      sprB: "slime_spike_walk_b",
+      hp: 12,
+      weak: "stomp",
+      weakLabel: "прыжок на голову",
+      ai: "charge",
+      w: 80,
+      h: 80,
+      color: "#86efac",
+    },
+    fireMage: {
+      title: "Огненный маг",
+      sprA: "slime_fire_walk_a",
+      sprB: "slime_fire_walk_b",
+      hp: 15,
+      weak: "coin",
+      weakLabel: "монеты (C)",
+      ai: "hop",
+      w: 78,
+      h: 78,
+      color: "#fb923c",
+    },
+    captain: {
+      title: "Капитан-мышь",
+      sprA: "mouse_walk_a",
+      sprB: "mouse_walk_b",
+      hp: 17,
+      weak: "combo",
+      weakLabel: "комбо-удар ↓↓",
+      ai: "charge",
+      w: 72,
+      h: 64,
+      color: "#a8a29e",
+    },
+    sandWorm: {
+      title: "Песчаный червь",
+      sprA: "worm_ring_move_a",
+      sprB: "worm_ring_move_b",
+      hp: 19,
+      weak: "hit",
+      weakLabel: "обычный удар ↓",
+      ai: "dash",
+      w: 88,
+      h: 56,
+      color: "#fbbf24",
+    },
+    iceSnail: {
+      title: "Ледяная улитка",
+      sprA: "snail_walk_a",
+      sprB: "snail_walk_b",
+      shell: "snail_shell",
+      hp: 22,
+      weak: "coin",
+      weakLabel: "монеты (C)",
+      ai: "shell",
+      w: 76,
+      h: 68,
+      color: "#7dd3fc",
+    },
+    jailFrog: {
+      title: "Страж-жаба",
+      sprA: "frog_idle",
+      sprB: "frog_jump",
+      hp: 26,
+      weak: "combo",
+      weakLabel: "комбо-удар ↓↓",
+      ai: "hop",
+      w: 84,
+      h: 84,
+      color: "#4ade80",
+    },
+  };
 
   function mkMap(theme, rowMobs, extras) {
     extras = extras || {};
@@ -315,6 +426,11 @@
       tutorial: !!extras.tutorial,
       story: extras.story || null,
       weaponDrop: extras.weaponDrop || null,
+      bossId: extras.bossId || null,
+      // ощущение уровня: скорость героя, число прыжков, скорость врагов
+      speedMul: extras.speedMul != null ? extras.speedMul : 1,
+      jumps: extras.jumps != null ? extras.jumps : 2,
+      enemyMul: extras.enemyMul != null ? extras.enemyMul : 1,
       map: [
         "..........................................",
         extras.row2 || ".............C.............C..............",
@@ -335,34 +451,145 @@
     mkMap("grass", "P..A.................S...............F....", {
       name: "Обучение",
       tutorial: true,
+      speedMul: 1,
+      jumps: 2,
+      enemyMul: 0.85,
+      parkourWalls: [10, 16],
       row2: "..............C...........................",
       row3: "...........====...........................",
       row5: ".....X....K...............................",
       row6: "..........................................",
       hints: [
         { at: 1, text: "←→ или A D — ходить" },
-        { at: 6, text: "↑ или W — прыжок (можно два раза)" },
-        { at: 12, text: "↓ или S — удар · жми дважды = КОМБО" },
-        { at: 18, text: "C или F — выстрел монетой · ломай X · бери кейсы" },
+        { at: 6, text: "↑ прыжок · у стены ↑ = стенной прыжок" },
+        { at: 10, text: "Паркур: прыгай от стен по бокам" },
+        { at: 12, text: "Рядом с союзником ↑ — прыжок от него" },
+        { at: 18, text: "↓ удар · C монета · ломай X · кейсы" },
       ],
     }),
-    mkMap("grass", "P.....S.....G.....S.....B............F....", { name: "Луга 1" }),
-    mkMap("grass", "P..S..G..S..B..S..G.................F....", { name: "Луга 2", row5: "....====..X..K..====..X..====............." }),
-    mkMap("grass", "P........S......O......S.............F....", { name: "Босс · Слайм-король", weaponDrop: "bat" }),
-    mkMap("purple", "P....G....S....G....B....G...........F....", { name: "Магия 1", magic: true, story: "Глава: портал магии. Жена была здесь…" }),
-    mkMap("purple", "P..G..B..G..S..G..B..................F....", { name: "Магия 2", magic: true, row5: "..X....K....X....K....X..................." }),
-    mkMap("purple", "P.....G......O......G....B...........F....", { name: "Босс · Маг-гель", magic: true, weaponDrop: "coinGun" }),
-    mkMap("stone", "P..A...S.....S.....G.....S...........F....", { name: "Войнушка 1", war: true, story: "Глава: поле боя. Союзник идёт с тобой." }),
-    mkMap("stone", "P..S..S..G..S..B..S..G...............F....", { name: "Войнушка 2", war: true, row5: ".......X....K.............X..............." }),
-    mkMap("stone", "P..A........O........S...............F....", { name: "Босс · Капитан", war: true, weaponDrop: "magic" }),
-    mkMap("sand", "P.....G.....S.....G.....B............F....", { name: "Пустыня 1", story: "Глава: пески. Следы жены ведут дальше." }),
-    mkMap("sand", "P..G..S..G..S..B..G..S...............F....", { name: "Пустыня 2", row5: ".....X.............X.............X........", row3: "........====...====...====................" }),
-    mkMap("sand", "P.....S......O......G....S...........F....", { name: "Босс · Пустынный" }),
-    mkMap("snow", "P..B..S..G..B..S..G..................F....", { name: "Снега", story: "Глава: холод. Почти у клетки…" }),
-    mkMap("snow", "P..A..S..G......O......S.............F....", { name: "Босс · Лёд" }),
+    mkMap("grass", "P.....S.....G.....S.....B............F....", {
+      name: "Луга 1",
+      speedMul: 1.05,
+      jumps: 2,
+      enemyMul: 1,
+      parkourWalls: [14, 22],
+    }),
+    mkMap("grass", "P..S..G..S..B..S..G.................F....", {
+      name: "Луга 2",
+      speedMul: 1.1,
+      jumps: 2,
+      enemyMul: 1.05,
+      parkourWalls: [8, 18, 28],
+      row5: "....====..X..K..====..X..====.............",
+    }),
+    mkMap("grass", "P........S......O......S.............F....", {
+      name: "Босс · Слайм-король",
+      bossId: "slimeKing",
+      weaponDrop: "bat",
+      speedMul: 1.1,
+      jumps: 2,
+      enemyMul: 1.1,
+    }),
+    mkMap("purple", "P....G....S....G....B....G...........F....", {
+      name: "Магия 1",
+      magic: true,
+      story: "Глава: портал магии. Жена была здесь…",
+      speedMul: 1.15,
+      jumps: 3,
+      enemyMul: 1.1,
+      parkourWalls: [12, 20, 30],
+    }),
+    mkMap("purple", "P..G..B..G..S..G..B..................F....", {
+      name: "Магия 2",
+      magic: true,
+      speedMul: 1.18,
+      jumps: 3,
+      enemyMul: 1.15,
+      parkourWalls: [9, 17, 25],
+      row5: "..X....K....X....K....X...................",
+    }),
+    mkMap("purple", "P.....G......O......G....B...........F....", {
+      name: "Босс · Огненный маг",
+      magic: true,
+      bossId: "fireMage",
+      weaponDrop: "coinGun",
+      speedMul: 1.2,
+      jumps: 3,
+      enemyMul: 1.2,
+    }),
+    mkMap("stone", "P..A...S.....S.....G.....S...........F....", {
+      name: "Войнушка 1",
+      war: true,
+      story: "Глава: поле боя. Союзник идёт с тобой.",
+      speedMul: 1.22,
+      jumps: 3,
+      enemyMul: 1.2,
+    }),
+    mkMap("stone", "P..S..S..G..S..B..S..G...............F....", {
+      name: "Войнушка 2",
+      war: true,
+      speedMul: 1.25,
+      jumps: 3,
+      enemyMul: 1.25,
+      row5: ".......X....K.............X...............",
+    }),
+    mkMap("stone", "P..A........O........S...............F....", {
+      name: "Босс · Капитан-мышь",
+      war: true,
+      bossId: "captain",
+      weaponDrop: "magic",
+      speedMul: 1.28,
+      jumps: 3,
+      enemyMul: 1.3,
+    }),
+    mkMap("sand", "P.....G.....S.....G.....B............F....", {
+      name: "Пустыня 1",
+      story: "Глава: пески. Следы жены ведут дальше.",
+      speedMul: 1.3,
+      jumps: 3,
+      enemyMul: 1.3,
+    }),
+    mkMap("sand", "P..G..S..G..S..B..G..S...............F....", {
+      name: "Пустыня 2",
+      speedMul: 1.32,
+      jumps: 3,
+      enemyMul: 1.35,
+      parkourWalls: [11, 19, 27, 33],
+      row5: ".....X.............X.............X........",
+      row3: "........====...====...====................",
+    }),
+    mkMap("sand", "P.....S......O......G....S...........F....", {
+      name: "Босс · Песчаный червь",
+      bossId: "sandWorm",
+      weaponDrop: "hammer",
+      speedMul: 1.35,
+      jumps: 3,
+      enemyMul: 1.4,
+    }),
+    mkMap("snow", "P..B..S..G..B..S..G..................F....", {
+      name: "Снега",
+      story: "Глава: холод. Почти у клетки…",
+      speedMul: 1.38,
+      jumps: 4,
+      enemyMul: 1.4,
+      parkourWalls: [10, 18, 26],
+    }),
+    mkMap("snow", "P..A..S..G......O......S.............F....", {
+      name: "Босс · Ледяная улитка",
+      bossId: "iceSnail",
+      weaponDrop: "fan",
+      speedMul: 1.4,
+      jumps: 4,
+      enemyMul: 1.45,
+    }),
     mkMap("stone", "P..A...S...........S.................W....", {
       name: "Спасение",
       story: "Финал: она в клетке. Победи стража и освободи!",
+      bossId: "jailFrog",
+      weaponDrop: "spike",
+      speedMul: 1.42,
+      jumps: 4,
+      enemyMul: 1.5,
       row5: ".......====.....O.....====................",
       row3: "..........====.........====...............",
     }),
@@ -379,9 +606,15 @@
     seenComic: false,
     maxReached: 0,
     beaten: false,
+    cleared: {},
   };
   try {
-    var d = JSON.parse(localStorage.getItem(SAVE) || "null");
+    var d = JSON.parse(
+      localStorage.getItem(SAVE) ||
+        localStorage.getItem("amal-save-her-v5") ||
+        localStorage.getItem("amal-save-her-v4") ||
+        "null"
+    );
     if (d) {
       if (d.level != null) state.level = Math.min(d.level, LEVELS.length - 1);
       state.coins = d.coins != null ? d.coins : state.coins;
@@ -389,8 +622,15 @@
       state.items = Array.isArray(d.items) ? d.items : [];
       state.weaponId = d.weaponId || "gloves";
       state.seenComic = !!d.seenComic;
-      state.maxReached = d.maxReached != null ? d.maxReached : state.level;
+      state.maxReached = Math.max(d.maxReached != null ? d.maxReached : 0, state.level);
       state.beaten = !!d.beaten;
+      state.cleared = d.cleared && typeof d.cleared === "object" ? d.cleared : {};
+      if (state.beaten) state.maxReached = LEVELS.length - 1;
+      // пройденные уровни всегда можно открыть снова
+      for (var mi = 0; mi <= state.maxReached; mi++) state.cleared[mi] = true;
+      if (state.beaten) {
+        for (var bi = 0; bi < LEVELS.length; bi++) state.cleared[bi] = true;
+      }
     }
   } catch (_) {}
 
@@ -407,6 +647,7 @@
   var projectiles = [];
   var particles = [];
   var downWas = false;
+  var jumpWas = false;
 
   function themeTiles(theme) {
     var p = theme || "grass";
@@ -444,6 +685,9 @@
       facing: 1,
       hurtT: 0,
       jumpsLeft: 2,
+      wallL: false,
+      wallR: false,
+      wallLock: 0,
       color: color,
       isP2: !!isP2,
       combo: 0,
@@ -487,35 +731,39 @@
           var ps = !left && right ? th.platL : left && !right ? th.platR : th.platM;
           solids.push({ x: px, y: py + 10, w: TILE, h: 22, sprite: ps, platform: true, drawY: py });
         } else if (ch === "C") coins.push({ x: px + 8, y: py + 8, w: 32, h: 32, taken: false });
+        else if (ch === "|")
+          solids.push({ x: px, y: py, w: TILE, h: TILE, sprite: th.fill, wall: true });
         else if (ch === "S")
-          mobs.push({ kind: "slime", x: px + 4, y: py, w: 40, h: 40, vx: -50, vy: 0, hp: 3, anim: 0, iframes: 0 });
+          mobs.push({ kind: "slime", x: px + 4, y: py, w: 40, h: 40, vx: -50 * (L.enemyMul || 1), vy: 0, hp: 3, anim: 0, iframes: 0 });
         else if (ch === "G")
-          mobs.push({ kind: "gel", x: px + 4, y: py, w: 42, h: 36, vx: -40, vy: 0, hp: 4, anim: 0, gel: true, iframes: 0 });
+          mobs.push({ kind: "gel", x: px + 4, y: py, w: 42, h: 36, vx: -40 * (L.enemyMul || 1), vy: 0, hp: 4, anim: 0, gel: true, iframes: 0 });
         else if (ch === "B")
           mobs.push({ kind: "bee", x: px, y: py, w: 40, h: 36, baseY: py, phase: Math.random() * 6, hp: 4, anim: 0, iframes: 0, noStomp: true });
         else if (ch === "O") {
-          var bossTypes = [
-            { weak: "stomp", weakLabel: "прыжок на голову", hp: 12 },
-            { weak: "coin", weakLabel: "монеты (C)", hp: 10 },
-            { weak: "combo", weakLabel: "комбо-удар ↓↓", hp: 14 },
-            { weak: "hit", weakLabel: "обычный удар ↓", hp: 11 },
-          ];
-          var bt = bossTypes[idx % bossTypes.length];
+          var bd = (L.bossId && BOSS_DEFS[L.bossId]) || BOSS_DEFS.slimeKing;
           mobs.push({
             kind: "boss",
+            bossId: L.bossId || "slimeKing",
+            title: bd.title,
+            sprA: bd.sprA,
+            sprB: bd.sprB,
+            shell: bd.shell || null,
+            ai: bd.ai || "charge",
             x: px,
-            y: py - 24,
-            w: 76,
-            h: 76,
-            vx: -55,
+            y: py - Math.max(0, bd.h - 52),
+            w: bd.w,
+            h: bd.h,
+            vx: -55 * (L.enemyMul || 1),
             vy: 0,
-            hp: bt.hp,
-            maxHp: bt.hp,
+            hp: bd.hp,
+            maxHp: bd.hp,
             anim: 0,
             iframes: 0,
-            weak: bt.weak,
-            weakLabel: bt.weakLabel,
+            weak: bd.weak,
+            weakLabel: bd.weakLabel,
             attackT: 0,
+            shelled: false,
+            color: bd.color,
           });
         }
         else if (ch === "X") breaks.push({ x: px, y: py, w: TILE, h: TILE, hp: 2 });
@@ -537,11 +785,28 @@
       ally = makePlayer(p1.x + 60, p1.y, "green", false);
       ally.isAlly = true;
     }
+    // стены по краям карты — для стенного прыжка
+    for (var wy = 0; wy < rows - 2; wy++) {
+      solids.push({ x: 0, y: wy * TILE, w: 18, h: TILE, sprite: th.left, wall: true });
+      solids.push({ x: cols * TILE - 18, y: wy * TILE, w: 18, h: TILE, sprite: th.right, wall: true });
+    }
+    // дополнительные паркур-столбы
+    if (L.parkourWalls) {
+      for (var pw = 0; pw < L.parkourWalls.length; pw++) {
+        var wx = L.parkourWalls[pw];
+        for (var pyw = 1; pyw < rows - 3; pyw++) {
+          solids.push({ x: wx * TILE, y: pyw * TILE, w: TILE, h: TILE, sprite: th.fill, wall: true });
+        }
+      }
+    }
     projectiles = [];
     particles = [];
 
     return {
       L: L,
+      speedMul: L.speedMul || 1,
+      maxJumps: L.jumps || 2,
+      enemyMul: L.enemyMul || 1,
       width: cols * TILE,
       height: rows * TILE,
       solids: solids,
@@ -612,6 +877,7 @@
           seenComic: state.seenComic,
           maxReached: state.maxReached,
           beaten: state.beaten,
+          cleared: state.cleared,
         })
       );
     } catch (_) {}
@@ -630,14 +896,19 @@
   }
 
   function hurt() {
-    if (!world || world.p1.hurtT > 0 || world.won) return;
+    if (!world || world.p1.hurtT > 0 || world.won || world.dead) return;
     world.p1.hurtT = 1.1;
     state.hp--;
     showHeartBreak();
     syncHud();
     if (state.hp <= 0) {
       world.dead = true;
-      toast("Проиграл · Рестарт", 3);
+      toast("Проиграл! Жми ↻ Рестарт или R", 99);
+      var br = document.getElementById("btn-restart");
+      if (br) {
+        br.style.transform = "scale(1.25)";
+        br.style.borderColor = "#fde68a";
+      }
     } else {
       world.p1.vy = -360;
       world.p1.vx = -world.p1.facing * 160;
@@ -664,7 +935,7 @@
     else p.combo = 1;
     p.comboT = 0.55;
     var wpn = currentWeapon();
-    var reach = p.combo >= 2 ? 56 : 40;
+    var reach = (wpn.reach || 40) + (p.combo >= 2 ? 16 : 0);
     var dmg = (p.combo >= 2 ? 2 : 1) * wpn.dmg;
     p.hitBox = {
       x: p.facing > 0 ? p.x + p.w : p.x - reach,
@@ -704,6 +975,10 @@
     if (mob.kind === "boss" && mob.weak && opts.hitType && opts.hitType !== mob.weak && opts.hitType !== "any") {
       toast("Мимо слабого места! Нужно: " + mob.weakLabel, 1.2);
       dmg = Math.max(1, Math.floor(dmg * 0.25));
+    }
+    if (mob.shelled && opts.hitType !== "coin") {
+      toast("Панцирь! Монеты (C)", 0.8);
+      dmg = Math.max(1, Math.floor(dmg * 0.15));
     }
     mob.hp -= dmg;
     mob.iframes = opts.fromPet ? 0.45 : 0.2;
@@ -787,39 +1062,40 @@
     if (boss) setTimeout(function () {
       toast("Босс · слабое место: " + boss.weakLabel, 2.8);
     }, L.story ? 2800 : 1000);
-    if (L.tutorial) hint("←→ ходить · ↑ прыжок · ↓ удар · C монета", 4);
+    if (L.tutorial) hint("↑ у стены = стенной прыжок · ↑ у союзника = прыжок от него", 4.5);
     save();
   }
 
   function showEnding() {
     state.beaten = true;
+    state.maxReached = LEVELS.length - 1;
+    for (var ci = 0; ci < LEVELS.length; ci++) state.cleared[ci] = true;
     save();
-    var endPanels = [
-      { title: "Свобода", text: "Клетка падает. Она бежит к нему — малиновое платье, цветок в волосах. Не похожа на героя — и это она." },
-      { title: "Домой", text: "Вместе снова. Он в жёлтом, она в платье. История жива — уровни открыты на карте." },
-      { title: "Карта открыта", text: "Выбирай пройденные уровни. У боссов разные слабые места!" },
-    ];
-    comicI = 0;
-    // временно подменяем панели финалом
-    window.__END_COMIC__ = true;
-    COMIC.splice(0, COMIC.length);
-    for (var i = 0; i < endPanels.length; i++) COMIC.push(endPanels[i]);
-    document.getElementById("comic").classList.remove("hide");
-    showComic();
-    document.getElementById("comic-next").textContent = "На карту ▶";
+    playEndingComic(false);
   }
 
   function nextLevel() {
-    var L = LEVELS[state.level];
+    var done = state.level;
+    state.cleared[done] = true;
+    state.maxReached = Math.max(state.maxReached, done, done + 1);
+    save();
+    var L = LEVELS[done];
     if (L && L.weaponDrop) grantWeapon(L.weaponDrop);
-    if (state.level >= LEVELS.length - 1) {
+    if (done >= LEVELS.length - 1) {
       world.won = true;
       showEnding();
       return;
     }
-    state.level++;
-    if (state.level > state.maxReached) state.maxReached = state.level;
-    startLevel(state.level);
+    startLevel(done + 1);
+  }
+
+  function isLevelUnlocked(i) {
+    if (state.beaten) return true;
+    if (i === 0) return true;
+    if (state.cleared[i] || state.cleared[String(i)]) return true;
+    if (i <= state.maxReached) return true;
+    if (state.cleared[i - 1] || state.cleared[String(i - 1)]) return true;
+    return false;
   }
 
   function openMap() {
@@ -827,30 +1103,62 @@
     grid.innerHTML = "";
     for (var i = 0; i < LEVELS.length; i++) {
       var b = document.createElement("button");
-      var unlocked = i <= state.maxReached || state.beaten;
-      b.textContent = (LEVELS[i].name.indexOf("Босс") >= 0 || LEVELS[i].name.indexOf("Спасение") >= 0 ? "★ " : "") + (i + 1);
-      b.title = LEVELS[i].name;
+      var unlocked = isLevelUnlocked(i);
+      var cleared = !!state.cleared[i];
+      b.textContent =
+        (LEVELS[i].name.indexOf("Босс") >= 0 || LEVELS[i].name.indexOf("Спасение") >= 0 ? "★" : "") +
+        (i + 1) +
+        (cleared ? " ✓" : unlocked ? "" : " 🔒");
+      b.title = LEVELS[i].name + (unlocked ? "" : " — ещё закрыт");
       if (LEVELS[i].name.indexOf("Босс") >= 0) b.className = "boss";
       b.disabled = !unlocked;
       (function (idx) {
         b.onclick = function () {
-          if (idx > state.maxReached && !state.beaten) return;
+          if (!isLevelUnlocked(idx)) return;
           document.getElementById("map").classList.remove("open");
           document.getElementById("comic").classList.add("hide");
           state.hp = Math.max(state.hp, 5);
+          world = null;
           startLevel(idx);
         };
       })(i);
       grid.appendChild(b);
     }
+    // кнопки комиксов
+    var row = document.createElement("div");
+    row.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px;width:100%";
+    var bi = document.createElement("button");
+    bi.textContent = "📺 Начало";
+    bi.style.minWidth = "120px";
+    bi.onclick = function () {
+      playIntroComic(true);
+    };
+    row.appendChild(bi);
+    var be = document.createElement("button");
+    be.textContent = "📺 Финал";
+    be.style.minWidth = "120px";
+    be.disabled = !state.beaten;
+    be.title = state.beaten ? "Смотреть концовку" : "Сначала пройди игру";
+    be.onclick = function () {
+      if (state.beaten) playEndingComic(true);
+    };
+    row.appendChild(be);
+    grid.appendChild(row);
     document.getElementById("map").classList.add("open");
   }
 
   function doRestart() {
     state.hp = 5;
-    if (world && world.won && state.level >= LEVELS.length - 1) {
-      state.level = 0;
-      state.coins = 12;
+    toastEl.style.display = "none";
+    toastT = 0;
+    var br = document.getElementById("btn-restart");
+    if (br) {
+      br.style.transform = "";
+      br.style.borderColor = "";
+    }
+    if (world && world.won && state.beaten) {
+      openMap();
+      return;
     }
     startLevel(state.level);
   }
@@ -861,35 +1169,86 @@
     if (p.comboT > 0) p.comboT -= dt;
     else p.combo = 0;
     if (p.attackT > 0) p.attackT -= dt;
+    if (p.wallLock > 0) p.wallLock -= dt;
     if (p.hitBox) {
       p.hitBox.life -= dt;
       if (p.hitBox.life <= 0) p.hitBox = null;
     }
 
+    var spd = SPEED * (world.speedMul || 1);
     var ix = 0;
     if (left) ix -= 1;
     if (right) ix += 1;
     if (!p.isAlly && !p.isP2 && Math.abs(stickX) > 0.2) ix = stickX > 0 ? 1 : -1;
-    p.vx = ix * SPEED;
+    if (p.wallLock <= 0) p.vx = ix * spd;
     if (ix) p.facing = ix;
 
-    if (p.onGround) p.jumpsLeft = hasPetAbility("jump") ? 3 : 2;
-    if (jump && p.jumpsLeft > 0 && (p.onGround || p.jumpsLeft < (hasPetAbility("jump") ? 3 : 2))) {
+    var maxJ = (world.maxJumps || 2) + (hasPetAbility("jump") ? 1 : 0);
+    if (p.onGround) {
+      p.jumpsLeft = maxJ;
+      p.wallL = p.wallR = false;
+    }
+
+    // опора от союзника / жены — прыжок от «плеча»
+    var boostPad = null;
+    if (world.ally) boostPad = world.ally;
+    if (!boostPad && world.wife) boostPad = world.wife;
+    var canBoost =
+      boostPad &&
+      Math.abs(p.x + p.w / 2 - (boostPad.x + boostPad.w / 2)) < 52 &&
+      Math.abs(p.y + p.h - (boostPad.y + 20)) < 48;
+
+    if (jump) {
       var jPow = hasPetAbility("jump") ? 1.12 : 1;
-      p.vy = p.onGround ? -JUMP * jPow : -JUMP2 * jPow;
-      p.onGround = false;
-      p.jumpsLeft--;
+      if (canBoost && !p.onGround) {
+        p.vy = -JUMP * 1.08 * jPow;
+        p.vx = p.facing * spd * 1.15;
+        p.wallLock = 0.08;
+        toast("Прыжок от друга!", 0.45);
+      } else if (!p.onGround && (p.wallL || p.wallR)) {
+        // стенной прыжок (паркур)
+        var away = p.wallL ? 1 : -1;
+        p.vy = -JUMP * 0.98 * jPow;
+        p.vx = away * spd * 1.4;
+        p.facing = away;
+        p.wallLock = 0.12;
+        p.jumpsLeft = Math.max(p.jumpsLeft, 1);
+        p.wallL = p.wallR = false;
+      } else if (p.jumpsLeft > 0) {
+        p.vy = p.onGround ? -JUMP * jPow : -JUMP2 * jPow;
+        p.onGround = false;
+        p.jumpsLeft--;
+      }
     }
     if (hit) doAttack(p);
     if (thrw) doThrow(p);
 
     p.vy += GRAV * dt;
+    // лёгкое скольжение по стене
+    if (!p.onGround && (p.wallL || p.wallR) && p.vy > 80) p.vy = Math.min(p.vy, 220);
     if (p.vy > 1200) p.vy = 1200;
     p.onGround = false;
+    p.wallL = false;
+    p.wallR = false;
     p.x += p.vx * dt;
     for (var i = 0; i < world.solids.length; i++) resolveSolid(p, world.solids[i], "x");
     for (var b = 0; b < world.breaks.length; b++) {
       if (world.breaks[b].hp > 0) resolveSolid(p, world.breaks[b], "x");
+    }
+    // детект стен для паркура
+    var probeL = { x: p.x - 4, y: p.y + 10, w: 6, h: p.h - 20 };
+    var probeR = { x: p.x + p.w - 2, y: p.y + 10, w: 6, h: p.h - 20 };
+    for (var wi = 0; wi < world.solids.length; wi++) {
+      var ws = world.solids[wi];
+      if (ws.platform) continue;
+      if (aabb(probeL, ws)) p.wallL = true;
+      if (aabb(probeR, ws)) p.wallR = true;
+    }
+    for (var wb = 0; wb < world.breaks.length; wb++) {
+      var brk = world.breaks[wb];
+      if (brk.hp <= 0) continue;
+      if (aabb(probeL, brk)) p.wallL = true;
+      if (aabb(probeR, brk)) p.wallR = true;
     }
     p.y += p.vy * dt;
     for (var j = 0; j < world.solids.length; j++) resolveSolid(p, world.solids[j], "y");
@@ -959,14 +1318,27 @@
 
     if (mob.kind === "boss") {
       mob.attackT = (mob.attackT || 0) + dt;
-      if (mob.attackT > 2.2) {
+      var ai = mob.ai || "charge";
+      if (ai === "shell") {
+        mob.shelled = Math.floor(mob.attackT / 1.6) % 2 === 1;
+        if (mob.attackT > 3.2) {
+          mob.attackT = 0;
+          mob.vx = world.p1.x > mob.x ? 90 : -90;
+        }
+      } else if (ai === "hop" && mob.attackT > 1.4) {
         mob.attackT = 0;
-        // рывок к игроку
+        mob.vy = -520;
+        mob.vx = world.p1.x > mob.x ? 140 : -140;
+      } else if (ai === "dash" && mob.attackT > 1.6) {
+        mob.attackT = 0;
+        mob.vx = world.p1.x > mob.x ? 260 : -260;
+      } else if (mob.attackT > 2.2) {
+        mob.attackT = 0;
         mob.vx = world.p1.x > mob.x ? 160 : -160;
       }
     }
 
-    var spdMul = mob._slow || 1;
+    var spdMul = (mob._slow || 1) * (world.enemyMul || 1);
     mob.vy += GRAV * dt;
     mob.onGround = false;
     mob.x += mob.vx * spdMul * dt;
@@ -986,17 +1358,21 @@
     animT += dt;
 
     var p1 = world.p1;
-    // ↓ / S — удар по нажатию (не зажимать)
-    var downNow = !!(keys.ArrowDown || keys.KeyS);
+    // ↓ / S / J — удар по нажатию
+    var downNow = !!(keys.ArrowDown || keys.KeyS || keys.KeyJ);
     var downEdge = downNow && !downWas;
     downWas = downNow;
+    // ↑ / W / пробел — прыжок по нажатию (двойной прыжок работает)
+    var jumpNow = !!(keys.KeyW || keys.ArrowUp || keys.Space);
+    var jumpEdge = (jumpNow && !jumpWas) || jumpQ;
+    jumpWas = jumpNow;
 
     controlPlayer(
       p1,
       dt,
       keys.KeyA || keys.ArrowLeft,
       keys.KeyD || keys.ArrowRight,
-      jumpQ || keys.KeyW || keys.ArrowUp || keys.Space,
+      jumpEdge,
       hitQ || downEdge,
       throwQ || keys.KeyC || keys.KeyF || keys.KeyX
     );
@@ -1265,14 +1641,20 @@
       if (mob.kind === "bee") {
         enemies.draw(ctx, Math.floor(mob.anim * 10) % 2 ? "bee_b" : "bee_a", mob.x, mob.y, mob.w, mob.h, false);
       } else if (mob.kind === "boss") {
-        enemies.draw(ctx, Math.floor(mob.anim * 6) % 2 ? "slime_spike_walk_b" : "slime_spike_walk_a", mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
+        var sprA = mob.sprA || "slime_spike_walk_a";
+        var sprB = mob.sprB || "slime_spike_walk_b";
+        if (mob.shelled && mob.shell) {
+          enemies.draw(ctx, mob.shell, mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
+        } else {
+          enemies.draw(ctx, Math.floor(mob.anim * 6) % 2 ? sprB : sprA, mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
+        }
         ctx.fillStyle = "rgba(0,0,0,.45)";
         ctx.fillRect(mob.x, mob.y - 14, mob.w, 7);
-        ctx.fillStyle = "#f87171";
+        ctx.fillStyle = mob.color || "#f87171";
         ctx.fillRect(mob.x, mob.y - 14, mob.w * (mob.hp / mob.maxHp), 7);
         ctx.fillStyle = hasPetAbility("vision") ? "#fde68a" : "#fda4af";
         ctx.font = "700 11px system-ui";
-        ctx.fillText(mob.weakLabel || "", mob.x, mob.y - 18);
+        ctx.fillText((mob.title ? mob.title + " · " : "") + (mob.weakLabel || ""), mob.x, mob.y - 18);
       } else if (mob.gel) {
         enemies.draw(ctx, Math.floor(mob.anim * 8) % 2 ? "slime_normal_walk_b" : "slime_normal_walk_a", mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
         ctx.globalAlpha = 0.45;
@@ -1408,20 +1790,23 @@
   });
 
   document.getElementById("comic-next").onclick = function () {
-    if (comicI < COMIC.length - 1) {
+    if (comicI < comicPanels.length - 1) {
       comicI++;
       showComic();
     } else {
       document.getElementById("comic").classList.add("hide");
-      if (state.beaten && window.__END_COMIC__) {
-        window.__END_COMIC__ = false;
+      if (comicMode === "ending" || comicMode === "ending-replay") {
+        openMap();
+        return;
+      }
+      if (comicMode === "intro-replay") {
         openMap();
         return;
       }
       state.seenComic = true;
       save();
       startLevel(state.level || 0);
-      toast("←→ ходить · ↑ прыг · ↓ удар · C монета", 3.5);
+      toast("←→ ходить · ↑ прыг (2 раза) · ↓ или J удар · C монета", 4);
     }
   };
 
