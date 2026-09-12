@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-  <title>Спаси её · комикс-приключение | Игры Амаля</title>
+  <title>Спаси её · v4 | Игры Амаля</title>
   <meta name="theme-color" content="#be185d" />
   <script>window.__AMAL_NO_WORLD__ = true;</script>
   <style>
@@ -11,31 +11,42 @@
     html,body{height:100%;overflow:hidden;background:#0c0612;font-family:system-ui,sans-serif;color:#fce7f3;user-select:none;-webkit-user-select:none}
     #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 10%,#4a044e,#0c0612 70%)}
     canvas#c{display:block;width:100%;height:100%;max-width:1100px;max-height:100%;image-rendering:pixelated;touch-action:none;background:#87ceeb}
-    #hud{position:fixed;top:10px;left:10px;z-index:20;padding:10px 12px;border-radius:14px;background:rgba(20,5,25,.9);border:2px solid #f472b6;font:800 12px/1.35 system-ui;pointer-events:none}
-    #hud .big{font-size:18px;color:#fde68a}
-    #toast{position:fixed;top:32%;left:50%;transform:translate(-50%,-50%);z-index:50;padding:12px 16px;border-radius:14px;background:rgba(20,5,30,.95);border:2px solid #f9a8d4;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
-    .back{position:fixed;bottom:12px;left:12px;z-index:40;padding:8px 12px;border-radius:12px;background:#db2777;color:#fff;text-decoration:none;font:800 12px system-ui}
-    #btn-restart{position:fixed;top:10px;right:12px;z-index:40;padding:8px 12px;border-radius:12px;border:2px solid #fda4af;background:rgba(127,29,29,.9);color:#fff;font:800 12px system-ui;cursor:pointer}
-    #hint{position:fixed;bottom:18%;left:50%;transform:translateX(-50%);z-index:35;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.75);border:2px solid #fbbf24;font:800 14px system-ui;display:none;text-align:center;max-width:92vw}
+    #hud{position:fixed;top:8px;left:8px;z-index:20;padding:10px 12px;border-radius:14px;background:rgba(20,5,25,.92);border:2px solid #f472b6;font:800 11px/1.4 system-ui;pointer-events:none;max-width:min(320px,70vw)}
+    #hud .big{font-size:17px;color:#fde68a}
+    #inv{position:fixed;top:8px;right:88px;z-index:20;padding:8px 10px;border-radius:12px;background:rgba(20,5,25,.9);border:2px solid #a78bfa;font:700 11px system-ui;pointer-events:none;max-width:42vw}
+    #toast{position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);z-index:50;padding:12px 16px;border-radius:14px;background:rgba(20,5,30,.95);border:2px solid #f9a8d4;font:900 15px system-ui;display:none;text-align:center;max-width:90vw}
+    .back{position:fixed;bottom:10px;left:10px;z-index:40;padding:8px 12px;border-radius:12px;background:#db2777;color:#fff;text-decoration:none;font:800 12px system-ui}
+    #btn-restart{position:fixed;top:8px;right:8px;z-index:40;padding:8px 10px;border-radius:12px;border:2px solid #fda4af;background:rgba(127,29,29,.9);color:#fff;font:800 11px system-ui;cursor:pointer}
+    #btn-map{position:fixed;top:48px;right:8px;z-index:40;padding:8px 10px;border-radius:12px;border:2px solid #c4b5fd;background:rgba(76,29,149,.9);color:#fff;font:800 11px system-ui;cursor:pointer}
+    #hint{position:fixed;bottom:14%;left:50%;transform:translateX(-50%);z-index:35;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.78);border:2px solid #fbbf24;font:800 13px system-ui;display:none;text-align:center;max-width:92vw}
+    #keys{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:30;padding:6px 10px;border-radius:10px;background:rgba(0,0,0,.55);font:700 10px system-ui;opacity:.85;white-space:nowrap;max-width:96vw;overflow:hidden;text-overflow:ellipsis}
     #heart-fx{position:fixed;inset:0;z-index:60;pointer-events:none;display:none;align-items:center;justify-content:center}
     #heart-fx.show{display:flex}
-    #heart-fx .h{font-size:min(40vw,220px);line-height:1;transition:transform .35s,opacity .35s;filter:drop-shadow(0 8px 20px rgba(0,0,0,.5))}
+    #heart-fx .h{font-size:min(40vw,220px);line-height:1;transition:transform .35s,opacity .35s}
     #heart-fx.break .left{transform:translate(-18vw,-8vh) rotate(-25deg);opacity:0}
     #heart-fx.break .right{transform:translate(18vw,-8vh) rotate(25deg);opacity:0}
     #comic{position:fixed;inset:0;z-index:80;background:rgba(8,4,16,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
     #comic.hide{display:none}
-    #comic-art{width:min(520px,94vw);aspect-ratio:16/10;border-radius:16px;border:3px solid #f9a8d4;background:#1f0a2e;position:relative;overflow:hidden}
+    #comic-art{width:min(520px,94vw);aspect-ratio:16/10;border-radius:16px;border:3px solid #f9a8d4;background:#1f0a2e;overflow:hidden}
     #comic-art canvas{width:100%;height:100%;display:block}
-    #comic-text{max-width:520px;text-align:center;font:800 16px/1.4 system-ui}
+    #comic-text{max-width:520px;text-align:center;font:800 15px/1.4 system-ui}
     #comic-next{padding:12px 22px;border:0;border-radius:14px;background:linear-gradient(135deg,#db2777,#7c3aed);color:#fff;font:900 15px system-ui;cursor:pointer}
-    #pad{position:fixed;bottom:16px;left:12px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);touch-action:none}
+    #map{position:fixed;inset:0;z-index:70;background:rgba(8,4,16,.94);display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:10px;overflow:auto}
+    #map.open{display:flex}
+    #map h2{font:900 20px system-ui}
+    #map-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px}
+    #map-grid button{min-width:72px;padding:10px 8px;border-radius:12px;border:2px solid #f9a8d4;background:rgba(88,28,135,.85);color:#fff;font:800 12px system-ui;cursor:pointer}
+    #map-grid button:disabled{opacity:.35;cursor:default}
+    #map-grid button.boss{border-color:#fbbf24}
+    #map-close{padding:10px 18px;border:0;border-radius:12px;background:#db2777;color:#fff;font:900 14px system-ui;cursor:pointer}
+    #pad{position:fixed;bottom:14px;left:10px;z-index:25;display:none;width:118px;height:118px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.2);touch-action:none}
     #pad-knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(244,114,182,.55);pointer-events:none}
-    #btns{position:fixed;bottom:20px;right:12px;z-index:25;display:none;gap:8px;flex-direction:column;align-items:flex-end}
-    #btns button{width:64px;height:64px;border-radius:50%;border:0;color:#fff;font:900 11px system-ui}
-    #btn-jump{background:rgba(37,99,235,.75)}
-    #btn-hit{background:rgba(234,88,12,.8)}
-    #btn-throw{background:rgba(202,138,4,.85)}
-    @media(pointer:coarse){#pad,#btns{display:flex}}
+    #btns{position:fixed;bottom:14px;right:10px;z-index:25;display:none;gap:8px;flex-direction:column}
+    #btns button{width:62px;height:62px;border-radius:50%;border:0;color:#fff;font:900 11px system-ui}
+    #btn-jump{background:rgba(37,99,235,.8)}
+    #btn-hit{background:rgba(234,88,12,.85)}
+    #btn-throw{background:rgba(202,138,4,.9)}
+    @media(pointer:coarse){#pad,#btns{display:flex}#keys{display:none}}
   </style>
 </head>
 <body>
@@ -44,19 +55,32 @@
     <p id="comic-text"></p>
     <button type="button" id="comic-next">Далее ▶</button>
   </div>
+  <div id="map">
+    <h2>Карта уровней</h2>
+    <p style="opacity:.8;font:700 12px system-ui;text-align:center;max-width:420px">Открываются по мере прохождения. Боссы отмечены ★</p>
+    <div id="map-grid"></div>
+    <button type="button" id="map-close">Закрыть</button>
+  </div>
   <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
-  <div id="hud"><b>💕 Спаси её</b><br />💰 <span class="big" id="coins">0</span> · ❤️ <span id="hp">3</span> · ур. <span id="lvl">1</span>/<span id="lvlt">8</span><br />🐾 <span id="pet">нет</span> · 🤝 <span id="ally">бот</span></div>
+  <div id="hud">
+    <b>💕 Спаси её</b><br />
+    💰 <span class="big" id="coins">0</span> · ❤️ <span id="hp">5</span> · ур. <span id="lvl">1</span>/<span id="lvlt">16</span><br />
+    ⚔️ <span id="weapon">Перчатки</span>
+  </div>
+  <div id="inv">🐾 <span id="pets">—</span><br />🎒 <span id="items">—</span></div>
   <div id="toast"></div>
   <div id="hint"></div>
-  <div id="heart-fx"><span class="h left">❤️</span><span class="h right" style="position:absolute">❤️</span></div>
+  <div id="keys">←→ / A D ходить · ↑ / W прыжок · ↓ / S удар · C / F монета</div>
+  <div id="heart-fx"><span class="h left">💔</span><span class="h right" style="margin-left:-0.55em">❤️</span></div>
   <a class="back" href="../index.html">← Каталог</a>
-  <button type="button" id="btn-restart">↻ Рестарт</button>
+  <button type="button" id="btn-restart">↻</button>
+  <button type="button" id="btn-map">Карта</button>
   <div id="pad"><div id="pad-knob"></div></div>
   <div id="btns">
-    <button type="button" id="btn-hit">удар J</button>
-    <button type="button" id="btn-throw">монета K</button>
-    <button type="button" id="btn-jump">прыг</button>
+    <button type="button" id="btn-hit">↓ удар</button>
+    <button type="button" id="btn-throw">C монета</button>
+    <button type="button" id="btn-jump">↑ прыг</button>
   </div>
-  <script src="./game.js?v=2"></script>
+  <script src="./game.js?v=4"></script>
 </body>
 </html>

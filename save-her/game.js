@@ -13,7 +13,7 @@
   var JUMP = 720;
   var JUMP2 = 640;
   var SPEED = 270;
-  var SAVE = "amal-save-her-v2";
+  var SAVE = "amal-save-her-v4";
 
   var canvas = document.getElementById("c");
   var ctx = canvas.getContext("2d");
@@ -87,9 +87,58 @@
   function drawKenney(c, atlas, frame, x, y, size, flip) {
     size = size || 128;
     if (!atlas || !atlas.draw(c, frame, x - size / 2, y - size, size, size, !!flip)) {
-      c.fillStyle = "#f9a8d4";
+      c.fillStyle = "#fbbf24";
       c.fillRect(x - 20, y - 60, 40, 60);
     }
+  }
+
+  /**
+   * Жена — другой силуэт, не «такой же розовый человечек»:
+   * платье-юбка, длинные волосы, цветок. База: Kenney pink.
+   */
+  function drawWife(c, frame, x, y, size, flip) {
+    size = size || 128;
+    var fr = frame || "character_pink_idle";
+    c.save();
+    if (flip) {
+      c.translate(x, y);
+      c.scale(-1, 1);
+      x = 0;
+      y = 0;
+    }
+    // платье под спрайтом
+    c.fillStyle = "#be185d";
+    c.beginPath();
+    c.moveTo(x - size * 0.22, y - size * 0.38);
+    c.lineTo(x - size * 0.38, y - size * 0.02);
+    c.lineTo(x + size * 0.38, y - size * 0.02);
+    c.lineTo(x + size * 0.22, y - size * 0.38);
+    c.closePath();
+    c.fill();
+    c.fillStyle = "#fce7f3";
+    c.fillRect(x - size * 0.06, y - size * 0.42, size * 0.12, size * 0.1);
+    drawKenney(c, chars, fr, x, y - size * 0.06, size * 0.92, false);
+    // длинные волосы
+    c.fillStyle = "#9d174d";
+    c.beginPath();
+    c.ellipse(x - size * 0.16, y - size * 0.62, size * 0.1, size * 0.22, 0.2, 0, Math.PI * 2);
+    c.fill();
+    c.beginPath();
+    c.ellipse(x + size * 0.16, y - size * 0.62, size * 0.1, size * 0.22, -0.2, 0, Math.PI * 2);
+    c.fill();
+    // цветок
+    c.fillStyle = "#fbbf24";
+    c.beginPath();
+    c.arc(x + size * 0.18, y - size * 0.78, size * 0.06, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#fb7185";
+    for (var i = 0; i < 5; i++) {
+      var a = (i / 5) * Math.PI * 2;
+      c.beginPath();
+      c.arc(x + size * 0.18 + Math.cos(a) * size * 0.07, y - size * 0.78 + Math.sin(a) * size * 0.07, size * 0.035, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
   }
 
   function drawGroundStrip(c, y, theme) {
@@ -153,7 +202,7 @@
       }
       // герой (жёлтый) + жена (розовая) — настоящие спрайты Kenney
       drawKenney(cctx, chars, i === 1 ? "character_yellow_front" : "character_yellow_idle", 340, groundY + 8, 140, false);
-      drawKenney(cctx, chars, i === 1 ? "character_pink_front" : "character_pink_idle", 470, groundY + 8, 140, false);
+      drawWife(cctx, i === 1 ? "character_pink_front" : "character_pink_idle", 480, groundY + 8, 140, false);
       cctx.fillStyle = "#fb7185";
       cctx.font = "900 36px system-ui";
       cctx.fillText("❤", 390, groundY - 110);
@@ -163,10 +212,10 @@
     } else if (i === 2) {
       drawGroundStrip(cctx, groundY, "purple");
       drawKenney(cctx, chars, "character_yellow_hit", 160, groundY + 8, 130, false);
-      // злодеи тянут жену
+      // злодеи тянут жену (она другая — платье)
       drawKenney(cctx, chars, "character_purple_walk_a", 360, groundY + 8, 120, false);
-      drawKenney(cctx, chars, "character_pink_hit", 480, groundY - 10, 130, false);
-      drawKenney(cctx, chars, "character_beige_walk_b", 560, groundY + 8, 120, true);
+      drawWife(cctx, "character_pink_hit", 490, groundY - 4, 130, false);
+      drawKenney(cctx, chars, "character_beige_walk_b", 580, groundY + 8, 120, true);
       if (enemies) {
         enemies.draw(cctx, "slime_spike_walk_a", 250, groundY - 50, 64, 64, false);
       }
@@ -180,8 +229,8 @@
       drawGroundStrip(cctx, groundY, "stone");
       drawKenney(cctx, chars, "character_yellow_duck", 200, groundY + 8, 140, false);
       // «оставшаяся» розовая — силуэт / hit
-      cctx.globalAlpha = 0.35;
-      drawKenney(cctx, chars, "character_pink_idle", 420, groundY + 8, 120, false);
+      cctx.globalAlpha = 0.4;
+      drawWife(cctx, "character_pink_idle", 430, groundY + 8, 120, false);
       cctx.globalAlpha = 1;
       if (tiles) {
         tiles.draw(cctx, "flag_red_a", 500, groundY - 40, 48, 48, false);
@@ -213,7 +262,7 @@
         cctx.lineTo(400 + bx * 35, groundY + 10);
         cctx.stroke();
       }
-      drawKenney(cctx, chars, "character_pink_front", 460, groundY + 8, 130, false);
+      drawWife(cctx, "character_pink_front", 460, groundY + 8, 130, false);
       if (tiles) tiles.draw(cctx, "flag_yellow_a", 560, groundY - 40, 48, 48, false);
       cctx.fillStyle = "#fff";
       cctx.font = "900 18px system-ui";
@@ -241,162 +290,107 @@
      W клетка с женой  P игрок  2 игрок2  A союзник
      H подсказка-зона (мета в level.hints)
   */
-  var LEVELS = [
-    {
-      name: "Обучение",
-      theme: "grass",
-      tutorial: true,
-      map: [
-        "..........................................",
-        "..........................................",
-        "..............C...........................",
-        "...........====...........................",
-        "..........................................",
-        ".....X....K...............................",
-        "..........................................",
-        "P..A.................S...............F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-      hints: [
-        { at: 2, text: "A/D — ходить · ПРОБЕЛ — прыжок (можно два раза)" },
-        { at: 8, text: "J — удар · дважды J подряд = КОМБО" },
-        { at: 14, text: "K — кинуть монету во врага (нужны 💰)" },
-        { at: 20, text: "Ломай блоки X ударом · кейс K даёт питомца" },
-      ],
-    },
-    {
-      name: "Луга",
-      theme: "grass",
-      map: [
-        "..........................................",
-        ".............C.............C..............",
-        "..........====..........====..............",
-        "..........................................",
-        "....====......X....K....====..............",
-        "..........................................",
-        "P.....S.....G.....S.....B............F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Магия",
-      theme: "purple",
-      magic: true,
-      map: [
-        "..........................................",
-        "........C.....====.....C..................",
-        ".....====.............====................",
-        "...........................K..............",
-        "....X......====......====......X..........",
-        "..........................................",
-        "P....G....S....G....B....G...........F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Войнушка",
-      theme: "stone",
-      war: true,
-      map: [
-        "..........................................",
-        "......C...........C...........C...........",
-        "....====........====........====..........",
-        "..........................................",
-        ".......X....K.............X...............",
-        "..........................................",
-        "P..A...S.....S.....G.....S...........F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Блоки и кейсы",
-      theme: "sand",
-      map: [
-        "..........................................",
-        "...........C.....K.....C..................",
-        "........====...====...====................",
-        ".....X.............X.............X........",
-        "..........................................",
-        "....====.....====.....====.....====.......",
-        "P.....G.....S.....G.....B............F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Босс · Страж",
-      theme: "grass",
-      map: [
-        "..........................................",
-        ".........C...............C................",
-        "......====.............====...............",
-        "..........................................",
-        "....====.......K.........====.............",
-        "..........................................",
-        "P........S......O......S.............F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Магия 2",
-      theme: "purple",
-      magic: true,
-      map: [
-        "..........................................",
-        "....C...====...C...====...C...====........",
-        "..........................................",
-        "..X....K....X....K....X...................",
-        "....====.....====.....====.....====.......",
-        "..........................................",
-        "P..G..B..G..S..G..B..................F....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
-    {
-      name: "Спасение",
-      theme: "stone",
-      map: [
-        "..........................................",
-        ".............C.....K.....C................",
-        "..........====.........====...............",
-        "..........................................",
-        ".......====.....O.....====................",
-        "..........................................",
-        "P..A...S...........S.................W....",
-        "##########################################",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
-      ],
-    },
+  var PET_CATALOG = [
+    { id: "bee", name: "Пчёлка", ico: "🐝", theme: "луг", ability: "slow", desc: "замедляет врагов рядом" },
+    { id: "frog", name: "Лягушка", ico: "🐸", theme: "болото", ability: "jump", desc: "выше прыжок" },
+    { id: "snail", name: "Улитка", ico: "🐌", theme: "сад", ability: "shield", desc: "реже урон" },
+    { id: "fox", name: "Лисичка", ico: "🦊", theme: "лес", ability: "coins", desc: "больше монет" },
+    { id: "owl", name: "Сова", ico: "🦉", theme: "ночь", ability: "vision", desc: "подсветка боссов" },
+    { id: "dragon", name: "Дракончик", ico: "🐉", theme: "магия", ability: "burn", desc: "редкий ожог без откидывания" },
+  ];
+  var WEAPONS = [
+    { id: "gloves", name: "Перчатки", dmg: 1, throwBonus: 0 },
+    { id: "bat", name: "Бита", dmg: 2, throwBonus: 0 },
+    { id: "coinGun", name: "Монетомёт", dmg: 1, throwBonus: 1 },
+    { id: "magic", name: "Жезл магии", dmg: 2, throwBonus: 2 },
   ];
 
+  function mkMap(theme, rowMobs, extras) {
+    extras = extras || {};
+    return {
+      name: extras.name || theme,
+      theme: theme,
+      magic: !!extras.magic,
+      war: !!extras.war,
+      tutorial: !!extras.tutorial,
+      story: extras.story || null,
+      weaponDrop: extras.weaponDrop || null,
+      map: [
+        "..........................................",
+        extras.row2 || ".............C.............C..............",
+        extras.row3 || "..........====..........====..............",
+        extras.row4 || "..........................................",
+        extras.row5 || "....====......X....K....====..............",
+        extras.row6 || "..........................................",
+        rowMobs,
+        "##########################################",
+        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+        "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+      ],
+      hints: extras.hints || null,
+    };
+  }
+
+  var LEVELS = [
+    mkMap("grass", "P..A.................S...............F....", {
+      name: "Обучение",
+      tutorial: true,
+      row2: "..............C...........................",
+      row3: "...........====...........................",
+      row5: ".....X....K...............................",
+      row6: "..........................................",
+      hints: [
+        { at: 1, text: "←→ или A D — ходить" },
+        { at: 6, text: "↑ или W — прыжок (можно два раза)" },
+        { at: 12, text: "↓ или S — удар · жми дважды = КОМБО" },
+        { at: 18, text: "C или F — выстрел монетой · ломай X · бери кейсы" },
+      ],
+    }),
+    mkMap("grass", "P.....S.....G.....S.....B............F....", { name: "Луга 1" }),
+    mkMap("grass", "P..S..G..S..B..S..G.................F....", { name: "Луга 2", row5: "....====..X..K..====..X..====............." }),
+    mkMap("grass", "P........S......O......S.............F....", { name: "Босс · Слайм-король", weaponDrop: "bat" }),
+    mkMap("purple", "P....G....S....G....B....G...........F....", { name: "Магия 1", magic: true, story: "Глава: портал магии. Жена была здесь…" }),
+    mkMap("purple", "P..G..B..G..S..G..B..................F....", { name: "Магия 2", magic: true, row5: "..X....K....X....K....X..................." }),
+    mkMap("purple", "P.....G......O......G....B...........F....", { name: "Босс · Маг-гель", magic: true, weaponDrop: "coinGun" }),
+    mkMap("stone", "P..A...S.....S.....G.....S...........F....", { name: "Войнушка 1", war: true, story: "Глава: поле боя. Союзник идёт с тобой." }),
+    mkMap("stone", "P..S..S..G..S..B..S..G...............F....", { name: "Войнушка 2", war: true, row5: ".......X....K.............X..............." }),
+    mkMap("stone", "P..A........O........S...............F....", { name: "Босс · Капитан", war: true, weaponDrop: "magic" }),
+    mkMap("sand", "P.....G.....S.....G.....B............F....", { name: "Пустыня 1", story: "Глава: пески. Следы жены ведут дальше." }),
+    mkMap("sand", "P..G..S..G..S..B..G..S...............F....", { name: "Пустыня 2", row5: ".....X.............X.............X........", row3: "........====...====...====................" }),
+    mkMap("sand", "P.....S......O......G....S...........F....", { name: "Босс · Пустынный" }),
+    mkMap("snow", "P..B..S..G..B..S..G..................F....", { name: "Снега", story: "Глава: холод. Почти у клетки…" }),
+    mkMap("snow", "P..A..S..G......O......S.............F....", { name: "Босс · Лёд" }),
+    mkMap("stone", "P..A...S...........S.................W....", {
+      name: "Спасение",
+      story: "Финал: она в клетке. Победи стража и освободи!",
+      row5: ".......====.....O.....====................",
+      row3: "..........====.........====...............",
+    }),
+  ];
+
+  // snow theme falls back to stone tiles if missing
   var state = {
     level: 0,
-    coins: 12,
+    coins: 20,
     hp: 5,
-    pet: null,
-    coop: false,
+    pets: [],
+    items: [],
+    weaponId: "gloves",
     seenComic: false,
+    maxReached: 0,
+    beaten: false,
   };
   try {
     var d = JSON.parse(localStorage.getItem(SAVE) || "null");
     if (d) {
       if (d.level != null) state.level = Math.min(d.level, LEVELS.length - 1);
       state.coins = d.coins != null ? d.coins : state.coins;
-      state.pet = d.pet || null;
+      state.pets = Array.isArray(d.pets) ? d.pets.slice(0, 3) : d.pet ? [d.pet] : [];
+      state.items = Array.isArray(d.items) ? d.items : [];
+      state.weaponId = d.weaponId || "gloves";
       state.seenComic = !!d.seenComic;
+      state.maxReached = d.maxReached != null ? d.maxReached : state.level;
+      state.beaten = !!d.beaten;
     }
   } catch (_) {}
 
@@ -406,15 +400,17 @@
   var animT = 0;
   var keys = Object.create(null);
   var stickX = 0;
+  var stickY = 0;
   var jumpQ = false;
   var hitQ = false;
   var throwQ = false;
   var projectiles = [];
   var particles = [];
-  var warGuys = [];
+  var downWas = false;
 
   function themeTiles(theme) {
     var p = theme || "grass";
+    if (p === "snow") p = "stone";
     return {
       top: "terrain_" + p + "_block_top",
       fill: p === "grass" ? "terrain_dirt_block_center" : "terrain_" + p + "_block_center",
@@ -424,6 +420,16 @@
       platM: "terrain_" + p + "_horizontal_middle",
       platR: "terrain_" + p + "_horizontal_right",
     };
+  }
+
+  function currentWeapon() {
+    for (var i = 0; i < WEAPONS.length; i++) if (WEAPONS[i].id === state.weaponId) return WEAPONS[i];
+    return WEAPONS[0];
+  }
+
+  function petById(id) {
+    for (var i = 0; i < PET_CATALOG.length; i++) if (PET_CATALOG[i].id === id) return PET_CATALOG[i];
+    return PET_CATALOG[0];
   }
 
   function makePlayer(x, y, color, isP2) {
@@ -482,13 +488,36 @@
           solids.push({ x: px, y: py + 10, w: TILE, h: 22, sprite: ps, platform: true, drawY: py });
         } else if (ch === "C") coins.push({ x: px + 8, y: py + 8, w: 32, h: 32, taken: false });
         else if (ch === "S")
-          mobs.push({ kind: "slime", x: px + 4, y: py, w: 40, h: 40, vx: -50, vy: 0, hp: 2, anim: 0 });
+          mobs.push({ kind: "slime", x: px + 4, y: py, w: 40, h: 40, vx: -50, vy: 0, hp: 3, anim: 0, iframes: 0 });
         else if (ch === "G")
-          mobs.push({ kind: "gel", x: px + 4, y: py, w: 42, h: 36, vx: -40, vy: 0, hp: 3, anim: 0, gel: true });
+          mobs.push({ kind: "gel", x: px + 4, y: py, w: 42, h: 36, vx: -40, vy: 0, hp: 4, anim: 0, gel: true, iframes: 0 });
         else if (ch === "B")
-          mobs.push({ kind: "bee", x: px, y: py, w: 40, h: 36, baseY: py, phase: Math.random() * 6, hp: 1, anim: 0 });
-        else if (ch === "O")
-          mobs.push({ kind: "boss", x: px, y: py - 24, w: 76, h: 76, vx: -60, vy: 0, hp: 8, maxHp: 8, anim: 0 });
+          mobs.push({ kind: "bee", x: px, y: py, w: 40, h: 36, baseY: py, phase: Math.random() * 6, hp: 4, anim: 0, iframes: 0, noStomp: true });
+        else if (ch === "O") {
+          var bossTypes = [
+            { weak: "stomp", weakLabel: "прыжок на голову", hp: 12 },
+            { weak: "coin", weakLabel: "монеты (C)", hp: 10 },
+            { weak: "combo", weakLabel: "комбо-удар ↓↓", hp: 14 },
+            { weak: "hit", weakLabel: "обычный удар ↓", hp: 11 },
+          ];
+          var bt = bossTypes[idx % bossTypes.length];
+          mobs.push({
+            kind: "boss",
+            x: px,
+            y: py - 24,
+            w: 76,
+            h: 76,
+            vx: -55,
+            vy: 0,
+            hp: bt.hp,
+            maxHp: bt.hp,
+            anim: 0,
+            iframes: 0,
+            weak: bt.weak,
+            weakLabel: bt.weakLabel,
+            attackT: 0,
+          });
+        }
         else if (ch === "X") breaks.push({ x: px, y: py, w: TILE, h: TILE, hp: 2 });
         else if (ch === "K") cases.push({ x: px + 6, y: py + 6, w: 36, h: 36, open: false });
         else if (ch === "F") flag = { x: px, y: py - 8, w: 40, h: 56 };
@@ -510,18 +539,6 @@
     }
     projectiles = [];
     particles = [];
-    warGuys = [];
-    if (L.war) {
-      for (var i = 0; i < 6; i++) {
-        warGuys.push({
-          x: 200 + i * 90,
-          y: (rows - 2) * TILE - 40,
-          facing: i % 2 ? 1 : -1,
-          anim: Math.random(),
-          side: i % 2,
-        });
-      }
-    }
 
     return {
       L: L,
@@ -569,15 +586,33 @@
     document.getElementById("hp").textContent = String(Math.max(0, state.hp));
     document.getElementById("lvl").textContent = String(state.level + 1);
     document.getElementById("lvlt").textContent = String(LEVELS.length);
-    document.getElementById("pet").textContent = state.pet ? state.pet : "нет";
-    document.getElementById("ally").textContent = world && world.ally ? "бот с тобой" : "—";
+    document.getElementById("weapon").textContent = currentWeapon().name;
+    var petStr =
+      state.pets.length > 0
+        ? state.pets
+            .map(function (id) {
+              return petById(id).ico;
+            })
+            .join(" ")
+        : "нет (до 3)";
+    document.getElementById("pets").textContent = petStr;
+    document.getElementById("items").textContent = state.items.length ? state.items.join(", ") : "пусто";
   }
 
   function save() {
     try {
       localStorage.setItem(
         SAVE,
-        JSON.stringify({ level: state.level, coins: state.coins, pet: state.pet, seenComic: state.seenComic })
+        JSON.stringify({
+          level: state.level,
+          coins: state.coins,
+          pets: state.pets,
+          items: state.items,
+          weaponId: state.weaponId,
+          seenComic: state.seenComic,
+          maxReached: state.maxReached,
+          beaten: state.beaten,
+        })
       );
     } catch (_) {}
   }
@@ -624,12 +659,13 @@
 
   function doAttack(p) {
     if (p.attackT > 0) return;
-    p.attackT = 0.22;
+    p.attackT = 0.2;
     if (p.comboT > 0) p.combo = Math.min(2, p.combo + 1);
     else p.combo = 1;
     p.comboT = 0.55;
-    var reach = p.combo >= 2 ? 52 : 38;
-    var dmg = p.combo >= 2 ? 2 : 1;
+    var wpn = currentWeapon();
+    var reach = p.combo >= 2 ? 56 : 40;
+    var dmg = (p.combo >= 2 ? 2 : 1) * wpn.dmg;
     p.hitBox = {
       x: p.facing > 0 ? p.x + p.w : p.x - reach,
       y: p.y + 8,
@@ -638,7 +674,7 @@
       dmg: dmg,
       life: 0.12,
     };
-    if (p.combo >= 2) toast("КОМБО!", 0.6);
+    if (p.combo >= 2) toast("КОМБО ×" + dmg + "!", 0.55);
   }
 
   function doThrow(p) {
@@ -648,62 +684,166 @@
     }
     state.coins--;
     syncHud();
+    var bonus = currentWeapon().throwBonus || 0;
     projectiles.push({
       x: p.x + p.w / 2,
       y: p.y + 18,
-      vx: p.facing * 420,
+      vx: p.facing * (420 + bonus * 40),
       vy: -40,
       r: 10,
       life: 1.6,
+      dmg: 2 + bonus,
       from: p,
     });
   }
 
-  function damageMob(mob, dmg, fromX) {
+  function damageMob(mob, dmg, fromX, opts) {
+    opts = opts || {};
+    if (mob.iframes > 0) return;
+    // слабое место босса
+    if (mob.kind === "boss" && mob.weak && opts.hitType && opts.hitType !== mob.weak && opts.hitType !== "any") {
+      toast("Мимо слабого места! Нужно: " + mob.weakLabel, 1.2);
+      dmg = Math.max(1, Math.floor(dmg * 0.25));
+    }
     mob.hp -= dmg;
-    mob.vx = (mob.x > fromX ? 1 : -1) * 120;
+    mob.iframes = opts.fromPet ? 0.45 : 0.2;
+    if (!opts.noKnock) {
+      mob.vx = (mob.x > fromX ? 1 : -1) * (opts.fromPet ? 40 : 140);
+    }
     spawnBurst(mob.x + mob.w / 2, mob.y + mob.h / 2, mob.gel ? "#67e8f9" : "#86efac");
-    if (mob.gel && mob.hp > 0 && Math.random() < 0.4) {
+    if (mob.gel && mob.hp > 0 && Math.random() < 0.35) {
       toast("Гель застыл!", 0.8);
-      mob.stun = 1.2;
+      mob.stun = 1.0;
     }
     if (mob.hp <= 0) {
       mob.dead = true;
-      state.coins += mob.kind === "boss" ? 10 : 2;
+      var coinAdd = mob.kind === "boss" ? 12 : 2;
+      if (hasPetAbility("coins")) coinAdd += 2;
+      state.coins += coinAdd;
       syncHud();
-      if (mob.kind === "boss") toast("Страж пал!", 1.5);
+      if (mob.kind === "boss") toast("Босс повержен!", 1.5);
     }
+  }
+
+  function hasPetAbility(ab) {
+    for (var i = 0; i < state.pets.length; i++) {
+      if (petById(state.pets[i]).ability === ab) return true;
+    }
+    return false;
   }
 
   function openCase(c) {
     if (c.open) return;
     c.open = true;
-    var pets = ["🐝 пчёлка", "🐌 улитка", "🐸 лягушка"];
-    state.pet = pets[Math.floor(Math.random() * pets.length)];
-    toast("Кейс! Питомец: " + state.pet, 2);
+    var roll = Math.random();
+    if (roll < 0.55 || state.pets.length < 3) {
+      var pet = PET_CATALOG[Math.floor(Math.random() * PET_CATALOG.length)];
+      if (state.pets.indexOf(pet.id) < 0 && state.pets.length < 3) {
+        state.pets.push(pet.id);
+        toast("Питомец: " + pet.ico + " " + pet.name + " (" + pet.theme + ")", 2.2);
+      } else if (state.pets.length >= 3) {
+        state.coins += 8;
+        toast("Слоты питомцев полны · +8💰", 1.8);
+      } else {
+        state.coins += 5;
+        toast("Уже есть · +5💰", 1.5);
+      }
+    } else {
+      var drops = ["Зелье +1❤️", "Щит", "Ключ", "Амулет"];
+      var it = drops[Math.floor(Math.random() * drops.length)];
+      if (it.indexOf("Зелье") >= 0) {
+        state.hp = Math.min(8, state.hp + 1);
+      }
+      state.items.push(it);
+      if (state.items.length > 6) state.items.shift();
+      toast("Предмет: " + it, 2);
+    }
+    syncHud();
+    save();
+  }
+
+  function grantWeapon(id) {
+    state.weaponId = id;
+    var w = currentWeapon();
+    toast("Новое оружие: " + w.name + "!", 2.2);
     syncHud();
     save();
   }
 
   function startLevel(i) {
     state.level = i;
+    if (i > state.maxReached) state.maxReached = i;
     world = buildLevel(i);
     camX = 0;
     syncHud();
-    toast(LEVELS[i].name, 1.5);
-    if (LEVELS[i].tutorial) hint("Смотри подсказки снизу · J удар · K монета", 4);
+    var L = LEVELS[i];
+    toast(L.name, 1.4);
+    if (L.story) setTimeout(function () {
+      toast(L.story, 3.2);
+    }, 900);
+    var boss = world.mobs.filter(function (m) {
+      return m.kind === "boss";
+    })[0];
+    if (boss) setTimeout(function () {
+      toast("Босс · слабое место: " + boss.weakLabel, 2.8);
+    }, L.story ? 2800 : 1000);
+    if (L.tutorial) hint("←→ ходить · ↑ прыжок · ↓ удар · C монета", 4);
     save();
   }
 
+  function showEnding() {
+    state.beaten = true;
+    save();
+    var endPanels = [
+      { title: "Свобода", text: "Клетка падает. Она бежит к нему — малиновое платье, цветок в волосах. Не похожа на героя — и это она." },
+      { title: "Домой", text: "Вместе снова. Он в жёлтом, она в платье. История жива — уровни открыты на карте." },
+      { title: "Карта открыта", text: "Выбирай пройденные уровни. У боссов разные слабые места!" },
+    ];
+    comicI = 0;
+    // временно подменяем панели финалом
+    window.__END_COMIC__ = true;
+    COMIC.splice(0, COMIC.length);
+    for (var i = 0; i < endPanels.length; i++) COMIC.push(endPanels[i]);
+    document.getElementById("comic").classList.remove("hide");
+    showComic();
+    document.getElementById("comic-next").textContent = "На карту ▶";
+  }
+
   function nextLevel() {
+    var L = LEVELS[state.level];
+    if (L && L.weaponDrop) grantWeapon(L.weaponDrop);
     if (state.level >= LEVELS.length - 1) {
-      toast("Ты спас её! Вместе снова ❤  Рестарт — сначала", 5);
       world.won = true;
-      save();
+      showEnding();
       return;
     }
     state.level++;
+    if (state.level > state.maxReached) state.maxReached = state.level;
     startLevel(state.level);
+  }
+
+  function openMap() {
+    var grid = document.getElementById("map-grid");
+    grid.innerHTML = "";
+    for (var i = 0; i < LEVELS.length; i++) {
+      var b = document.createElement("button");
+      var unlocked = i <= state.maxReached || state.beaten;
+      b.textContent = (LEVELS[i].name.indexOf("Босс") >= 0 || LEVELS[i].name.indexOf("Спасение") >= 0 ? "★ " : "") + (i + 1);
+      b.title = LEVELS[i].name;
+      if (LEVELS[i].name.indexOf("Босс") >= 0) b.className = "boss";
+      b.disabled = !unlocked;
+      (function (idx) {
+        b.onclick = function () {
+          if (idx > state.maxReached && !state.beaten) return;
+          document.getElementById("map").classList.remove("open");
+          document.getElementById("comic").classList.add("hide");
+          state.hp = Math.max(state.hp, 5);
+          startLevel(idx);
+        };
+      })(i);
+      grid.appendChild(b);
+    }
+    document.getElementById("map").classList.add("open");
   }
 
   function doRestart() {
@@ -733,9 +873,10 @@
     p.vx = ix * SPEED;
     if (ix) p.facing = ix;
 
-    if (p.onGround) p.jumpsLeft = 2;
-    if (jump && p.jumpsLeft > 0 && (p.onGround || p.jumpsLeft === 1)) {
-      p.vy = p.onGround ? -JUMP : -JUMP2;
+    if (p.onGround) p.jumpsLeft = hasPetAbility("jump") ? 3 : 2;
+    if (jump && p.jumpsLeft > 0 && (p.onGround || p.jumpsLeft < (hasPetAbility("jump") ? 3 : 2))) {
+      var jPow = hasPetAbility("jump") ? 1.12 : 1;
+      p.vy = p.onGround ? -JUMP * jPow : -JUMP2 * jPow;
       p.onGround = false;
       p.jumpsLeft--;
     }
@@ -760,6 +901,14 @@
   function updateAlly(dt) {
     var a = world.ally;
     if (!a) return;
+    if (a.hp == null) a.hp = 8;
+    if (a.hurtT > 0) a.hurtT -= dt;
+    // не падает в пропасть — телепорт к герою
+    if (a.y > world.height + 20 || Math.abs(a.x - world.p1.x) > 420) {
+      a.x = world.p1.x - 50;
+      a.y = world.p1.y;
+      a.vx = a.vy = 0;
+    }
     var target = null;
     var best = 9999;
     for (var i = 0; i < world.mobs.length; i++) {
@@ -776,15 +925,14 @@
     var right = false;
     var jump = false;
     var hit = false;
-    if (target && best < 220) {
-      if (target.x < a.x - 10) left = true;
-      if (target.x > a.x + 10) right = true;
-      if (best < 50) hit = Math.random() < 0.08;
-      if (!a.onGround && Math.random() < 0.01) jump = true;
+    if (target && best < 200) {
+      if (target.x < a.x - 16) left = true;
+      if (target.x > a.x + 16) right = true;
+      if (best < 48 && a.attackT <= 0) hit = true;
       if (target.y + 20 < a.y && a.onGround) jump = true;
     } else {
-      if (follow.x < a.x - 70) left = true;
-      if (follow.x > a.x + 70) right = true;
+      if (follow.x < a.x - 80) left = true;
+      if (follow.x > a.x + 80) right = true;
     }
     controlPlayer(a, dt, left, right, jump, hit, false);
   }
@@ -792,22 +940,40 @@
   function updateMob(mob, dt) {
     if (mob.dead) return;
     mob.anim += dt;
+    if (mob.iframes > 0) mob.iframes -= dt;
     if (mob.stun > 0) {
       mob.stun -= dt;
       return;
     }
+    if (hasPetAbility("slow") && Math.abs(mob.x - world.p1.x) < 140) {
+      mob._slow = 0.55;
+    } else mob._slow = 1;
+
     if (mob.kind === "bee") {
-      mob.phase += dt * 2.2;
+      mob.phase += dt * 2.0;
       mob.y = mob.baseY + Math.sin(mob.phase) * 26;
+      // пчёлы НЕ убегают от игрока — лёгкий дрейф на месте
+      mob.x += Math.sin(mob.phase * 0.4) * 12 * dt;
       return;
     }
+
+    if (mob.kind === "boss") {
+      mob.attackT = (mob.attackT || 0) + dt;
+      if (mob.attackT > 2.2) {
+        mob.attackT = 0;
+        // рывок к игроку
+        mob.vx = world.p1.x > mob.x ? 160 : -160;
+      }
+    }
+
+    var spdMul = mob._slow || 1;
     mob.vy += GRAV * dt;
     mob.onGround = false;
-    mob.x += mob.vx * dt;
+    mob.x += mob.vx * spdMul * dt;
     for (var i = 0; i < world.solids.length; i++) resolveSolid(mob, world.solids[i], "x");
     mob.y += mob.vy * dt;
     for (var j = 0; j < world.solids.length; j++) resolveSolid(mob, world.solids[j], "y");
-    if (mob.onGround) {
+    if (mob.onGround && mob.kind !== "boss") {
       var foot = { x: mob.vx > 0 ? mob.x + mob.w + 2 : mob.x - 4, y: mob.y + mob.h + 2, w: 4, h: 6 };
       var ok = false;
       for (var k = 0; k < world.solids.length; k++) if (aabb(foot, world.solids[k])) ok = true;
@@ -820,17 +986,21 @@
     animT += dt;
 
     var p1 = world.p1;
+    // ↓ / S — удар по нажатию (не зажимать)
+    var downNow = !!(keys.ArrowDown || keys.KeyS);
+    var downEdge = downNow && !downWas;
+    downWas = downNow;
+
     controlPlayer(
       p1,
       dt,
       keys.KeyA || keys.ArrowLeft,
       keys.KeyD || keys.ArrowRight,
-      jumpQ || keys.Space || keys.KeyW,
-      hitQ || keys.KeyJ || keys.KeyZ,
-      throwQ || keys.KeyK || keys.KeyX
+      jumpQ || keys.KeyW || keys.ArrowUp || keys.Space,
+      hitQ || downEdge,
+      throwQ || keys.KeyC || keys.KeyF || keys.KeyX
     );
     jumpQ = hitQ = throwQ = false;
-    keys.Space = keys.KeyW = false;
 
     if (world.p2) {
       controlPlayer(
@@ -893,7 +1063,8 @@
       for (var m = 0; m < world.mobs.length; m++) {
         var mob = world.mobs[m];
         if (mob.dead) continue;
-        if (aabb(pl.hitBox, mob)) damageMob(mob, pl.hitBox.dmg, pl.x);
+        if (aabb(pl.hitBox, mob))
+          damageMob(mob, pl.hitBox.dmg, pl.x, { hitType: pl.combo >= 2 ? "combo" : "hit" });
       }
     }
 
@@ -909,7 +1080,7 @@
         var mo = world.mobs[mi];
         if (mo.dead) continue;
         if (p.x > mo.x && p.x < mo.x + mo.w && p.y > mo.y && p.y < mo.y + mo.h) {
-          damageMob(mo, 2, p.x);
+          damageMob(mo, p.dmg || 2, p.x, { hitType: "coin" });
           hit = true;
           break;
         }
@@ -935,39 +1106,45 @@
       updateMob(mob2, dt);
       if (mob2.dead) continue;
       if (aabb(p1, mob2)) {
-        if (p1.vy > 80 && p1.y + p1.h < mob2.y + mob2.h * 0.55) {
-          damageMob(mob2, 1, p1.x);
-          p1.vy = -400;
-        } else hurt();
+        var canStomp = !mob2.noStomp && p1.vy > 120 && p1.y + p1.h < mob2.y + mob2.h * 0.5;
+        if (canStomp) {
+          damageMob(mob2, mob2.kind === "boss" ? 2 : 1, p1.x, { hitType: "stomp" });
+          p1.vy = -420;
+        } else {
+          // улитка: шанс заблокировать
+          if (hasPetAbility("shield") && Math.random() < 0.35) {
+            toast("Питомец закрыл!", 0.6);
+            p1.hurtT = 0.4;
+          } else hurt();
+        }
+      }
+      // бот не умирает от касания — лишь отступает
+      if (world.ally && !world.ally.hurtT && aabb(world.ally, mob2)) {
+        world.ally.hurtT = 0.6;
+        world.ally.vx = world.ally.x < mob2.x ? -200 : 200;
+        world.ally.vy = -280;
       }
     }
 
-    // pet help
-    if (state.pet && Math.random() < 0.02) {
+    // питомцы: способности, НЕ автоубийство пчёл рядом
+    if (hasPetAbility("burn") && Math.random() < 0.012) {
       for (var mp = 0; mp < world.mobs.length; mp++) {
         var mm = world.mobs[mp];
-        if (!mm.dead && Math.abs(mm.x - p1.x) < 160) {
-          damageMob(mm, 1, p1.x);
+        if (!mm.dead && mm.kind !== "bee" && Math.abs(mm.x - p1.x) < 150) {
+          damageMob(mm, 1, p1.x, { fromPet: true, noKnock: true, hitType: "any" });
           break;
         }
       }
     }
 
     // particles
-    for (var pi = particles.length - 1; pi >= 0; pi--) {
-      var pt = particles[pi];
+    for (var pii = particles.length - 1; pii >= 0; pii--) {
+      var pt = particles[pii];
       pt.t -= dt;
       pt.x += pt.vx * dt;
       pt.y += pt.vy * dt;
       pt.vy += 600 * dt;
-      if (pt.t <= 0) particles.splice(pi, 1);
-    }
-
-    // war guys animation
-    for (var w = 0; w < warGuys.length; w++) {
-      warGuys[w].anim += dt;
-      warGuys[w].x += warGuys[w].facing * 20 * dt;
-      if (warGuys[w].x < 150 || warGuys[w].x > world.width - 150) warGuys[w].facing *= -1;
+      if (pt.t <= 0) particles.splice(pii, 1);
     }
 
     // tutorial hints by x
@@ -1082,15 +1259,6 @@
       ctx.font = "900 11px system-ui";
       ctx.fillText("КЕЙС", cs.x + 2, cs.y + 28);
     }
-    for (var w = 0; w < warGuys.length; w++) {
-      var g = warGuys[w];
-      ctx.fillStyle = g.side ? "#ef4444" : "#3b82f6";
-      ctx.fillRect(g.x, g.y, 14, 22);
-      ctx.fillStyle = "#ffc9a3";
-      ctx.beginPath();
-      ctx.arc(g.x + 7, g.y - 4, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
     for (var m = 0; m < world.mobs.length; m++) {
       var mob = world.mobs[m];
       if (mob.dead) continue;
@@ -1098,10 +1266,13 @@
         enemies.draw(ctx, Math.floor(mob.anim * 10) % 2 ? "bee_b" : "bee_a", mob.x, mob.y, mob.w, mob.h, false);
       } else if (mob.kind === "boss") {
         enemies.draw(ctx, Math.floor(mob.anim * 6) % 2 ? "slime_spike_walk_b" : "slime_spike_walk_a", mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
-        ctx.fillStyle = "rgba(0,0,0,.4)";
+        ctx.fillStyle = "rgba(0,0,0,.45)";
         ctx.fillRect(mob.x, mob.y - 14, mob.w, 7);
         ctx.fillStyle = "#f87171";
         ctx.fillRect(mob.x, mob.y - 14, mob.w * (mob.hp / mob.maxHp), 7);
+        ctx.fillStyle = hasPetAbility("vision") ? "#fde68a" : "#fda4af";
+        ctx.font = "700 11px system-ui";
+        ctx.fillText(mob.weakLabel || "", mob.x, mob.y - 18);
       } else if (mob.gel) {
         enemies.draw(ctx, Math.floor(mob.anim * 8) % 2 ? "slime_normal_walk_b" : "slime_normal_walk_a", mob.x, mob.y, mob.w, mob.h, mob.vx > 0);
         ctx.globalAlpha = 0.45;
@@ -1117,7 +1288,7 @@
       ctx.strokeStyle = "#fbbf24";
       ctx.lineWidth = 3;
       ctx.strokeRect(world.wife.x, world.wife.y, world.wife.w, world.wife.h);
-      chars.draw(ctx, "character_pink_idle", world.wife.x - 4, world.wife.y + 8, 56, 56, false);
+      drawWife(ctx, "character_pink_idle", world.wife.x + 24, world.wife.y + 60, 70, false);
       ctx.fillStyle = "#fff";
       ctx.font = "900 12px system-ui";
       ctx.fillText("спаси!", world.wife.x + 4, world.wife.y - 6);
@@ -1127,12 +1298,13 @@
     if (world.p2) drawPerson(ctx, world.p2, "pink");
     if (world.ally) drawPerson(ctx, world.ally, "green");
 
-    // pet
-    if (state.pet) {
-      var px = world.p1.x + Math.sin(animT * 3) * 20 - 10;
-      var py = world.p1.y - 20 + Math.cos(animT * 4) * 6;
-      ctx.font = "28px system-ui";
-      ctx.fillText(state.pet.indexOf("пчел") >= 0 ? "🐝" : state.pet.indexOf("улит") >= 0 ? "🐌" : "🐸", px, py);
+    // pets (до 3)
+    for (var petI = 0; petI < state.pets.length; petI++) {
+      var pet = petById(state.pets[petI]);
+      var px = world.p1.x + Math.sin(animT * 3 + petI) * (24 + petI * 18) - 10;
+      var py = world.p1.y - 18 - petI * 14 + Math.cos(animT * 4 + petI) * 6;
+      ctx.font = "26px system-ui";
+      ctx.fillText(pet.ico, px, py);
     }
 
     for (var pr = 0; pr < projectiles.length; pr++) {
@@ -1190,7 +1362,7 @@
   window.addEventListener("keydown", function (e) {
     keys[e.code] = true;
     if (e.code === "KeyR") doRestart();
-    if (e.code === "Space" || e.code === "ArrowUp") e.preventDefault();
+    if (e.code === "Space" || e.code === "ArrowUp" || e.code === "ArrowDown") e.preventDefault();
   });
   window.addEventListener("keyup", function (e) {
     keys[e.code] = false;
@@ -1241,11 +1413,21 @@
       showComic();
     } else {
       document.getElementById("comic").classList.add("hide");
+      if (state.beaten && window.__END_COMIC__) {
+        window.__END_COMIC__ = false;
+        openMap();
+        return;
+      }
       state.seenComic = true;
       save();
-      startLevel(0);
-      toast("Обучение · J удар · K монета · пробел прыжок", 3);
+      startLevel(state.level || 0);
+      toast("←→ ходить · ↑ прыг · ↓ удар · C монета", 3.5);
     }
+  };
+
+  document.getElementById("btn-map").onclick = openMap;
+  document.getElementById("map-close").onclick = function () {
+    document.getElementById("map").classList.remove("open");
   };
 
   // fix heart fx: two halves
