@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <title>Валера Idle · Студия · Миры Амаля</title>
+  <meta name="theme-color" content="#f59e0b" />
+  <script>window.__AMAL_NO_WORLD__ = true;</script>
+  <style>
+    :root{
+      --bg:#2a2f3a; --panel:#1e2430; --accent:#3b82f6; --gold:#fbbf24; --ok:#22c55e;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:#111827;font-family:"Segoe UI",system-ui,sans-serif;color:#f8fafc;user-select:none;touch-action:none}
+    #wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+    #top{
+      flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:8px 10px;
+      background:linear-gradient(180deg,#1e3a5f,#152238);border-bottom:3px solid #0ea5e9;z-index:5;
+    }
+    #top .pill{
+      display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;
+      background:#0f172a;border:2px solid #334155;font:800 15px/1 system-ui;
+    }
+    #top .pill img{width:22px;height:22px;image-rendering:pixelated}
+    #top button{
+      border:0;border-radius:12px;padding:10px 12px;font:800 12px system-ui;cursor:pointer;color:#fff;background:var(--accent);
+    }
+    #top button.buff{background:#059669}
+    #top .spacer{flex:1}
+    #stage{flex:1;position:relative;min-height:0;background:var(--bg)}
+    canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+    #navL,#navR{
+      position:absolute;top:50%;transform:translateY(-50%);z-index:4;
+      width:48px;height:64px;border:0;border-radius:14px;font:900 22px system-ui;cursor:pointer;
+      background:#fbbf24;color:#1c1917;box-shadow:0 4px 0 #b45309;
+    }
+    #navL{left:8px}#navR{right:8px}
+    #navL:disabled,#navR:disabled{opacity:.35;cursor:default;box-shadow:none}
+    #float{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .pop{position:absolute;font:900 16px system-ui;color:#fff;text-shadow:0 2px 0 #000;animation:up 1s ease-out forwards}
+    @keyframes up{to{transform:translateY(-48px);opacity:0}}
+    #shop{
+      flex:0 0 auto;display:flex;gap:8px;padding:10px;overflow-x:auto;
+      background:linear-gradient(0deg,#0f172a,#1e293b);border-top:3px solid #334155;
+    }
+    .card{
+      flex:0 0 auto;width:132px;padding:8px;border-radius:14px;background:#1e293b;border:2px solid #475569;
+      display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+    }
+    .card.max{border-color:#22c55e}
+    .card img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated}
+    .card b{font:800 12px system-ui;text-align:center}
+    .card .price{font:800 11px system-ui;color:var(--gold)}
+    .card .meta{font:700 10px system-ui;opacity:.75}
+    .back{position:fixed;top:10px;left:10px;z-index:20;padding:8px 10px;border-radius:10px;background:#b45309;color:#fff;text-decoration:none;font:800 11px system-ui}
+    #toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);z-index:30;padding:10px 14px;border-radius:12px;background:rgba(15,23,42,.95);border:2px solid #fbbf24;font:800 13px system-ui;display:none;max-width:90vw;text-align:center}
+    #roomName{position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:3;padding:6px 14px;border-radius:999px;background:rgba(15,23,42,.85);border:2px solid #fbbf24;font:900 13px system-ui}
+  </style>
+</head>
+<body>
+  <a class="back" href="../index.html">← Миры</a>
+  <div id="wrap">
+    <div id="top">
+      <div class="spacer" style="min-width:70px"></div>
+      <button type="button" id="btn-gift">🎁 Бонус</button>
+      <div class="pill"><img id="ico-coin" alt="" /><span id="coins">0</span></div>
+      <div class="pill" title="Кристаллы"><span>💎</span><span id="gems">0</span></div>
+      <button type="button" class="buff" id="btn-buff">⚡ Усиление Валеры</button>
+      <div class="spacer"></div>
+    </div>
+    <div id="stage">
+      <div id="roomName">Студия</div>
+      <canvas id="c" width="960" height="420"></canvas>
+      <div id="float"></div>
+      <button type="button" id="navL" aria-label="назад">◀</button>
+      <button type="button" id="navR" aria-label="вперёд">▶</button>
+    </div>
+    <div id="shop"></div>
+  </div>
+  <div id="toast"></div>
+  <script src="./game.js?v=1"></script>
+</body>
+</html>

@@ -5,6 +5,7 @@
   "use strict";
 
   var GAMES_2D = [
+    { ico: "👑", name: "Валера Idle", path: "valera-idle/?v=1", note: "студия · доставщики · Лина" },
     { ico: "🏠", name: "2D дом Валеры", path: "valera-house-2d/?v=2", note: "исследовать · ролики · опыты" },
     { ico: "🏠", name: "Дом Валеры", path: "valera-home/?v=1", note: "3D · телефон · вещи · рисунок" },
     { ico: "🔬", name: "Домашняя лаборатория", path: "poznavatel-lab/?v=1", note: "опыты · книжки · Валера" },
@@ -37,6 +38,7 @@
     { ico: "🍂", name: "Осень Kenney", path: "nature-fall/?v=1", note: "Nature Kit · грибы" },
     { ico: "💎", name: "Небесный кристалл", path: "sky-crystal/", note: "новая 3D · острова" },
     { ico: "🛏️", name: "Bed Wars", path: "bed-wars/", note: "3D команда" },
+    { ico: "👑", name: "Валера Idle", path: "valera-idle/?v=1", note: "idle · Лина · коптеры" },
     { ico: "🏠", name: "2D дом Валеры", path: "valera-house-2d/?v=2", note: "титры · камера · опыты" },
     { ico: "🏠", name: "Дом Валеры", path: "valera-home/?v=1", note: "3D дом · телефон" },
     { ico: "🔬", name: "Домашняя лаборатория", path: "poznavatel-lab/?v=1", note: "познаватель · опыты" },
@@ -56,6 +58,7 @@
   ];
 
   var EXCLUSIVE = [
+    { ico: "👑", name: "Валера Idle", path: "valera-idle/?v=1", note: "студия · прокачка" },
     { ico: "🏠", name: "2D дом Валеры", path: "valera-house-2d/?v=2", note: "жёлтый Валера · ролики" },
     { ico: "🏠", name: "Дом Валеры", path: "valera-home/?v=1", note: "3D · вещи · рисунок" },
     { ico: "🔬", name: "Домашняя лаборатория", path: "poznavatel-lab/?v=1", note: "опыты · Валера" },
