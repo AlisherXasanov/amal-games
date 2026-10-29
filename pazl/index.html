@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1" />
+  <title>Pazl — пазл с падением</title>
+  <meta name="description" content="Собери картинки из кусочков: соединяй, очищай поле, смотри как падают новые. Спокойная одиночная головоломка." />
+  <meta name="theme-color" content="#0c3b3a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css?v=1" />
+</head>
+<body>
+  <a class="portal-back" href="../">← Все игры</a>
+
+  <div id="boot" class="screen">
+    <div class="boot-bg" aria-hidden="true"></div>
+    <div class="boot-inner">
+      <p class="brand">Pazl</p>
+      <p class="tag">Собери картинки. Очисти поле. Смотри, как падают новые кусочки.</p>
+      <button type="button" id="btnStart" class="cta">Играть</button>
+      <p class="hint">Одиночная · без таймера · тяни кусочки пальцем</p>
+    </div>
+  </div>
+
+  <div id="play" class="screen" hidden>
+    <header class="hud">
+      <div class="hud-left">
+        <strong class="hud-brand">Pazl</strong>
+        <span id="themeName" class="theme-pill">Природа</span>
+      </div>
+      <div class="hud-right">
+        <span id="roundLabel">Раунд 1</span>
+        <span id="deckLabel" title="В колоде">Колода: 0</span>
+      </div>
+    </header>
+
+    <p id="status" class="status">Соединяй соседние кусочки одной картинки</p>
+
+    <div id="boardWrap">
+      <canvas id="board" width="360" height="504"></canvas>
+    </div>
+
+    <div class="bar">
+      <button type="button" id="btnHint" class="bar-btn">Подсказка</button>
+      <button type="button" id="btnMenu" class="bar-btn ghost">Меню</button>
+    </div>
+  </div>
+
+  <div id="win" class="screen overlay" hidden>
+    <div class="modal">
+      <p class="brand sm">Pazl</p>
+      <h2 id="winTitle">Раунд пройден</h2>
+      <p id="winText">Все картинки собраны.</p>
+      <button type="button" id="btnNext" class="cta">Дальше</button>
+      <button type="button" id="btnAgain" class="bar-btn ghost">Ещё раз</button>
+    </div>
+  </div>
+
+  <p class="credit">Фото: Unsplash через Lorem Picsum · см. CREDITS.txt</p>
+
+  <script src="./game.js?v=1"></script>
+</body>
+</html>

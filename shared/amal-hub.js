@@ -90,6 +90,7 @@
     { id: "escape-tsunami", name: "Escape Tsunami" },
     { id: "bed-wars", name: "Bed Wars" },
     { id: "speed-escape", name: "Speed Escape" },
+    { id: "pazl", name: "Pazl" },
   ];
 
   const CHANGELOG = [
@@ -1341,6 +1342,7 @@
       "steal-brainrot": "Steal Brainrot",
       "grow-garden": "Grow Garden",
       "jelly-lab": "Желейная хата",
+      "pazl": "Pazl",
       "mult-studio": "Полка Валеры",
       "school-party": "Школьная вечеринка",
       "anim-master": "Кадр · анимации",
