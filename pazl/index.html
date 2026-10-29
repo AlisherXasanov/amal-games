@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=1" />
+  <link rel="stylesheet" href="./style.css?v=2" />
 </head>
 <body>
   <a class="portal-back" href="../">← Все игры</a>
@@ -20,9 +20,9 @@
     <div class="boot-bg" aria-hidden="true"></div>
     <div class="boot-inner">
       <p class="brand">Pazl</p>
-      <p class="tag">Собери картинки. Очисти поле. Смотри, как падают новые кусочки.</p>
+      <p class="tag">Собери картинки. Очисти поле. Новые кусочки падают после сбора.</p>
       <button type="button" id="btnStart" class="cta">Играть</button>
-      <p class="hint">Одиночная · без таймера · тяни кусочки пальцем</p>
+      <p class="hint">Одиночная · без таймера · удобно пальцем</p>
     </div>
   </div>
 
@@ -38,15 +38,32 @@
       </div>
     </header>
 
-    <p id="status" class="status">Соединяй соседние кусочки одной картинки</p>
+    <p id="status" class="status">Поставь кусочки одной фото рядом</p>
 
     <div id="boardWrap">
-      <canvas id="board" width="360" height="504"></canvas>
+      <canvas id="board" width="360" height="540"></canvas>
     </div>
 
     <div class="bar">
+      <button type="button" id="btnGroup" class="bar-btn">Группа: выкл</button>
       <button type="button" id="btnHint" class="bar-btn">Подсказка</button>
+      <button type="button" id="btnHow" class="bar-btn ghost">Как играть</button>
       <button type="button" id="btnMenu" class="bar-btn ghost">Меню</button>
+    </div>
+  </div>
+
+  <div id="help" class="screen overlay" hidden>
+    <div class="modal help">
+      <p class="brand sm">Pazl</p>
+      <h2>Как играть</h2>
+      <ol class="help-list">
+        <li><b>Нажми</b> кусочек — он выберется (рамка).</li>
+        <li><b>Нажми клетку</b>, куда поставить. Или тяни пальцем — кусочек едет <b>над</b> пальцем, чтобы было видно цель.</li>
+        <li><b>Зелёная</b> подсветка = сюда встанет. <b>Жёлтая</b> = обмен местами с другим кусочком.</li>
+        <li>Собери фото в квадрат <b>2×2</b> — оно исчезнет, сверху упадут новые.</li>
+        <li>Кнопка <b>«Группа»</b> — двигать уже соединённые кусочки вместе (по умолчанию выкл — так проще на телефоне).</li>
+      </ol>
+      <button type="button" id="btnHelpOk" class="cta">Понятно</button>
     </div>
   </div>
 
@@ -62,6 +79,6 @@
 
   <p class="credit">Фото: Unsplash через Lorem Picsum · см. CREDITS.txt</p>
 
-  <script src="./game.js?v=1"></script>
+  <script src="./game.js?v=2"></script>
 </body>
 </html>
