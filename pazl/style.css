@@ -128,6 +128,32 @@ body {
   font-weight: 600;
 }
 
+.diff {
+  margin: 0 0 1.1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(232, 242, 239, 0.22);
+  border-radius: 16px;
+  background: rgba(6, 28, 27, 0.45);
+  text-align: left;
+}
+
+.diff legend {
+  font: 800 0.78rem/1 var(--font-ui);
+  padding: 0 0.35rem;
+  color: #ffe7b0;
+}
+
+.diff label {
+  display: block;
+  font: 700 0.9rem/1.55 var(--font-ui);
+  margin: 0.15rem 0;
+}
+
+.diff input {
+  margin-right: 0.45rem;
+  accent-color: var(--accent);
+}
+
 .cta {
   appearance: none;
   border: 0;

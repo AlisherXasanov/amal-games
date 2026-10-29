@@ -1,39 +1,74 @@
 (() => {
   "use strict";
 
-  // Slightly roomier board so fingers can aim
-  const COLS = 4;
-  const ROWS = 6;
-  const PW = 2;
-  const PH = 2;
-  const PIECES_PER_PIC = PW * PH;
-  const FINGER_LIFT_CELLS = 1.15; // aim point above the finger
+  const FINGER_LIFT_CELLS = 1.2;
 
-  const THEMES = [
+  /** Easy = big cells; Hard = small cells / denser board */
+  const DIFFS = {
+    easy: { id: "easy", name: "Легко", cols: 3, rows: 4, picW: 2, picH: 2, pics: 2 },
+    medium: { id: "medium", name: "Средне", cols: 4, rows: 5, picW: 2, picH: 2, pics: 3 },
+    hard: { id: "hard", name: "Сложно", cols: 5, rows: 6, picW: 2, picH: 2, pics: 5 },
+  };
+
+  const LIBRARY = [
     {
       id: "nature",
       name: "Природа",
-      pics: ["nature-1", "nature-2", "nature-3", "nature-4"],
+      pics: [
+        "nature-1",
+        "nature-2",
+        "nature-3",
+        "nature-4",
+        "nature-5",
+        "nature-6",
+        "nature-7",
+      ],
     },
     {
       id: "city",
       name: "Город",
-      pics: ["city-1", "city-2", "city-3", "city-4"],
+      pics: ["city-1", "city-2", "city-3", "city-4", "city-5", "city-6", "city-7"],
     },
     {
       id: "animals",
       name: "Животные",
-      pics: ["animals-1", "animals-2", "animals-3", "animals-4"],
+      pics: [
+        "animals-1",
+        "animals-2",
+        "animals-3",
+        "animals-4",
+        "animals-5",
+        "animals-6",
+        "animals-7",
+      ],
     },
     {
       id: "food",
       name: "Еда",
-      pics: ["food-1", "food-2", "food-3", "food-4"],
+      pics: ["food-1", "food-2", "food-3", "food-4", "food-5", "food-6", "food-7"],
     },
     {
       id: "space",
       name: "Космос",
-      pics: ["space-1", "space-2", "space-3", "space-4"],
+      pics: [
+        "space-1",
+        "space-2",
+        "space-3",
+        "space-4",
+        "space-5",
+        "space-6",
+        "space-7",
+      ],
+    },
+    {
+      id: "travel",
+      name: "Путешествия",
+      pics: ["travel-1", "travel-2", "travel-3", "travel-4"],
+    },
+    {
+      id: "art",
+      name: "Арт",
+      pics: ["art-1", "art-2", "art-3", "art-4"],
     },
   ];
 
@@ -46,6 +81,8 @@
   const themeNameEl = document.getElementById("themeName");
   const roundLabelEl = document.getElementById("roundLabel");
   const deckLabelEl = document.getElementById("deckLabel");
+  const scoreLabelEl = document.getElementById("scoreLabel");
+  const timeLabelEl = document.getElementById("timeLabel");
   const statusEl = document.getElementById("status");
   const winTitleEl = document.getElementById("winTitle");
   const winTextEl = document.getElementById("winText");
@@ -53,9 +90,22 @@
   /** @type {Map<string, HTMLImageElement>} */
   const images = new Map();
 
+  let diff = DIFFS.easy;
+  let COLS = diff.cols;
+  let ROWS = diff.rows;
+  let PW = diff.picW;
+  let PH = diff.picH;
+
   let roundIndex = 0;
   let cleared = 0;
   let totalPics = 0;
+  let score = 0;
+  let combo = 0;
+  let startedAt = 0;
+  let elapsedMs = 0;
+  let timerOn = false;
+  let won = false;
+
   /** @type {(null|{id:number,pic:string,px:number,py:number,gid:number})[]} */
   let grid = [];
   /** @type {{pic:string,px:number,py:number}[]} */
@@ -65,24 +115,14 @@
   let hintCell = -1;
   let hintUntil = 0;
   let animT = 0;
-  let won = false;
-  /** Move whole connected group when true; otherwise only the touched piece */
-  let moveGroup = false;
 
-  /** @type {null|{
-   *  pieces: {piece:any,originI:number,originC:number,originR:number,ox:number,oy:number}[],
-   *  anchorC:number, anchorR:number,
-   *  startX:number, startY:number,
-   *  x:number, y:number, baseX:number, baseY:number,
-   *  dc:number, dr:number,
-   *  aimX:number, aimY:number,
-   *  moved:boolean,
-   *  pointerKind:string
-   * }} */
   let drag = null;
   let pointerId = null;
-  /** Selected cell index for tap-to-move (no drag) */
   let selectedI = -1;
+
+  function piecesPerPic() {
+    return PW * PH;
+  }
 
   function cellIndex(c, r) {
     return r * COLS + c;
@@ -118,8 +158,14 @@
     });
   }
 
-  async function preloadTheme(theme) {
-    await Promise.all(theme.pics.map(loadImage));
+  async function preloadPics(pics) {
+    const results = await Promise.allSettled(pics.map(loadImage));
+    const ok = [];
+    results.forEach((r, i) => {
+      if (r.status === "fulfilled") ok.push(pics[i]);
+    });
+    if (!ok.length) throw new Error("no-images");
+    return ok;
   }
 
   function makePiecesForPic(pic) {
@@ -142,50 +188,35 @@
 
   function findEmptyCells() {
     const out = [];
-    for (let i = 0; i < grid.length; i++) {
-      if (!grid[i]) out.push(i);
-    }
+    for (let i = 0; i < grid.length; i++) if (!grid[i]) out.push(i);
     return out;
   }
 
-  function dealFromDeck(count) {
-    let placed = 0;
-    while (placed < count && deck.length) {
-      const cols = shuffle([...Array(COLS).keys()]);
-      let put = false;
-      for (const c of cols) {
-        let top = -1;
-        for (let rr = 0; rr < ROWS; rr++) {
-          if (!grid[cellIndex(c, rr)]) {
-            top = rr;
-            break;
-          }
-        }
-        if (top < 0) continue;
-        const raw = deck.pop();
-        placePiece(c, top, {
-          id: nextId++,
-          pic: raw.pic,
-          px: raw.px,
-          py: raw.py,
-          gid: nextGid++,
-        });
-        placed++;
-        put = true;
-        break;
-      }
-      if (!put) break;
+  function fillBoardFromDeck() {
+    // Pack the board completely (swap-based play needs no permanent empty cells).
+    const empties = findEmptyCells();
+    shuffle(empties);
+    let n = 0;
+    for (const i of empties) {
+      if (!deck.length) break;
+      const raw = deck.pop();
+      grid[i] = {
+        id: nextId++,
+        pic: raw.pic,
+        px: raw.px,
+        py: raw.py,
+        gid: nextGid++,
+      };
+      n++;
     }
-    applyGravity();
     relinkAll();
-    return placed;
+    return n;
   }
 
   function applyGravity() {
-    // Connected groups fall as one unit so jigsaw links stay intact.
     let moved = true;
     let guard = 0;
-    while (moved && guard++ < 40) {
+    while (moved && guard++ < 50) {
       moved = false;
       relinkAll();
       const gids = [...new Set(grid.filter(Boolean).map((p) => p.gid))];
@@ -279,7 +310,7 @@
 
   function isPictureComplete(gid) {
     const cells = groupCells(gid);
-    if (cells.length !== PIECES_PER_PIC) return false;
+    if (cells.length !== piecesPerPic()) return false;
     const first = grid[cells[0]];
     const pic = first.pic;
     const positions = new Set();
@@ -310,9 +341,7 @@
 
   function clearCompleted() {
     const gids = new Set();
-    for (const cell of grid) {
-      if (cell) gids.add(cell.gid);
-    }
+    for (const cell of grid) if (cell) gids.add(cell.gid);
     let clearedNow = 0;
     for (const gid of gids) {
       if (!isPictureComplete(gid)) continue;
@@ -325,62 +354,62 @@
     return clearedNow;
   }
 
-  /**
-   * Gravity only after a picture clears (or when dealing).
-   * After a normal move, pieces stay exactly where you put them.
-   */
-  function settleBoard(opts) {
-    const { withGravity } = opts || { withGravity: false };
-    let clearedAny = false;
+  function addScoreForClears(n) {
+    if (n <= 0) return;
+    combo += n;
+    const base = 100 * n * (diff.id === "hard" ? 2 : diff.id === "medium" ? 1.5 : 1);
+    const comboBonus = Math.max(0, (combo - 1) * 40);
+    const gain = Math.round(base + comboBonus);
+    score += gain;
+    setStatus(
+      n === 1
+        ? `Картинка собрана! +${gain}`
+        : `Собрано ${n}! +${gain} · комбо ×${combo}`
+    );
+  }
+
+  function settleAfterClear() {
+    let any = false;
     let guard = 0;
     while (guard++ < 40) {
       relinkAll();
       const n = clearCompleted();
-      if (n) {
-        clearedAny = true;
-        setStatus(n === 1 ? "Картинка собрана!" : `Собрано картинок: ${n}`);
-        applyGravity();
-        continue;
-      }
-      if (withGravity) {
-        const before = grid.map((p) => (p ? p.id : 0)).join(",");
-        applyGravity();
-        relinkAll();
-        const after = grid.map((p) => (p ? p.id : 0)).join(",");
-        if (before !== after) continue;
-      }
-      break;
+      if (!n) break;
+      any = true;
+      addScoreForClears(n);
+      applyGravity();
+      fillBoardFromDeck();
     }
-    return clearedAny;
+    if (!any) combo = 0;
+    return any;
   }
 
   function afterMove() {
     selectedI = -1;
-    // Pieces keep their placed cells; gravity runs only if something cleared.
-    let any = settleBoard({ withGravity: false });
-    const free = findEmptyCells().length;
-    if (deck.length && free && any) {
-      dealFromDeck(Math.min(2, free, deck.length));
-      if (settleBoard({ withGravity: false })) any = true;
+    relinkAll();
+    const glued = settleAfterClear();
+    if (!glued) {
+      // Check if the move itself created new links (no clear yet)
+      setStatus("Меняй местами · склейка, когда кусочки одной фото встают верно");
     }
     updateHud();
+    checkWin();
+  }
+
+  function checkWin() {
     if (cleared >= totalPics && deck.length === 0 && !grid.some(Boolean)) {
       winRound();
-    } else if (!any) {
-      setStatus(
-        moveGroup
-          ? "Режим группы · поставь на зелёную клетку или поменяй местами"
-          : "Поставь рядом кусочки одной фото · можно менять местами"
-      );
     }
   }
 
-  function picsForRound(index) {
-    const theme = THEMES[index];
-    // First round: only 2 photos so the board stays readable on a phone
-    if (index === 0) return theme.pics.slice(0, 2);
-    if (index === 1) return theme.pics.slice(0, 3);
-    return theme.pics.slice();
+  function themeForRound(index) {
+    return LIBRARY[index % LIBRARY.length];
+  }
+
+  function pickPics(theme, count, available) {
+    const allow = new Set(available || theme.pics);
+    const pool = shuffle(theme.pics.filter((p) => allow.has(p) && images.has(p)));
+    return pool.slice(0, Math.min(count, pool.length));
   }
 
   function startRound(index) {
@@ -389,38 +418,74 @@
     selectedI = -1;
     drag = null;
     pointerId = null;
-    roundIndex = ((index % THEMES.length) + THEMES.length) % THEMES.length;
-    const theme = THEMES[roundIndex];
-    const pics = picsForRound(roundIndex);
-    themeNameEl.textContent = theme.name;
-    roundLabelEl.textContent = `Раунд ${roundIndex + 1}/${THEMES.length}`;
+    combo = 0;
+
+    COLS = diff.cols;
+    ROWS = diff.rows;
+    PW = diff.picW;
+    PH = diff.picH;
+
+    roundIndex = ((index % LIBRARY.length) + LIBRARY.length) % LIBRARY.length;
+    const theme = themeForRound(roundIndex);
+    const cells = COLS * ROWS;
+    const needPics = Math.max(diff.pics, Math.ceil(cells / piecesPerPic()));
+    // Prefer current theme; top up from the whole library so the board packs full
+    let pics = pickPics(theme, needPics);
+    if (pics.length < needPics) {
+      const extraPool = shuffle(
+        LIBRARY.flatMap((t) => t.pics).filter((p) => images.has(p) && !pics.includes(p))
+      );
+      while (pics.length < needPics && extraPool.length) pics.push(extraPool.pop());
+    }
+    if (!pics.length) {
+      setStatus("Нет загруженных фото для этой темы");
+      return;
+    }
+
+    themeNameEl.textContent = `${theme.name} · ${diff.name}`;
+    roundLabelEl.textContent = `Раунд ${roundIndex + 1}/${LIBRARY.length}`;
     cleared = 0;
     totalPics = pics.length;
     emptyGrid();
     deck = [];
     for (const pic of pics) deck.push(...makePiecesForPic(pic));
     shuffle(deck);
-    const keepInDeck = Math.min(4, Math.max(2, Math.floor(deck.length / 3)));
-    const initial = Math.max(6, deck.length - keepInDeck);
-    dealFromDeck(initial);
-    relinkAll();
+
+    // Pack every cell; leftovers stay in deck for after clears
+    fillBoardFromDeck();
+    // Rare accidental completes at start — recount remaining photos
     while (clearCompleted()) {
       applyGravity();
-      if (deck.length) dealFromDeck(Math.min(2, deck.length));
-      relinkAll();
+      fillBoardFromDeck();
     }
+    cleared = 0;
+    const remain = new Set();
+    for (const p of grid) if (p) remain.add(p.pic);
+    for (const p of deck) remain.add(p.pic);
+    totalPics = remain.size || totalPics;
+    score = 0;
+    startedAt = performance.now();
+    elapsedMs = 0;
+    timerOn = true;
     updateHud();
-    setStatus(`Тема: ${theme.name}. Собери ${totalPics} фото (по 4 кусочка).`);
+    resizeCanvas();
+    setStatus(
+      `Поле полное · меняй кусочки местами · склей ${totalPics} фото (${PW}×${PH})`
+    );
     hintCell = -1;
+  }
+
+  function formatTime(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m}:${String(r).padStart(2, "0")}`;
   }
 
   function updateHud() {
     deckLabelEl.textContent = `Колода: ${deck.length}`;
-    const btn = document.getElementById("btnGroup");
-    if (btn) {
-      btn.classList.toggle("on", moveGroup);
-      btn.textContent = moveGroup ? "Группа: вкл" : "Группа: выкл";
-    }
+    if (scoreLabelEl) scoreLabelEl.textContent = `Очки: ${score}`;
+    if (timeLabelEl) timeLabelEl.textContent = formatTime(elapsedMs);
   }
 
   function setStatus(text) {
@@ -430,17 +495,22 @@
   function winRound() {
     if (won) return;
     won = true;
-    const last = roundIndex >= THEMES.length - 1;
-    winTitleEl.textContent = last ? "Все раунды пройдены!" : "Раунд пройден";
-    winTextEl.textContent = last
-      ? "Можно пройти круг тем заново — картинки снова в колоде."
-      : `Тема «${THEMES[roundIndex].name}» собрана. Дальше — новая тема.`;
+    timerOn = false;
+    elapsedMs = performance.now() - startedAt;
+    // Time bonus
+    const seconds = Math.max(1, Math.floor(elapsedMs / 1000));
+    const timeBonus = Math.max(0, Math.round(8000 / seconds) * 10);
+    score += timeBonus;
+    updateHud();
+    const last = roundIndex >= LIBRARY.length - 1;
+    winTitleEl.textContent = last ? "Все темы пройдены!" : "Раунд пройден";
+    winTextEl.textContent = `Очки: ${score} · время ${formatTime(elapsedMs)} · бонус за скорость +${timeBonus}`;
     document.getElementById("btnNext").textContent = last ? "Сначала" : "Дальше";
     winEl.hidden = false;
   }
 
   function layoutMetrics() {
-    const pad = 8;
+    const pad = 6;
     const w = canvas.width;
     const h = canvas.height;
     const cell = Math.min((w - pad * 2) / COLS, (h - pad * 2) / ROWS);
@@ -461,8 +531,8 @@
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const clientX = evt.clientX ?? (evt.touches && evt.touches[0]?.clientX);
-    const clientY = evt.clientY ?? (evt.touches && evt.touches[0]?.clientY);
+    const clientX = evt.clientX ?? evt.touches?.[0]?.clientX;
+    const clientY = evt.clientY ?? evt.touches?.[0]?.clientY;
     return {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top) * scaleY,
@@ -470,51 +540,14 @@
     };
   }
 
-  /** Aim above the finger so the target cell is visible. */
   function aimFromPointer(pt, kind) {
     const { cell } = layoutMetrics();
-    const lift = kind === "touch" || kind === "pen" ? cell * FINGER_LIFT_CELLS : 0;
+    const lift =
+      kind === "touch" || kind === "pen" ? cell * FINGER_LIFT_CELLS : 0;
     return { x: pt.x, y: pt.y - lift };
   }
 
-  function drawPiece(piece, x, y, size, alpha, lift, selected) {
-    const img = images.get(piece.pic);
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    const s = size - 4;
-    const px = x + 2;
-    const py = y + 2 - (lift || 0);
-    ctx.beginPath();
-    roundRect(px, py, s, s, 8);
-    ctx.clip();
-    if (img && img.complete) {
-      const sw = img.width / PW;
-      const sh = img.height / PH;
-      ctx.drawImage(img, piece.px * sw, piece.py * sh, sw, sh, px, py, s, s);
-    } else {
-      ctx.fillStyle = "#2a6";
-      ctx.fillRect(px, py, s, s);
-    }
-    ctx.restore();
-
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = selected
-      ? "rgba(226,160,58,0.95)"
-      : "rgba(255,255,255,0.4)";
-    ctx.lineWidth = selected ? 3.5 : 1.5;
-    roundRect(px, py, s, s, 8);
-    ctx.stroke();
-    ctx.fillStyle = "rgba(12,59,58,0.45)";
-    if (piece.px === 0 && piece.py === 0) {
-      ctx.beginPath();
-      ctx.arc(px + 10, py + 10, 3, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  function roundRect(x, y, w, h, r) {
+  function roundRectPath(x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
     ctx.moveTo(x + rr, y);
@@ -525,8 +558,148 @@
     ctx.closePath();
   }
 
+  function edgeSharedWithGroup(c, r, piece, dir) {
+    // dir: 0L 1R 2U 3D — true if neighbor is same glued group
+    let nc = c;
+    let nr = r;
+    if (dir === 0) nc--;
+    if (dir === 1) nc++;
+    if (dir === 2) nr--;
+    if (dir === 3) nr++;
+    if (!inBounds(nc, nr)) return false;
+    const other = grid[cellIndex(nc, nr)];
+    return !!(other && other.gid === piece.gid && other.id !== piece.id);
+  }
+
+  function drawFragment(piece, x, y, size, alpha, lift, opts) {
+    const img = images.get(piece.pic);
+    const gapHide = opts?.glue || false;
+    const selected = opts?.selected || false;
+    const s = size;
+    const inset = gapHide ? 0 : 2;
+    const px = x + inset;
+    const py = y + inset - (lift || 0);
+    const pw = s - inset * 2;
+    const ph = s - inset * 2;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    if (!gapHide) {
+      roundRectPath(px, py, pw, ph, 8);
+      ctx.clip();
+    } else {
+      ctx.beginPath();
+      ctx.rect(px, py, pw, ph);
+      ctx.clip();
+    }
+    if (img && img.complete) {
+      const sw = img.width / PW;
+      const sh = img.height / PH;
+      // Slight overlap when glued to kill seams
+      const bleed = gapHide ? 1.1 : 0;
+      ctx.drawImage(
+        img,
+        piece.px * sw,
+        piece.py * sh,
+        sw,
+        sh,
+        px - bleed,
+        py - bleed,
+        pw + bleed * 2,
+        ph + bleed * 2
+      );
+    } else {
+      ctx.fillStyle = "#2a6";
+      ctx.fillRect(px, py, pw, ph);
+    }
+    ctx.restore();
+
+    if (!gapHide) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = selected
+        ? "rgba(226,160,58,0.95)"
+        : "rgba(255,255,255,0.4)";
+      ctx.lineWidth = selected ? 3.5 : 1.5;
+      roundRectPath(px, py, pw, ph, 8);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawGluedGroup(gid, cell, ox, oy, draggingIds) {
+    const cells = groupCells(gid).filter((i) => {
+      const p = grid[i];
+      return p && !draggingIds.has(p.id);
+    });
+    if (!cells.length) return;
+
+    // Draw each fragment without internal gaps; stroke only outer edges
+    for (const i of cells) {
+      const c = i % COLS;
+      const r = (i / COLS) | 0;
+      const p = grid[i];
+      const x = ox + c * cell;
+      const y = oy + r * cell;
+      const glow = hintCell === i && performance.now() < hintUntil;
+      const sel = selectedI === i;
+      if (glow) {
+        ctx.save();
+        ctx.shadowColor = "rgba(226,160,58,0.85)";
+        ctx.shadowBlur = 14;
+      }
+      drawFragment(p, x, y, cell, 1, glow ? Math.sin(animT / 8) * 2 : 0, {
+        glue: cells.length > 1,
+        selected: sel && cells.length === 1,
+      });
+      if (glow) ctx.restore();
+    }
+
+    if (cells.length === 1) return;
+
+    // Outer border path for the whole group
+    ctx.save();
+    ctx.strokeStyle = selectedI >= 0 && cells.includes(selectedI)
+      ? "rgba(226,160,58,0.95)"
+      : "rgba(255,255,255,0.55)";
+    ctx.lineWidth = selectedI >= 0 && cells.includes(selectedI) ? 3.5 : 2.2;
+    ctx.lineJoin = "round";
+    for (const i of cells) {
+      const c = i % COLS;
+      const r = (i / COLS) | 0;
+      const p = grid[i];
+      const x = ox + c * cell;
+      const y = oy + r * cell;
+      // draw only sides that are not shared
+      ctx.beginPath();
+      if (!edgeSharedWithGroup(c, r, p, 2)) {
+        ctx.moveTo(x + 1, y + 1);
+        ctx.lineTo(x + cell - 1, y + 1);
+      }
+      if (!edgeSharedWithGroup(c, r, p, 3)) {
+        ctx.moveTo(x + 1, y + cell - 1);
+        ctx.lineTo(x + cell - 1, y + cell - 1);
+      }
+      if (!edgeSharedWithGroup(c, r, p, 0)) {
+        ctx.moveTo(x + 1, y + 1);
+        ctx.lineTo(x + 1, y + cell - 1);
+      }
+      if (!edgeSharedWithGroup(c, r, p, 1)) {
+        ctx.moveTo(x + cell - 1, y + 1);
+        ctx.lineTo(x + cell - 1, y + cell - 1);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function draw() {
     animT += 1;
+    if (timerOn && !won) {
+      elapsedMs = performance.now() - startedAt;
+      if (animT % 15 === 0) updateHud();
+    }
+
     const { cell, ox, oy } = layoutMetrics();
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -536,77 +709,55 @@
         const y = oy + r * cell;
         ctx.fillStyle =
           (c + r) % 2 === 0 ? "rgba(232,242,239,0.07)" : "rgba(232,242,239,0.03)";
-        roundRect(x + 1, y + 1, cell - 2, cell - 2, 10);
+        roundRectPath(x + 1, y + 1, cell - 2, cell - 2, 8);
         ctx.fill();
       }
     }
 
     const dragging = new Set();
-    if (drag) {
-      for (const p of drag.pieces) dragging.add(p.id);
-    }
+    if (drag) for (const p of drag.pieces) dragging.add(p.piece.id);
 
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        const i = cellIndex(c, r);
-        const p = grid[i];
-        if (!p || dragging.has(p.id)) continue;
-        const x = ox + c * cell;
-        const y = oy + r * cell;
-        const glow = hintCell === i && performance.now() < hintUntil;
-        const sel = selectedI === i;
-        if (glow) {
-          ctx.save();
-          ctx.shadowColor = "rgba(226,160,58,0.9)";
-          ctx.shadowBlur = 16;
-          drawPiece(p, x, y, cell, 1, Math.sin(animT / 8) * 2, sel);
-          ctx.restore();
-        } else {
-          drawPiece(p, x, y, cell, 1, 0, sel);
-        }
-      }
+    const drawn = new Set();
+    for (let i = 0; i < grid.length; i++) {
+      const p = grid[i];
+      if (!p || dragging.has(p.id) || drawn.has(p.gid)) continue;
+      drawn.add(p.gid);
+      drawGluedGroup(p.gid, cell, ox, oy, dragging);
     }
 
     if (drag) {
-      const { dc, dr } = drag;
-      const place = evaluatePlace(dc, dr);
+      const place = evaluateMove(drag.dc, drag.dr);
       for (const item of drag.pieces) {
-        const tc = item.originC + dc;
-        const tr = item.originR + dr;
-        if (inBounds(tc, tr)) {
-          const x = ox + tc * cell;
-          const y = oy + tr * cell;
-          ctx.fillStyle = place.ok
-            ? place.swap
-              ? "rgba(226,160,58,0.35)"
-              : "rgba(31,122,85,0.4)"
-            : "rgba(181,74,58,0.35)";
-          roundRect(x + 2, y + 2, cell - 4, cell - 4, 10);
-          ctx.fill();
-          ctx.strokeStyle = place.ok
-            ? place.swap
-              ? "rgba(226,160,58,0.95)"
-              : "rgba(120,220,170,0.95)"
-            : "rgba(255,140,120,0.9)";
-          ctx.lineWidth = 3;
-          roundRect(x + 3, y + 3, cell - 6, cell - 6, 9);
-          ctx.stroke();
-        }
+        const tc = item.originC + drag.dc;
+        const tr = item.originR + drag.dr;
+        if (!inBounds(tc, tr)) continue;
+        const x = ox + tc * cell;
+        const y = oy + tr * cell;
+        ctx.fillStyle = place.ok
+          ? place.swap
+            ? "rgba(226,160,58,0.4)"
+            : "rgba(31,122,85,0.4)"
+          : "rgba(181,74,58,0.35)";
+        roundRectPath(x + 2, y + 2, cell - 4, cell - 4, 8);
+        ctx.fill();
       }
 
-      // Aim reticle (where the piece will land)
-      const ax = drag.aimX;
-      const ay = drag.aimY;
       ctx.beginPath();
-      ctx.strokeStyle = "rgba(255,255,255,0.7)";
+      ctx.strokeStyle = "rgba(255,255,255,0.75)";
       ctx.lineWidth = 2;
-      ctx.arc(ax, ay, Math.max(6, cell * 0.12), 0, Math.PI * 2);
+      ctx.arc(drag.aimX, drag.aimY, Math.max(6, cell * 0.12), 0, Math.PI * 2);
       ctx.stroke();
 
       for (const item of drag.pieces) {
-        const x = drag.x + item.ox;
-        const y = drag.y + item.oy;
-        drawPiece(item.piece, x, y, cell, 0.96, 8, false);
+        drawFragment(
+          item.piece,
+          drag.x + item.ox,
+          drag.y + item.oy,
+          cell,
+          0.96,
+          6,
+          { glue: drag.pieces.length > 1 }
+        );
       }
     }
 
@@ -614,55 +765,61 @@
   }
 
   /**
-   * Empty cells → place. One piece onto one occupied cell → swap.
-   * Moving set is already lifted off the board, so any piece on a target is foreign.
+   * Swap-first movement on a packed board.
+   * Lifted pieces are already removed from `grid`.
    */
-  function evaluatePlace(dc, dr) {
+  function evaluateMove(dc, dr) {
     if (!drag) return { ok: false, swap: false };
     if (dc === 0 && dr === 0) return { ok: false, swap: false };
 
-    const targets = [];
-    for (const item of drag.pieces) {
-      const tc = item.originC + dc;
-      const tr = item.originR + dr;
-      if (!inBounds(tc, tr)) return { ok: false, swap: false };
-      targets.push({ item, tc, tr, ti: cellIndex(tc, tr) });
+    const from = drag.pieces.map((p) => cellIndex(p.originC, p.originR));
+    const to = drag.pieces.map((p) =>
+      cellIndex(p.originC + dc, p.originR + dr)
+    );
+    for (let k = 0; k < to.length; k++) {
+      const c = drag.pieces[k].originC + dc;
+      const r = drag.pieces[k].originR + dr;
+      if (!inBounds(c, r)) return { ok: false, swap: false };
     }
+    if (new Set(to).size !== to.length) return { ok: false, swap: false };
 
-    const blockers = targets.filter((t) => grid[t.ti]);
-    if (blockers.length === 0) return { ok: true, swap: false, targets };
-    if (drag.pieces.length === 1 && blockers.length === 1) {
-      return { ok: true, swap: true, targets };
+    const fromSet = new Set(from);
+    const toSet = new Set(to);
+    const covered = [...toSet].filter((i) => !fromSet.has(i));
+    const vacated = [...fromSet].filter((i) => !toSet.has(i));
+    const under = covered.map((i) => grid[i]);
+
+    if (under.every((p) => !p)) {
+      return { ok: true, swap: false, from, to, covered, vacated, under };
     }
-    // Groups only land on fully empty footprints
+    if (under.every((p) => p) && under.length === vacated.length) {
+      return { ok: true, swap: true, from, to, covered, vacated, under };
+    }
+    // Single piece onto one piece (always swap) — covered/vacated length 1
+    if (drag.pieces.length === 1 && under.length === 1 && under[0]) {
+      return { ok: true, swap: true, from, to, covered, vacated, under };
+    }
     return { ok: false, swap: false };
   }
 
-  function applyPlace(dc, dr) {
-    const place = evaluatePlace(dc, dr);
+  function applyMove(dc, dr) {
+    const place = evaluateMove(dc, dr);
     if (!place.ok) return false;
 
-    // Origins were cleared when the drag started, so the board only holds
-    // pieces that are not in the moving set.
-    if (place.swap) {
-      const item = drag.pieces[0];
-      const tc = item.originC + dc;
-      const tr = item.originR + dr;
-      const ti = cellIndex(tc, tr);
-      const other = grid[ti];
-      grid[ti] = item.piece;
-      item.piece.gid = nextGid++;
-      if (other) {
-        placePiece(item.originC, item.originR, other);
-        other.gid = nextGid++;
-      }
-      return true;
+    const { from, to, covered, vacated, under, swap } = place;
+
+    if (swap) {
+      for (const i of covered) grid[i] = null;
+      vacated.forEach((i, k) => {
+        grid[i] = under[k];
+        if (under[k]) under[k].gid = nextGid++;
+      });
     }
 
-    for (const item of drag.pieces) {
-      placePiece(item.originC + dc, item.originR + dr, item.piece);
+    drag.pieces.forEach((item, k) => {
+      grid[to[k]] = item.piece;
       item.piece.gid = nextGid++;
-    }
+    });
     return true;
   }
 
@@ -673,13 +830,11 @@
     }
   }
 
+  /** Glued groups always move together (one visual piece). */
   function piecesForPickup(hit) {
     const piece = grid[hit.i];
     if (!piece) return [];
-    const cells =
-      moveGroup && groupCells(piece.gid).length > 1
-        ? groupCells(piece.gid)
-        : [hit.i];
+    const cells = groupCells(piece.gid);
     const { cell } = layoutMetrics();
     return cells.map((i) => {
       const c = i % COLS;
@@ -689,8 +844,8 @@
         originI: i,
         originC: c,
         originR: r,
-        ox: c * cell - hit.c * cell,
-        oy: r * cell - hit.r * cell,
+        ox: (c - hit.c) * cell,
+        oy: (r - hit.r) * cell,
       };
     });
   }
@@ -701,42 +856,32 @@
     const pt = canvasPoint(evt);
     const hit = cellAt(pt.x, pt.y);
 
-    // Tap-to-place: already selected → second tap chooses destination
+    // Two-tap: selected → destination (empty or swap)
     if (selectedI >= 0 && hit) {
       if (hit.i === selectedI) {
         selectedI = -1;
-        setStatus("Отмена выбора");
+        setStatus("Отмена");
         return;
       }
-      const selPiece = grid[selectedI];
-      if (!selPiece) {
+      const sel = grid[selectedI];
+      if (!sel) {
         selectedI = -1;
       } else {
         const sc = selectedI % COLS;
         const sr = (selectedI / COLS) | 0;
-        const pieces = moveGroup
-          ? groupCells(selPiece.gid).map((i) => {
-              const c = i % COLS;
-              const r = (i / COLS) | 0;
-              return {
-                piece: grid[i],
-                originI: i,
-                originC: c,
-                originR: r,
-                ox: 0,
-                oy: 0,
-              };
-            })
-          : [
-              {
-                piece: selPiece,
-                originI: selectedI,
-                originC: sc,
-                originR: sr,
-                ox: 0,
-                oy: 0,
-              },
-            ];
+        const cells = groupCells(sel.gid);
+        const pieces = cells.map((i) => {
+          const c = i % COLS;
+          const r = (i / COLS) | 0;
+          return {
+            piece: grid[i],
+            originI: i,
+            originC: c,
+            originR: r,
+            ox: 0,
+            oy: 0,
+          };
+        });
         for (const item of pieces) grid[item.originI] = null;
         drag = {
           pieces,
@@ -755,17 +900,19 @@
           moved: true,
           pointerKind: "tap",
         };
-        const ok = applyPlace(drag.dc, drag.dr);
+        // For multi-cell groups, destination tap means move so that the
+        // touched origin cell lands on `hit` — already encoded as dc/dr from sc,sr
+        // which is the selected cell (may be any cell of group). Good.
+        const ok = applyMove(drag.dc, drag.dr);
         if (!ok) {
           restoreDrag();
-          setStatus("Сюда нельзя — выбери пустую клетку или один кусочек для обмена");
-        } else {
+          setStatus("Сюда нельзя — выбери другой кусочек для обмена");
           drag = null;
-          afterMove();
+          selectedI = -1;
           return;
         }
         drag = null;
-        selectedI = -1;
+        afterMove();
         return;
       }
     }
@@ -788,10 +935,10 @@
       startY: aim.y,
       x: ox + hit.c * cell,
       y: oy + hit.r * cell,
-      dc: 0,
-      dr: 0,
       baseX: ox + hit.c * cell,
       baseY: oy + hit.r * cell,
+      dc: 0,
+      dr: 0,
       aimX: aim.x,
       aimY: aim.y,
       moved: false,
@@ -804,8 +951,8 @@
     } catch (_) {}
     setStatus(
       pieces.length > 1
-        ? "Тяни группу · зелёная клетка = сюда встанет"
-        : "Тяни выше пальца · жёлтая = обмен местами"
+        ? "Склеенный блок · жёлтая клетка = обмен местами"
+        : "Тяни на другой кусочек — они поменяются местами"
     );
   }
 
@@ -819,13 +966,9 @@
     const { cell, ox, oy } = layoutMetrics();
     drag.aimX = aim.x;
     drag.aimY = aim.y;
-    // Keep the grabbed piece under the aim point (above finger)
     drag.x = drag.baseX + (aim.x - drag.startX);
     drag.y = drag.baseY + (aim.y - drag.startY);
-    if (
-      Math.hypot(aim.x - drag.startX, aim.y - drag.startY) >
-      cell * 0.35
-    ) {
+    if (Math.hypot(aim.x - drag.startX, aim.y - drag.startY) > cell * 0.3) {
       drag.moved = true;
     }
     const hover = cellAt(
@@ -844,24 +987,22 @@
       return;
     if (evt.cancelable) evt.preventDefault();
 
-    // Tap without moving = select for two-tap place
-    if (!drag.moved && drag.pieces.length >= 1) {
+    if (!drag.moved) {
       const origin = drag.pieces[0];
       restoreDrag();
       selectedI = origin.originI;
       drag = null;
       pointerId = null;
-      setStatus("Выбрано · нажми клетку, куда поставить (или другой кусочек = обмен)");
+      setStatus("Выбрано · нажми другой кусочек = обмен, или пустую клетку");
       return;
     }
 
-    const { dc, dr } = drag;
-    const ok = applyPlace(dc, dr);
+    const ok = applyMove(drag.dc, drag.dr);
     if (!ok) {
       restoreDrag();
       drag = null;
       pointerId = null;
-      setStatus("Не встало · нужна пустая клетка или обмен с одним кусочком");
+      setStatus("Не вышло · на полном поле клади кусочек НА другой (обмен)");
       return;
     }
     drag = null;
@@ -871,9 +1012,7 @@
 
   function findHint() {
     const list = [];
-    for (let i = 0; i < grid.length; i++) {
-      if (grid[i]) list.push(i);
-    }
+    for (let i = 0; i < grid.length; i++) if (grid[i]) list.push(i);
     for (const i of list) {
       const a = grid[i];
       for (const j of list) {
@@ -882,16 +1021,16 @@
         if (a.pic !== b.pic || a.gid === b.gid) continue;
         if (Math.abs(a.px - b.px) + Math.abs(a.py - b.py) === 1) {
           hintCell = i;
-          hintUntil = performance.now() + 2500;
-          setStatus("Подсказка: этот кусочек должен стоять рядом с парой той же фото");
+          hintUntil = performance.now() + 2600;
+          setStatus("Подсказка: поменяй так, чтобы эти кусочки одной фото стали соседями");
           return;
         }
       }
     }
     if (list.length) {
       hintCell = list[(Math.random() * list.length) | 0];
-      hintUntil = performance.now() + 2500;
-      setStatus("Подсказка: собери 4 кусочка одной фото в квадрат 2×2");
+      hintUntil = performance.now() + 2600;
+      setStatus(`Собери квадрат ${PW}×${PH} одной фотографии`);
     }
   }
 
@@ -905,31 +1044,40 @@
     winEl.hidden = true;
     if (helpEl) helpEl.hidden = true;
     bootEl.hidden = false;
+    timerOn = false;
     drag = null;
     pointerId = null;
     selectedI = -1;
   }
 
+  function readDiffFromUI() {
+    const el = document.querySelector('input[name="diff"]:checked');
+    const id = el?.value || "easy";
+    diff = DIFFS[id] || DIFFS.easy;
+  }
+
   async function startGame() {
+    readDiffFromUI();
     showPlay();
     setStatus("Загрузка картинок…");
+    const theme = themeForRound(roundIndex);
     try {
-      await preloadTheme(THEMES[roundIndex] || THEMES[0]);
-      const next = THEMES[(roundIndex + 1) % THEMES.length];
-      preloadTheme(next).catch(() => {});
+      await preloadPics(theme.pics);
+      const next = themeForRound(roundIndex + 1);
+      preloadPics(next.pics).catch(() => {});
     } catch (e) {
       setStatus("Не удалось загрузить фото");
       return;
     }
     startRound(roundIndex);
-    const seen = localStorage.getItem("pazl-help-v2");
-    if (!seen && helpEl) {
-      helpEl.hidden = false;
-    }
+    try {
+      if (!localStorage.getItem("pazl-help-v3") && helpEl) helpEl.hidden = false;
+    } catch (_) {}
   }
 
   document.getElementById("btnStart").addEventListener("click", () => {
     roundIndex = 0;
+    score = 0;
     startGame();
   });
   document.getElementById("btnMenu").addEventListener("click", showBoot);
@@ -937,31 +1085,27 @@
   document.getElementById("btnHow").addEventListener("click", () => {
     if (helpEl) helpEl.hidden = false;
   });
-  document.getElementById("btnGroup").addEventListener("click", () => {
-    moveGroup = !moveGroup;
-    updateHud();
-    setStatus(
-      moveGroup
-        ? "Режим группы: соединённые кусочки едут вместе"
-        : "Режим одного кусочка: удобнее на телефоне"
-    );
-  });
   document.getElementById("btnHelpOk").addEventListener("click", () => {
     if (helpEl) helpEl.hidden = true;
     try {
-      localStorage.setItem("pazl-help-v2", "1");
+      localStorage.setItem("pazl-help-v3", "1");
     } catch (_) {}
   });
   document.getElementById("btnNext").addEventListener("click", async () => {
     winEl.hidden = true;
-    roundIndex = (roundIndex + 1) % THEMES.length;
-    setStatus("Загрузка…");
-    await preloadTheme(THEMES[roundIndex]);
+    roundIndex = (roundIndex + 1) % LIBRARY.length;
+    const theme = themeForRound(roundIndex);
+    try {
+      await preloadPics(theme.pics);
+    } catch (_) {}
     startRound(roundIndex);
   });
   document.getElementById("btnAgain").addEventListener("click", async () => {
     winEl.hidden = true;
-    await preloadTheme(THEMES[roundIndex]);
+    const theme = themeForRound(roundIndex);
+    try {
+      await preloadPics(theme.pics);
+    } catch (_) {}
     startRound(roundIndex);
   });
 
@@ -969,7 +1113,6 @@
   canvas.addEventListener("pointermove", moveDrag);
   canvas.addEventListener("pointerup", endDrag);
   canvas.addEventListener("pointercancel", endDrag);
-  // Stop Safari page scroll while playing on the board
   canvas.addEventListener(
     "touchmove",
     (e) => {
@@ -980,9 +1123,9 @@
 
   function resizeCanvas() {
     const wrap = document.getElementById("boardWrap");
-    const cssW = Math.min(wrap.clientWidth || 360, 420);
-    const cssH = Math.min(wrap.clientHeight || 504, 620);
-    const ratio = COLS / ROWS;
+    const cssW = Math.min(wrap.clientWidth || 360, 440);
+    const cssH = Math.min(wrap.clientHeight || 520, 640);
+    const ratio = COLS / Math.max(ROWS, 1);
     let w = cssW;
     let h = w / ratio;
     if (h > cssH) {
