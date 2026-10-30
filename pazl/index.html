@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1" />
-  <title>Pazl — пазл с падением</title>
-  <meta name="description" content="Собери картинки из кусочков: соединяй, очищай поле, смотри как падают новые. Спокойная одиночная головоломка." />
+  <title>Pazl — пазл с обменом</title>
+  <meta name="description" content="Меняй кусочки местами, склеивай фото, набирай очки. Полное поле без пустых клеток." />
   <meta name="theme-color" content="#0c3b3a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./style.css?v=2" />
+  <link rel="stylesheet" href="./style.css?v=4" />
 </head>
 <body>
   <a class="portal-back" href="../">← Все игры</a>
@@ -20,9 +20,17 @@
     <div class="boot-bg" aria-hidden="true"></div>
     <div class="boot-inner">
       <p class="brand">Pazl</p>
-      <p class="tag">Собери картинки. Очисти поле. Новые кусочки падают после сбора.</p>
+      <p class="tag">Клади кусочек на кусочек — они меняются местами. Соседи одной фото склеиваются в одно целое.</p>
+
+      <fieldset class="diff">
+        <legend>Сложность</legend>
+        <label><input type="radio" name="diff" value="easy" checked /> Легко · крупные клетки</label>
+        <label><input type="radio" name="diff" value="medium" /> Средне</label>
+        <label><input type="radio" name="diff" value="hard" /> Сложно · мелкие клетки</label>
+      </fieldset>
+
       <button type="button" id="btnStart" class="cta">Играть</button>
-      <p class="hint">Одиночная · без таймера · удобно пальцем</p>
+      <p class="hint">Одиночная · таймер и очки · полный планшет кусочков</p>
     </div>
   </div>
 
@@ -34,18 +42,19 @@
       </div>
       <div class="hud-right">
         <span id="roundLabel">Раунд 1</span>
-        <span id="deckLabel" title="В колоде">Колода: 0</span>
+        <span id="timeLabel">0:00</span>
+        <span id="scoreLabel">Очки: 0</span>
+        <span id="deckLabel">Колода: 0</span>
       </div>
     </header>
 
-    <p id="status" class="status">Поставь кусочки одной фото рядом</p>
+    <p id="status" class="status">Меняй кусочки местами</p>
 
     <div id="boardWrap">
-      <canvas id="board" width="360" height="540"></canvas>
+      <canvas id="board" width="360" height="480"></canvas>
     </div>
 
     <div class="bar">
-      <button type="button" id="btnGroup" class="bar-btn">Группа: выкл</button>
       <button type="button" id="btnHint" class="bar-btn">Подсказка</button>
       <button type="button" id="btnHow" class="bar-btn ghost">Как играть</button>
       <button type="button" id="btnMenu" class="bar-btn ghost">Меню</button>
@@ -57,11 +66,11 @@
       <p class="brand sm">Pazl</p>
       <h2>Как играть</h2>
       <ol class="help-list">
-        <li><b>Нажми</b> кусочек — он выберется (рамка).</li>
-        <li><b>Нажми клетку</b>, куда поставить. Или тяни пальцем — кусочек едет <b>над</b> пальцем, чтобы было видно цель.</li>
-        <li><b>Зелёная</b> подсветка = сюда встанет. <b>Жёлтая</b> = обмен местами с другим кусочком.</li>
-        <li>Собери фото в квадрат <b>2×2</b> — оно исчезнет, сверху упадут новые.</li>
-        <li>Кнопка <b>«Группа»</b> — двигать уже соединённые кусочки вместе (по умолчанию выкл — так проще на телефоне).</li>
+        <li>Поле <b>заполнено целиком</b> — пустые клетки не нужны.</li>
+        <li>Возьми кусочек и <b>положи на другой</b> — они <b>меняются местами</b>.</li>
+        <li>Если кусочки одной фотографии встают правильно рядом — они <b>склеиваются</b>: общая рамка пропадает, это уже один блок.</li>
+        <li>Склей целую картинку — она исчезнет, сверху упадут новые, очки начислятся.</li>
+        <li><b>Легко</b> = крупные клетки · <b>Сложно</b> = мелкие клетки и больше фото.</li>
       </ol>
       <button type="button" id="btnHelpOk" class="cta">Понятно</button>
     </div>
@@ -79,6 +88,6 @@
 
   <p class="credit">Фото: Unsplash через Lorem Picsum · см. CREDITS.txt</p>
 
-  <script src="./game.js?v=3"></script>
+  <script src="./game.js?v=4"></script>
 </body>
 </html>
